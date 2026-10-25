@@ -81,6 +81,14 @@ export const AdminLeadsPage: React.FC = () => {
   const pollTimeoutRef = useRef<any>(null);
   const pollCountRef = useRef<number>(0);
 
+  // Multi-Trade Auto-Discovery Modal State
+  const [isDiscoveryModalOpen, setIsDiscoveryModalOpen] = useState(false);
+  const [discoveryTrade, setDiscoveryTrade] = useState<string>('ALL');
+  const [customTrade, setCustomTrade] = useState<string>('');
+  const [discoveryCity, setDiscoveryCity] = useState<string>('Chennai');
+  const [customCity, setCustomCity] = useState<string>('');
+  const [discoveryLimit, setDiscoveryLimit] = useState<number>(25);
+
   // Outreach Form State
   const [outreachForm, setOutreachForm] = useState({
     channel: 'PHONE',
@@ -154,8 +162,10 @@ export const AdminLeadsPage: React.FC = () => {
       pollCountRef.current += 1;
 
       try {
+        console.log(`[AutoDiscovery][Step 3 - POLL ATTEMPT #${pollCountRef.current}] Requesting status for scan ID: ${activeScanId}...`);
         const res = await leadService.getScanStatus(activeScanId);
         const data = res?.data || res;
+        console.log(`[AutoDiscovery][Step 3 - POLL RESPONSE]`, data);
         if (!isCancelled) {
           setScanStatus(data);
         }
@@ -163,6 +173,7 @@ export const AdminLeadsPage: React.FC = () => {
         if (data.status === 'COMPLETED') {
           const synced = data.syncResult?.newLeadsCount || 0;
           const totalValid = data.valid_count || 0;
+          console.log(`[AutoDiscovery][Step 4 - SCAN COMPLETED] Verified vacancies: ${totalValid}, New hiring companies created: ${synced}`);
           toast.success(
             `Auto-Discovery Complete! ${totalValid} vacancies verified across feeds, ${synced} new hiring companies created in Leads table!`,
             { duration: 6000 }
@@ -173,16 +184,18 @@ export const AdminLeadsPage: React.FC = () => {
           queryClient.invalidateQueries({ queryKey: ['adminLeadSources'] });
           return;
         } else if (data.status === 'FAILED' || data.status === 'INTERRUPTED' || data.status === 'CANCELLED') {
+          console.warn(`[AutoDiscovery][SCAN STOPPED] Status: ${data.status}`);
           toast.error(`Auto-Discovery Scan stopped with status: ${data.status}`);
           setActiveScanId(null);
           return;
         }
       } catch (err: any) {
-        console.error('Polling error:', err);
+        console.error('[AutoDiscovery][POLL ERROR]', err);
       }
 
       // Max attempt governor (15 attempts ~ 45-60s) to prevent runaway billing & infinite loops
       if (pollCountRef.current >= 15) {
+        console.info('[AutoDiscovery][TIMEOUT GOVERNOR] Maximum poll limit reached (15 attempts). Refreshing leads...');
         toast.info('Auto-discovery processing completed. Refreshing leads...');
         setActiveScanId(null);
         queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
@@ -208,9 +221,12 @@ export const AdminLeadsPage: React.FC = () => {
 
   // Auto-Discovery Scanner Mutation
   const autoDiscoveryMutation = useMutation({
-    mutationFn: (params?: { query?: string; city?: string; sources?: string[]; limit?: number }) =>
-      leadService.runAutoDiscovery(params),
+    mutationFn: (params?: { query?: string; city?: string; sources?: string[]; limit?: number }) => {
+      console.log('[AutoDiscovery][Step 1 - INITIATE] Calling /api/admin/leads/run-discovery with params:', params);
+      return leadService.runAutoDiscovery(params);
+    },
     onSuccess: (res: any) => {
+      console.log('[AutoDiscovery][Step 2 - DISPATCH ACCEPTED] Backend response:', res);
       const scanId = res?.id || res?.data?.id;
       if (scanId) {
         setActiveScanId(scanId);
@@ -222,7 +238,10 @@ export const AdminLeadsPage: React.FC = () => {
         queryClient.invalidateQueries({ queryKey: ['adminLeadStats'] });
       }
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error || err.message || 'Auto-discovery scan failed'),
+    onError: (err: any) => {
+      console.error('[AutoDiscovery][CLIENT ERROR] Failed to run auto-discovery:', err);
+      toast.error(err?.response?.data?.error || err.message || 'Auto-discovery scan failed');
+    },
   });
 
   // Mutations
@@ -390,12 +409,12 @@ export const AdminLeadsPage: React.FC = () => {
             <span>How This Works</span>
           </button>
 
-          {/* Auto Discovery Scanner Run */}
+          {/* Auto Discovery Scanner Run with Trade & City Selector */}
           <button
-            onClick={() => autoDiscoveryMutation.mutate({ city: 'Chennai', query: 'Delivery Driver' })}
+            onClick={() => setIsDiscoveryModalOpen(true)}
             disabled={autoDiscoveryMutation.isPending || activeScanId !== null}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all cursor-pointer disabled:opacity-60"
-            title="Scan active career feeds and schema.org postings"
+            title="Scan active career feeds and schema.org postings across all blue-collar trades"
           >
             {autoDiscoveryMutation.isPending || activeScanId ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1445,6 +1464,164 @@ export const AdminLeadsPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Multi-Trade Blue-Collar Discovery Modal */}
+      {isDiscoveryModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white border border-[#e2e4e9] w-full max-w-lg rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xl relative max-h-[92vh] overflow-y-auto space-y-4">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3 pb-3 border-b border-[#e6e8ec]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-xs">
+                  <Radar className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#0a0a0a]">Auto-Discovery Scanner</h3>
+                  <p className="text-xs text-[#717784]">Select blue-collar trades and target city to scan 8 live portals.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDiscoveryModalOpen(false)}
+                className="p-1.5 rounded-full text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f5f8] transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <div className="space-y-4 text-xs">
+              {/* Trade Selection */}
+              <div>
+                <label className="block text-xs font-semibold text-[#0a0a0a] mb-1.5">
+                  Target Blue-Collar Role / Trade:
+                </label>
+                <select
+                  value={discoveryTrade}
+                  onChange={(e) => setDiscoveryTrade(e.target.value)}
+                  className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2.5 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                >
+                  <option value="ALL">🌟 All Trades (Driver, Electrician, Plumber, Warehouse, Security, Cook, Cleaner)</option>
+                  <option value="Delivery Driver">🛵 Delivery Driver & Courier Executive</option>
+                  <option value="Electrician">⚡ Electrician, Wireman & Maintenance</option>
+                  <option value="Plumber">🔧 Plumber & Pipe Fitter</option>
+                  <option value="Warehouse Associate">📦 Warehouse Associate, Packer & Picker</option>
+                  <option value="Security Guard">🛡️ Security Guard & Watchman</option>
+                  <option value="Cook">🍳 Cook, Chef & Kitchen Helper</option>
+                  <option value="Housekeeping">🧹 Housekeeper, Cleaner & Office Boy</option>
+                  <option value="Technician">🛠️ AC Mechanic, Field Technician & Repair</option>
+                  <option value="Tailor">🧵 Tailor & Sewing Machine Operator</option>
+                  <option value="CUSTOM">✏️ Custom Job Role...</option>
+                </select>
+              </div>
+
+              {discoveryTrade === 'CUSTOM' && (
+                <div>
+                  <label className="block text-xs font-semibold text-[#0a0a0a] mb-1">Custom Role Name:</label>
+                  <input
+                    type="text"
+                    required
+                    value={customTrade}
+                    onChange={(e) => setCustomTrade(e.target.value)}
+                    placeholder="e.g. CNC Machine Operator, Carpenter, Welder"
+                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63]"
+                  />
+                </div>
+              )}
+
+              {/* City Selection */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#0a0a0a] mb-1.5">Target City:</label>
+                  <select
+                    value={discoveryCity}
+                    onChange={(e) => setDiscoveryCity(e.target.value)}
+                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2.5 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63]"
+                  >
+                    <option value="Chennai">Chennai (Tamil Nadu)</option>
+                    <option value="Bengaluru">Bengaluru (Karnataka)</option>
+                    <option value="Mumbai">Mumbai (Maharashtra)</option>
+                    <option value="Delhi">Delhi NCR</option>
+                    <option value="Hyderabad">Hyderabad (Telangana)</option>
+                    <option value="Pune">Pune (Maharashtra)</option>
+                    <option value="Kolkata">Kolkata (West Bengal)</option>
+                    <option value="CUSTOM">Custom City...</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#0a0a0a] mb-1.5">Scan Limit:</label>
+                  <select
+                    value={discoveryLimit}
+                    onChange={(e) => setDiscoveryLimit(Number(e.target.value))}
+                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2.5 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63]"
+                  >
+                    <option value={15}>15 Vacancies (Fast)</option>
+                    <option value={25}>25 Vacancies (Recommended)</option>
+                    <option value={50}>50 Vacancies (Deep Crawl)</option>
+                  </select>
+                </div>
+              </div>
+
+              {discoveryCity === 'CUSTOM' && (
+                <div>
+                  <label className="block text-xs font-semibold text-[#0a0a0a] mb-1">Custom City Name:</label>
+                  <input
+                    type="text"
+                    required
+                    value={customCity}
+                    onChange={(e) => setCustomCity(e.target.value)}
+                    placeholder="e.g. Coimbatore, Madurai, Ahmedabad"
+                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63]"
+                  />
+                </div>
+              )}
+
+              {/* Informational strip */}
+              <div className="bg-[#f8fafc] border border-[#e2e4e9] rounded-xl p-3 text-[11px] text-[#5a6270] space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-[#0a0a0a]">
+                  <Bot className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>8 Crawlers Ready (Free $0):</span>
+                </div>
+                <p>Naukri Blue Collar, Indeed India, WorkIndia Direct, Apna Gateway, Headcount Labs, Lever & Greenhouse ATS feeds, Schema.org.</p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-3 border-t border-[#e6e8ec] flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsDiscoveryModalOpen(false)}
+                className="px-4 py-2 bg-white hover:bg-[#f4f5f8] text-[#0a0a0a] border border-[#e2e4e9] rounded-xl text-xs font-medium transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={autoDiscoveryMutation.isPending || activeScanId !== null}
+                onClick={() => {
+                  const effectiveQuery = discoveryTrade === 'CUSTOM' ? (customTrade.trim() || 'Worker') : discoveryTrade;
+                  const effectiveCity = discoveryCity === 'CUSTOM' ? (customCity.trim() || 'Chennai') : discoveryCity;
+                  setIsDiscoveryModalOpen(false);
+                  autoDiscoveryMutation.mutate({
+                    query: effectiveQuery,
+                    city: effectiveCity,
+                    limit: discoveryLimit,
+                  });
+                }}
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {autoDiscoveryMutation.isPending || activeScanId ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Radar className="w-4 h-4" />
+                )}
+                <span>Start Live Discovery Scan</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

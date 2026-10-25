@@ -139,17 +139,26 @@ export class LeadController {
   static async runAutoDiscovery(c: Context) {
     try {
       const body = await c.req.json().catch(() => ({}));
+      const queryParam = body.query || 'Delivery Driver';
+      const cityParam = body.city || 'Chennai';
+      const limitParam = Number(body.limit) || 25;
+
+      console.log(`[LeadController][Step 1/3 - INITIATE] runAutoDiscovery called: query='${queryParam}', city='${cityParam}', limit=${limitParam}`);
+
       const { ScraperServiceClient } = await import('../services/scraperServiceClient');
 
       // Pre-sync existing scraped jobs to ensure leads table is current
-      await LeadService.syncLeadsFromScrapedJobs();
+      const preSync = await LeadService.syncLeadsFromScrapedJobs();
+      console.log(`[LeadController] Pre-scan database sync result:`, preSync);
 
       const results = await ScraperServiceClient.triggerScan({
-        query: body.query,
-        city: body.city || 'Chennai',
+        query: queryParam,
+        city: cityParam,
         sources: Array.isArray(body.sources) ? body.sources : undefined,
-        limit: Number(body.limit) || 25,
+        limit: limitParam,
       });
+
+      console.log(`[LeadController][Step 2/3 - DISPATCH] Scraper microservice accepted scan: ID=${results.id}, Status=${results.status}`);
 
       return c.json({
         success: true,
@@ -157,7 +166,7 @@ export class LeadController {
         ...results,
       });
     } catch (error: any) {
-      console.error('Error running auto-discovery:', error);
+      console.error('[LeadController] Error running auto-discovery:', error);
       return c.json({
         success: false,
         error: error.message || 'Scraper service is unreachable. Please verify Python service is running.',
@@ -174,9 +183,13 @@ export class LeadController {
       const { ScraperServiceClient } = await import('../services/scraperServiceClient');
       const status = await ScraperServiceClient.getScanStatus(id);
 
+      console.log(`[LeadController] Poll scan ${id}: status=${status.status}, valid_count=${status.valid_count || 0}`);
+
       let syncResult = null;
       if (status.status === 'COMPLETED') {
+        console.log(`[LeadController][Step 3/3 - SYNC] Scan ${id} is COMPLETED! Running LeadService.syncLeadsFromScrapedJobs()...`);
         syncResult = await LeadService.syncLeadsFromScrapedJobs();
+        console.log(`[LeadController][Step 3/3 - SYNC RESULT]`, syncResult);
       }
 
       return c.json({
@@ -185,7 +198,7 @@ export class LeadController {
         syncResult,
       });
     } catch (error: any) {
-      console.error('Error fetching scan status:', error);
+      console.error(`[LeadController] Error fetching scan status for ${c.req.param('id')}:`, error);
       return c.json({ success: false, error: error.message || 'Failed to fetch scan status' }, 500);
     }
   }

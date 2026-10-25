@@ -32,7 +32,10 @@ class DiscoveryPipeline:
         """
         active_scan_cancellations[scan_id] = False
         expanded_keywords = VernacularTradeMapper.expand_query(config.query)
-        logger.info(f"Starting discovery scan {scan_id} for city: {config.city}, query: '{config.query}' (expanded: {expanded_keywords})")
+        if not expanded_keywords and (not config.query or config.query.upper() in ["ALL", "ALL_TRADES"]):
+            expanded_keywords = ["Delivery Driver", "Electrician", "Warehouse Associate", "Security Guard", "Plumber", "Cook"]
+
+        logger.info(f"[DiscoveryPipeline][Step 1/5 - INITIATE] Starting blue-collar discovery scan {scan_id} for city: '{config.city}', query: '{config.query}' (Expanded trades: {expanded_keywords})")
 
         total_found = 0
         valid_count = 0
@@ -54,15 +57,17 @@ class DiscoveryPipeline:
             selected_adapters = all_adapters
 
         try:
-            for adapter in selected_adapters:
+            for idx, adapter in enumerate(selected_adapters, 1):
                 # Check for cancellation before starting each source
                 if active_scan_cancellations.get(scan_id, False):
-                    logger.info(f"Scan {scan_id} aborted due to cancellation request.")
+                    logger.info(f"[DiscoveryPipeline] Scan {scan_id} aborted due to cancellation request.")
                     break
 
                 # Determine honest source status
                 adapter_health = await adapter.check_health()
                 adapter_status = adapter_health.status
+
+                logger.info(f"[DiscoveryPipeline][Step 2/5 - SOURCE CHECK] ({idx}/{len(selected_adapters)}) Adapter '{adapter.name}' [{adapter.id}] status: {adapter_status}")
 
                 source_stats[adapter.id] = {
                     "name": adapter.name,
@@ -76,13 +81,16 @@ class DiscoveryPipeline:
 
                 if adapter.is_restricted or adapter_status in ["PERMISSION_REQUIRED", "AUTH_REQUIRED", "UNAVAILABLE"]:
                     msg = f"Source {adapter.name} is in state {adapter_status}. Automated crawl skipped ({adapter_health.error_message or adapter.compliance_note})."
+                    logger.warning(f"[DiscoveryPipeline] {msg}")
                     await ScanRepository.log_event(db, scan_id, adapter.id, msg, level="WARN")
                     continue
 
                 try:
+                    logger.info(f"[DiscoveryPipeline][Step 3/5 - CRAWL] Fetching candidate listings from '{adapter.name}'...")
                     candidates: List[RawJobRecord] = await adapter.discover_jobs(config)
                     source_stats[adapter.id]["discovered"] = len(candidates)
                     total_found += len(candidates)
+                    logger.info(f"[DiscoveryPipeline][Step 3/5 - CRAWL RESULT] '{adapter.name}' returned {len(candidates)} candidate listings.")
 
                     for raw_job in candidates:
                         if active_scan_cancellations.get(scan_id, False):
@@ -123,11 +131,12 @@ class DiscoveryPipeline:
                             )
 
                     await db.commit()
+                    logger.info(f"[DiscoveryPipeline][Step 4/5 - VALIDATE] '{adapter.name}': Discovered={len(candidates)}, Valid={source_stats[adapter.id]['valid']}, Duplicates={source_stats[adapter.id]['duplicates']}, Rejected={source_stats[adapter.id]['rejected']}")
 
                 except Exception as src_err:
                     error_count += 1
                     source_stats[adapter.id]["errors"] += 1
-                    logger.error(f"Error executing adapter {adapter.id}: {src_err}")
+                    logger.error(f"[DiscoveryPipeline] Error executing adapter {adapter.id}: {src_err}")
                     await ScanRepository.log_event(db, scan_id, adapter.id, str(src_err), level="ERROR")
                     await db.commit()
 
@@ -137,7 +146,7 @@ class DiscoveryPipeline:
                 total_found, valid_count, duplicate_count, rejected_count, error_count, source_stats
             )
             await db.commit()
-            logger.info(f"Scan {scan_id} finished with status {final_status}. Valid: {valid_count}, Dups: {duplicate_count}, Rejected: {rejected_count}")
+            logger.info(f"[DiscoveryPipeline][Step 5/5 - COMPLETE] Scan {scan_id} finished with status '{final_status}'. Total Found: {total_found}, Valid Jobs Ingested: {valid_count}, Duplicates: {duplicate_count}, Rejected: {rejected_count}, Errors: {error_count}")
 
         except Exception as scan_ex:
             logger.error(f"Fatal error in scan {scan_id}: {scan_ex}")
