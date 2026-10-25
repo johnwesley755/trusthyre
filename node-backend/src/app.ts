@@ -30,6 +30,7 @@ import adminRoutes from './routes/adminRoutes';
 import searchAlertRoutes from './routes/searchAlertRoutes';
 import { leadRouter } from './routes/leadRoutes';
 import metadataRoutes from './routes/metadataRoutes';
+import { blogRouter, adminBlogRouter } from './routes/blogRoutes';
 import { requestContextStorage, RequestScope } from './config/prisma';
 
 export type AppContext = {
@@ -144,11 +145,23 @@ app.route('/api/skill-tests', skillTestRoutes);
 app.route('/api/verification', verificationRoutes);
 app.route('/api/saved', savedRoutes);
 app.route('/api/admin/leads', leadRouter);
+app.route('/api/admin/blog', adminBlogRouter);
 app.route('/api/admin', adminRoutes);
 app.route('/api/metadata', metadataRoutes);
+app.route('/api/blog', blogRouter);
+
+import { SitemapService } from './services/sitemapService';
 
 app.get('/api/health', (c) => {
   return c.json({ status: 'UP', runtime: 'Hono' });
+});
+
+app.get('/sitemap.xml', async (c) => {
+  const xml = await SitemapService.generateSitemapXml();
+  return c.text(xml, 200, {
+    'Content-Type': 'application/xml; charset=utf-8',
+    'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+  });
 });
 
 app.onError((err, c) => {

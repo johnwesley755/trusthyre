@@ -1,6 +1,8 @@
 # Robots.txt for TrustHyre
 User-agent: *
 Allow: /
+Allow: /blog
+Allow: /sitemap.xml
 Disallow: /admin/
 Disallow: /tracker
 Disallow: /settings
