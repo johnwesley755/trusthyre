@@ -1,0 +1,10 @@
+{
+  "name": "trusthire-python-scraper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Python Worker for TrustHyre Blue-Collar Scraping Microservice",
+  "scripts": {
+    "build": "pip install workers-py workers-runtime-sdk && python -m pywrangler sync",
+    "deploy": "npx wrangler deploy"
+  }
+}

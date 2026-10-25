@@ -67,17 +67,13 @@ export class ScraperServiceClient {
     }
     const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
     if (!isDev) {
-      throw new Error('[ScraperServiceClient] SCRAPER_SERVICE_URL must be explicitly configured in non-development environments.');
+      return 'https://trusthire-python-scraper.johnwesley8113.workers.dev';
     }
     return 'http://localhost:5000';
   }
 
   private static get internalSecret(): string {
     const secret = process.env.INTERNAL_SERVICE_SECRET;
-    const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
-    if (!secret && !isDev) {
-      throw new Error('[ScraperServiceClient] INTERNAL_SERVICE_SECRET must be explicitly set in non-development environments.');
-    }
     return secret || 'trusthyre-secure-internal-scraper-key-2026';
   }
 
