@@ -15,13 +15,32 @@ export default function BiometricStep({ onCapture, preview, isPending }: Biometr
     }
   };
 
-  const isSafePreview = preview && (
-    preview.startsWith('blob:') || 
-    preview.startsWith('data:image/') || 
-    preview.startsWith('https://') || 
-    preview.startsWith('http://')
-  );
-  const safePreview = isSafePreview ? preview : null;
+  const sanitizePreviewUrl = (url: string | null): string | null => {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (trimmed.startsWith('blob:') && !trimmed.includes('javascript:') && !trimmed.includes('<')) {
+      try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol === 'blob:') return trimmed;
+      } catch {
+        return null;
+      }
+    }
+    if (/^data:image\/(?:png|jpeg|jpg|webp);base64,[A-Za-z0-9+/=]+$/.test(trimmed)) {
+      return trimmed;
+    }
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol === 'https:') {
+        return parsed.href;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  };
+
+  const safePreview = sanitizePreviewUrl(preview);
 
   return (
     <motion.div 

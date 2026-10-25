@@ -138,54 +138,84 @@ export class LeadController {
 
   static async runAutoDiscovery(c: Context) {
     try {
-      const { LeadCrawlerService } = await import('../services/leadCrawlerService');
-      const results = await LeadCrawlerService.runAutoDiscovery();
+      const body = await c.req.json().catch(() => ({}));
+      const { ScraperServiceClient } = await import('../services/scraperServiceClient');
+
+      // Pre-sync existing scraped jobs to ensure leads table is current
+      await LeadService.syncLeadsFromScrapedJobs();
+
+      const results = await ScraperServiceClient.triggerScan({
+        query: body.query,
+        city: body.city || 'Chennai',
+        sources: Array.isArray(body.sources) ? body.sources : undefined,
+        limit: Number(body.limit) || 25,
+      });
+
       return c.json({
         success: true,
-        sourcesScanned: results.sourceBreakdown?.length || results.totalScanned,
-        durationMs: results.session?.totalDurationMs,
-        ...results
+        sourcesScanned: results.sources_scanned?.length || 0,
+        ...results,
       });
     } catch (error: any) {
       console.error('Error running auto-discovery:', error);
-      return c.json({ success: false, error: error.message || 'Failed to run discovery scan' }, 500);
+      return c.json({
+        success: false,
+        error: error.message || 'Scraper service is unreachable. Please verify Python service is running.',
+      }, 503);
     }
   }
 
-  static async crawlUrl(c: Context) {
+  static async getScanStatus(c: Context) {
     try {
-      const { url } = await c.req.json();
-      if (!url) {
-        return c.json({ success: false, error: 'Target URL is required' }, 400);
+      const id = c.req.param('id');
+      if (!id) {
+        return c.json({ success: false, error: 'Scan ID is required' }, 400);
+      }
+      const { ScraperServiceClient } = await import('../services/scraperServiceClient');
+      const status = await ScraperServiceClient.getScanStatus(id);
+
+      let syncResult = null;
+      if (status.status === 'COMPLETED') {
+        syncResult = await LeadService.syncLeadsFromScrapedJobs();
       }
 
-      const { LeadCrawlerService } = await import('../services/leadCrawlerService');
-      const crawled = await LeadCrawlerService.crawlUrl(url);
       return c.json({
         success: true,
-        data: crawled.lead,
-        lead: crawled.lead, // For backwards compatibility
-        logs: crawled.logs,
-        session: crawled.session
+        ...status,
+        syncResult,
       });
     } catch (error: any) {
-      console.error('Error crawling URL:', error);
-      return c.json({
-        success: false,
-        error: error.message || 'Failed to scrape target URL',
-        message: error.message || 'Failed to scrape target URL'
-      }, 400);
+      console.error('Error fetching scan status:', error);
+      return c.json({ success: false, error: error.message || 'Failed to fetch scan status' }, 500);
+    }
+  }
+
+  static async syncLeads(c: Context) {
+    try {
+      const result = await LeadService.syncLeadsFromScrapedJobs();
+      return c.json({ success: true, ...result });
+    } catch (error: any) {
+      console.error('Error syncing leads:', error);
+      return c.json({ success: false, error: error.message || 'Failed to sync leads' }, 500);
     }
   }
 
   static async getSources(c: Context) {
     try {
-      const { SourceAdapterRegistry } = await import('../services/discovery/sourceAdapterRegistry');
-      const sources = SourceAdapterRegistry.getSourceList();
+      const { ScraperServiceClient } = await import('../services/scraperServiceClient');
+      const rawSources = await ScraperServiceClient.getSources();
+      const sources = rawSources.map((s) => ({
+        ...s,
+        id: s.id || s.source_id,
+        type: s.is_restricted ? 'RESTRICTED_PARTNER' : 'DIRECT_FEED',
+        active: s.status === 'ACTIVE',
+        complianceNote: s.compliance_note,
+        lastScan: s.last_checked_at,
+      }));
       return c.json({ success: true, data: sources, sources });
     } catch (error: any) {
       console.error('Error fetching sources:', error);
-      return c.json({ success: false, error: error.message || 'Failed to fetch sources' }, 500);
+      return c.json({ success: true, data: [], sources: [] });
     }
   }
 }

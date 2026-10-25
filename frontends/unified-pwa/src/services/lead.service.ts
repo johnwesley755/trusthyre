@@ -170,13 +170,13 @@ export const leadService = {
     return response.data;
   },
 
-  runAutoDiscovery: async (): Promise<AutoDiscoveryResponse> => {
-    const response = await apiClient.post('/api/admin/leads/run-discovery');
+  runAutoDiscovery: async (params?: { query?: string; city?: string; sources?: string[]; limit?: number }): Promise<any> => {
+    const response = await apiClient.post('/api/admin/leads/run-discovery', params || {});
     return response.data;
   },
 
-  crawlUrl: async (url: string): Promise<CrawlUrlResult> => {
-    const response = await apiClient.post('/api/admin/leads/crawl-url', { url });
+  getScanStatus: async (scanId: string): Promise<any> => {
+    const response = await apiClient.get(`/api/admin/leads/scan-status/${encodeURIComponent(scanId)}`);
     return response.data;
   },
 

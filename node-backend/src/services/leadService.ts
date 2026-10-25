@@ -65,8 +65,25 @@ export class LeadService {
     return trimmed;
   }
 
+  static readonly AGGREGATOR_DOMAINS = new Set([
+    'apna.co',
+    'workindia.in',
+    'naukri.com',
+    'indeed.com',
+    'linkedin.com',
+    'foundit.in',
+    'shine.com',
+    'quikr.com',
+    'olx.in',
+    'glassdoor.com',
+    'ambitionbox.com',
+    'talent.com',
+    'simplyhired.co.in',
+  ]);
+
   /**
    * Extracts root apex domain from any URL or domain string.
+   * Excludes generic job portal domains so distinct employers aren't falsely merged.
    */
   static extractApexDomain(urlOrDomain?: string | null): string | null {
     if (!urlOrDomain) return null;
@@ -75,17 +92,22 @@ export class LeadService {
       const hostname = new URL(sanitized).hostname.toLowerCase().replace(/^www\./, '');
       const parts = hostname.split('.');
       
+      let apex = hostname;
       // Handle known multi-part TLDs (e.g. .co.in, .org.in, .net.in, .ac.in, .gov.in, .co.uk)
       if (parts.length >= 3 && (parts[parts.length - 2] === 'co' || parts[parts.length - 2] === 'org' || parts[parts.length - 2] === 'net' || parts[parts.length - 2] === 'ac' || parts[parts.length - 2] === 'gov')) {
-        return parts.slice(-3).join('.');
+        apex = parts.slice(-3).join('.');
+      } else if (parts.length >= 2) {
+        apex = parts.slice(-2).join('.');
       }
-      
-      if (parts.length >= 2) {
-        return parts.slice(-2).join('.');
+
+      if (this.AGGREGATOR_DOMAINS.has(apex)) {
+        return null;
       }
-      return hostname;
+      return apex;
     } catch {
-      return urlOrDomain.toLowerCase().trim();
+      const cleaned = urlOrDomain.toLowerCase().trim();
+      if (this.AGGREGATOR_DOMAINS.has(cleaned)) return null;
+      return cleaned;
     }
   }
 
@@ -605,6 +627,65 @@ export class LeadService {
       userId: user.id,
       email: user.email,
       publishedJobsCount: publishedJobs.length
+    };
+  }
+
+  /**
+   * Synchronizes external jobs discovered by the Python microservice into employer_leads and employer_lead_requirements.
+   */
+  static async syncLeadsFromScrapedJobs(limit: number = 200): Promise<{
+    syncedCount: number;
+    newLeadsCount: number;
+    updatedLeadsCount: number;
+  }> {
+    const externalJobs = await prisma.jobs.findMany({
+      where: {
+        is_external: true,
+        employer_name: { not: null }
+      },
+      orderBy: { created_at: 'desc' },
+      take: limit
+    });
+
+    let newLeadsCount = 0;
+    let updatedLeadsCount = 0;
+
+    for (const job of externalJobs) {
+      if (!job.employer_name || !job.employer_name.trim()) continue;
+
+      const salaryStr = job.budget ? `₹${job.budget}` : undefined;
+      const isAggregator = !this.extractApexDomain(job.source_url);
+      const companyWebsite = isAggregator ? undefined : (job.source_url || undefined);
+      const res = await this.ingestLead({
+        companyName: job.employer_name.trim(),
+        companyWebsite: companyWebsite,
+        industry: job.industry || undefined,
+        city: job.city || undefined,
+        requirements: [
+          {
+            title: job.title.trim(),
+            category: job.industry || 'Logistics & Operations',
+            description: job.description || undefined,
+            city: job.city || undefined,
+            salaryRange: salaryStr,
+            sourceName: job.source_name || 'Web Discovery',
+            sourceUrl: job.source_url || '',
+            externalListingId: job.external_id || job.id
+          }
+        ]
+      });
+
+      if (res.isNewLead) {
+        newLeadsCount++;
+      } else {
+        updatedLeadsCount++;
+      }
+    }
+
+    return {
+      syncedCount: externalJobs.length,
+      newLeadsCount,
+      updatedLeadsCount
     };
   }
 }

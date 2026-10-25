@@ -24,14 +24,36 @@ export const searchJobs = async (c: Context) => {
       AND: []
     };
 
-    if (includeExpired !== 'true') {
-      whereClause.status = 'OPEN';
-      whereClause.AND.push({
-        OR: [
-          { expires_at: { gt: new Date() } },
-          { expires_at: null, created_at: { gt: thirtyDaysAgo } }
-        ]
-      });
+    const authUser = c.get('user');
+    const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'SUPER_ADMIN';
+
+    // External scraped jobs require approval from Admin / Super Admin before candidate visibility
+    if (!isAdmin) {
+      if (includeExpired === 'true') {
+        whereClause.status = { in: ['OPEN', 'EXPIRED', 'CLOSED'] };
+      } else {
+        whereClause.status = 'OPEN';
+        whereClause.AND.push({
+          OR: [
+            { expires_at: { gt: new Date() } },
+            { expires_at: null, created_at: { gt: thirtyDaysAgo } }
+          ]
+        });
+      }
+      whereClause.NOT = [
+        { is_external: true, status: { not: 'OPEN' } },
+        { status: { in: ['PENDING_REVIEW', 'REJECTED'] } }
+      ];
+    } else {
+      if (includeExpired !== 'true') {
+        whereClause.status = 'OPEN';
+        whereClause.AND.push({
+          OR: [
+            { expires_at: { gt: new Date() } },
+            { expires_at: null, created_at: { gt: thirtyDaysAgo } }
+          ]
+        });
+      }
     }
 
     if (query) {

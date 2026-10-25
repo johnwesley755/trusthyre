@@ -296,7 +296,7 @@ export const JobPostingPage = () => {
                     <label className="text-xs font-bold text-[#0a0a0a]">Min. Experience (Years)</label>
                     <input 
                       name="experienceYearsRequired"
-                      type="number"
+                      type="text"
                       min={0}
                       defaultValue={previewExp}
                       onChange={(e) => setPreviewExp(e.target.value)}
@@ -489,13 +489,13 @@ export const JobPostingPage = () => {
             <div className="bg-[#f4f4f4] rounded-[1.75rem] p-6 border border-[#e6e8ec] space-y-3 text-xs">
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-4 h-4 text-amber-500" />
-                <h4 className="font-bold text-[#0a0a0a]">TrustHire Hiring Advantages</h4>
+                <h4 className="font-bold text-[#0a0a0a]">TrustHyre Hiring Advantages</h4>
               </div>
 
               <ul className="space-y-2.5 text-[#717784] leading-relaxed">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>Nearby biometric-verified candidates receive direct push notifications instantly.</span>
+                  <span>Nearby verified candidates receive direct push notifications instantly.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />

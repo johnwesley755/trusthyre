@@ -204,6 +204,15 @@ export const getAllJobs = async (c: Context) => {
       ]
     };
 
+    const authUser = c.get('user');
+    const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'SUPER_ADMIN';
+    if (!isAdmin) {
+      whereClause.NOT = [
+        { is_external: true, status: { not: 'OPEN' } },
+        { status: { in: ['PENDING_REVIEW', 'REJECTED'] } }
+      ];
+    }
+
     if (query) {
       whereClause.AND.push({
         OR: [
@@ -249,6 +258,21 @@ export const getJobById = async (c: Context) => {
       }
     });
     if (!job) return c.json(ApiResponse.error("Job not found"), 404 as any);
+
+    // Gating for candidates / public:
+    // Scraped external jobs and unreviewed jobs MUST NOT be shown directly to candidates
+    // until approved by Admin or Super Admin (status === 'OPEN').
+    const authUser = c.get('user');
+    const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'SUPER_ADMIN';
+    const isOwner = Boolean(authUser?.sub && job.employer_id === authUser.sub);
+
+    if (job.is_external && job.status !== 'OPEN' && !isAdmin) {
+      return c.json(ApiResponse.error("This job listing is pending administrator review and approval"), 404 as any);
+    }
+
+    if ((job.status === 'PENDING_REVIEW' || job.status === 'REJECTED') && !isAdmin && !isOwner) {
+      return c.json(ApiResponse.error("This job listing is pending administrator review and approval"), 404 as any);
+    }
 
     const effectiveExpiry = job.expires_at 
       ? new Date(job.expires_at) 
@@ -441,7 +465,19 @@ export const getJobsByIds = async (c: Context) => {
     if (ids.length === 0) {
       return c.json(ApiResponse.ok([]));
     }
-    const jobs = await prisma.jobs.findMany({ where: { id: { in: ids } } });
+
+    const authUser = c.get('user');
+    const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'SUPER_ADMIN';
+
+    const whereClause: any = { id: { in: ids } };
+    if (!isAdmin) {
+      whereClause.NOT = [
+        { is_external: true, status: { not: 'OPEN' } },
+        { status: { in: ['PENDING_REVIEW', 'REJECTED'] } }
+      ];
+    }
+
+    const jobs = await prisma.jobs.findMany({ where: whereClause });
     return c.json(ApiResponse.ok(jobs.map(formatJob)));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
@@ -450,7 +486,11 @@ export const getJobsByIds = async (c: Context) => {
 
 export const getStats = async (c: Context) => {
   try {
-    const totalJobs = await prisma.jobs.count();
+    const totalJobs = await prisma.jobs.count({
+      where: {
+        status: 'OPEN'
+      }
+    });
     return c.json(ApiResponse.ok({ totalJobs }));
   } catch (err: any) {
     console.error("GET STATS ERROR:", err);

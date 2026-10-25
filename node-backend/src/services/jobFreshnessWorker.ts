@@ -1,5 +1,4 @@
 import prisma from '../config/prisma';
-import { UrlSecurityValidator } from './discovery/urlSecurityValidator';
 
 export interface FreshnessCycleResult {
   expiredByTTL: number;
@@ -76,14 +75,15 @@ export class JobFreshnessWorker {
       if (!job.source_url) continue;
 
       try {
-        const validation = UrlSecurityValidator.validateUrl(job.source_url, false);
-        if (!validation.isValid) {
+        const parsed = new URL(job.source_url);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
           continue;
         }
 
-        const res = await UrlSecurityValidator.safeFetch(job.source_url, {
-          timeoutMs: 4000,
-          maxSizeBytes: 512 * 1024,
+        const res = await fetch(job.source_url, {
+          method: 'HEAD',
+          signal: AbortSignal.timeout(4000),
+          headers: { 'User-Agent': 'TrustHyre-LivenessBot/1.0' },
         });
 
         if (res.status === 404 || res.status === 410) {

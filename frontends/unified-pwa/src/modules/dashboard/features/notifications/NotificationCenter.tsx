@@ -176,7 +176,7 @@ export const NotificationCenter = () => {
                 }}
                 className={`w-9 h-9 flex items-center justify-center rounded-full transition-all relative cursor-pointer border ${
                     isOpen 
-                        ? 'bg-blue-50 text-[#0066FF] border-blue-200 shadow-xs' 
+                        ? 'bg-blue-50 text-[#0f2f63] border-blue-200 shadow-xs' 
                         : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200/80 shadow-2xs'
                 }`}
                 title="Notifications"
@@ -206,7 +206,7 @@ export const NotificationCenter = () => {
                                     Notifications
                                 </h4>
                                 {unreadCount > 0 ? (
-                                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-[#0066FF] border border-blue-100 text-[10px] font-bold">
+                                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-[#0f2f63] border border-blue-100 text-[10px] font-bold">
                                         {unreadCount} new
                                     </span>
                                 ) : (
@@ -222,7 +222,7 @@ export const NotificationCenter = () => {
                                         setIsOpen(false);
                                         navigate('/notifications');
                                     }}
-                                    className="text-[11px] font-bold text-[#0066FF] hover:underline flex items-center gap-1 px-1.5 py-0.5 rounded cursor-pointer mr-1"
+                                    className="text-[11px] font-bold text-[#0f2f63] hover:underline flex items-center gap-1 px-1.5 py-0.5 rounded cursor-pointer mr-1"
                                     title="Open Full Page"
                                 >
                                     <span>Inbox</span>
@@ -232,7 +232,7 @@ export const NotificationCenter = () => {
                                 {unreadCount > 0 && (
                                     <button 
                                         onClick={() => markAllReadMutation.mutate()}
-                                        className="text-[11px] font-bold text-slate-600 hover:text-[#0066FF] flex items-center gap-1 px-1.5 py-1 rounded cursor-pointer transition-colors"
+                                        className="text-[11px] font-bold text-slate-600 hover:text-[#0f2f63] flex items-center gap-1 px-1.5 py-1 rounded cursor-pointer transition-colors"
                                         title="Mark all as read"
                                     >
                                         <CheckCheck className="w-3 h-3" />
@@ -244,7 +244,7 @@ export const NotificationCenter = () => {
                                     className="p-1 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer text-slate-500 hover:text-slate-800"
                                     title="Refresh"
                                 >
-                                    <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? 'animate-spin text-[#0066FF]' : ''}`} />
+                                    <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? 'animate-spin text-[#0f2f63]' : ''}`} />
                                 </button>
                                 {notifications.length > 0 && (
                                     <button 
@@ -262,7 +262,7 @@ export const NotificationCenter = () => {
                         {fcmService.isPushSupported() && typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted' && (
                             <div className="px-4 py-2 bg-blue-50/60 border-b border-blue-100 flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 min-w-0">
-                                    <Bell className="w-3.5 h-3.5 text-[#0066FF] shrink-0" />
+                                    <Bell className="w-3.5 h-3.5 text-[#0f2f63] shrink-0" />
                                     <span className="text-[11px] text-[#0A1931] font-medium truncate">
                                         Push alerts are disabled
                                     </span>
@@ -271,7 +271,7 @@ export const NotificationCenter = () => {
                                     onClick={async () => {
                                         await fcmService.requestPushPermissionAndRegister();
                                     }}
-                                    className="px-2.5 py-1 bg-[#0066FF] text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 transition-all cursor-pointer shrink-0 shadow-2xs"
+                                    className="px-2.5 py-1 bg-[#0f2f63] text-white text-[10px] font-bold rounded-lg hover:bg-[#0f2f63] transition-all cursor-pointer shrink-0 shadow-2xs"
                                 >
                                     Enable
                                 </button>
@@ -340,7 +340,7 @@ export const NotificationCenter = () => {
                                     setIsOpen(false);
                                     navigate('/notifications');
                                 }}
-                                className="flex-1 py-2 px-3 text-xs font-bold text-[#0066FF] hover:bg-blue-50/80 bg-white border border-blue-200/60 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer group"
+                                className="flex-1 py-2 px-3 text-xs font-bold text-[#0f2f63] hover:bg-blue-50/80 bg-white border border-blue-200/60 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer group"
                             >
                                 <span>View All Notifications</span>
                                 <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />

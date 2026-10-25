@@ -1,42 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { leadService, type EmployerLeadItem } from '../../../services/lead.service';
 import { 
   Building2, 
   Search, 
   ExternalLink, 
+  Link2,
   Mail, 
   Phone, 
   Globe, 
   CheckCircle2, 
-  Clock, 
   AlertCircle, 
   PlusCircle, 
   UserCheck, 
   Send, 
-  FileText, 
   Loader2, 
   X, 
   TrendingUp, 
-  ShieldCheck, 
-  MessageSquare,
+  ShieldCheck,
   Sparkles,
-  ArrowRight,
-  Briefcase,
   Radar,
-  RefreshCw,
-  Link2,
   Bot,
-  HelpCircle,
   Lightbulb,
-  Check,
-  PhoneCall,
-  UserPlus,
   ChevronLeft,
   ChevronRight,
-  RotateCcw,
-  SlidersHorizontal,
-  Filter
+  RotateCcw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLoader } from '../../../components/common/AppLoader';
@@ -54,16 +42,21 @@ const stripHtml = (html?: string | null): string => {
       // fallback
     }
   }
-  return html
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&#x2F;/g, '/')
+  const stripped = html.replace(/<[^>]*>/g, ' ');
+  return stripped
+    .replace(/&(?:amp|lt|gt|quot|#39|apos|nbsp|#x2F);/g, (match) => {
+      switch (match) {
+        case '&amp;': return '&';
+        case '&lt;': return '<';
+        case '&gt;': return '>';
+        case '&quot;': return '"';
+        case '&#39;':
+        case '&apos;': return "'";
+        case '&nbsp;': return ' ';
+        case '&#x2F;': return '/';
+        default: return match;
+      }
+    })
     .replace(/\s+/g, ' ')
     .trim();
 };
@@ -81,10 +74,10 @@ export const AdminLeadsPage: React.FC = () => {
 
   const [selectedLead, setSelectedLead] = useState<EmployerLeadItem | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isCrawlModalOpen, setIsCrawlModalOpen] = useState(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
-  const [crawlUrlInput, setCrawlUrlInput] = useState('');
-  const [crawledDataPreview, setCrawledDataPreview] = useState<any | null>(null);
+  const [activeScanId, setActiveScanId] = useState<string | null>(null);
+  const [scanStatus, setScanStatus] = useState<any | null>(null);
+  const pollIntervalRef = useRef<any>(null);
 
   // Outreach Form State
   const [outreachForm, setOutreachForm] = useState({
@@ -147,44 +140,65 @@ export const AdminLeadsPage: React.FC = () => {
   const totalLeads = leadData?.total || 0;
   const totalPages = leadData?.totalPages || 1;
 
+  // Polling effect for active discovery scans
+  useEffect(() => {
+    if (!activeScanId) return;
+
+    const poll = async () => {
+      try {
+        const res = await leadService.getScanStatus(activeScanId);
+        const data = res?.data || res;
+        setScanStatus(data);
+
+        if (data.status === 'COMPLETED') {
+          const synced = data.syncResult?.newLeadsCount || 0;
+          const totalValid = data.valid_count || 0;
+          toast.success(
+            `Auto-Discovery Complete! ${totalValid} vacancies verified across feeds, ${synced} new hiring companies created in Leads table!`,
+            { duration: 6000 }
+          );
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+          setActiveScanId(null);
+          queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
+          queryClient.invalidateQueries({ queryKey: ['adminLeadStats'] });
+          queryClient.invalidateQueries({ queryKey: ['adminLeadSources'] });
+        } else if (data.status === 'FAILED' || data.status === 'INTERRUPTED' || data.status === 'CANCELLED') {
+          toast.error(`Auto-Discovery Scan stopped with status: ${data.status}`);
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+          setActiveScanId(null);
+        }
+      } catch (err: any) {
+        console.error('Polling error:', err);
+      }
+    };
+
+    poll();
+    pollIntervalRef.current = setInterval(poll, 2500);
+
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, [activeScanId, queryClient]);
+
   // Auto-Discovery Scanner Mutation
   const autoDiscoveryMutation = useMutation({
-    mutationFn: () => leadService.runAutoDiscovery(),
+    mutationFn: (params?: { query?: string; city?: string; sources?: string[]; limit?: number }) =>
+      leadService.runAutoDiscovery(params),
     onSuccess: (res: any) => {
-      const activeFound = res?.sourceBreakdown
-        ?.filter((s: any) => s.status === 'SUCCESS' && s.requirementsFound > 0)
-        ?.map((s: any) => `${s.sourceName} (${s.requirementsFound})`)
-        ?.join(', ');
-
-      const totalDiscovered = (res.newLeadsCount || 0) + (res.updatedLeadsCount || 0);
-
-      if (totalDiscovered > 0) {
-        toast.success(
-          `Auto-Discovery Complete: ${res.newLeadsCount} new hiring companies created, ${res.updatedLeadsCount || 0} refreshed across ${res.totalScanned} scanned sources.${activeFound ? ` Active feeds: ${activeFound}` : ''}`,
-          { duration: 6000 }
-        );
+      const scanId = res?.id || res?.data?.id;
+      if (scanId) {
+        setActiveScanId(scanId);
+        setScanStatus(res);
+        toast.info('Auto-Discovery scan started across live portals (Naukri, WorkIndia, Apna). Polling for new leads...');
       } else {
-        toast('Auto-Discovery Scan finished: All scanned feeds are currently up-to-date with 0 new openings.', {
-          icon: 'ℹ️',
-          duration: 5000,
-        });
+        toast.success('Discovery scan completed');
+        queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
+        queryClient.invalidateQueries({ queryKey: ['adminLeadStats'] });
       }
-      queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
-      queryClient.invalidateQueries({ queryKey: ['adminLeadStats'] });
-      queryClient.invalidateQueries({ queryKey: ['adminLeadSources'] });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error || 'Auto-discovery scan failed'),
-  });
-
-  // Single URL Scrape & Parse Mutation
-  const crawlUrlMutation = useMutation({
-    mutationFn: (url: string) => leadService.crawlUrl(url),
-    onSuccess: (res: any) => {
-      const extracted = res?.data || res?.lead || res;
-      setCrawledDataPreview(extracted);
-      toast.success(`Parsed ${extracted?.companyName || 'Employer'}: Requisition & contact channels extracted!`);
-    },
-    onError: (err: any) => toast.error(err?.response?.data?.error || 'Failed to crawl and extract URL data'),
+    onError: (err: any) => toast.error(err?.response?.data?.error || err.message || 'Auto-discovery scan failed'),
   });
 
   // Mutations
@@ -352,32 +366,22 @@ export const AdminLeadsPage: React.FC = () => {
             <span>How This Works</span>
           </button>
 
-          {/* Quick URL Crawl Button */}
-          <button
-            onClick={() => {
-              setCrawledDataPreview(null);
-              setCrawlUrlInput('');
-              setIsCrawlModalOpen(true);
-            }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium uppercase tracking-wider bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] shadow-xs transition-all cursor-pointer"
-          >
-            <Link2 className="w-3.5 h-3.5 text-[#2563c9]" />
-            <span>Quick Scrape URL</span>
-          </button>
-
           {/* Auto Discovery Scanner Run */}
           <button
-            onClick={() => autoDiscoveryMutation.mutate()}
-            disabled={autoDiscoveryMutation.isPending}
+            onClick={() => autoDiscoveryMutation.mutate({ city: 'Chennai', query: 'Delivery Driver' })}
+            disabled={autoDiscoveryMutation.isPending || activeScanId !== null}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all cursor-pointer disabled:opacity-60"
             title="Scan active career feeds and schema.org postings"
           >
-            {autoDiscoveryMutation.isPending ? (
+            {autoDiscoveryMutation.isPending || activeScanId ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
               <Radar className="w-3.5 h-3.5" />
             )}
-            <span>{autoDiscoveryMutation.isPending ? 'Searching Feeds...' : 'Run Auto-Discovery Scan'}</span>
+            <span>{autoDiscoveryMutation.isPending || activeScanId ? 'Searching Feeds...' : 'Run Auto-Discovery Scan'}</span>
+            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-800 text-white uppercase tracking-wider">
+              Free $0
+            </span>
           </button>
 
           {/* Ingest Manual Lead */}
@@ -390,6 +394,46 @@ export const AdminLeadsPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Real-time Scan Progress Banner */}
+      {scanStatus && (
+        <div className={`p-4 rounded-2xl border transition-all ${
+          scanStatus.status === 'RUNNING'
+            ? 'bg-blue-50/50 border-blue-200'
+            : scanStatus.status === 'COMPLETED'
+            ? 'bg-emerald-50/50 border-emerald-200'
+            : 'bg-rose-50/50 border-rose-200'
+        }`}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              {scanStatus.status === 'RUNNING' ? (
+                <Loader2 className="w-4 h-4 text-[#2563c9] animate-spin" />
+              ) : scanStatus.status === 'COMPLETED' ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              ) : (
+                <AlertCircle className="w-4 h-4 text-rose-600" />
+              )}
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a]">
+                  Auto-Discovery Session: {scanStatus.status}
+                </h4>
+                <p className="text-xs text-[#717784]">
+                  Scanned: <span className="font-medium text-[#0a0a0a]">{scanStatus.sources_scanned?.length || scanStatus.sourcesScanned || 8} Sources</span> | Total Found: <span className="font-semibold text-emerald-600">{scanStatus.total_found || 0}</span> | Valid Vacancies: <span className="font-semibold text-emerald-600">{scanStatus.valid_count || 0}</span> | Duplicates: <span className="font-medium text-[#717784]">{scanStatus.duplicate_count || 0}</span>
+                </p>
+              </div>
+            </div>
+
+            {scanStatus.status === 'COMPLETED' && (
+              <button
+                onClick={() => setScanStatus(null)}
+                className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-medium uppercase tracking-wider hover:bg-emerald-700 transition-all cursor-pointer"
+              >
+                Dismiss
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Discovery Sources Status Strip */}
       {sourcesData && sourcesData.length > 0 && (
@@ -1358,206 +1402,6 @@ export const AdminLeadsPage: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Scrape from URL Modal */}
-      {isCrawlModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white border border-[#e2e4e9] w-full max-w-lg rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl relative max-h-[92vh] overflow-y-auto space-y-4">
-            
-            {/* Header */}
-            <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-[#e6e8ec]">
-              <div className="flex items-start gap-3 min-w-0">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50/80 border border-blue-100 flex items-center justify-center text-[#0f2f63] shrink-0 mt-0.5 shadow-2xs">
-                  <Link2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] animate-pulse shrink-0" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2f63] whitespace-nowrap">
-                      Auto-Discovery Tool
-                    </span>
-                  </div>
-                  <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a] tracking-tight leading-snug">
-                    Quick Scrape & Enrich from URL
-                  </h3>
-                  <p className="text-[11px] sm:text-xs text-[#5a6270] leading-relaxed mt-0.5">
-                    Paste any external job post or career page to auto-extract company details & contacts.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCrawlModalOpen(false)}
-                className="p-1.5 sm:p-2 rounded-full text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f5f8] transition-colors shrink-0 cursor-pointer"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </div>
-
-            {/* URL Input Form */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!crawlUrlInput.trim()) return;
-                crawlUrlMutation.mutate(crawlUrlInput.trim());
-              }}
-              className="space-y-2.5"
-            >
-              <div>
-                <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1.5">
-                  Target Webpage or Career URL
-                </label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative flex-1 min-w-0">
-                    <input
-                      type="url"
-                      required
-                      value={crawlUrlInput}
-                      onChange={(e) => setCrawlUrlInput(e.target.value)}
-                      placeholder="https://company.com/careers/delivery-executive"
-                      className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3.5 py-2.5 text-xs text-[#0a0a0a] placeholder:text-[#94a3b8] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 transition-all font-mono"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={crawlUrlMutation.isPending}
-                    className="w-full sm:w-auto px-4 py-2.5 bg-[#0f2f63] hover:bg-[#163e7f] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs disabled:opacity-50 flex items-center justify-center gap-1.5 shrink-0 select-none"
-                  >
-                    {crawlUrlMutation.isPending ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-3.5 h-3.5" />
-                    )}
-                    <span className="whitespace-nowrap">{crawlUrlMutation.isPending ? 'Extracting...' : 'Extract Details'}</span>
-                  </button>
-                </div>
-                <p className="text-[10px] text-[#717784] mt-1.5 flex items-center gap-1">
-                  <span>💡 Paste job postings from corporate career sites, Job Boards, or direct vacancy pages.</span>
-                </p>
-              </div>
-            </form>
-
-            {/* Extracted Data Preview */}
-            {crawledDataPreview && (
-              <div className="p-3.5 sm:p-4 bg-[#f8fafc] rounded-2xl border border-[#e2e4e9] space-y-3 animate-in fade-in">
-                <div className="flex items-center justify-between pb-2.5 border-b border-[#e2e4e9]">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-[11px] font-bold text-[#0a0a0a] uppercase tracking-wider">
-                      Extracted Opportunity Signal
-                    </span>
-                  </div>
-                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-[10px] font-bold">
-                    Extraction Successful
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                  <div className="bg-white p-2.5 rounded-xl border border-[#e6e8ec]">
-                    <span className="text-[#717784] block text-[10px] font-medium uppercase tracking-wider">Company Name</span>
-                    <strong className="text-[#0a0a0a] text-xs font-semibold block truncate mt-0.5">{crawledDataPreview.companyName}</strong>
-                  </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-[#e6e8ec]">
-                    <span className="text-[#717784] block text-[10px] font-medium uppercase tracking-wider">Job Title</span>
-                    <strong className="text-[#0a0a0a] text-xs font-semibold block truncate mt-0.5">{crawledDataPreview.title}</strong>
-                  </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-[#e6e8ec]">
-                    <span className="text-[#717784] block text-[10px] font-medium uppercase tracking-wider">Location / City</span>
-                    <span className="text-[#0a0a0a] text-xs block truncate mt-0.5">{crawledDataPreview.city || 'Detected from posting'}</span>
-                  </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-[#e6e8ec]">
-                    <span className="text-[#717784] block text-[10px] font-medium uppercase tracking-wider">Salary Range</span>
-                    <span className="text-[#0a0a0a] text-xs block truncate mt-0.5">{crawledDataPreview.salaryRange || 'Competitive'}</span>
-                  </div>
-                </div>
-
-                {/* Extracted Channels */}
-                <div className="pt-2 border-t border-[#e2e4e9] space-y-1 text-xs">
-                  <span className="text-[10px] font-bold text-[#717784] uppercase tracking-wider block">
-                    Discovered Official Contact Channels
-                  </span>
-                  <div className="flex flex-wrap gap-2 pt-0.5">
-                    {crawledDataPreview.officialEmail ? (
-                      <span className="px-2.5 py-1 bg-white border border-[#e2e4e9] rounded-lg text-[11px] text-[#0a0a0a] flex items-center gap-1.5 font-mono">
-                        <Mail className="w-3 h-3 text-[#0f2f63]" />
-                        <span className="truncate max-w-[200px]">{crawledDataPreview.officialEmail}</span>
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-[#94a3b8] italic">No direct email found</span>
-                    )}
-
-                    {crawledDataPreview.officialPhone && (
-                      <span className="px-2.5 py-1 bg-white border border-[#e2e4e9] rounded-lg text-[11px] text-[#0a0a0a] flex items-center gap-1.5 font-mono">
-                        <Phone className="w-3 h-3 text-emerald-600" />
-                        <span>{crawledDataPreview.officialPhone}</span>
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Bottom Actions */}
-                <div className="pt-3 border-t border-[#e2e4e9] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewLeadForm({
-                        companyName: crawledDataPreview.companyName,
-                        companyWebsite: crawledDataPreview.companyWebsite || '',
-                        industry: crawledDataPreview.industry || crawledDataPreview.category || 'General Operations',
-                        city: crawledDataPreview.city || '',
-                        officialEmail: crawledDataPreview.officialEmail || '',
-                        officialPhone: crawledDataPreview.officialPhone || '',
-                        contactPageUrl: crawledDataPreview.contactPageUrl || '',
-                        title: crawledDataPreview.title,
-                        category: crawledDataPreview.category || 'General Operations',
-                        workersNeeded: crawledDataPreview.workersNeeded || 1,
-                        salaryRange: crawledDataPreview.salaryRange || '',
-                        sourceName: crawledDataPreview.sourceName || 'Web Scrape',
-                        sourceUrl: crawledDataPreview.sourceUrl,
-                        description: crawledDataPreview.description || '',
-                      });
-                      setIsCrawlModalOpen(false);
-                      setIsAddModalOpen(true);
-                    }}
-                    className="w-full sm:w-auto px-4 py-2 bg-white hover:bg-[#f4f5f8] text-[#0a0a0a] border border-[#e2e4e9] rounded-xl text-xs font-medium transition-colors cursor-pointer text-center"
-                  >
-                    Edit & Ingest
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={manualIngestMutation.isPending}
-                    onClick={() => {
-                      manualIngestMutation.mutate({
-                        companyName: crawledDataPreview.companyName,
-                        companyWebsite: crawledDataPreview.companyWebsite || '',
-                        industry: crawledDataPreview.industry || crawledDataPreview.category || 'General Operations',
-                        city: crawledDataPreview.city || '',
-                        officialEmail: crawledDataPreview.officialEmail || '',
-                        officialPhone: crawledDataPreview.officialPhone || '',
-                        contactPageUrl: crawledDataPreview.contactPageUrl || '',
-                        title: crawledDataPreview.title,
-                        category: crawledDataPreview.category || 'General Operations',
-                        workersNeeded: crawledDataPreview.workersNeeded || 1,
-                        salaryRange: crawledDataPreview.salaryRange || '',
-                        sourceName: crawledDataPreview.sourceName || 'Web Scrape',
-                        sourceUrl: crawledDataPreview.sourceUrl,
-                        description: crawledDataPreview.description || '',
-                      });
-                      setIsCrawlModalOpen(false);
-                    }}
-                    className="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Confirm & Ingest Company</span>
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
