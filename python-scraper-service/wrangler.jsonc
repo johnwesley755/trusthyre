@@ -31,5 +31,16 @@
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
+  },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "LOG_LEVEL": "INFO",
+    "MAX_CONCURRENT_REQUESTS_PER_SOURCE": "3",
+    "REQUEST_TIMEOUT_SECONDS": "10",
+    "CRAWL_MAX_DEPTH": "2",
+    "DEFAULT_SCAN_LIMIT": "25",
+    "DEFAULT_TARGET_CITY": "Chennai",
+    "HOST": "0.0.0.0",
+    "PORT": "8000"
   }
 }
