@@ -111,7 +111,7 @@ def json_response(data, status=200):
 class Default(WorkerEntrypoint):
     """Cloudflare Worker Class Export Handling HTTP (fetch) and Queue (queue) Events."""
 
-    async def fetch(self, request):
+    async def fetch(self, request, *args, **kwargs):
         env = self.env
         raw_method = getattr(request, "method", "GET")
         if hasattr(raw_method, "value"):
@@ -227,7 +227,7 @@ class Default(WorkerEntrypoint):
 
         return json_response({"error": "Endpoint not found", "path": path}, status=404)
 
-    async def queue(self, batch):
+    async def queue(self, batch, *args, **kwargs):
         """Asynchronous execution handler triggered by Cloudflare Queues."""
         for message in batch.messages:
             try:
