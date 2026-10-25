@@ -120,6 +120,7 @@ model jobs {
   source_name               String?               @db.VarChar(100)
   source_url                String?
   source_hash               String?               @db.VarChar(64)
+  external_id               String?               @db.VarChar(255)
   alternate_sources         Json?
   date_posted               DateTime?             @db.Timestamp(6)
   last_verified_at          DateTime?             @db.Timestamp(6)
@@ -131,6 +132,7 @@ model jobs {
   @@index([status], map: "idx_jobs_status")
   @@index([is_external, status], map: "idx_jobs_external_status")
   @@index([source_hash], map: "idx_jobs_source_hash")
+  @@index([source_name, external_id], map: "idx_jobs_source_external_id")
 }
 
 model media_assets {

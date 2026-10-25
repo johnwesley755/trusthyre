@@ -64,7 +64,7 @@ class SchemaOrgAdapter(BaseSourceAdapter):
                                 if isinstance(loc, dict):
                                     address = loc.get("address", {})
                                     if isinstance(address, dict):
-                                        city = address.get("addressLocality") or address.get("addressRegion") or "Chennai"
+                                        city = address.get("addressLocality") or address.get("addressRegion") or None
 
                                 base_salary = item.get("baseSalary", {})
                                 s_min, s_max = None, None
@@ -73,6 +73,14 @@ class SchemaOrgAdapter(BaseSourceAdapter):
                                     if isinstance(val, dict):
                                         s_min = val.get("minValue")
                                         s_max = val.get("maxValue")
+
+                                date_posted = None
+                                date_posted_raw = item.get("datePosted")
+                                if date_posted_raw:
+                                    try:
+                                        date_posted = datetime.fromisoformat(date_posted_raw.replace("Z", "+00:00")).replace(tzinfo=None)
+                                    except Exception:
+                                        date_posted = None
 
                                 if title and comp_name:
                                     return RawJobRecord(
@@ -85,7 +93,7 @@ class SchemaOrgAdapter(BaseSourceAdapter):
                                         salary_max=s_max,
                                         source_name="Schema.org Public Feed",
                                         source_url=url,
-                                        date_posted=datetime.utcnow(),
+                                        date_posted=date_posted,
                                     )
                     except Exception:
                         continue

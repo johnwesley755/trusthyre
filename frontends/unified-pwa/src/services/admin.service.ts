@@ -55,8 +55,45 @@ export interface AdminJobItem {
   location?: string;
   budget?: number;
   status: string;
+  is_external?: boolean;
+  source_name?: string;
+  source_url?: string;
+  external_id?: string;
+  date_posted?: string;
   applicantCount?: number;
   created_at: string;
+}
+
+export interface AdminSourceItem {
+  source_id: string;
+  name: string;
+  status: string;
+  is_restricted: boolean;
+  compliance_note: string;
+  last_checked_at: string;
+  error_message?: string;
+}
+
+export interface AdminScanStatus {
+  id: string;
+  status: 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'INTERRUPTED';
+  total_found: number;
+  valid_count: number;
+  duplicate_count: number;
+  rejected_count: number;
+  error_count: number;
+  sources_scanned: string[];
+  source_stats: Record<string, any>;
+  started_at: string;
+  completed_at?: string;
+}
+
+export interface DynamicScanPayload {
+  query?: string;
+  city?: string;
+  category?: string;
+  sources?: string[];
+  limit?: number;
 }
 
 export const adminService = {
@@ -99,6 +136,21 @@ export const adminService = {
     return res.data;
   },
 
+  moderateJob: async (id: string, action: 'approve' | 'reject' | 'expire', reason?: string): Promise<any> => {
+    const res = await apiClient.patch(`/api/admin/jobs/${id}/moderate`, { action, reason });
+    return res.data;
+  },
+
+  getScanStatus: async (scanId: string): Promise<AdminScanStatus> => {
+    const res = await apiClient.get<AdminScanStatus>(`/api/admin/jobs/scan-status/${scanId}`);
+    return res.data;
+  },
+
+  getScraperSources: async (): Promise<AdminSourceItem[]> => {
+    const res = await apiClient.get<AdminSourceItem[]>('/api/admin/jobs/sources');
+    return res.data || [];
+  },
+
   createAdmin: async (data: {
     firstName: string;
     lastName: string;
@@ -109,7 +161,7 @@ export const adminService = {
     return res.data;
   },
 
-  syncExternalJobs: async (data?: { query?: string; city?: string; category?: string; limit?: number }): Promise<any> => {
+  syncExternalJobs: async (data?: DynamicScanPayload): Promise<any> => {
     const res = await apiClient.post('/api/admin/jobs/sync-external', data || {});
     return res.data;
   },
@@ -119,3 +171,4 @@ export const adminService = {
     return res.data;
   }
 };
+

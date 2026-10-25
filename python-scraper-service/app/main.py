@@ -18,6 +18,28 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing TrustHyre Blue-Collar Scraping Microservice...")
     await init_db()
     SourceAdapterRegistry.initialize()
+
+    # Reconcile orphaned in-memory scans across process restarts
+    from app.core.database import AsyncSessionLocal
+    async with AsyncSessionLocal() as session:
+        try:
+            from sqlalchemy import update
+            from app.models.database import ScraperScan, utc_now
+            stmt = (
+                update(ScraperScan)
+                .where(ScraperScan.status == "RUNNING")
+                .values(
+                    status="INTERRUPTED",
+                    completed_at=utc_now(),
+                )
+            )
+            res = await session.execute(stmt)
+            if res.rowcount > 0:
+                await session.commit()
+                logger.warning(f"Reconciled {res.rowcount} interrupted scan(s) from previous process lifecycle.")
+        except Exception as e:
+            logger.warning(f"Scan lifecycle reconciliation notice: {e}")
+
     yield
     # Shutdown actions
     logger.info("Shutting down Scraping Microservice...")

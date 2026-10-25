@@ -81,17 +81,29 @@ class GreenhouseATSAdapter(BaseSourceAdapter):
                         if not apply_url:
                             continue
 
+                        # Parse real posting/update date if provided by Greenhouse
+                        posting_date = None
+                        updated_at_raw = j.get("updated_at")
+                        if updated_at_raw:
+                            try:
+                                # ISO 8601 string from Greenhouse
+                                posting_date = datetime.fromisoformat(updated_at_raw.replace("Z", "+00:00")).replace(tzinfo=None)
+                            except Exception:
+                                posting_date = None
+
+                        city_raw = loc.split(",")[0].strip() if loc else None
+
                         results.append(RawJobRecord(
                             title=title,
                             company_name=feed["company"],
-                            city=loc.split(",")[0].strip() or feed["default_city"],
-                            location=loc,
+                            city=city_raw or None,
+                            location=loc or None,
                             category="Logistics & Operations",
                             industry=feed["industry"],
                             source_name=f"{feed['company']} Greenhouse ATS",
                             source_url=apply_url,
                             external_id=str(j.get("id")),
-                            date_posted=datetime.utcnow(),
+                            date_posted=posting_date,
                         ))
                 except Exception as e:
                     logger.warning(f"[{self.id}] Feed error for {feed['company']}: {e}")

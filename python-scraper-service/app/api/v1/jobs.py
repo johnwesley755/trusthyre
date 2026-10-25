@@ -38,7 +38,12 @@ async def get_job_detail(job_id: UUID, db: DBSessionDep, _auth: AuthSecretDep):
 
 
 @router.post("/{job_id}/approve", response_model=JobResponse)
-async def approve_job(job_id: UUID, db: DBSessionDep, _auth: AuthSecretDep):
+async def approve_job(
+    job_id: UUID,
+    db: DBSessionDep,
+    _auth: AuthSecretDep,
+    _req: Optional[JobModerationRequest] = None,
+):
     """Approves an external candidate listing and marks it OPEN for worker discovery."""
     job = await JobRepository.update_status(db, job_id, "OPEN")
     if not job:

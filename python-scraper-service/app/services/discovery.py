@@ -4,6 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.schemas import ScanQueryConfig, RawJobRecord
 from app.scrapers.registry import SourceAdapterRegistry
+from app.extractors.vernacular_mapper import VernacularTradeMapper
 from app.extractors.validator import validate_job_quality
 from app.services.deduplication import DeduplicationService
 from app.repositories.job_repo import JobRepository
@@ -30,7 +31,8 @@ class DiscoveryPipeline:
         deduplication, and database persistence pipeline.
         """
         active_scan_cancellations[scan_id] = False
-        logger.info(f"Starting discovery scan {scan_id} for city: {config.city}")
+        expanded_keywords = VernacularTradeMapper.expand_query(config.query)
+        logger.info(f"Starting discovery scan {scan_id} for city: {config.city}, query: '{config.query}' (expanded: {expanded_keywords})")
 
         total_found = 0
         valid_count = 0
@@ -42,7 +44,12 @@ class DiscoveryPipeline:
         # Resolve adapters to run
         all_adapters = SourceAdapterRegistry.list_adapters()
         if config.sources:
-            selected_adapters = [a for a in all_adapters if a.id in config.sources]
+            chosen = []
+            for s_id in config.sources:
+                ad = SourceAdapterRegistry.get_adapter(s_id)
+                if ad and ad not in chosen:
+                    chosen.append(ad)
+            selected_adapters = chosen if chosen else all_adapters
         else:
             selected_adapters = all_adapters
 
@@ -53,9 +60,13 @@ class DiscoveryPipeline:
                     logger.info(f"Scan {scan_id} aborted due to cancellation request.")
                     break
 
+                # Determine honest source status
+                adapter_health = await adapter.check_health()
+                adapter_status = adapter_health.status
+
                 source_stats[adapter.id] = {
                     "name": adapter.name,
-                    "status": "RESTRICTED" if adapter.is_restricted else "ACTIVE",
+                    "status": adapter_status,
                     "discovered": 0,
                     "valid": 0,
                     "duplicates": 0,
@@ -63,8 +74,8 @@ class DiscoveryPipeline:
                     "errors": 0,
                 }
 
-                if adapter.is_restricted:
-                    msg = f"Source {adapter.name} marked RESTRICTED. Direct crawl skipped per compliance rules."
+                if adapter.is_restricted or adapter_status in ["PERMISSION_REQUIRED", "AUTH_REQUIRED", "UNAVAILABLE"]:
+                    msg = f"Source {adapter.name} is in state {adapter_status}. Automated crawl skipped ({adapter_health.error_message or adapter.compliance_note})."
                     await ScanRepository.log_event(db, scan_id, adapter.id, msg, level="WARN")
                     continue
 

@@ -1,9 +1,8 @@
 import hashlib
-from datetime import datetime
 from typing import Optional, Tuple
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.database import Job
+from app.models.database import Job, utc_now
 from app.models.schemas import RawJobRecord
 from app.extractors.normalizer import (
     normalize_company,
@@ -24,7 +23,7 @@ class DeduplicationService:
         """
         comp = normalize_company(job.company_name)
         title = normalize_title(job.title)
-        city = normalize_city(job.city).lower()
+        city = (normalize_city(job.city) or "").lower()
         bracket = get_salary_bracket(job.salary_min, job.salary_max)
 
         payload = f"{comp}:{title}:{city}:{bracket}"
@@ -35,15 +34,33 @@ class DeduplicationService:
         cls, db: AsyncSession, job: RawJobRecord
     ) -> Tuple[bool, Optional[Job], str]:
         """
-        Executes 3-tier deduplication check against the database:
-        1. Source Name + External Listing ID (if provided)
-        2. Canonical URL match
-        3. Deterministic SHA-256 fingerprint
+        Executes strict 3-tier deduplication check against the database:
+        Tier 1: Source Name + External Listing ID (exact provider match)
+        Tier 2: Canonical Listing URL match
+        Tier 3: Deterministic SHA-256 normalized content fingerprint
         """
         source_hash = cls.compute_source_hash(job)
         canon_url = canonicalize_url(job.source_url)
 
-        # Build conditions for existing match
+        # Tier 1: Exact provider ID + external listing ID
+        if job.external_id and job.external_id.strip():
+            tier1_stmt = (
+                select(Job)
+                .where(
+                    and_(
+                        Job.source_name == job.source_name,
+                        Job.external_id == job.external_id.strip(),
+                    )
+                )
+                .where(Job.status.in_(["OPEN", "PENDING_REVIEW", "EXPIRED"]))
+                .limit(1)
+            )
+            result = await db.execute(tier1_stmt)
+            match = result.scalar_one_or_none()
+            if match:
+                return True, match, source_hash
+
+        # Tier 2 & Tier 3: Canonical URL or SHA-256 fingerprint
         filters = [Job.source_hash == source_hash]
         if canon_url:
             filters.append(Job.source_url == canon_url)
@@ -72,7 +89,7 @@ class DeduplicationService:
         if not isinstance(current_sources, list):
             current_sources = []
 
-        # Check if this source URL is already captured
+        now = utc_now()
         canon_new_url = canonicalize_url(new_job.source_url)
         already_present = any(
             s.get("sourceUrl") == canon_new_url or s.get("sourceName", "").lower() == new_job.source_name.lower()
@@ -83,12 +100,9 @@ class DeduplicationService:
             current_sources.append({
                 "sourceName": new_job.source_name,
                 "sourceUrl": canon_new_url,
-                "dateSeen": datetime.utcnow().isoformat(),
+                "dateSeen": now.isoformat(),
             })
             existing_job.alternate_sources = current_sources
 
-        existing_job.last_verified_at = datetime.utcnow()
-        if existing_job.status == "EXPIRED":
-            existing_job.status = "OPEN"
-
+        existing_job.last_verified_at = now
         await db.flush()

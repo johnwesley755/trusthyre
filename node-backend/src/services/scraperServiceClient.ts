@@ -4,11 +4,23 @@
  * All HTTP crawling and scraping is exclusively performed in the isolated Python service.
  */
 
+export type SourceHealthStatusType =
+  | 'ACTIVE'
+  | 'SUPPORTED'
+  | 'TESTING'
+  | 'PERMISSION_REQUIRED'
+  | 'AUTH_REQUIRED'
+  | 'RATE_LIMITED'
+  | 'NO_RESULTS'
+  | 'UNAVAILABLE'
+  | 'DOWN'
+  | 'FAILED';
+
 export interface SourceHealth {
   source_id: string;
   id?: string;
   name: string;
-  status: 'ACTIVE' | 'RESTRICTED' | 'DOWN';
+  status: SourceHealthStatusType;
   is_restricted: boolean;
   compliance_note: string;
   last_checked_at: string;
@@ -17,7 +29,7 @@ export interface SourceHealth {
 
 export interface ScanResult {
   id: string;
-  status: 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+  status: 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'INTERRUPTED';
   total_found: number;
   valid_count: number;
   duplicate_count: number;
@@ -40,6 +52,7 @@ export interface ScraperJobRecord {
   is_external: boolean;
   source_name?: string;
   source_url?: string;
+  external_id?: string;
   alternate_sources?: any[];
   date_posted?: string;
   last_verified_at?: string;
@@ -48,11 +61,24 @@ export interface ScraperJobRecord {
 
 export class ScraperServiceClient {
   private static get baseUrl(): string {
-    return (process.env.SCRAPER_SERVICE_URL || 'http://localhost:5000').replace(/\/+$/, '');
+    const configured = process.env.SCRAPER_SERVICE_URL;
+    if (configured) {
+      return configured.replace(/\/+$/, '');
+    }
+    const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+    if (!isDev) {
+      throw new Error('[ScraperServiceClient] SCRAPER_SERVICE_URL must be explicitly configured in non-development environments.');
+    }
+    return 'http://localhost:5000';
   }
 
   private static get internalSecret(): string {
-    return process.env.INTERNAL_SERVICE_SECRET || 'trusthyre-secure-internal-scraper-key-2026';
+    const secret = process.env.INTERNAL_SERVICE_SECRET;
+    const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+    if (!secret && !isDev) {
+      throw new Error('[ScraperServiceClient] INTERNAL_SERVICE_SECRET must be explicitly set in non-development environments.');
+    }
+    return secret || 'trusthyre-secure-internal-scraper-key-2026';
   }
 
   private static get headers(): HeadersInit {
@@ -64,14 +90,16 @@ export class ScraperServiceClient {
   }
 
   /**
-   * Helper to execute a fetch with fallback across port 5000 and port 8000 if ECONNREFUSED
+   * Safe fetch with development-only fallback across local ports
    */
   private static async safeFetch(path: string, options: RequestInit = {}): Promise<Response> {
-    const urls = [
-      this.baseUrl,
-      this.baseUrl.includes('5000') ? 'http://localhost:8000' : 'http://localhost:5000',
-      this.baseUrl.includes('5000') ? 'http://127.0.0.1:8000' : 'http://127.0.0.1:5000',
-    ];
+    const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+    const urls = isDev && (this.baseUrl.includes('localhost') || this.baseUrl.includes('127.0.0.1'))
+      ? [
+          this.baseUrl,
+          this.baseUrl.includes('5000') ? 'http://localhost:8000' : 'http://localhost:5000',
+        ]
+      : [this.baseUrl];
 
     let lastError: any = null;
     for (const host of urls) {
@@ -88,7 +116,7 @@ export class ScraperServiceClient {
         lastError = err;
       }
     }
-    throw lastError || new Error(`Could not connect to Python Scraper Service on any local port`);
+    throw lastError || new Error(`Could not connect to Python Scraper Service at ${this.baseUrl}`);
   }
 
   /**
@@ -149,11 +177,22 @@ export class ScraperServiceClient {
           last_checked_at: new Date().toISOString(),
           error_message: 'Python microservice is starting or offline',
         },
+
+        {
+          source_id: 'headcount_labs',
+          id: 'headcount_labs',
+          name: 'Headcount Labs Jobs API',
+          status: 'AUTH_REQUIRED',
+          is_restricted: false,
+          compliance_note: 'Compliant REST API access to active hiring feeds with currentness verification.',
+          last_checked_at: new Date().toISOString(),
+          error_message: 'Requires HEADCOUNTLABS_API_KEY environment variable.',
+        },
         {
           source_id: 'workindia',
           id: 'workindia',
           name: 'WorkIndia Verified Portal Gateway',
-          status: 'RESTRICTED',
+          status: 'PERMISSION_REQUIRED',
           is_restricted: true,
           compliance_note: 'Direct unauthenticated scraping is blocked by WorkIndia Cloudflare Bot Management.',
           last_checked_at: new Date().toISOString(),
@@ -163,7 +202,7 @@ export class ScraperServiceClient {
           source_id: 'apna',
           id: 'apna',
           name: 'Apna.co Verified Gateway',
-          status: 'RESTRICTED',
+          status: 'PERMISSION_REQUIRED',
           is_restricted: true,
           compliance_note: 'Direct web scraping of Apna listings is prohibited by ToS and Cloudflare WAF.',
           last_checked_at: new Date().toISOString(),
@@ -173,9 +212,9 @@ export class ScraperServiceClient {
           source_id: 'naukri',
           id: 'naukri',
           name: 'Naukri.com Enterprise Gateway',
-          status: 'RESTRICTED',
+          status: 'PERMISSION_REQUIRED',
           is_restricted: true,
-          compliance_note: 'Direct unauthenticated crawling is protected by Akamai Bot Manager and restricted by ToS.',
+          compliance_note: 'Direct unauthenticated crawling is protected by Akamai Bot Management and restricted by ToS.',
           last_checked_at: new Date().toISOString(),
           error_message: 'Requires official Naukri RMS credentials.',
         },

@@ -19,7 +19,7 @@ class ApnaAdapter(BaseSourceAdapter):
         return SourceHealthStatus(
             source_id=self.id,
             name=self.name,
-            status="RESTRICTED",
+            status="PERMISSION_REQUIRED",
             is_restricted=True,
             compliance_note=self.compliance_note,
             last_checked_at=datetime.now(timezone.utc),

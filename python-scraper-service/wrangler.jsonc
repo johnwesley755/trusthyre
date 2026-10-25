@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "trusthire-python-scraper",
+  "main": "src/worker.py",
+  "compatibility_date": "2026-10-25",
+  "compatibility_flags": [
+    "python_workers"
+  ],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "f609b35608e84621a672b58500ec31ab"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "DISCOVERY_QUEUE",
+        "queue": "discovery-scans-queue"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "discovery-scans-queue",
+        "max_batch_size": 1,
+        "max_batch_timeout": 5,
+        "max_retries": 2
+      }
+    ]
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

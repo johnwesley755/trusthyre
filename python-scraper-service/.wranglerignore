@@ -1,0 +1,17 @@
+venv/
+.venv/
+.venv-workers/
+app/
+tests/
+scripts/
+migrations/
+docs/
+.pytest_cache/
+*.log
+.env
+.env.*
+Dockerfile
+README.md
+requirements*.txt
+__pycache__/
+*.pyc

@@ -138,8 +138,19 @@ export class LeadController {
 
   static async runAutoDiscovery(c: Context) {
     try {
+      const body = await c.req.json().catch(() => ({}));
       const { ScraperServiceClient } = await import('../services/scraperServiceClient');
-      const results = await ScraperServiceClient.triggerScan();
+
+      // Pre-sync existing scraped jobs to ensure leads table is current
+      await LeadService.syncLeadsFromScrapedJobs();
+
+      const results = await ScraperServiceClient.triggerScan({
+        query: body.query,
+        city: body.city || 'Chennai',
+        sources: Array.isArray(body.sources) ? body.sources : undefined,
+        limit: Number(body.limit) || 25,
+      });
+
       return c.json({
         success: true,
         sourcesScanned: results.sources_scanned?.length || 0,
@@ -154,29 +165,38 @@ export class LeadController {
     }
   }
 
-  static async crawlUrl(c: Context) {
+  static async getScanStatus(c: Context) {
     try {
-      const { url } = await c.req.json();
-      if (!url) {
-        return c.json({ success: false, error: 'Target URL is required' }, 400);
+      const id = c.req.param('id');
+      if (!id) {
+        return c.json({ success: false, error: 'Scan ID is required' }, 400);
+      }
+      const { ScraperServiceClient } = await import('../services/scraperServiceClient');
+      const status = await ScraperServiceClient.getScanStatus(id);
+
+      let syncResult = null;
+      if (status.status === 'COMPLETED') {
+        syncResult = await LeadService.syncLeadsFromScrapedJobs();
       }
 
-      // Legacy direct crawler in Node.js backend has been completely removed for security.
-      // Ingestion is now dispatched through the Python Blue-Collar microservice.
-      const { ScraperServiceClient } = await import('../services/scraperServiceClient');
-      const results = await ScraperServiceClient.triggerScan({ query: url });
       return c.json({
         success: true,
-        message: 'Job discovery dispatched to Python scraping microservice',
-        session: { scanId: results.id, status: results.status },
+        ...status,
+        syncResult,
       });
     } catch (error: any) {
-      console.error('Error crawling URL:', error);
-      return c.json({
-        success: false,
-        error: error.message || 'Failed to dispatch URL to scraper service',
-        message: error.message || 'Failed to dispatch URL to scraper service'
-      }, 503);
+      console.error('Error fetching scan status:', error);
+      return c.json({ success: false, error: error.message || 'Failed to fetch scan status' }, 500);
+    }
+  }
+
+  static async syncLeads(c: Context) {
+    try {
+      const result = await LeadService.syncLeadsFromScrapedJobs();
+      return c.json({ success: true, ...result });
+    } catch (error: any) {
+      console.error('Error syncing leads:', error);
+      return c.json({ success: false, error: error.message || 'Failed to sync leads' }, 500);
     }
   }
 

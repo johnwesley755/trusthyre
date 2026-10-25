@@ -49,6 +49,7 @@ class Job(Base):
     source_name = Column(String(100), nullable=True)
     source_url = Column(Text, nullable=True)
     source_hash = Column(String(64), nullable=True, index=True)
+    external_id = Column(String(255), nullable=True)
     alternate_sources = Column(JSONB, nullable=True, default=list)
     date_posted = Column(DateTime, nullable=True)
     last_verified_at = Column(DateTime, default=utc_now)
@@ -56,6 +57,7 @@ class Job(Base):
     __table_args__ = (
         Index("idx_jobs_source_hash_lookup", "source_hash"),
         Index("idx_jobs_external_status_lookup", "is_external", "status"),
+        Index("idx_jobs_source_external_id_lookup", "source_name", "external_id"),
     )
 
 

@@ -18,7 +18,10 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # Inter-Service Authentication
-    INTERNAL_SERVICE_SECRET: SecretStr = SecretStr("trusthire_scraper_dev_secret_2026")
+    INTERNAL_SERVICE_SECRET: SecretStr = SecretStr("trusthyre-secure-internal-scraper-key-2026")
+
+    # External Provider API Keys
+    HEADCOUNTLABS_API_KEY: Optional[SecretStr] = None
 
     # PostgreSQL Database URL
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/trusthire"
@@ -32,6 +35,15 @@ class Settings(BaseSettings):
 
     # User-Agent for compliant crawling
     USER_AGENT: str = "TrustHyre-JobScraper/2.0 (+https://trusthyre.com/bot; compliance@trusthyre.com)"
+
+    @field_validator("INTERNAL_SERVICE_SECRET")
+    @classmethod
+    def validate_secret(cls, v: SecretStr, info) -> SecretStr:
+        # In non-dev environments, reject default dev secret
+        val = v.get_secret_value()
+        if os.getenv("ENVIRONMENT") in ["production", "staging"] and (not val or "dev" in val.lower()):
+            raise ValueError("A secure, non-default INTERNAL_SERVICE_SECRET must be set in production/staging.")
+        return v
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod

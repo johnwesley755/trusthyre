@@ -24,6 +24,8 @@ wheels/
 # Virtual environments
 venv/
 .venv/
+.venv-workers/
+python_modules/
 ENV/
 
 # Testing & Coverage
@@ -46,3 +48,7 @@ htmlcov/
 # Logs
 *.log
 logs/
+
+# Cloudflare Wrangler
+.wrangler/
+worker-configuration.d.ts

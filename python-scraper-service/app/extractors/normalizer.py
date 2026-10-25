@@ -35,19 +35,36 @@ def normalize_title(title: str) -> str:
     return cleaned.lower().strip()
 
 
-def normalize_city(city: str) -> str:
-    """Normalizes Indian city names (e.g. Bangalore -> Bengaluru, Madras -> Chennai)."""
-    if not city:
-        return "Chennai"
+def normalize_city(city: Optional[str]) -> Optional[str]:
+    """
+    Normalizes Indian city names without fabricating locations.
+    Returns None if no verifiable city is provided by the source.
+    """
+    if not city or not city.strip():
+        return None
     c = city.lower().strip()
-    if "bangalore" in c:
-        return "Bengaluru"
-    if "madras" in c:
+    if "madras" in c or "chennai" in c:
         return "Chennai"
-    if "bombay" in c:
+    if "coimbatore" in c or "kovai" in c:
+        return "Coimbatore"
+    if "madurai" in c:
+        return "Madurai"
+    if "trichy" in c or "tiruchirappalli" in c:
+        return "Tiruchirappalli"
+    if "salem" in c:
+        return "Salem"
+    if "tiruppur" in c or "tirupur" in c:
+        return "Tiruppur"
+    if "bangalore" in c or "bengaluru" in c:
+        return "Bengaluru"
+    if "bombay" in c or "mumbai" in c:
         return "Mumbai"
-    if "calcutta" in c:
+    if "calcutta" in c or "kolkata" in c:
         return "Kolkata"
+    if "hyderabad" in c or "secunderabad" in c:
+        return "Hyderabad"
+    if "delhi" in c or "noida" in c or "gurgaon" in c or "gurugram" in c:
+        return "Delhi NCR"
     return city.strip().title()
 
 

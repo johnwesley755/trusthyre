@@ -332,6 +332,7 @@ export const syncExternalJobs = async (c: Context) => {
       query: body.query,
       city: body.city,
       category: body.category,
+      sources: Array.isArray(body.sources) ? body.sources : undefined,
       limit: Number(body.limit) || 25,
     });
     return c.json(ApiResponse.ok("External jobs synchronized successfully via Python Scraper Service", result));
@@ -351,5 +352,103 @@ export const runJobFreshnessCycle = async (c: Context) => {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
 };
+
+export const getScanStatus = async (c: Context) => {
+  try {
+    const id = c.req.param('id') as string;
+    const { ScraperServiceClient } = await import('../services/scraperServiceClient');
+    const status = await ScraperServiceClient.getScanStatus(id);
+    return c.json(ApiResponse.ok(status));
+  } catch (err: any) {
+    console.error("getScanStatus error:", err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+export const getScraperSources = async (c: Context) => {
+  try {
+    const { ScraperServiceClient } = await import('../services/scraperServiceClient');
+    const sources = await ScraperServiceClient.getSources();
+    return c.json(ApiResponse.ok(sources));
+  } catch (err: any) {
+    console.error("getScraperSources error:", err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+export const moderateJobByAdmin = async (c: Context) => {
+  try {
+    const id = c.req.param('id') as string;
+    const { action, reason } = await c.req.json();
+    if (!['approve', 'reject', 'expire'].includes(action)) {
+      return c.json(ApiResponse.error("Invalid action. Must be 'approve', 'reject', or 'expire'."), 400 as any);
+    }
+
+    const newStatus = action === 'approve' ? 'OPEN' : (action === 'reject' ? 'REJECTED' : 'EXPIRED');
+    const updated = await prisma.jobs.update({
+      where: { id },
+      data: {
+        status: newStatus,
+        updated_at: new Date(),
+      }
+    });
+
+    if (newStatus === 'OPEN') {
+      try {
+        await prisma.job_search_index.upsert({
+          where: { job_id: updated.id },
+          update: {
+            title: updated.title,
+            description: updated.description,
+            category: updated.industry,
+            location: updated.location,
+            city: updated.city,
+            address: updated.address,
+            latitude: updated.latitude,
+            longitude: updated.longitude,
+            budget: updated.budget ? Number(updated.budget) : null,
+            status: updated.status,
+            employer_name: updated.employer_name,
+            indexed_at: new Date(),
+            last_updated_at: new Date()
+          },
+          create: {
+            job_id: updated.id,
+            title: updated.title,
+            description: updated.description,
+            category: updated.industry,
+            location: updated.location,
+            city: updated.city,
+            address: updated.address,
+            latitude: updated.latitude,
+            longitude: updated.longitude,
+            budget: updated.budget ? Number(updated.budget) : null,
+            status: updated.status,
+            employer_name: updated.employer_name,
+            indexed_at: new Date(),
+            last_updated_at: new Date()
+          }
+        });
+      } catch (idxErr: any) {
+        console.warn("Index upsert notice on approval:", idxErr.message);
+      }
+    } else {
+      try {
+        await prisma.job_search_index.deleteMany({ where: { job_id: id } });
+      } catch (_) {}
+    }
+
+    try {
+      const { ScraperServiceClient } = await import('../services/scraperServiceClient');
+      await ScraperServiceClient.moderateJob(id, action, reason || 'Admin moderation');
+    } catch (_) {}
+
+    return c.json(ApiResponse.ok(`Job ${action}d successfully`, updated));
+  } catch (err: any) {
+    console.error("moderateJobByAdmin error:", err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
 
 

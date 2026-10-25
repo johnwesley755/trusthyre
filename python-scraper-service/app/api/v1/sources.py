@@ -13,6 +13,13 @@ async def list_sources(_auth: AuthSecretDep):
     return await SourceAdapterRegistry.get_all_health()
 
 
+@router.get("/vernacular-trades")
+async def list_vernacular_trades(_auth: AuthSecretDep):
+    """Returns supported vernacular trades with English, Tamil, and Hindi titles."""
+    from app.extractors.vernacular_mapper import VernacularTradeMapper
+    return VernacularTradeMapper.list_supported_trades()
+
+
 @router.post("/{source_id}/test", response_model=SourceHealthStatus)
 async def test_source(source_id: str, _auth: AuthSecretDep):
     """Triggers an explicit connectivity and compliance test for a specific source adapter."""

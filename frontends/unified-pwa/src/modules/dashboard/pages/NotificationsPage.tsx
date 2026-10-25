@@ -151,7 +151,7 @@ export const NotificationsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24 pt-6 px-4 sm:px-6 lg:px-8 font-['Onest',system-ui,sans-serif]">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
 
         {/* Top Navigation Bar */}
         <div className="flex items-center justify-between gap-3">
@@ -165,7 +165,7 @@ export const NotificationsPage: React.FC = () => {
 
           <button
             onClick={() => navigate('/settings?tab=notifications')}
-            className="inline-flex items-center gap-2 text-xs font-bold text-[#0066FF] hover:bg-blue-50/80 bg-white border border-blue-200/70 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#0f2f63] hover:bg-blue-50/80 bg-white border border-blue-200/70 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-2xs"
           >
             <Settings className="w-3.5 h-3.5" />
             <span>Notification Preferences</span>
@@ -176,8 +176,8 @@ export const NotificationsPage: React.FC = () => {
         <div className="bg-white rounded-[1.75rem] border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-blue-600">
+              
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#0f2f63]">
                 Activity & Updates
               </span>
             </div>

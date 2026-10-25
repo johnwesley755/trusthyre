@@ -14,7 +14,7 @@ class RawJobRecord(BaseModel):
     title: str = Field(..., min_length=2)
     company_name: str = Field(..., min_length=2)
     company_website: Optional[str] = None
-    city: str
+    city: Optional[str] = None
     location: Optional[str] = None
     category: Optional[str] = None
     industry: Optional[str] = None
@@ -44,6 +44,7 @@ class JobResponse(BaseModel):
     source_name: Optional[str] = None
     source_url: Optional[str] = None
     source_hash: Optional[str] = None
+    external_id: Optional[str] = None
     alternate_sources: Optional[List[Dict[str, Any]]] = None
     date_posted: Optional[datetime] = None
     last_verified_at: Optional[datetime] = None
@@ -62,7 +63,7 @@ class SourceHealthStatus(BaseModel):
     source_id: str
     id: Optional[str] = None
     name: str
-    status: str  # ACTIVE, RESTRICTED, DOWN
+    status: str  # ACTIVE, SUPPORTED, TESTING, PERMISSION_REQUIRED, AUTH_REQUIRED, RATE_LIMITED, NO_RESULTS, UNAVAILABLE, DOWN, FAILED
     is_restricted: bool
     compliance_note: str
     last_checked_at: datetime

@@ -4,7 +4,7 @@ import { optionalAuth, authenticateJWT, requireAdmin } from '../middlewares/auth
 
 const router = new Hono();
 
-router.get('/jobs', searchController.searchJobs);
+router.get('/jobs', optionalAuth, searchController.searchJobs);
 router.get('/workers', optionalAuth, searchController.searchWorkers);
 router.get('/popular-employers', searchController.getPopularEmployers);
 

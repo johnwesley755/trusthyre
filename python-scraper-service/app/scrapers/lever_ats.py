@@ -103,11 +103,13 @@ class LeverATSAdapter(BaseSourceAdapter):
 
                         desc = p.get("descriptionPlain") or ""
 
+                        city_val = location_val.split(",")[0].strip() if location_val else None
+
                         results.append(RawJobRecord(
                             title=title,
                             company_name=feed["company"],
-                            city=location_val.split(",")[0].strip() or feed["default_city"],
-                            location=location_val,
+                            city=city_val or None,
+                            location=location_val or None,
                             category=team_val,
                             industry=feed["industry"],
                             description=desc[:1500] if desc else None,

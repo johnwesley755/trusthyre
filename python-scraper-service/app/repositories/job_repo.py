@@ -18,7 +18,8 @@ class JobRepository:
         city_clean = normalize_city(raw_job.city)
         now = utc_now()
         expires_at = now + timedelta(days=30)
-        date_posted = raw_job.date_posted.replace(tzinfo=None) if (raw_job.date_posted and raw_job.date_posted.tzinfo) else (raw_job.date_posted or now)
+        # Keep missing date_posted as None without fabricating now()
+        date_posted = raw_job.date_posted.replace(tzinfo=None) if (raw_job.date_posted and raw_job.date_posted.tzinfo) else raw_job.date_posted
 
         job = Job(
             employer_id="external_aggregator",
@@ -28,13 +29,14 @@ class JobRepository:
             industry=raw_job.industry or "Field Operations & Logistics",
             experience_years_required=raw_job.experience_years or 0,
             budget=raw_job.salary_max or raw_job.salary_min,
-            status="OPEN",
+            status="PENDING_REVIEW",  # External scraped jobs require review before worker publication
             city=city_clean,
             location=raw_job.location or city_clean,
             is_external=True,
             source_name=raw_job.source_name,
             source_url=canon_url,
             source_hash=source_hash,
+            external_id=raw_job.external_id,
             alternate_sources=[{
                 "sourceName": raw_job.source_name,
                 "sourceUrl": canon_url,

@@ -1,11 +1,15 @@
 from typing import List, Optional, Dict
 from app.scrapers.base import BaseSourceAdapter
-from app.scrapers.workindia import WorkIndiaAdapter
-from app.scrapers.apna import ApnaAdapter
-from app.scrapers.naukri import NaukriAdapter
+from app.scrapers.jobspy_adapter import JobSpyNaukriAdapter, JobSpyIndeedAdapter
+from app.scrapers.workindia_direct import WorkIndiaDirectAdapter
+from app.scrapers.apna_direct import ApnaDirectAdapter
+from app.scrapers.headcount_labs import HeadcountLabsAdapter
 from app.scrapers.lever_ats import LeverATSAdapter
 from app.scrapers.greenhouse_ats import GreenhouseATSAdapter
 from app.scrapers.schema_org import SchemaOrgAdapter
+from app.scrapers.workindia import WorkIndiaAdapter
+from app.scrapers.apna import ApnaAdapter
+from app.scrapers.naukri import NaukriAdapter
 from app.models.schemas import SourceHealthStatus
 
 
@@ -15,14 +19,21 @@ class SourceAdapterRegistry:
     @classmethod
     def initialize(cls):
         adapters = [
+            JobSpyNaukriAdapter(),
+            JobSpyIndeedAdapter(),
+            WorkIndiaDirectAdapter(),
+            ApnaDirectAdapter(),
+            HeadcountLabsAdapter(),
             LeverATSAdapter(),
             GreenhouseATSAdapter(),
-            WorkIndiaAdapter(),
-            ApnaAdapter(),
-            NaukriAdapter(),
             SchemaOrgAdapter(),
         ]
         cls._adapters = {a.id: a for a in adapters}
+        # Provide backward-compatibility aliases
+        cls._adapters["naukri"] = cls._adapters["jobspy_naukri"]
+        cls._adapters["indeed"] = cls._adapters["jobspy_indeed"]
+        cls._adapters["workindia_direct"] = cls._adapters["workindia"]
+        cls._adapters["apna_direct"] = cls._adapters["apna"]
 
     @classmethod
     def get_adapter(cls, source_id: str) -> Optional[BaseSourceAdapter]:
@@ -34,7 +45,7 @@ class SourceAdapterRegistry:
     def list_adapters(cls) -> List[BaseSourceAdapter]:
         if not cls._adapters:
             cls.initialize()
-        return list(cls._adapters.values())
+        return list({a.id: a for a in cls._adapters.values()}.values())
 
     @classmethod
     async def get_all_health(cls) -> List[SourceHealthStatus]:

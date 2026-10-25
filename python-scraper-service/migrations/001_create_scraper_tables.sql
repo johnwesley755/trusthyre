@@ -51,7 +51,9 @@ ALTER TABLE jobs ADD COLUMN IF NOT EXISTS alternate_sources JSONB;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS date_posted TIMESTAMP WITH TIME ZONE;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS last_verified_at TIMESTAMP WITH TIME ZONE;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS external_id VARCHAR(255);
 
 -- Indexes for external job queries on 'jobs' table
 CREATE INDEX IF NOT EXISTS idx_jobs_is_external_status ON jobs(is_external, status);
 CREATE INDEX IF NOT EXISTS idx_jobs_source_hash ON jobs(source_hash);
+CREATE INDEX IF NOT EXISTS idx_jobs_source_external_id ON jobs(source_name, external_id);

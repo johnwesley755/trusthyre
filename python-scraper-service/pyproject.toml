@@ -1,0 +1,12 @@
+[project]
+name = "trusthire-python-scraper"
+version = "0.1.0"
+description = "TrustHyre Blue Collar Job Discovery Edge Scraper Worker"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "workers-py",
+    "workers-runtime-sdk",
+]
