@@ -177,8 +177,8 @@ class Default(WorkerEntrypoint):
             if hasattr(env, "DISCOVERY_QUEUE"):
                 try:
                     await env.DISCOVERY_QUEUE.send(json.dumps(session_data))
-                except Exception as e:
-                    session_data["error_message"] = str(e)
+                except Exception:
+                    session_data["error_message"] = "Queue dispatch failed"
 
             return json_response(session_data, status=200)
 
