@@ -204,14 +204,18 @@ export class LeadController {
     try {
       const { ScraperServiceClient } = await import('../services/scraperServiceClient');
       const rawSources = await ScraperServiceClient.getSources();
-      const sources = rawSources.map((s) => ({
-        ...s,
-        id: s.id || s.source_id,
-        type: s.is_restricted ? 'RESTRICTED_PARTNER' : 'DIRECT_FEED',
-        active: s.status === 'ACTIVE',
-        complianceNote: s.compliance_note,
-        lastScan: s.last_checked_at,
-      }));
+      const sources = rawSources.map((s) => {
+        const isLive = !s.is_restricted && (s.status === 'ACTIVE' || s.status === 'SUPPORTED' || (s as any).active === true);
+        return {
+          ...s,
+          id: s.id || s.source_id,
+          type: s.is_restricted ? 'RESTRICTED_PARTNER' : 'DIRECT_FEED',
+          status: isLive ? 'ACTIVE' : s.status,
+          active: isLive,
+          complianceNote: s.compliance_note,
+          lastScan: s.last_checked_at,
+        };
+      });
       return c.json({ success: true, data: sources, sources });
     } catch (error: any) {
       console.error('Error fetching sources:', error);

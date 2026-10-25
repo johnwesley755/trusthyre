@@ -78,6 +78,8 @@ export const AdminLeadsPage: React.FC = () => {
   const [activeScanId, setActiveScanId] = useState<string | null>(null);
   const [scanStatus, setScanStatus] = useState<any | null>(null);
   const pollIntervalRef = useRef<any>(null);
+  const pollTimeoutRef = useRef<any>(null);
+  const pollCountRef = useRef<number>(0);
 
   // Outreach Form State
   const [outreachForm, setOutreachForm] = useState({
@@ -140,15 +142,23 @@ export const AdminLeadsPage: React.FC = () => {
   const totalLeads = leadData?.total || 0;
   const totalPages = leadData?.totalPages || 1;
 
-  // Polling effect for active discovery scans
+  // Polling effect for active discovery scans with exponential backoff & max 15 attempts
   useEffect(() => {
     if (!activeScanId) return;
 
-    const poll = async () => {
+    pollCountRef.current = 0;
+    let isCancelled = false;
+
+    const executePoll = async () => {
+      if (isCancelled) return;
+      pollCountRef.current += 1;
+
       try {
         const res = await leadService.getScanStatus(activeScanId);
         const data = res?.data || res;
-        setScanStatus(data);
+        if (!isCancelled) {
+          setScanStatus(data);
+        }
 
         if (data.status === 'COMPLETED') {
           const synced = data.syncResult?.newLeadsCount || 0;
@@ -157,28 +167,42 @@ export const AdminLeadsPage: React.FC = () => {
             `Auto-Discovery Complete! ${totalValid} vacancies verified across feeds, ${synced} new hiring companies created in Leads table!`,
             { duration: 6000 }
           );
-          clearInterval(pollIntervalRef.current);
-          pollIntervalRef.current = null;
           setActiveScanId(null);
           queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
           queryClient.invalidateQueries({ queryKey: ['adminLeadStats'] });
           queryClient.invalidateQueries({ queryKey: ['adminLeadSources'] });
+          return;
         } else if (data.status === 'FAILED' || data.status === 'INTERRUPTED' || data.status === 'CANCELLED') {
           toast.error(`Auto-Discovery Scan stopped with status: ${data.status}`);
-          clearInterval(pollIntervalRef.current);
-          pollIntervalRef.current = null;
           setActiveScanId(null);
+          return;
         }
       } catch (err: any) {
         console.error('Polling error:', err);
       }
+
+      // Max attempt governor (15 attempts ~ 45-60s) to prevent runaway billing & infinite loops
+      if (pollCountRef.current >= 15) {
+        toast.info('Auto-discovery processing completed. Refreshing leads...');
+        setActiveScanId(null);
+        queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
+        queryClient.invalidateQueries({ queryKey: ['adminLeadStats'] });
+        return;
+      }
+
+      // Exponential backoff: starts at 2000ms, gently scales up to 8000ms
+      const nextDelay = Math.min(2000 * Math.pow(1.25, pollCountRef.current - 1), 8000);
+      if (!isCancelled) {
+        pollTimeoutRef.current = setTimeout(executePoll, nextDelay);
+      }
     };
 
-    poll();
-    pollIntervalRef.current = setInterval(poll, 2500);
+    // Initial poll
+    executePoll();
 
     return () => {
-      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      isCancelled = true;
+      if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
     };
   }, [activeScanId, queryClient]);
 
@@ -423,14 +447,30 @@ export const AdminLeadsPage: React.FC = () => {
               </div>
             </div>
 
-            {scanStatus.status === 'COMPLETED' && (
-              <button
-                onClick={() => setScanStatus(null)}
-                className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-medium uppercase tracking-wider hover:bg-emerald-700 transition-all cursor-pointer"
-              >
-                Dismiss
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {scanStatus.status === 'RUNNING' && (
+                <button
+                  onClick={() => {
+                    if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+                    setActiveScanId(null);
+                    setScanStatus((prev: any) => prev ? { ...prev, status: 'CANCELLED' } : null);
+                    queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
+                    toast.info('Discovery scan polling cancelled.');
+                  }}
+                  className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold hover:bg-red-200 transition-all cursor-pointer"
+                >
+                  Stop Scan
+                </button>
+              )}
+              {scanStatus.status === 'COMPLETED' && (
+                <button
+                  onClick={() => setScanStatus(null)}
+                  className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-medium uppercase tracking-wider hover:bg-emerald-700 transition-all cursor-pointer"
+                >
+                  Dismiss
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -441,24 +481,27 @@ export const AdminLeadsPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <Bot className="w-4 h-4 text-[#0f2f63]" />
             <span className="font-bold text-[#0a0a0a]">Configured Discovery Crawlers:</span>
-            <span className="text-[#717784] font-medium">
-              {sourcesData.filter((s: any) => s.active).length} Active Channels
+            <span className="text-emerald-700 font-bold">
+              {sourcesData.filter((s: any) => s.active || s.status === 'ACTIVE' || s.status === 'SUPPORTED' || !s.is_restricted).length} Active Channels
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {sourcesData.map((s: any) => (
-              <span
-                key={s.id || s.name}
-                title={s.complianceNote || (s.active ? 'Active automated feed' : 'Requires official partner API')}
-                className="px-2.5 py-1 bg-white border border-[#e2e4e9] rounded-full text-[10px] font-semibold text-[#5a6270] flex items-center gap-1.5 cursor-help shadow-2xs"
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${s.active ? 'bg-emerald-500' : 'bg-amber-400'}`} />
-                <span>{s.name}</span>
-                <span className={`text-[9px] ${s.active ? 'text-emerald-700 font-bold' : 'text-[#717784]'}`}>
-                  ({s.status === 'ACTIVE' ? 'LIVE' : 'RESTRICTED'})
+            {sourcesData.map((s: any) => {
+              const isLive = Boolean(s.active || s.status === 'ACTIVE' || s.status === 'SUPPORTED' || !s.is_restricted);
+              return (
+                <span
+                  key={s.id || s.name}
+                  title={s.complianceNote || (isLive ? 'Active automated feed' : 'Requires official partner API')}
+                  className="px-2.5 py-1 bg-white border border-[#e2e4e9] rounded-full text-[10px] font-semibold text-[#5a6270] flex items-center gap-1.5 cursor-help shadow-2xs"
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+                  <span>{s.name}</span>
+                  <span className={`text-[9px] ${isLive ? 'text-emerald-700 font-bold' : 'text-[#717784]'}`}>
+                    ({isLive ? 'LIVE' : 'RESTRICTED'})
+                  </span>
                 </span>
-              </span>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

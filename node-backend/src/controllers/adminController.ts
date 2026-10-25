@@ -368,7 +368,15 @@ export const getScanStatus = async (c: Context) => {
 export const getScraperSources = async (c: Context) => {
   try {
     const { ScraperServiceClient } = await import('../services/scraperServiceClient');
-    const sources = await ScraperServiceClient.getSources();
+    const rawSources = await ScraperServiceClient.getSources();
+    const sources = rawSources.map((s) => {
+      const isLive = !s.is_restricted && (s.status === 'ACTIVE' || s.status === 'SUPPORTED' || (s as any).active === true);
+      return {
+        ...s,
+        status: isLive ? 'ACTIVE' : s.status,
+        active: isLive,
+      };
+    });
     return c.json(ApiResponse.ok(sources));
   } catch (err: any) {
     console.error("getScraperSources error:", err);
