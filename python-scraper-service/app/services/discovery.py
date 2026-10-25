@@ -3,6 +3,7 @@ from typing import Dict, Any, List
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.schemas import ScanQueryConfig, RawJobRecord
+from app.scrapers.base import BaseSourceAdapter
 from app.scrapers.registry import SourceAdapterRegistry
 from app.extractors.vernacular_mapper import VernacularTradeMapper
 from app.extractors.validator import validate_job_quality
@@ -57,88 +58,92 @@ class DiscoveryPipeline:
             selected_adapters = all_adapters
 
         try:
-            for idx, adapter in enumerate(selected_adapters, 1):
-                # Check for cancellation before starting each source
+            # Concurrently fetch candidate listings across all enabled adapters
+            logger.info(f"[DiscoveryPipeline][Step 2/5 - PARALLEL FETCH] Initiating concurrent discovery across {len(selected_adapters)} adapters...")
+
+            async def fetch_adapter_candidates(adapter: BaseSourceAdapter):
+                try:
+                    health = await asyncio.wait_for(adapter.check_health(), timeout=5.0)
+                    status_val = health.status
+                except Exception:
+                    status_val = "RESTRICTED" if adapter.is_restricted else "ACTIVE"
+
+                if adapter.is_restricted or status_val in ["PERMISSION_REQUIRED", "AUTH_REQUIRED", "UNAVAILABLE"]:
+                    return adapter, status_val, [], None
+
+                try:
+                    candidates = await asyncio.wait_for(adapter.discover_jobs(config), timeout=15.0)
+                    return adapter, status_val, candidates, None
+                except Exception as ex:
+                    return adapter, status_val, [], str(ex)
+
+            adapter_results = await asyncio.gather(*(fetch_adapter_candidates(a) for a in selected_adapters))
+
+            # Sequentially process candidates and ingest into PostgreSQL database session
+            for adapter, adapter_status, candidates, err_msg in adapter_results:
                 if active_scan_cancellations.get(scan_id, False):
                     logger.info(f"[DiscoveryPipeline] Scan {scan_id} aborted due to cancellation request.")
                     break
 
-                # Determine honest source status
-                adapter_health = await adapter.check_health()
-                adapter_status = adapter_health.status
-
-                logger.info(f"[DiscoveryPipeline][Step 2/5 - SOURCE CHECK] ({idx}/{len(selected_adapters)}) Adapter '{adapter.name}' [{adapter.id}] status: {adapter_status}")
-
                 source_stats[adapter.id] = {
                     "name": adapter.name,
                     "status": adapter_status,
-                    "discovered": 0,
+                    "discovered": len(candidates),
                     "valid": 0,
                     "duplicates": 0,
                     "rejected": 0,
-                    "errors": 0,
+                    "errors": 1 if err_msg else 0,
                 }
 
-                if adapter.is_restricted or adapter_status in ["PERMISSION_REQUIRED", "AUTH_REQUIRED", "UNAVAILABLE"]:
-                    msg = f"Source {adapter.name} is in state {adapter_status}. Automated crawl skipped ({adapter_health.error_message or adapter.compliance_note})."
-                    logger.warning(f"[DiscoveryPipeline] {msg}")
-                    await ScanRepository.log_event(db, scan_id, adapter.id, msg, level="WARN")
+                if err_msg:
+                    error_count += 1
+                    logger.error(f"[DiscoveryPipeline] Error executing adapter {adapter.id}: {err_msg}")
+                    await ScanRepository.log_event(db, scan_id, adapter.id, err_msg, level="ERROR")
                     continue
 
-                try:
-                    logger.info(f"[DiscoveryPipeline][Step 3/5 - CRAWL] Fetching candidate listings from '{adapter.name}'...")
-                    candidates: List[RawJobRecord] = await adapter.discover_jobs(config)
-                    source_stats[adapter.id]["discovered"] = len(candidates)
-                    total_found += len(candidates)
-                    logger.info(f"[DiscoveryPipeline][Step 3/5 - CRAWL RESULT] '{adapter.name}' returned {len(candidates)} candidate listings.")
+                total_found += len(candidates)
+                logger.info(f"[DiscoveryPipeline][Step 3/5 - VALIDATE] '{adapter.name}' [{adapter_status}]: {len(candidates)} listings returned. Validating...")
 
-                    for raw_job in candidates:
-                        if active_scan_cancellations.get(scan_id, False):
-                            break
+                for raw_job in candidates:
+                    if active_scan_cancellations.get(scan_id, False):
+                        break
 
-                        # Step 1: Quality Gate & Strict Blue-Collar Validation
-                        is_valid, reject_reason = validate_job_quality(raw_job)
-                        if not is_valid:
-                            rejected_count += 1
-                            source_stats[adapter.id]["rejected"] += 1
-                            await ScanRepository.log_event(
-                                db, scan_id, adapter.id,
-                                f"Rejected: {raw_job.title} at {raw_job.company_name} - Reason: {reject_reason}",
-                                level="DEBUG"
-                            )
-                            continue
+                    # Step 1: Quality Gate & Strict Blue-Collar Validation
+                    is_valid, reject_reason = validate_job_quality(raw_job)
+                    if not is_valid:
+                        rejected_count += 1
+                        source_stats[adapter.id]["rejected"] += 1
+                        await ScanRepository.log_event(
+                            db, scan_id, adapter.id,
+                            f"Rejected: {raw_job.title} at {raw_job.company_name} - Reason: {reject_reason}",
+                            level="DEBUG"
+                        )
+                        continue
 
-                        # Step 2: 3-Tier Deduplication Check
-                        is_dup, existing_job, source_hash = await DeduplicationService.check_duplicate(db, raw_job)
-                        if is_dup and existing_job:
-                            duplicate_count += 1
-                            source_stats[adapter.id]["duplicates"] += 1
-                            await DeduplicationService.merge_alternate_source(db, existing_job, raw_job)
-                            await ScanRepository.log_event(
-                                db, scan_id, adapter.id,
-                                f"Duplicate merged: {raw_job.title} at {raw_job.company_name} (Existing ID: {existing_job.id})",
-                                level="INFO"
-                            )
-                        else:
-                            # Step 3: Insert new unique Blue-Collar job
-                            valid_count += 1
-                            source_stats[adapter.id]["valid"] += 1
-                            new_job = await JobRepository.create_job(db, raw_job, source_hash)
-                            await ScanRepository.log_event(
-                                db, scan_id, adapter.id,
-                                f"New Blue-Collar Job Ingested: {new_job.title} at {new_job.employer_name} in {new_job.city} (ID: {new_job.id})",
-                                level="INFO"
-                            )
+                    # Step 2: 3-Tier Deduplication Check
+                    is_dup, existing_job, source_hash = await DeduplicationService.check_duplicate(db, raw_job)
+                    if is_dup and existing_job:
+                        duplicate_count += 1
+                        source_stats[adapter.id]["duplicates"] += 1
+                        await DeduplicationService.merge_alternate_source(db, existing_job, raw_job)
+                        await ScanRepository.log_event(
+                            db, scan_id, adapter.id,
+                            f"Duplicate merged: {raw_job.title} at {raw_job.company_name} (Existing ID: {existing_job.id})",
+                            level="INFO"
+                        )
+                    else:
+                        # Step 3: Insert new unique Blue-Collar job
+                        valid_count += 1
+                        source_stats[adapter.id]["valid"] += 1
+                        new_job = await JobRepository.create_job(db, raw_job, source_hash)
+                        await ScanRepository.log_event(
+                            db, scan_id, adapter.id,
+                            f"New Blue-Collar Job Ingested: {new_job.title} at {new_job.employer_name} in {new_job.city} (ID: {new_job.id})",
+                            level="INFO"
+                        )
 
-                    await db.commit()
-                    logger.info(f"[DiscoveryPipeline][Step 4/5 - VALIDATE] '{adapter.name}': Discovered={len(candidates)}, Valid={source_stats[adapter.id]['valid']}, Duplicates={source_stats[adapter.id]['duplicates']}, Rejected={source_stats[adapter.id]['rejected']}")
-
-                except Exception as src_err:
-                    error_count += 1
-                    source_stats[adapter.id]["errors"] += 1
-                    logger.error(f"[DiscoveryPipeline] Error executing adapter {adapter.id}: {src_err}")
-                    await ScanRepository.log_event(db, scan_id, adapter.id, str(src_err), level="ERROR")
-                    await db.commit()
+                await db.commit()
+                logger.info(f"[DiscoveryPipeline][Step 4/5 - COMMITTED] '{adapter.name}': Discovered={len(candidates)}, Valid={source_stats[adapter.id]['valid']}, Duplicates={source_stats[adapter.id]['duplicates']}, Rejected={source_stats[adapter.id]['rejected']}")
 
             final_status = "CANCELLED" if active_scan_cancellations.get(scan_id, False) else "COMPLETED"
             await ScanRepository.complete_scan(

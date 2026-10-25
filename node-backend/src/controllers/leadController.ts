@@ -174,6 +174,9 @@ export class LeadController {
     }
   }
 
+  // Cache of synced scan results to prevent duplicate database operations on repeated polls
+  private static syncedScansCache = new Map<string, any>();
+
   static async getScanStatus(c: Context) {
     try {
       const id = c.req.param('id');
@@ -183,13 +186,21 @@ export class LeadController {
       const { ScraperServiceClient } = await import('../services/scraperServiceClient');
       const status = await ScraperServiceClient.getScanStatus(id);
 
-      console.log(`[LeadController] Poll scan ${id}: status=${status.status}, valid_count=${status.valid_count || 0}`);
-
       let syncResult = null;
       if (status.status === 'COMPLETED') {
-        console.log(`[LeadController][Step 3/3 - SYNC] Scan ${id} is COMPLETED! Running LeadService.syncLeadsFromScrapedJobs()...`);
-        syncResult = await LeadService.syncLeadsFromScrapedJobs();
-        console.log(`[LeadController][Step 3/3 - SYNC RESULT]`, syncResult);
+        if (LeadController.syncedScansCache.has(id)) {
+          syncResult = LeadController.syncedScansCache.get(id);
+        } else {
+          console.log(`[LeadController][Step 3/3 - SYNC] Scan ${id} is COMPLETED! Running LeadService.syncLeadsFromScrapedJobs()...`);
+          syncResult = await LeadService.syncLeadsFromScrapedJobs();
+          LeadController.syncedScansCache.set(id, syncResult);
+          // Keep cache bounded
+          if (LeadController.syncedScansCache.size > 100) {
+            const firstKey = LeadController.syncedScansCache.keys().next().value;
+            if (firstKey) LeadController.syncedScansCache.delete(firstKey);
+          }
+          console.log(`[LeadController][Step 3/3 - SYNC RESULT]`, syncResult);
+        }
       }
 
       return c.json({

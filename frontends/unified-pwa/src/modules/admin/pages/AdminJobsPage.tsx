@@ -90,6 +90,8 @@ export const AdminJobsPage: React.FC = () => {
   });
 
   // Polling effect for active discovery scans with exponential backoff & max 15 attempts
+  const isPollingInFlightRef = useRef<boolean>(false);
+
   useEffect(() => {
     if (!activeScanId) return;
 
@@ -97,42 +99,56 @@ export const AdminJobsPage: React.FC = () => {
     let isCancelled = false;
 
     const executePoll = async () => {
-      if (isCancelled) return;
+      if (isCancelled || isPollingInFlightRef.current) return;
+      isPollingInFlightRef.current = true;
       pollCountRef.current += 1;
 
       try {
         const res = await adminService.getScanStatus(activeScanId);
         const data = (res as any)?.data || res;
-        if (!isCancelled) {
-          setScanStatus(data);
-        }
+        if (isCancelled) return;
+        setScanStatus(data);
 
         if (data.status === 'COMPLETED') {
+          if (pollTimeoutRef.current) {
+            clearTimeout(pollTimeoutRef.current);
+            pollTimeoutRef.current = null;
+          }
           toast.success(`Scan completed: ${data.valid_count || 0} blue-collar jobs discovered into Pending Review!`);
           setActiveScanId(null);
           queryClient.invalidateQueries({ queryKey: ['adminJobs'] });
-          queryClient.invalidateQueries({ queryKey: ['adminStats'] });
           return;
         } else if (data.status === 'FAILED' || data.status === 'INTERRUPTED' || data.status === 'CANCELLED') {
+          if (pollTimeoutRef.current) {
+            clearTimeout(pollTimeoutRef.current);
+            pollTimeoutRef.current = null;
+          }
           toast.error(`Scan stopped with status: ${data.status}`);
           setActiveScanId(null);
           return;
         }
       } catch (err: any) {
         console.error('Polling error:', err);
+      } finally {
+        isPollingInFlightRef.current = false;
       }
+
+      if (isCancelled) return;
 
       // Max attempt governor (15 attempts ~ 45-60s) to prevent runaway billing & infinite loops
       if (pollCountRef.current >= 15) {
+        if (pollTimeoutRef.current) {
+          clearTimeout(pollTimeoutRef.current);
+          pollTimeoutRef.current = null;
+        }
         toast.info('Discovery scan processing completed. Refreshing jobs...');
         setActiveScanId(null);
         queryClient.invalidateQueries({ queryKey: ['adminJobs'] });
-        queryClient.invalidateQueries({ queryKey: ['adminStats'] });
         return;
       }
 
-      // Exponential backoff: starts at 2000ms, gently scales up to 8000ms
-      const nextDelay = Math.min(2000 * Math.pow(1.25, pollCountRef.current - 1), 8000);
+      // Exponential backoff: starts at 2000ms, gently scales up to 6000ms
+      const nextDelay = Math.min(2000 * Math.pow(1.2, pollCountRef.current - 1), 6000);
       if (!isCancelled) {
         pollTimeoutRef.current = setTimeout(executePoll, nextDelay);
       }
@@ -142,7 +158,11 @@ export const AdminJobsPage: React.FC = () => {
 
     return () => {
       isCancelled = true;
-      if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+      isPollingInFlightRef.current = false;
+      if (pollTimeoutRef.current) {
+        clearTimeout(pollTimeoutRef.current);
+        pollTimeoutRef.current = null;
+      }
     };
   }, [activeScanId, queryClient]);
 
