@@ -113,7 +113,7 @@ TrustHyre solves these issues through **verified candidate profiles**, **geofenc
 
 ---
 
-<p align="center">
+<!-- <p align="center">
   <strong>TrustHyre — Building India's Most Trusted Skilled Workforce Infrastructure.</strong><br>
   © 2026 TrustHyre Network. All Rights Reserved.
-</p>
+</p> -->
