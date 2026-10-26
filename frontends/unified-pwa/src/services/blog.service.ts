@@ -72,7 +72,7 @@ export interface CreateArticlePayload {
   targetTrade?: string;
 }
 
-export interface UpdateArticlePayload extends Partial<CreateArticlePayload> {}
+export type UpdateArticlePayload = Partial<CreateArticlePayload>;
 
 export const BlogService = {
   /**

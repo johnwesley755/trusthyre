@@ -7,18 +7,49 @@ interface MarkdownContentProps {
   enableTranslation?: boolean;
 }
 
+/**
+ * Sanitizes URLs to prevent DOM text from being reinterpreted as HTML (CodeQL CWE-079 / CWE-116).
+ * Ensures only http:, https:, or single-slash relative URLs are accepted,
+ * strictly rejects any HTML meta-characters (<, >, ", ', `, etc.),
+ * and returns the encoded URI string.
+ */
 export const sanitizeUrl = (rawUrl: string): string | null => {
-  if (!rawUrl) return null;
+  if (!rawUrl || typeof rawUrl !== 'string') return null;
   const trimmed = rawUrl.trim();
-  // Allow relative URLs that start with a single "/" (but not protocol-relative "//")
-  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed;
+
+  // Reject dangerous pseudo-protocols and protocol-relative URLs
+  if (
+    /^(?:javascript|data|vbscript|file):/i.test(trimmed) ||
+    trimmed.startsWith('//')
+  ) {
+    return null;
+  }
+
+  // Reject any string containing HTML meta-characters, quotes, or control/markup symbols
+  if (/[<>"'`\\^|{}[\]]/i.test(trimmed)) {
+    return null;
+  }
+
+  // Safe relative paths starting with single '/'
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) {
+    try {
+      return encodeURI(trimmed);
+    } catch {
+      return null;
+    }
+  }
+
   try {
     const parsed = new URL(trimmed);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.toString() : null;
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return encodeURI(parsed.href);
+    }
+    return null;
   } catch {
     return null;
   }
 };
+
 
 /**
  * Tokenizes inline Markdown syntax with dynamic multilingual translation:

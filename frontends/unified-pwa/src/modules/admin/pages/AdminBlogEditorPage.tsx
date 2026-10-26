@@ -8,7 +8,6 @@ import {
   FileText, 
   Sparkles, 
   MapPin, 
-  Briefcase, 
   Image as ImageIcon,
   Upload,
   Trash2,
@@ -60,13 +59,6 @@ export const AdminBlogEditorPage: React.FC = () => {
   const [noIndex, setNoIndex] = useState<boolean>(false);
   const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED'>('DRAFT');
 
-  useEffect(() => {
-    loadCategories();
-    if (id) {
-      loadArticle(id);
-    }
-  }, [id]);
-
   const loadCategories = async () => {
     try {
       const res = await BlogService.getCategories();
@@ -106,6 +98,13 @@ export const AdminBlogEditorPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadCategories();
+    if (id) {
+      loadArticle(id);
+    }
+  }, [id]);
 
   const handleTitleChange = (val: string) => {
     setTitle(val);
