@@ -2,8 +2,12 @@
   "name": "trust-hire-monorepo",
   "private": true,
   "version": "1.0.0",
+  "workspaces": [
+    "frontends/unified-pwa"
+  ],
   "scripts": {
-    "build": "cd frontends/unified-pwa && npm run build",
+    "install:pwa": "cd frontends/unified-pwa && npm install",
+    "build": "cd frontends/unified-pwa && npm install && npm run build",
     "dev": "cd frontends/unified-pwa && npm run dev"
   }
 }

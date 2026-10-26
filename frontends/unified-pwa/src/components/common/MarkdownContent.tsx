@@ -7,6 +7,19 @@ interface MarkdownContentProps {
   enableTranslation?: boolean;
 }
 
+export const sanitizeUrl = (rawUrl: string): string | null => {
+  if (!rawUrl) return null;
+  const trimmed = rawUrl.trim();
+  // Allow relative URLs that start with a single "/" (but not protocol-relative "//")
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed;
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.toString() : null;
+  } catch {
+    return null;
+  }
+};
+
 /**
  * Tokenizes inline Markdown syntax with dynamic multilingual translation:
  * - ***bold italic***
@@ -35,7 +48,14 @@ export const renderInlineMarkdown = (
     const imgMatch = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
     if (imgMatch) {
       const alt = imgMatch[1];
-      const src = imgMatch[2];
+      const src = sanitizeUrl(imgMatch[2]);
+      if (!src) {
+        return (
+          <span key={i} className="text-[#717784] italic text-xs">
+            {translateStr(alt || 'Invalid image URL')}
+          </span>
+        );
+      }
       return (
         <figure key={i} className="my-6 rounded-2xl overflow-hidden border border-[#e6e8ec] shadow-xs block">
           <img src={src} alt={alt || 'Article Image'} className="w-full h-auto max-h-[520px] object-cover" loading="lazy" />
@@ -51,10 +71,14 @@ export const renderInlineMarkdown = (
     // Link: [label](url)
     const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
     if (linkMatch) {
+      const href = sanitizeUrl(linkMatch[2]);
+      if (!href) {
+        return <span key={i}>{translateStr(linkMatch[1])}</span>;
+      }
       return (
         <a
           key={i}
-          href={linkMatch[2]}
+          href={href}
           target="_blank"
           rel="noopener noreferrer"
           className="text-[#0f2f63] font-medium underline hover:text-[#2563c9] transition-colors"

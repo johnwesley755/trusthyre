@@ -24,7 +24,7 @@ import { SeoHead, buildArticleJsonLd, buildBreadcrumbJsonLd } from '../../../com
 import { AppTopNavbar } from '../../../layouts/AppTopNavbar';
 import { LandingFooter } from '../../landing/components/LandingFooter';
 import { UserAvatar } from '../../../components/common/UserAvatar';
-import { MarkdownContent } from '../../../components/common/MarkdownContent';
+import { MarkdownContent, sanitizeUrl } from '../../../components/common/MarkdownContent';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../../../providers/TranslationContext';
 
 export const BlogPostPage: React.FC = () => {
@@ -323,15 +323,18 @@ export const BlogPostPage: React.FC = () => {
             </div>
 
             {/* Featured Cover Image */}
-            {post.coverImageUrl && (
-              <div className="overflow-hidden rounded-[1.75rem] border border-[#e6e8ec] shadow-xs aspect-[16/9] w-full bg-[#f4f4f4]">
-                <img
-                  src={post.coverImageUrl}
-                  alt={post.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
+            {(() => {
+              const sanitizedCover = sanitizeUrl(post.coverImageUrl || '');
+              return sanitizedCover ? (
+                <div className="overflow-hidden rounded-[1.75rem] border border-[#e6e8ec] shadow-xs aspect-[16/9] w-full bg-[#f4f4f4]">
+                  <img
+                    src={sanitizedCover}
+                    alt={post.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : null;
+            })()}
 
             {/* Article Body Content */}
             <article className="bg-white rounded-[1.75rem] border border-[#e6e8ec] p-6 sm:p-10 shadow-xs">

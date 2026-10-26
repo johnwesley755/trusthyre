@@ -18,6 +18,7 @@ import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHe
 import { AppTopNavbar } from '../../../layouts/AppTopNavbar';
 import { LandingFooter } from '../../landing/components/LandingFooter';
 import { UserAvatar } from '../../../components/common/UserAvatar';
+import { sanitizeUrl } from '../../../components/common/MarkdownContent';
 
 export const BlogListingPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -278,7 +279,7 @@ export const BlogListingPage: React.FC = () => {
                   {/* Left: Article Cover Image */}
                   <div className="lg:col-span-6 overflow-hidden rounded-2xl aspect-[16/10] bg-[#f4f4f4] border border-[#e6e8ec]">
                     <img
-                      src={featuredPost.coverImageUrl || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1200'}
+                      src={sanitizeUrl(featuredPost.coverImageUrl || '') || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1200'}
                       alt={featuredPost.title}
                       className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-300"
                     />
@@ -354,7 +355,7 @@ export const BlogListingPage: React.FC = () => {
                     {/* Cover Image */}
                     <Link to={`/blog/${post.slug}`} className="block overflow-hidden rounded-2xl aspect-[16/10] bg-[#f4f4f4] border border-[#e6e8ec]">
                       <img
-                        src={post.coverImageUrl || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800'}
+                        src={sanitizeUrl(post.coverImageUrl || '') || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800'}
                         alt={post.title}
                         loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"

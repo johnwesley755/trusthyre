@@ -15,7 +15,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { BlogService, type BlogCategory } from '../../../services/blog.service';
-import { MarkdownContent } from '../../../components/common/MarkdownContent';
+import { MarkdownContent, sanitizeUrl } from '../../../components/common/MarkdownContent';
 import { mediaService } from '../../../services/media.service';
 import { toast } from 'sonner';
 
@@ -531,15 +531,18 @@ export const AdminBlogEditorPage: React.FC = () => {
               />
             </div>
 
-            {coverImageUrl ? (
-              <div className="rounded-xl overflow-hidden aspect-video bg-[#f4f4f4] border border-[#e6e8ec]">
-                <img src={coverImageUrl} alt="Cover Preview" className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="p-4 text-center border-2 border-dashed border-[#e6e8ec] rounded-xl text-[#717784] text-[11px]">
-                Upload an image to Cloudinary or paste a URL to preview hero banner
-              </div>
-            )}
+            {(() => {
+              const sanitizedCoverUrl = sanitizeUrl(coverImageUrl);
+              return sanitizedCoverUrl ? (
+                <div className="rounded-xl overflow-hidden aspect-video bg-[#f4f4f4] border border-[#e6e8ec]">
+                  <img src={sanitizedCoverUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="p-4 text-center border-2 border-dashed border-[#e6e8ec] rounded-xl text-[#717784] text-[11px]">
+                  Upload an image to Cloudinary or paste a valid URL to preview hero banner
+                </div>
+              );
+            })()}
           </div>
 
           {/* SEO & SERP Snippet Preview */}
