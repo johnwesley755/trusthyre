@@ -6,6 +6,7 @@
   "compatibility_flags": [
     "python_workers"
   ],
+  "previews": {},
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
