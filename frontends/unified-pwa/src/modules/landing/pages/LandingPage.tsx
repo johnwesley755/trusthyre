@@ -16,7 +16,9 @@ import {
   Clock,
   Sparkles,
   Globe,
-  ChevronDown
+  ChevronDown,
+  BookOpen,
+  MapPin
 } from "lucide-react";
 
 import { useTranslation, SUPPORTED_LANGUAGES } from "../../../providers/TranslationContext";
@@ -24,6 +26,7 @@ import { LANDING_IMAGES } from "../constants/landingAssets";
 import trustHyreLogo from "../../../assets/TrustHyre Skills and Opportunities Logo.png";
 import trustHyreLightLogo from "../../../assets/TrustHyre Logo with Skills Tagline.png";
 import { SeoHead } from "../../../components/common/SeoHead";
+import { BlogService } from "../../../services/blog.service";
 
 // Trust Carousel Slide Data (Sourced from LANDING_IMAGES.specialists)
 const TRUST_SLIDES = LANDING_IMAGES.specialists;
@@ -199,11 +202,60 @@ const PLATFORM_COMMITMENTS = [
   }
 ];
 
+const DEFAULT_LANDING_ARTICLES = [
+  {
+    id: "default-1",
+    slug: "electrician-hiring-guide-chennai",
+    title: "Electrician Hiring Guide: Skills, Certifications & Fair Wages in Chennai",
+    excerpt: "Comprehensive article for businesses and facility managers hiring verified industrial and domestic electricians across Chennai with realistic wage benchmarks.",
+    targetTrade: "Electrical",
+    targetCity: "Chennai",
+    categoryName: "Hiring Guides",
+    readTimeMinutes: 5,
+    authorName: "TrustHyre Editorial Team",
+  },
+  {
+    id: "default-2",
+    slug: "commercial-kitchen-crew-hiring-bengaluru",
+    title: "Commercial Kitchen Crew Hiring: Compliance, Hygiene & Retention in Bengaluru",
+    excerpt: "How restaurant chains and cloud kitchens hire and retain verified line cooks, commis chefs, and kitchen stewards with zero recruiter commissions.",
+    targetTrade: "Culinary",
+    targetCity: "Bengaluru",
+    categoryName: "Industry Articles",
+    readTimeMinutes: 6,
+    authorName: "TrustHyre Culinary Desk",
+  },
+  {
+    id: "default-3",
+    slug: "warehouse-logistics-fair-wage-benchmark-india",
+    title: "Warehouse Logistics & Route Delivery: Fair Compensation Benchmark 2026",
+    excerpt: "Regional wage trends, overtime standards, and background verification checkpoints for hiring forklift operators and fulfillment crews in India.",
+    targetTrade: "Logistics",
+    targetCity: "All India",
+    categoryName: "Salary Benchmarks",
+    readTimeMinutes: 4,
+    authorName: "TrustHyre Research",
+  },
+];
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const { isSignedIn, user } = useAuth();
   const [ready, setReady] = useState(false);
   const [loaderExited, setLoaderExited] = useState(false);
+  const [landingPosts, setLandingPosts] = useState<any[]>(DEFAULT_LANDING_ARTICLES);
+
+  useEffect(() => {
+    BlogService.getPublishedArticles({ limit: 3 })
+      .then((res) => {
+        if (res?.posts && res.posts.length > 0) {
+          setLandingPosts(res.posts);
+        }
+      })
+      .catch(() => {
+        // Fallback default articles remain active
+      });
+  }, []);
 
   // Overlays & Language
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -1243,7 +1295,122 @@ export default function LandingPage() {
         </section>
 
         {/* =================================================================== */}
-        {/* 7. FOOTER SECTION (Deep Navy Corporate) */}
+        {/* 7. LATEST HIRING ARTICLES & GUIDES SECTION */}
+        {/* =================================================================== */}
+        <section id="blog-insights" className="py-12 sm:py-16 px-6 sm:px-10 bg-[#fafbfc] text-[#0a0a0a] border-t border-[#e6e8ec]">
+          <div className="max-w-6xl mx-auto">
+            
+            {/* Header with Title and "Explore All Articles" CTA */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
+              <div className="space-y-3 max-w-2xl">
+                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#0f2f63]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] animate-pulse" />
+                  <BookOpen className="w-3.5 h-3.5 text-[#0f2f63]" />
+                  <span>{t("Industry Articles & Career Guides", "Industry Articles & Career Guides")}</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-[#0a0a0a] leading-[0.96]">
+                  {t("Verified hiring insights for businesses and workers", "Verified hiring insights for businesses and workers")}
+                </h2>
+                <p className="text-sm sm:text-base text-[#717784] leading-relaxed">
+                  {t("Practical salary benchmarks, trade skill requirements, and compliance checklists designed for India's blue-collar ecosystem.", "Practical salary benchmarks, trade skill requirements, and compliance checklists designed for India's blue-collar ecosystem.")}
+                </p>
+              </div>
+
+              <Link
+                to="/blog"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-semibold uppercase tracking-wider transition-all shadow-xs shrink-0 self-start sm:self-auto"
+              >
+                <span>{t("Explore All Guides & Blog", "Explore All Guides & Blog")}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* 3-Card Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {landingPosts.map((post) => (
+                <Link
+                  key={post.id || post.slug}
+                  to={`/blog/${post.slug}`}
+                  className="bg-white rounded-[1.75rem] border border-[#e6e8ec] p-6 shadow-xs hover:shadow-md hover:border-[#0f2f63]/30 transition-all flex flex-col justify-between group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-[#0f2f63]/10 text-[#0f2f63]">
+                        {post.category?.name || post.categoryName || 'Article'}
+                      </span>
+                      {post.targetCity && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#717784] bg-[#f4f4f4] px-2 py-0.5 rounded-full border border-[#e6e8ec]">
+                          <MapPin className="w-2.5 h-2.5 text-[#0f2f63]" />
+                          {post.targetCity}
+                        </span>
+                      )}
+                      <span className="text-[10px] text-[#717784] flex items-center gap-1 ml-auto">
+                        <Clock className="w-2.5 h-2.5" />
+                        {post.readTimeMinutes}m read
+                      </span>
+                    </div>
+
+                    <h3 className="text-base sm:text-lg font-semibold text-[#0a0a0a] group-hover:text-[#0f2f63] transition-colors leading-snug line-clamp-2">
+                      {post.title}
+                    </h3>
+
+                    <p className="text-xs text-[#717784] leading-relaxed line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-[#e6e8ec] flex items-center justify-between text-xs font-semibold text-[#0f2f63]">
+                    <span>{t("Read Article", "Read Article")}</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Quick Filter Tag Capsules */}
+            <div className="mt-8 pt-6 border-t border-[#e6e8ec] flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold text-[#717784] mr-1">Popular Topics:</span>
+                <Link
+                  to="/blog?category=hiring-guides"
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                >
+                  Hiring Blue-Collar Crew
+                </Link>
+                <Link
+                  to="/blog?category=salary-benchmarks"
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                >
+                  Wage & Salary Benchmarks
+                </Link>
+                <Link
+                  to="/blog?category=verification-standards"
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                >
+                  Government ID Verification
+                </Link>
+                <Link
+                  to="/blog?category=career-guides"
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                >
+                  Worker Career & Rights
+                </Link>
+              </div>
+
+              <Link
+                to="/blog"
+                className="text-xs font-semibold text-[#0f2f63] hover:underline flex items-center gap-1"
+              >
+                <span>View all articles</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+          </div>
+        </section>
+
+        {/* =================================================================== */}
+        {/* 8. FOOTER SECTION (Deep Navy Corporate) */}
         {/* =================================================================== */}
         <footer id="contact" className="mt-3 rounded-[2rem] bg-[#0f2f63] text-white py-10 sm:py-12 px-6 sm:px-10">
           <div className="max-w-6xl mx-auto">
@@ -1305,6 +1472,7 @@ export default function LandingPage() {
                 <ul className="space-y-3 text-sm text-white/80">
                   <li><Link to="/find-workers" className="hover:text-white transition-colors">{t("Browse Candidates", "Browse Candidates")}</Link></li>
                   <li><Link to="/post-job" className="hover:text-white transition-colors">{t("Post a Job", "Post a Job")}</Link></li>
+                  <li><Link to="/blog?category=hiring-guides" className="hover:text-white transition-colors">{t("Hiring Articles", "Hiring Articles")}</Link></li>
                 </ul>
               </div>
 
@@ -1316,16 +1484,18 @@ export default function LandingPage() {
                 <ul className="space-y-3 text-sm text-white/80">
                   <li><Link to="/search" className="hover:text-white transition-colors">{t("Find Jobs", "Find Jobs")}</Link></li>
                   <li><Link to="/sign-up?role=worker" className="hover:text-white transition-colors">{t("Worker Registration", "Worker Registration")}</Link></li>
+                  <li><Link to="/blog?category=career-guides" className="hover:text-white transition-colors">{t("Career Guides", "Career Guides")}</Link></li>
                 </ul>
               </div>
 
-              {/* Column: Access & Legal */}
+              {/* Column: Blog & Resources */}
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50 mb-3">
-                  {t("Access & Legal", "Access & Legal")}
+                  {t("Resources & Insights", "Resources & Insights")}
                 </h4>
                 <ul className="space-y-3 text-sm text-white/80">
-                  <li><Link to="/sign-in" className="hover:text-white transition-colors">{t("Sign In", "Sign In")}</Link></li>
+                  <li><Link to="/blog" className="hover:text-white transition-colors">{t("Blog & All Articles", "Blog & All Articles")}</Link></li>
+                  <li><Link to="/blog?category=salary-benchmarks" className="hover:text-white transition-colors">{t("Salary Benchmarks", "Salary Benchmarks")}</Link></li>
                   <li><Link to="/terms" className="hover:text-white transition-colors">{t("Terms of Service", "Terms of Service")}</Link></li>
                   <li><Link to="/privacy" className="hover:text-white transition-colors">{t("Privacy Policy", "Privacy Policy")}</Link></li>
                 </ul>

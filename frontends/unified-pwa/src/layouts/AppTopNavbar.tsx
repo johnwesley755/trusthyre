@@ -26,7 +26,10 @@ import {
   FileText,
   Users,
   Bell,
-  Globe
+  Globe,
+  BookOpen,
+  ShieldCheck,
+  Building2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../providers/TranslationContext';
@@ -55,34 +58,16 @@ export const AppTopNavbar = () => {
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const isAuthenticated = Boolean(user);
+  const isSuperAdmin = (user?.role as string) === 'SUPER_ADMIN';
+  const isAdmin = user?.role === 'ADMIN' || isSuperAdmin;
   const isEmployer = user?.role === 'EMPLOYER';
-
-  // Navigation Links tailored to role
-  const workerNavLinks = [
-    { name: 'Find Jobs', path: '/search', icon: Briefcase },
-    { name: 'Applied Jobs', path: '/applied-jobs', icon: CheckCircle2 },
-    { name: 'Saved Jobs', path: '/saved-jobs', icon: Bookmark },
-    { name: 'Activity Tracker', path: '/tracker', icon: Activity },
-  ];
-
-  const employerNavLinks = [
-    { name: 'Find Workers', path: '/find-workers', icon: Users },
-    { name: 'My Active Jobs', path: '/jobs', icon: Briefcase },
-    { name: 'Post a Job', path: '/post-job', icon: PlusCircle },
-    { name: 'Saved Profiles', path: '/saved-profiles', icon: Bookmark },
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  ];
+  const isWorker = !isAdmin && !isEmployer && Boolean(user);
 
   const guestNavLinks = [
     { name: 'Find Jobs', path: '/search', icon: Briefcase },
     { name: 'Find Workers', path: '/find-workers', icon: Users },
+    { name: 'Blog & Guides', path: '/blog', icon: BookOpen },
   ];
-
-  const navLinks = !isAuthenticated
-    ? guestNavLinks
-    : isEmployer
-    ? employerNavLinks
-    : workerNavLinks;
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -94,6 +79,13 @@ export const AppTopNavbar = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Close menus on route navigation
+  useEffect(() => {
+    setIsProfileMenuOpen(false);
+    setIsMobileMenuOpen(false);
+    setIsMobileSearchOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     setIsProfileMenuOpen(false);
@@ -111,7 +103,7 @@ export const AppTopNavbar = () => {
         
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-4 shrink-0">
-          <Link to="/" className="flex items-center group py-1 shrink-0" aria-label="TrustHyre Home">
+          <Link to={isAdmin ? "/admin/dashboard" : "/"} className="flex items-center group py-1 shrink-0" aria-label="TrustHyre Home">
             <img 
               src={trustHyreLogo} 
               alt="TrustHyre" 
@@ -120,17 +112,30 @@ export const AppTopNavbar = () => {
           </Link>
         </div>
 
-        {/* Center: Hallmark N13 Inline Capsule Search Bar */}
-        <div className="hidden md:flex items-center flex-1 max-w-sm lg:max-w-md mx-2 sm:mx-4">
+        {/* Center: Search Bar Only */}
+        <div className="hidden md:flex items-center flex-1 max-w-lg lg:max-w-xl mx-4 lg:mx-8">
           <NavbarSearchInput 
             className="w-full" 
-            placeholder={isEmployer ? "Search specialists..." : "Search jobs..."} 
+            placeholder={
+              isAdmin 
+                ? "Search users, jobs, records..." 
+                : isEmployer 
+                ? "Search specialists, skills..." 
+                : "Search jobs, roles, companies..."
+            } 
           />
         </div>
 
-        {/* Right Actions: CTA + Notifications + Profile Menu / Guest Buttons (Guaranteed Unclipped) */}
+        {/* Right Actions: CTA + Notifications + Profile Menu / Guest Buttons */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
-          
+          {isAdmin && (
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f4f4f4] border border-[#e6e8ec] shrink-0 mr-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2f63]">
+                {isSuperAdmin ? 'Super Admin' : 'Admin'}
+              </span>
+            </div>
+          )}
 
           {/* Mobile Search Toggle Button */}
           <button
@@ -154,7 +159,7 @@ export const AppTopNavbar = () => {
                   <PlusCircle className="w-3.5 h-3.5 shrink-0" />
                   <span className="whitespace-nowrap">Post a Job</span>
                 </Link>
-              ) : (
+              ) : isWorker ? (
                 <Link
                   to="/profile"
                   className="hidden xl:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0f2f63] border border-[#e6e8ec] text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 cursor-pointer shrink-0 whitespace-nowrap h-9 leading-none"
@@ -162,7 +167,7 @@ export const AppTopNavbar = () => {
                   <Upload className="w-3.5 h-3.5 shrink-0" />
                   <span className="whitespace-nowrap">Upload Resume</span>
                 </Link>
-              )}
+              ) : null}
 
               {/* Notification Center */}
               <div className="relative shrink-0">
@@ -174,6 +179,8 @@ export const AppTopNavbar = () => {
                 <button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                   className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] border border-[#e6e8ec] transition-all cursor-pointer shrink-0 whitespace-nowrap h-9"
+                  aria-expanded={isProfileMenuOpen}
+                  aria-label="User navigation menu"
                 >
                   <UserAvatar
                     src={user?.profileImageUrl}
@@ -194,7 +201,7 @@ export const AppTopNavbar = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.98 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#e6e8ec] py-2 text-[#0a0a0a] z-50 font-['Onest',system-ui,sans-serif]"
+                      className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-[#e6e8ec] py-2 text-[#0a0a0a] z-50 font-['Onest',system-ui,sans-serif] max-h-[calc(100vh-5rem)] overflow-y-auto"
                     >
                       {/* User Profile Card Header */}
                       <div className="px-4 py-3 border-b border-[#e6e8ec]">
@@ -204,41 +211,140 @@ export const AppTopNavbar = () => {
                             name={displayName}
                             size="md"
                           />
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <p className="text-xs font-semibold text-[#0a0a0a] truncate">
                               {displayName}
                             </p>
                             <p className="text-[10px] text-[#717784] font-normal truncate">
                               {user?.email}
                             </p>
-                            <span className="inline-block mt-1 px-2 py-0.5 bg-[#e6eefc] text-[#0f2f63] text-[9px] font-medium rounded-full uppercase">
-                              {isEmployer ? t('Verified Employer', 'Verified Employer') : t('Specialist Candidate', 'Specialist Candidate')}
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-[#e6eefc] text-[#0f2f63] text-[9px] font-semibold rounded-full uppercase tracking-wider">
+                              {isSuperAdmin
+                                ? 'Super Admin'
+                                : isAdmin
+                                ? 'Admin'
+                                : isEmployer
+                                ? t('Verified Employer', 'Verified Employer')
+                                : t('Specialist Candidate', 'Specialist Candidate')}
                             </span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Menu Items tailored to Role */}
-                      <div className="py-1">
-                        <button
-                          onClick={() => {
-                            setIsProfileMenuOpen(false);
-                            navigate('/profile');
-                          }}
-                          className="w-full px-4 py-2 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
-                        >
-                          <User className="w-4 h-4 text-[#717784]" />
-                          <span>{isEmployer ? t('Company Profile') : t('My Profile & CV')}</span>
-                        </button>
+                      {/* Language Quick-Switch Bar inside Dropdown */}
+                      <div className="p-3 border-b border-[#e6e8ec] bg-slate-50/70">
+                        <div className="flex items-center gap-1.5 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          <Globe className="w-3.5 h-3.5 text-[#0f2f63]" />
+                          <span>Language / மொழி / भाषा</span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-1">
+                          {SUPPORTED_LANGUAGES.map((lang) => {
+                            const isSelected = language === lang.code;
+                            return (
+                              <button
+                                key={lang.code}
+                                type="button"
+                                onClick={() => setLanguage(lang.code)}
+                                className={`py-1 px-1 rounded-lg text-center text-[11px] font-semibold transition-all cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-[#0f2f63] text-white shadow-xs'
+                                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                                }`}
+                              >
+                                <span className="truncate block">{lang.native}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
 
-                        {isEmployer ? (
+                      {/* Menu Items strictly distinguished by Role */}
+                      <div className="py-1">
+                        {/* SUPER ADMIN & ADMIN LINKS */}
+                        {isAdmin && (
                           <>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/admin/dashboard');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <LayoutDashboard className="w-4 h-4 text-[#717784]" />
+                              <span>Admin Dashboard</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/admin/blog');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <BookOpen className="w-4 h-4 text-[#717784]" />
+                              <span>Blog & SEO Manager</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/admin/leads');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <Building2 className="w-4 h-4 text-[#717784]" />
+                              <span>Hiring Companies</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/admin/verifications');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <CheckCircle2 className="w-4 h-4 text-[#717784]" />
+                              <span>Identity Verifications</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/admin/users');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <Users className="w-4 h-4 text-[#717784]" />
+                              <span>User Directory</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/admin/jobs');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <Briefcase className="w-4 h-4 text-[#717784]" />
+                              <span>Job Moderation</span>
+                            </button>
+                          </>
+                        )}
+
+                        {/* EMPLOYER LINKS */}
+                        {isEmployer && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/profile');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <User className="w-4 h-4 text-[#717784]" />
+                              <span>{t('Company Profile')}</span>
+                            </button>
                             <button
                               onClick={() => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/dashboard');
                               }}
-                              className="w-full px-4 py-2 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <LayoutDashboard className="w-4 h-4 text-[#717784]" />
                               <span>{t('Employer Dashboard')}</span>
@@ -248,7 +354,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/find-workers');
                               }}
-                              className="w-full px-4 py-2 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Users className="w-4 h-4 text-[#717784]" />
                               <span>{t('Find Workers')}</span>
@@ -258,7 +364,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/post-job');
                               }}
-                              className="w-full px-4 py-2 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <PlusCircle className="w-4 h-4 text-[#717784]" />
                               <span>{t('Post a Job')}</span>
@@ -268,7 +374,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/jobs');
                               }}
-                              className="w-full px-4 py-2 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Briefcase className="w-4 h-4 text-[#717784]" />
                               <span>{t('Active Jobs & Applicants')}</span>
@@ -278,20 +384,43 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/saved-profiles');
                               }}
-                              className="w-full px-4 py-2 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Bookmark className="w-4 h-4 text-[#717784]" />
                               <span>{t('Saved Talent Profiles')}</span>
                             </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/blog');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <BookOpen className="w-4 h-4 text-[#717784]" />
+                              <span>{t('Hiring Guides & Blog')}</span>
+                            </button>
                           </>
-                        ) : (
+                        )}
+
+                        {/* WORKER / CANDIDATE LINKS */}
+                        {isWorker && (
                           <>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/profile');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <User className="w-4 h-4 text-[#717784]" />
+                              <span>{t('My Profile & CV')}</span>
+                            </button>
                             <button
                               onClick={() => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/search');
                               }}
-                              className="w-full px-4 py-2 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Briefcase className="w-4 h-4 text-[#717784]" />
                               <span>{t('Find Jobs')}</span>
@@ -301,7 +430,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/applied-jobs');
                               }}
-                              className="w-full px-4 py-2 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <CheckCircle2 className="w-4 h-4 text-[#717784]" />
                               <span>{t('Applied Jobs')}</span>
@@ -311,7 +440,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/saved-jobs');
                               }}
-                              className="w-full px-4 py-2 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Bookmark className="w-4 h-4 text-[#717784]" />
                               <span>{t('Saved Jobs')}</span>
@@ -321,27 +450,38 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/tracker');
                               }}
-                              className="w-full px-4 py-2 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Activity className="w-4 h-4 text-[#717784]" />
                               <span>{t('Activity Tracker')}</span>
                             </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/blog');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <BookOpen className="w-4 h-4 text-[#717784]" />
+                              <span>{t('Career Guides & Blog')}</span>
+                            </button>
                           </>
                         )}
 
+                        {/* COMMON LINKS: NOTIFICATIONS & SETTINGS */}
                         <button
                           onClick={() => {
                             setIsProfileMenuOpen(false);
                             navigate('/notifications');
                           }}
-                          className="w-full px-4 py-2 text-xs font-medium text-slate-800 hover:bg-slate-100 flex items-center justify-between transition-colors cursor-pointer text-left"
+                          className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center justify-between transition-colors cursor-pointer text-left"
                         >
                           <div className="flex items-center gap-3">
-                            <Bell className="w-4 h-4 text-slate-500" />
+                            <Bell className="w-4 h-4 text-[#717784]" />
                             <span>{t('Notifications')}</span>
                           </div>
                           {unreadCount > 0 && (
-                            <span className="px-1.5 py-0.5 bg-blue-50 text-[#0066FF] text-[10px] font-bold rounded-full border border-blue-100">
+                            <span className="px-1.5 py-0.5 bg-blue-50 text-[#0f2f63] text-[10px] font-bold rounded-full border border-blue-200">
                               {unreadCount}
                             </span>
                           )}
@@ -352,9 +492,9 @@ export const AppTopNavbar = () => {
                             setIsProfileMenuOpen(false);
                             navigate('/settings');
                           }}
-                          className="w-full px-4 py-2 text-xs font-medium text-slate-800 hover:bg-slate-100 flex items-center gap-3 transition-colors cursor-pointer text-left"
+                          className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                         >
-                          <Settings className="w-4 h-4 text-slate-500" />
+                          <Settings className="w-4 h-4 text-[#717784]" />
                           <span>{t('Account Settings')}</span>
                         </button>
                       </div>
@@ -363,7 +503,7 @@ export const AppTopNavbar = () => {
                       <div className="pt-1 border-t border-[#e6e8ec]">
                         <button
                           onClick={handleLogout}
-                          className="w-full px-4 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 flex items-center gap-3 transition-colors cursor-pointer text-left"
+                          className="w-full px-4 py-2.5 text-xs font-medium text-rose-600 hover:bg-rose-50 flex items-center gap-3 transition-colors cursor-pointer text-left"
                         >
                           <LogOut className="w-4 h-4 text-rose-500" />
                           <span>{t('Sign Out')}</span>
@@ -392,14 +532,16 @@ export const AppTopNavbar = () => {
             </div>
           )}
 
-          {/* Mobile Hamburger Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 text-[#0a0a0a] hover:bg-[#f4f4f4] rounded-full border border-[#e6e8ec] cursor-pointer"
-            aria-label="Toggle mobile menu"
-          >
-            {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-          </button>
+          {/* Mobile Hamburger Button - Only for Guests */}
+          {!isAuthenticated && (
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 text-[#0a0a0a] hover:bg-[#f4f4f4] rounded-full border border-[#e6e8ec] cursor-pointer"
+              aria-label="Toggle mobile menu"
+            >
+              {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          )}
 
         </div>
 
@@ -416,15 +558,21 @@ export const AppTopNavbar = () => {
           >
             <NavbarSearchInput 
               className="w-full bg-white" 
-              placeholder={isEmployer ? "Search specialists, skills..." : "Search jobs, roles..."} 
+              placeholder={
+                isAdmin 
+                  ? "Search users, jobs, records..." 
+                  : isEmployer 
+                  ? "Search specialists, skills..." 
+                  : "Search jobs, roles..."
+              } 
             />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu - Only for Unauthenticated Guests */}
       <AnimatePresence>
-        {isMobileMenuOpen && (
+        {!isAuthenticated && isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -445,7 +593,7 @@ export const AppTopNavbar = () => {
                       key={lang.code}
                       type="button"
                       onClick={() => setLanguage(lang.code)}
-                      className={`py-1.5 px-2 rounded-xl text-center text-xs font-bold transition-all ${
+                      className={`py-1.5 px-2 rounded-xl text-center text-xs font-bold transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#0f2f63] text-white shadow-2xs'
                           : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
@@ -458,11 +606,12 @@ export const AppTopNavbar = () => {
               </div>
             </div>
 
+            {/* Guest Navigation Links */}
             <div className="space-y-1">
               <span className="text-[10px] font-bold uppercase text-[#717784] px-3.5">
                 Navigation
               </span>
-              {navLinks.map((link) => {
+              {guestNavLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = location.pathname === link.path;
                 return (
@@ -483,165 +632,23 @@ export const AppTopNavbar = () => {
               })}
             </div>
 
-            {/* Account Quick Links for Mobile if Logged In */}
-            {isAuthenticated && (
-              <div className="pt-3 border-t border-[#e6e8ec] space-y-2">
-                {/* User Mobile Profile Capsule Header */}
-                <div className="p-3 bg-[#f4f4f4] rounded-2xl border border-[#e6e8ec] flex items-center gap-3">
-                  <UserAvatar
-                    src={user?.profileImageUrl}
-                    name={displayName}
-                    size="md"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-[#0a0a0a] truncate">
-                      {displayName}
-                    </p>
-                    <p className="text-[11px] text-[#717784] font-normal truncate">
-                      {user?.email}
-                    </p>
-                    <span className="inline-block mt-0.5 px-2 py-0.5 bg-[#0f2f63]/10 text-[#0f2f63] text-[9px] font-semibold rounded-full uppercase">
-                      {isEmployer ? 'Verified Employer' : 'Specialist Candidate'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-1 pt-1">
-                  <span className="text-[10px] font-bold uppercase text-[#717784] px-3.5">
-                    Account & Profile
-                  </span>
-
-                  <Link
-                    to="/profile"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4]"
-                  >
-                    <User className="w-4 h-4 text-[#717784]" />
-                    <span>{isEmployer ? 'Company Profile' : 'My Profile & CV'}</span>
-                  </Link>
-
-                  {isEmployer ? (
-                    <>
-                      <Link
-                        to="/dashboard"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4]"
-                      >
-                        <LayoutDashboard className="w-4 h-4 text-[#717784]" />
-                        <span>Employer Dashboard</span>
-                      </Link>
-                      <Link
-                        to="/jobs"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4]"
-                      >
-                        <Briefcase className="w-4 h-4 text-[#717784]" />
-                        <span>Active Jobs & Applicants</span>
-                      </Link>
-                      <Link
-                        to="/saved-profiles"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4]"
-                      >
-                        <Bookmark className="w-4 h-4 text-[#717784]" />
-                        <span>Saved Talent Profiles</span>
-                      </Link>
-                      <Link
-                        to="/tracker"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4]"
-                      >
-                        <Activity className="w-4 h-4 text-[#717784]" />
-                        <span>Activity Tracker</span>
-                      </Link>
-                    </>
-                  ) : (
-                    <>
-                      <Link
-                        to="/applied-jobs"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4]"
-                      >
-                        <CheckCircle2 className="w-4 h-4 text-[#717784]" />
-                        <span>Applied Jobs</span>
-                      </Link>
-                      <Link
-                        to="/saved-jobs"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4]"
-                      >
-                        <Bookmark className="w-4 h-4 text-[#717784]" />
-                        <span>Saved Jobs</span>
-                      </Link>
-                      <Link
-                        to="/tracker"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4]"
-                      >
-                        <Activity className="w-4 h-4 text-[#717784]" />
-                        <span>Activity Tracker</span>
-                      </Link>
-                    </>
-                  )}
-
-                  <Link
-                    to="/notifications"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-800 hover:bg-slate-100"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Bell className="w-4 h-4 text-slate-500" />
-                      <span>Notifications</span>
-                    </div>
-                    {unreadCount > 0 && (
-                      <span className="px-2 py-0.5 bg-blue-50 text-[#0066FF] text-[10px] font-bold rounded-full border border-blue-100">
-                        {unreadCount} unread
-                      </span>
-                    )}
-                  </Link>
-
-                  <Link
-                    to="/settings"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-800 hover:bg-slate-100"
-                  >
-                    <Settings className="w-4 h-4 text-slate-500" />
-                    <span>Account Settings</span>
-                  </Link>
-
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      handleLogout();
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-rose-600 hover:bg-rose-50 text-left cursor-pointer"
-                  >
-                    <LogOut className="w-4 h-4 text-rose-500" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Guest Action Buttons */}
-            {!isAuthenticated && (
-              <div className="pt-3 border-t border-[#e6e8ec] flex flex-col gap-2">
-                <Link
-                  to="/sign-in"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full py-2.5 px-4 bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] border border-[#e6e8ec] rounded-full text-xs font-medium uppercase text-center"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/sign-up"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full py-2.5 px-4 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-medium uppercase text-center shadow-xs"
-                >
-                  Get Started
-                </Link>
-              </div>
-            )}
+            <div className="pt-3 border-t border-[#e6e8ec] flex flex-col gap-2">
+              <Link
+                to="/sign-in"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-2.5 px-4 bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] border border-[#e6e8ec] rounded-full text-xs font-medium uppercase text-center"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/sign-up"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-2.5 px-4 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-medium uppercase text-center shadow-xs"
+              >
+                Get Started
+              </Link>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -11,24 +11,36 @@ import {
   ChevronRight, 
   BookOpen, 
   Sparkles,
-  Eye,
   MessageCircle,
   Linkedin,
-  Twitter
+  Twitter,
+  ShieldCheck,
+  ArrowRight,
+  Globe
 } from 'lucide-react';
 import { BlogService } from '../../../services/blog.service';
 import type { BlogPost } from '../../../services/blog.service';
 import { SeoHead, buildArticleJsonLd, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
-import { LandingNavbar } from '../../landing/components/LandingNavbar';
+import { AppTopNavbar } from '../../../layouts/AppTopNavbar';
+import { LandingFooter } from '../../landing/components/LandingFooter';
+import { UserAvatar } from '../../../components/common/UserAvatar';
+import { MarkdownContent } from '../../../components/common/MarkdownContent';
+import { useTranslation, SUPPORTED_LANGUAGES } from '../../../providers/TranslationContext';
 
 export const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { language, setLanguage, translate, t } = useTranslation();
 
   const [post, setPost] = useState<BlogPost | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [copied, setCopied] = useState<boolean>(false);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
+
+  const tText = (text: string | null | undefined): string => {
+    if (!text || language === 'en') return text || '';
+    return translate(text);
+  };
 
   useEffect(() => {
     if (slug) {
@@ -96,172 +108,385 @@ export const BlogPostPage: React.FC = () => {
     { name: post.title, path: `/blog/${post.slug}` },
   ]) : undefined;
 
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 font-sans">
-        <LandingNavbar />
-        <div className="max-w-4xl mx-auto pt-32 pb-20 px-4 animate-pulse space-y-6">
-          <div className="h-4 bg-slate-200 rounded w-1/4" />
-          <div className="h-10 bg-slate-200 rounded w-3/4" />
-          <div className="h-4 bg-slate-200 rounded w-1/2" />
-          <div className="h-80 bg-slate-200 rounded-3xl w-full" />
-          <div className="space-y-3 pt-6">
-            <div className="h-4 bg-slate-200 rounded w-full" />
-            <div className="h-4 bg-slate-200 rounded w-full" />
-            <div className="h-4 bg-slate-200 rounded w-5/6" />
+      <div className="min-h-screen bg-[#fafbfc] font-['Onest',system-ui,sans-serif] flex flex-col justify-between">
+        <AppTopNavbar />
+        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 animate-pulse space-y-6 w-full">
+          <div className="h-4 bg-[#e6e8ec] rounded-full w-1/4" />
+          <div className="h-10 bg-[#e6e8ec] rounded-2xl w-3/4" />
+          <div className="h-4 bg-[#e6e8ec] rounded-full w-1/2" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
+            <div className="lg:col-span-8 space-y-6">
+              <div className="h-96 bg-[#e6e8ec] rounded-[1.75rem] w-full" />
+              <div className="space-y-3 pt-6">
+                <div className="h-4 bg-[#e6e8ec] rounded-full w-full" />
+                <div className="h-4 bg-[#e6e8ec] rounded-full w-full" />
+                <div className="h-4 bg-[#e6e8ec] rounded-full w-5/6" />
+              </div>
+            </div>
+            <div className="hidden lg:block lg:col-span-4 space-y-4">
+              <div className="h-64 bg-[#e6e8ec] rounded-[1.75rem] w-full" />
+              <div className="h-72 bg-[#e6e8ec] rounded-[1.75rem] w-full" />
+            </div>
           </div>
         </div>
+        <LandingFooter />
       </div>
     );
   }
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-slate-50 font-sans">
-        <LandingNavbar />
-        <div className="max-w-lg mx-auto pt-40 pb-20 px-4 text-center">
-          <BookOpen className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-black text-slate-900">Article Not Found</h1>
-          <p className="text-sm text-slate-600 mt-2">
+      <div className="min-h-screen bg-[#fafbfc] font-['Onest',system-ui,sans-serif] flex flex-col justify-between">
+        <AppTopNavbar />
+        <div className="max-w-lg mx-auto py-20 px-4 text-center space-y-4">
+          <BookOpen className="w-16 h-16 text-[#717784] mx-auto opacity-50" />
+          <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0a0a0a]">Article Not Found</h1>
+          <p className="text-xs text-[#717784]">
             The article you are looking for has been moved, unpublished, or does not exist.
           </p>
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 mt-6 px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-500 transition-colors"
+            className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Return to Blog Listing</span>
+            <span>Return to All Articles</span>
           </Link>
         </div>
+        <LandingFooter />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900">
-      {/* Dynamic SEO Head with Article Structured Data */}
+    <div className="min-h-screen bg-[#fafbfc] text-[#0a0a0a] font-['Onest',system-ui,sans-serif] flex flex-col justify-between selection:bg-[#0f2f63] selection:text-white">
       <SeoHead
-        title={post.metaTitle || post.title}
+        title={post.metaTitle || `${post.title} | TrustHyre`}
         description={post.metaDescription || post.excerpt}
         canonicalPath={`/blog/${post.slug}`}
         ogType="article"
         ogImage={post.coverImageUrl || undefined}
-        noIndex={post.noIndex}
         articleMeta={{
-          publishedTime: post.publishedAt || undefined,
-          modifiedTime: post.updatedAt || undefined,
+          publishedTime: post.publishedAt || post.createdAt,
+          modifiedTime: post.updatedAt,
           author: post.authorName,
-          section: post.category?.name || 'Skilled Trades',
+          section: post.category?.name,
           tags: post.tags,
         }}
-        jsonLd={[articleJsonLd, breadcrumbsJsonLd].filter(Boolean) as any}
+        noIndex={post.noIndex}
+        jsonLd={[...(articleJsonLd ? [articleJsonLd] : []), ...(breadcrumbsJsonLd ? [breadcrumbsJsonLd] : [])]}
       />
 
-      {/* Sticky Reading Progress Bar */}
+      {/* Universal Top Navbar Alone */}
+      <AppTopNavbar />
+
+      {/* Sticky Scroll Reading Indicator */}
       <div
-        className="fixed top-0 left-0 h-1.5 bg-gradient-to-r from-blue-600 via-teal-400 to-indigo-600 z-[60] transition-all duration-150"
+        className="fixed top-16 sm:top-18 left-0 right-0 h-1 bg-[#0f2f63] z-50 transition-all duration-150"
         style={{ width: `${scrollProgress}%` }}
       />
 
-      <LandingNavbar />
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full space-y-10">
+        
+        {/* Breadcrumb Navigation */}
+        <nav className="flex items-center gap-1.5 text-xs text-[#717784] overflow-x-auto scrollbar-none">
+          <Link to="/" className="hover:text-[#0f2f63] transition-colors whitespace-nowrap">Home</Link>
+          <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-40" />
+          <Link to="/blog" className="hover:text-[#0f2f63] transition-colors whitespace-nowrap">Blog</Link>
+          {post.category && (
+            <>
+              <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-40" />
+              <Link to={`/blog?category=${post.category.slug}`} className="hover:text-[#0f2f63] transition-colors whitespace-nowrap">
+                {post.category.name}
+              </Link>
+            </>
+          )}
+          <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-40" />
+          <span className="text-[#0a0a0a] font-medium truncate max-w-[200px] sm:max-w-md">{post.title}</span>
+        </nav>
 
-      <main className="pt-24 pb-20">
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* 12-Column Desktop Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           
-          {/* Breadcrumb Navigation */}
-          <nav className="flex items-center gap-2 text-xs font-medium text-slate-500 py-4 overflow-x-auto no-scrollbar">
-            <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <Link to="/blog" className="hover:text-blue-600 transition-colors">Blog</Link>
-            {post.category && (
-              <>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                <Link to={`/blog?category=${post.category.slug}`} className="hover:text-blue-600 transition-colors">
-                  {post.category.name}
-                </Link>
-              </>
-            )}
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-800 font-semibold truncate max-w-[200px] sm:max-w-xs">{post.title}</span>
-          </nav>
-
-          {/* Article Header */}
-          <header className="space-y-6 pt-4 pb-8 border-b border-slate-200">
-            <div className="flex flex-wrap items-center gap-2">
-              {post.category && (
-                <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold uppercase rounded-full border border-blue-200/60">
-                  {post.category.name}
+          {/* Main Article Column (8 Cols) */}
+          <div className="lg:col-span-8 min-w-0 space-y-8">
+            {/* Article Header Meta Pills */}
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                {post.category && (
+                  <span className="px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-[#0f2f63]/10 text-[#0f2f63]">
+                    {tText(post.category.name)}
+                  </span>
+                )}
+                {post.targetCity && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#717784] bg-[#f4f4f4] px-2.5 py-1 rounded-full border border-[#e6e8ec]">
+                    <MapPin className="w-3 h-3 text-[#0f2f63]" />
+                    {tText(post.targetCity)}
+                  </span>
+                )}
+                {post.targetTrade && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#717784] bg-[#f4f4f4] px-2.5 py-1 rounded-full border border-[#e6e8ec]">
+                    <Briefcase className="w-3 h-3 text-[#0f2f63]" />
+                    {tText(post.targetTrade)}
+                  </span>
+                )}
+                <span className="text-[10px] text-[#717784] flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {post.readTimeMinutes} min read
                 </span>
-              )}
-              {post.targetCity && (
-                <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{post.targetCity}</span>
-                </span>
-              )}
-              {post.targetTrade && (
-                <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full flex items-center gap-1">
-                  <Briefcase className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>{post.targetTrade}</span>
-                </span>
-              )}
-            </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-              {post.title}
-            </h1>
-
-            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-              {post.excerpt}
-            </p>
-
-            {/* Author Meta & Social Share Bar */}
-            <div className="pt-4 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-sm shadow">
-                  {post.authorName.charAt(0)}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold text-slate-900">{post.authorName}</p>
-                    <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-200">
-                      Verified Author
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
-                    {post.publishedAt && (
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-slate-400" />
-                        <span>{new Date(post.publishedAt).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                      </span>
-                    )}
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-blue-600" />
-                      <span>{post.readTimeMinutes} min read</span>
-                    </span>
-                    {post.viewCount > 0 && (
-                      <>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <Eye className="w-3 h-3 text-slate-400" />
-                          <span>{post.viewCount} views</span>
-                        </span>
-                      </>
-                    )}
+                {/* Multilingual Switcher Bar */}
+                <div className="flex items-center gap-1.5 py-1 px-2.5 bg-slate-50 border border-[#e6e8ec] rounded-full text-xs ml-auto">
+                  <Globe className="w-3.5 h-3.5 text-[#0f2f63] shrink-0" />
+                  <span className="text-[10px] font-bold text-[#717784] uppercase tracking-wider hidden sm:inline">Translate:</span>
+                  <div className="flex items-center gap-1">
+                    {SUPPORTED_LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        onClick={() => setLanguage(lang.code)}
+                        className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                          language === lang.code
+                            ? 'bg-[#0f2f63] text-white shadow-2xs'
+                            : 'bg-white hover:bg-slate-100 text-[#0a0a0a] border border-slate-200'
+                        }`}
+                      >
+                        {lang.native}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* Share Buttons */}
-              <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-[#0a0a0a] leading-tight">
+                {tText(post.title)}
+              </h1>
+
+              <p className="text-sm sm:text-base text-[#717784] font-normal leading-relaxed">
+                {tText(post.excerpt)}
+              </p>
+            </div>
+
+            {/* Author Capsule & Social Sharing Row */}
+            <div className="p-4 sm:p-5 bg-[#f4f4f4] rounded-2xl border border-[#e6e8ec] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <UserAvatar name={post.authorName} size="md" />
+                <div>
+                  <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-none">
+                    {post.authorName}
+                  </p>
+                  <p className="text-[11px] text-[#717784] mt-0.5">
+                    {tText(post.authorRole || 'Industry Specialist')} • Published {new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Social Share Pills */}
+              <div className="flex items-center gap-1.5 shrink-0">
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`${shareTitle} - ${shareUrl}`)}`}
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareTitle} - ${shareUrl}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl transition-colors"
+                  className="p-2 rounded-full bg-white hover:bg-emerald-50 text-[#717784] hover:text-emerald-600 border border-[#e6e8ec] transition-colors"
                   title="Share on WhatsApp"
-                  aria-label="Share on WhatsApp"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                </a>
+                <a
+                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full bg-white hover:bg-blue-50 text-[#717784] hover:text-[#0f2f63] border border-[#e6e8ec] transition-colors"
+                  title="Share on LinkedIn"
+                >
+                  <Linkedin className="w-3.5 h-3.5" />
+                </a>
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full bg-white hover:bg-slate-100 text-[#717784] hover:text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                  title="Share on X"
+                >
+                  <Twitter className="w-3.5 h-3.5" />
+                </a>
+                <button
+                  onClick={handleCopyLink}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] text-xs font-medium transition-colors cursor-pointer"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-[#717784]" />}
+                  <span>{copied ? 'Copied' : 'Copy'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Featured Cover Image */}
+            {post.coverImageUrl && (
+              <div className="overflow-hidden rounded-[1.75rem] border border-[#e6e8ec] shadow-xs aspect-[16/9] w-full bg-[#f4f4f4]">
+                <img
+                  src={post.coverImageUrl}
+                  alt={post.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            {/* Article Body Content */}
+            <article className="bg-white rounded-[1.75rem] border border-[#e6e8ec] p-6 sm:p-10 shadow-xs">
+              <div className="prose max-w-none text-[#0a0a0a]">
+                <MarkdownContent content={post.content} />
+              </div>
+            </article>
+
+            {/* Article Tags */}
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-[#717784] font-medium mr-1">Related Tags:</span>
+                {post.tags.map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="px-3 py-1 rounded-full bg-white border border-[#e6e8ec] text-xs text-[#5a6270] shadow-2xs font-medium"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* High-Converting TrustHyre Conversion Card */}
+            <div className="bg-[#0f2f63] text-white rounded-[1.75rem] p-6 sm:p-8 md:p-10 shadow-md relative overflow-hidden">
+              <div className="relative z-10 space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[10px] font-semibold uppercase tracking-wider">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>{tText("Direct Verified Hiring")}</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-medium uppercase tracking-tight text-white">
+                  {tText(`Need Verified ${post.targetTrade || 'Trade'} Workers in ${post.targetCity || 'India'}?`)}
+                </h3>
+                <p className="text-xs sm:text-sm text-white/80 leading-relaxed font-normal">
+                  {tText("TrustHyre connects businesses directly with government ID-verified, trade-tested technicians, delivery executives, and facility crew with zero contractor commissions.")}
+                </p>
+                <div className="pt-2 flex flex-wrap items-center gap-3">
+                  <Link
+                    to="/find-workers"
+                    className="px-5 py-2.5 rounded-full bg-white hover:bg-slate-100 text-[#0f2f63] text-xs font-semibold uppercase tracking-wider shadow-xs transition-all active:scale-95"
+                  >
+                    {tText("Browse Verified Talent")}
+                  </Link>
+                  <Link
+                    to="/post-job"
+                    className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-semibold uppercase tracking-wider transition-all active:scale-95"
+                  >
+                    {tText("Post a Job in 2 Minutes")}
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Sticky Sidebar (4 Cols) */}
+          <aside className="hidden lg:flex lg:col-span-4 flex-col gap-6 sticky top-24">
+            {/* Quick Action Hiring Card */}
+            <div className="bg-white rounded-3xl border border-[#e6e8ec] p-6 shadow-xs space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-[#0f2f63]/10 text-[#0f2f63]">
+                  <Briefcase className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold uppercase tracking-wider text-[#0a0a0a]">
+                    {tText("Verified Hiring")}
+                  </h4>
+                  <p className="text-[11px] text-[#717784]">
+                    {tText(`Direct to ${post.targetTrade || 'Talent'} in ${post.targetCity || 'All India'}`)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 py-2 border-y border-[#e6e8ec]">
+                <div className="flex items-center gap-2 text-xs text-[#0a0a0a]">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>{tText("Govt ID & Background Checked")}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-[#0a0a0a]">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>{tText("Direct phone connect, zero middlemen")}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-[#0a0a0a]">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>{tText("Fair compensation benchmarking")}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-1">
+                <Link
+                  to="/find-workers"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-semibold uppercase tracking-wider transition-all shadow-xs"
+                >
+                  <span>{tText(`Browse ${post.targetTrade || 'Specialists'}`)}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <Link
+                  to="/post-job"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] border border-[#e6e8ec] text-xs font-semibold uppercase tracking-wider transition-all"
+                >
+                  <span>{tText("Post Hiring Need")}</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Sidebar Related Articles (Compact List) */}
+            {relatedPosts.length > 0 && (
+              <div className="bg-white rounded-3xl border border-[#e6e8ec] p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#0a0a0a]">
+                    Top Related Reads
+                  </h4>
+                  <Link
+                    to="/blog"
+                    className="text-[11px] font-semibold text-[#0f2f63] hover:underline"
+                  >
+                    See all
+                  </Link>
+                </div>
+
+                <div className="space-y-3">
+                  {relatedPosts.slice(0, 3).map((rel) => (
+                    <Link
+                      key={rel.id}
+                      to={`/blog/${rel.slug}`}
+                      className="group block p-3 rounded-2xl bg-[#f4f4f4] hover:bg-[#e6e8ec] transition-colors border border-[#e6e8ec]"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#0f2f63] bg-[#0f2f63]/10 px-2 py-0.5 rounded-full">
+                          {rel.targetTrade || 'Article'}
+                        </span>
+                        <span className="text-[10px] text-[#717784] ml-auto">
+                          {rel.readTimeMinutes}m
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-semibold text-[#0a0a0a] group-hover:text-[#0f2f63] transition-colors line-clamp-2">
+                        {rel.title}
+                      </h5>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Share Widget */}
+            <div className="bg-white rounded-3xl border border-[#e6e8ec] p-5 shadow-xs text-center space-y-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#717784] block">
+                Share this Article
+              </span>
+              <div className="flex items-center justify-center gap-2">
+                <a
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareTitle} - ${shareUrl}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 rounded-full bg-[#f4f4f4] hover:bg-emerald-50 text-[#717784] hover:text-emerald-600 border border-[#e6e8ec] transition-colors"
+                  title="Share on WhatsApp"
                 >
                   <MessageCircle className="w-4 h-4" />
                 </a>
@@ -269,9 +494,8 @@ export const BlogPostPage: React.FC = () => {
                   href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl transition-colors"
+                  className="p-2.5 rounded-full bg-[#f4f4f4] hover:bg-blue-50 text-[#717784] hover:text-[#0f2f63] border border-[#e6e8ec] transition-colors"
                   title="Share on LinkedIn"
-                  aria-label="Share on LinkedIn"
                 >
                   <Linkedin className="w-4 h-4" />
                 </a>
@@ -279,153 +503,95 @@ export const BlogPostPage: React.FC = () => {
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl transition-colors"
+                  className="p-2.5 rounded-full bg-[#f4f4f4] hover:bg-slate-100 text-[#717784] hover:text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
                   title="Share on X"
-                  aria-label="Share on X"
                 >
                   <Twitter className="w-4 h-4" />
                 </a>
                 <button
                   onClick={handleCopyLink}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                  className="p-2.5 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] border border-[#e6e8ec] transition-colors cursor-pointer"
+                  title="Copy link"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-                  <span>{copied ? 'Copied!' : 'Copy Link'}</span>
+                  {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4 text-[#717784]" />}
                 </button>
               </div>
             </div>
-          </header>
+          </aside>
+        </div>
 
-          {/* Hero Cover Image */}
-          {post.coverImageUrl && (
-            <div className="my-8 rounded-3xl overflow-hidden shadow-lg border border-slate-200 bg-slate-900 aspect-video max-h-[460px]">
-              <img
-                src={post.coverImageUrl}
-                alt={post.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-
-          {/* Article Body Content */}
-          <div className="mt-8 prose prose-slate max-w-none prose-headings:font-black prose-headings:tracking-tight prose-a:text-blue-600 prose-a:font-bold hover:prose-a:underline prose-img:rounded-2xl">
-            {post.content.split('\n\n').map((paragraph, idx) => {
-              const trimmed = paragraph.trim();
-              if (trimmed.startsWith('## ')) {
-                return (
-                  <h2 key={idx} className="text-2xl sm:text-3xl font-black text-slate-900 mt-10 mb-4 pt-4 border-t border-slate-100">
-                    {trimmed.replace('## ', '')}
-                  </h2>
-                );
-              }
-              if (trimmed.startsWith('### ')) {
-                return (
-                  <h3 key={idx} className="text-xl sm:text-2xl font-bold text-slate-800 mt-6 mb-3">
-                    {trimmed.replace('### ', '')}
-                  </h3>
-                );
-              }
-              if (trimmed.startsWith('> ')) {
-                return (
-                  <blockquote key={idx} className="my-6 pl-4 border-l-4 border-blue-600 bg-blue-50/60 p-4 rounded-r-2xl text-slate-800 italic font-medium">
-                    {trimmed.replace('> ', '')}
-                  </blockquote>
-                );
-              }
-              if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-                const items = trimmed.split('\n').filter(Boolean);
-                return (
-                  <ul key={idx} className="my-4 space-y-2 list-disc list-inside text-slate-700 leading-relaxed">
-                    {items.map((it, i) => (
-                      <li key={i}>{it.replace(/^[-*]\s*/, '')}</li>
-                    ))}
-                  </ul>
-                );
-              }
-              return (
-                <p key={idx} className="text-base sm:text-lg text-slate-700 leading-relaxed my-4 font-normal">
-                  {trimmed}
+        {/* Related Articles Carousel / Grid */}
+        {relatedPosts.length > 0 && (
+          <div className="space-y-6 pt-6 border-t border-[#e6e8ec]">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <h3 className="text-lg sm:text-xl font-medium uppercase tracking-tight text-[#0a0a0a]">
+                  Related Articles
+                </h3>
+                <p className="text-xs text-[#717784]">
+                  More insights in {post.category?.name || 'Skilled Workforce Management'}
                 </p>
-              );
-            })}
-          </div>
+              </div>
+              <Link
+                to="/blog"
+                className="text-xs font-semibold uppercase tracking-wider text-[#0f2f63] hover:text-[#2563c9] transition-colors"
+              >
+                View All
+              </Link>
+            </div>
 
-          {/* Contextual TrustHyre Conversion Callout */}
-          <div className="my-12 p-8 bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 rounded-3xl text-white shadow-xl border border-blue-800/40 relative overflow-hidden">
-            <div className="relative z-10 space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-400/20 text-blue-300 text-xs font-bold uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-                <span>TrustHyre Direct Matching</span>
-              </div>
-              <h3 className="text-2xl font-black text-white">
-                {post.targetTrade 
-                  ? `Need Verified ${post.targetTrade}s in ${post.targetCity || 'India'}?`
-                  : 'Hire Verified Blue-Collar Talent with Photo Check-In'}
-              </h3>
-              <p className="text-sm text-slate-300 max-w-xl leading-relaxed">
-                TrustHyre eliminates absenteeism and identity fraud with photo check-in verification and direct employer matching. Post your requirements or search verified candidates now.
-              </p>
-              <div className="pt-2 flex flex-wrap gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedPosts.map((rel) => (
                 <Link
-                  to="/find-workers"
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
+                  key={rel.id}
+                  to={`/blog/${rel.slug}`}
+                  className="bg-white rounded-[1.5rem] border border-[#e6e8ec] hover:border-[#0f2f63]/30 transition-all p-5 shadow-xs hover:shadow-md group flex flex-col justify-between"
                 >
-                  Post a Job for Free
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#0f2f63] bg-[#0f2f63]/10 px-2.5 py-0.5 rounded-full">
+                        {rel.targetTrade || 'Article'}
+                      </span>
+                      <span className="text-[10px] text-[#717784] flex items-center gap-1 ml-auto">
+                        <Clock className="w-2.5 h-2.5" />
+                        {rel.readTimeMinutes}m read
+                      </span>
+                    </div>
+
+                    <h4 className="text-sm sm:text-base font-semibold text-[#0a0a0a] group-hover:text-[#2563c9] transition-colors line-clamp-2 leading-snug">
+                      {rel.title}
+                    </h4>
+
+                    <p className="text-xs text-[#717784] font-normal leading-relaxed line-clamp-2">
+                      {rel.excerpt}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 mt-3 border-t border-[#e6e8ec] flex items-center justify-between text-xs font-semibold text-[#0f2f63]">
+                    <span>Read Article</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </Link>
-                <Link
-                  to="/search"
-                  className="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl text-xs font-bold transition-all"
-                >
-                  Browse Verified Talent
-                </Link>
-              </div>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Related Articles Section */}
-          {relatedPosts.length > 0 && (
-            <section className="mt-16 pt-10 border-t border-slate-200">
-              <h2 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-blue-600" />
-                <span>Related Insights & Guides</span>
-              </h2>
+        {/* Back to Blog Button */}
+        <div className="pt-4 text-center">
+          <Link
+            to="/blog"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] text-xs font-semibold uppercase tracking-wider transition-all shadow-2xs"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-[#717784]" />
+            <span>Back to All Insights</span>
+          </Link>
+        </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {relatedPosts.map((related) => (
-                  <Link
-                    key={related.id}
-                    to={`/blog/${related.slug}`}
-                    className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
-                  >
-                    <div className="space-y-2">
-                      <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">
-                        {related.category?.name || 'Guide'}
-                      </span>
-                      <h4 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
-                        {related.title}
-                      </h4>
-                      <p className="text-xs text-slate-500 line-clamp-2">
-                        {related.excerpt}
-                      </p>
-                    </div>
-
-                    <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                      <span>{related.readTimeMinutes} min read</span>
-                      <span className="text-blue-600 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
-                        <span>Read</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-
-        </article>
       </main>
+
+      {/* Consistent Landing Footer */}
+      <LandingFooter />
     </div>
   );
 };
-
-export default BlogPostPage;

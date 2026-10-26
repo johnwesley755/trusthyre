@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CheckCircle2, ChevronRight, BellRing, Settings, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CheckCircle2, ChevronRight, BellRing, Settings, Sparkles, BookOpen, ArrowRight } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../../api/apiClient';
 import { useAuth } from '../../../providers/AuthContext';
@@ -206,7 +207,32 @@ export const JobSearchRightSidebar: React.FC<JobSearchRightSidebarProps> = ({
         </div>
       </div>
 
-      {/* 3. Manage Alerts Modal */}
+      {/* 3. Career Articles & Wage Guides Card */}
+      <div className="rounded-[1.75rem] border border-[#e6e8ec] bg-[#f4f4f4] p-5 shadow-xs space-y-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-[#0f2f63]/10 text-[#0f2f63]">
+            <BookOpen className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#0a0a0a]">
+              Career Guides & Wages
+            </h4>
+            <p className="text-[11px] text-[#717784]">Trade salary insights & interview prep</p>
+          </div>
+        </div>
+        <p className="text-xs text-[#5a6270] leading-relaxed">
+          Learn how to get trade verified, negotiate fair market wages, and connect directly with hiring companies.
+        </p>
+        <Link
+          to="/blog"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f2f63] hover:text-[#2563c9] transition-colors"
+        >
+          <span>Explore Articles & Guides</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* 4. Manage Alerts Modal */}
       <ManageAlertsModal
         isOpen={isManageModalOpen}
         onClose={() => setIsManageModalOpen(false)}

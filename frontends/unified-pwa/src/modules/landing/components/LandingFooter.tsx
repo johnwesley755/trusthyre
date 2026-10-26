@@ -36,6 +36,7 @@ export function LandingFooter() {
           <ul className="space-y-2.5 text-white/70 text-xs">
             <li><Link className="hover:text-white transition-colors" to="/find-workers">Find Workers</Link></li>
             <li><Link className="hover:text-white transition-colors" to="/post-job">Post a Job</Link></li>
+            <li><Link className="hover:text-white transition-colors" to="/blog">Blog & Hiring Guides</Link></li>
             <li><Link className="hover:text-white transition-colors" to="/sign-in?role=employer">Employer Login</Link></li>
             <li><Link className="hover:text-white transition-colors" to="/admin/login">Admin Gateway</Link></li>
           </ul>
