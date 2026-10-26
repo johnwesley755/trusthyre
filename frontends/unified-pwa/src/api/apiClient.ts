@@ -23,7 +23,8 @@ export const setupInterceptors = (getToken: () => Promise<string | null>) => {
       config.url.includes('/api/auth/send-otp') ||
       config.url.includes('/api/auth/forgot-password') ||
       config.url.includes('/api/auth/reset-password') ||
-      config.url.includes('/api/early-access')
+      config.url.includes('/api/early-access') ||
+      config.url.includes('/api/blog')
     );
 
     if (token && !isOpenEndpoint) {

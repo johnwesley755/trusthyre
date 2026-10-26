@@ -3,7 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "build": "cd frontends/unified-pwa && npm run build",
+    "build": "cd frontends/unified-pwa && npm install && npm run build",
     "dev": "cd frontends/unified-pwa && npm run dev"
   }
 }
+

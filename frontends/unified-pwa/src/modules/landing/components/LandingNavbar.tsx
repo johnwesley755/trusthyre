@@ -11,7 +11,8 @@ import {
   Building2, 
   LayoutDashboard,
   Menu,
-  X
+  X,
+  BookOpen
 } from "lucide-react";
 
 export function LandingNavbar() {
@@ -52,6 +53,10 @@ export function LandingNavbar() {
           <Link className="hover:text-[#0066FF] transition-colors flex items-center gap-1.5" to="/find-workers">
             <UserCheck className="w-4 h-4 text-[#0066FF]" />
             Hire Workers
+          </Link>
+          <Link className="hover:text-[#0066FF] transition-colors flex items-center gap-1.5" to="/blog">
+            <BookOpen className="w-4 h-4 text-indigo-600" />
+            Blog & Guides
           </Link>
           <Link className="hover:text-[#0066FF] transition-colors flex items-center gap-1.5 cursor-pointer" to="/terms">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
@@ -155,6 +160,14 @@ export function LandingNavbar() {
             >
               <UserCheck className="w-4 h-4 text-[#0066FF]" />
               <span>Hire Workers</span>
+            </Link>
+            <Link
+              to="/blog"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50"
+            >
+              <BookOpen className="w-4 h-4 text-indigo-600" />
+              <span>Blog & Guides</span>
             </Link>
           </div>
 

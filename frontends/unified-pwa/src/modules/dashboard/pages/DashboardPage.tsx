@@ -16,7 +16,8 @@ import {
   History,
   ChevronRight,
   Send,
-  Building2
+  Building2,
+  BookOpen
 } from "lucide-react";
 import { AppLoader } from '../../../components/common/AppLoader';
 
@@ -331,6 +332,22 @@ export default function DashboardPage() {
                       <History className="w-4 h-4" />
                     </div>
                     <span className="text-xs font-semibold text-[#0a0a0a]">Activity History</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[#717784] group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+
+                <Link
+                  to="/blog"
+                  className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-100 rounded-[1.25rem] border border-[#e6e8ec] transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-50 text-[#0f2f63] flex items-center justify-center">
+                      <BookOpen className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-[#0a0a0a] block">Hiring Articles & Blog</span>
+                      <span className="text-[10px] text-[#717784] block">Salary benchmarks & hiring guides</span>
+                    </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-[#717784] group-hover:translate-x-0.5 transition-transform" />
                 </Link>

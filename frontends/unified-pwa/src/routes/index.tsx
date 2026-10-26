@@ -32,6 +32,10 @@ import { AdminVerificationsPage } from '../modules/admin/pages/AdminVerification
 import { AdminUsersPage } from '../modules/admin/pages/AdminUsersPage';
 import { AdminJobsPage } from '../modules/admin/pages/AdminJobsPage';
 import { AdminLeadsPage } from '../modules/admin/pages/AdminLeadsPage';
+import { AdminBlogPage } from '../modules/admin/pages/AdminBlogPage';
+import { AdminBlogEditorPage } from '../modules/admin/pages/AdminBlogEditorPage';
+import { BlogListingPage } from '../modules/blog/pages/BlogListingPage';
+import { BlogPostPage } from '../modules/blog/pages/BlogPostPage';
 
 import AppLayout from '../layouts/AppLayout';
 import RootLayout from '../layouts/RootLayout';
@@ -76,6 +80,18 @@ export const router = createBrowserRouter([
       {
         path: '/privacy',
         element: <PrivacyPage />,
+      },
+      {
+        path: '/blog',
+        element: <BlogListingPage />,
+      },
+      {
+        path: '/blog/:slug',
+        element: <BlogPostPage />,
+      },
+      {
+        path: '/blog/category/:slug',
+        element: <BlogListingPage />,
       },
       {
         path: '/onboarding',
@@ -260,6 +276,18 @@ export const router = createBrowserRouter([
               {
                 path: 'jobs',
                 element: <AdminJobsPage />,
+              },
+              {
+                path: 'blog',
+                element: <AdminBlogPage />,
+              },
+              {
+                path: 'blog/new',
+                element: <AdminBlogEditorPage />,
+              },
+              {
+                path: 'blog/:id/edit',
+                element: <AdminBlogEditorPage />,
               },
             ],
           },
