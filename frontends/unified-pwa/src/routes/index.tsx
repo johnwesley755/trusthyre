@@ -34,6 +34,7 @@ import { AdminJobsPage } from '../modules/admin/pages/AdminJobsPage';
 import { AdminLeadsPage } from '../modules/admin/pages/AdminLeadsPage';
 import { AdminBlogPage } from '../modules/admin/pages/AdminBlogPage';
 import { AdminBlogEditorPage } from '../modules/admin/pages/AdminBlogEditorPage';
+import { AdminAnalyticsPage } from '../modules/admin/pages/AdminAnalyticsPage';
 import { BlogListingPage } from '../modules/blog/pages/BlogListingPage';
 import { BlogPostPage } from '../modules/blog/pages/BlogPostPage';
 
@@ -260,6 +261,10 @@ export const router = createBrowserRouter([
               {
                 path: 'dashboard',
                 element: <AdminDashboardPage />,
+              },
+              {
+                path: 'analytics',
+                element: <AdminAnalyticsPage />,
               },
               {
                 path: 'leads',

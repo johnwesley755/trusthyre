@@ -8,13 +8,12 @@ import {
   Briefcase, 
   FileCheck2, 
   CheckCircle2, 
-  ArrowUpRight, 
   Loader2,
   Building2,
   UserCheck,
-  ShieldCheck,
-  TrendingUp,
-  ArrowRight
+  ArrowRight,
+  BarChart3,
+  BookOpen
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,6 +26,13 @@ export const AdminDashboardPage: React.FC = () => {
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchInterval: false,
+  });
+
+  const { data: visitorData } = useQuery({
+    queryKey: ['adminVisitorAnalytics'],
+    queryFn: () => adminService.getVisitorAnalytics(false),
+    staleTime: 3 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: pendingVerifications = [], isLoading: isLoadingVerifications } = useQuery({
@@ -129,6 +135,64 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           );
         })}
+      </div>
+
+      {/* Visitor Intelligence Pulse Card */}
+      <div className="bg-gradient-to-r from-[#0f2f63] via-[#163f82] to-[#1e54a8] text-white rounded-2xl p-4 sm:p-6 lg:p-7 shadow-sm border border-[#0f2f63]/40 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-radial from-blue-400/20 to-transparent rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="space-y-2 min-w-0 flex-1">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-semibold uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Live Traffic Pulse
+              </span>
+              <span className="text-xs text-blue-200">
+                Measurement ID: <code className="font-mono bg-black/20 px-2 py-0.5 rounded text-white text-[11px]">G-NH3HTZ6XBB</code>
+              </span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              Google Analytics 4 & Visitor Intelligence
+            </h2>
+            <p className="text-xs sm:text-sm text-blue-100/80 max-w-2xl leading-relaxed">
+              Real-time candidate and recruiter visits, geographic concentration across Indian metro hubs, acquisition pathways, and device split.
+            </p>
+          </div>
+
+          {/* Quick Metrics & CTA */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+            <div className="grid grid-cols-3 gap-2 bg-black/20 p-2.5 rounded-xl border border-white/10 text-center">
+              <div className="px-2">
+                <span className="text-[10px] uppercase font-bold text-blue-200 block">Active Now</span>
+                <span className="text-lg font-bold text-emerald-300 block">
+                  {visitorData?.realtime?.activeUsers ?? 0}
+                </span>
+              </div>
+              <div className="px-2 border-l border-white/10">
+                <span className="text-[10px] uppercase font-bold text-blue-200 block">Visitors</span>
+                <span className="text-lg font-bold text-white block">
+                  {visitorData ? visitorData.metrics.monthlyActiveUsers.toLocaleString() : '...'}
+                </span>
+              </div>
+              <div className="px-2 border-l border-white/10">
+                <span className="text-[10px] uppercase font-bold text-blue-200 block">Page Views</span>
+                <span className="text-lg font-bold text-white block">
+                  {visitorData ? visitorData.metrics.totalPageViews.toLocaleString() : '...'}
+                </span>
+              </div>
+            </div>
+
+            <Link
+              to="/admin/analytics"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-blue-50 text-[#0f2f63] text-xs font-bold uppercase tracking-wider shadow-sm transition-all active:scale-95 whitespace-nowrap"
+            >
+              <BarChart3 className="w-4 h-4 text-[#0f2f63]" />
+              <span>Full Analytics</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Main Two Columns */}
@@ -249,27 +313,48 @@ export const AdminDashboardPage: React.FC = () => {
           {/* Quick Actions Card */}
           <div className="bg-white border border-[#e6e8ec] rounded-2xl p-4 sm:p-6 shadow-xs min-w-0">
             <h3 className="text-sm font-semibold text-[#0a0a0a] mb-3">Quick Navigation</h3>
-            <div className="grid grid-cols-3 gap-2 sm:gap-2.5 min-w-0">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 min-w-0">
+              <Link
+                to="/admin/analytics"
+                className="p-2.5 bg-[#f8fafc] hover:bg-blue-50/60 border border-[#e6e8ec] hover:border-blue-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+              >
+                <BarChart3 className="w-4 h-4 text-[#0f2f63] group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Analytics</span>
+              </Link>
+              <Link
+                to="/admin/blog"
+                className="p-2.5 bg-[#f8fafc] hover:bg-purple-50/60 border border-[#e6e8ec] hover:border-purple-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+              >
+                <BookOpen className="w-4 h-4 text-purple-600 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Articles</span>
+              </Link>
               <Link
                 to="/admin/leads"
-                className="p-2 sm:p-3 bg-[#f8fafc] hover:bg-emerald-50/50 border border-[#e6e8ec] hover:border-emerald-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+                className="p-2.5 bg-[#f8fafc] hover:bg-emerald-50/60 border border-[#e6e8ec] hover:border-emerald-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
               >
                 <Building2 className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span className="text-[11px] sm:text-xs font-medium text-[#0a0a0a] truncate w-full">Companies</span>
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Companies</span>
               </Link>
               <Link
                 to="/admin/users"
-                className="p-2 sm:p-3 bg-[#f8fafc] hover:bg-blue-50/50 border border-[#e6e8ec] hover:border-blue-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+                className="p-2.5 bg-[#f8fafc] hover:bg-sky-50/60 border border-[#e6e8ec] hover:border-sky-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
               >
-                <Users className="w-4 h-4 text-[#0f2f63] group-hover:scale-110 transition-transform shrink-0" />
-                <span className="text-[11px] sm:text-xs font-medium text-[#0a0a0a] truncate w-full">Directory</span>
+                <Users className="w-4 h-4 text-sky-600 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Directory</span>
               </Link>
               <Link
                 to="/admin/jobs"
-                className="p-2 sm:p-3 bg-[#f8fafc] hover:bg-amber-50/50 border border-[#e6e8ec] hover:border-amber-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+                className="p-2.5 bg-[#f8fafc] hover:bg-amber-50/60 border border-[#e6e8ec] hover:border-amber-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
               >
                 <Briefcase className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span className="text-[11px] sm:text-xs font-medium text-[#0a0a0a] truncate w-full">Moderation</span>
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Moderation</span>
+              </Link>
+              <Link
+                to="/admin/verifications"
+                className="p-2.5 bg-[#f8fafc] hover:bg-rose-50/60 border border-[#e6e8ec] hover:border-rose-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+              >
+                <FileCheck2 className="w-4 h-4 text-rose-600 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Verification</span>
               </Link>
             </div>
           </div>

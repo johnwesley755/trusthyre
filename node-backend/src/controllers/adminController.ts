@@ -3,6 +3,8 @@ import prisma from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationDispatcher } from '../services/notificationDispatcher';
+import { GoogleAnalyticsService } from '../services/googleAnalyticsService';
+
 
 export const getAdminStats = async (c: Context) => {
   try {
@@ -454,6 +456,23 @@ export const moderateJobByAdmin = async (c: Context) => {
     return c.json(ApiResponse.ok(`Job ${action}d successfully`, updated));
   } catch (err: any) {
     console.error("moderateJobByAdmin error:", err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * Super Admin: Get real-time visitor count, audience trends, and GA4 telemetry
+ */
+export const getVisitorAnalytics = async (c: Context) => {
+  try {
+    const refresh = c.req.query('refresh') === 'true';
+    if (refresh) {
+      GoogleAnalyticsService.clearCache();
+    }
+    const data = await GoogleAnalyticsService.getOverview();
+    return c.json(ApiResponse.ok("Visitor analytics retrieved successfully", data));
+  } catch (err: any) {
+    console.error("getVisitorAnalytics error:", err);
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
 };

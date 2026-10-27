@@ -169,6 +169,63 @@ export const adminService = {
   runFreshnessCycle: async (): Promise<any> => {
     const res = await apiClient.post('/api/admin/jobs/freshness-cycle', {});
     return res.data;
+  },
+
+  getVisitorAnalytics: async (refresh = false): Promise<VisitorAnalyticsData> => {
+    const res = await apiClient.get<VisitorAnalyticsData>(`/api/admin/analytics/visitors${refresh ? '?refresh=true' : ''}`);
+    return res.data;
   }
 };
+
+export interface VisitorAnalyticsData {
+  status: 'connected' | 'not_configured' | 'error';
+  errorMessage?: string;
+  measurementId: string;
+  propertyId?: string;
+  realtime: {
+    activeUsers: number;
+    lastUpdated: string;
+  };
+  metrics: {
+    todayUsers: number;
+    weeklyActiveUsers: number;
+    monthlyActiveUsers: number;
+    totalPageViews: number;
+    averageSessionDurationSeconds: number;
+  };
+  trend: Array<{
+    date: string;
+    label: string;
+    users: number;
+    pageViews: number;
+  }>;
+  topPages: Array<{
+    path: string;
+    title: string;
+    views: number;
+    users: number;
+  }>;
+  topCities: Array<{
+    city: string;
+    state?: string;
+    users: number;
+    percentage: number;
+  }>;
+  deviceBreakdown: {
+    mobile: number;
+    desktop: number;
+    tablet: number;
+  };
+  trafficChannels: Array<{
+    channel: string;
+    sessions: number;
+    percentage: number;
+  }>;
+  setupInstructions?: {
+    isConfigured: boolean;
+    missingEnvVars: string[];
+    helpUrl: string;
+  };
+}
+
 

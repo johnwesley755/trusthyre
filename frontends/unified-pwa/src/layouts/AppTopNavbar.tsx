@@ -29,7 +29,8 @@ import {
   Globe,
   BookOpen,
   ShieldCheck,
-  Building2
+  Building2,
+  BarChart3
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../providers/TranslationContext';
@@ -272,6 +273,16 @@ export const AppTopNavbar = () => {
                             >
                               <LayoutDashboard className="w-4 h-4 text-[#717784]" />
                               <span>Admin Dashboard</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/admin/analytics');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <BarChart3 className="w-4 h-4 text-[#717784]" />
+                              <span>Visitor Analytics</span>
                             </button>
                             <button
                               onClick={() => {
