@@ -3,7 +3,10 @@ name = "trusthire-python-scraper"
 version = "0.1.0"
 description = "TrustHyre Blue Collar Job Discovery Edge Scraper Worker"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "asyncpg>=0.30.0",
+    "httpx>=0.28.0",
+]
 
 [dependency-groups]
 dev = [

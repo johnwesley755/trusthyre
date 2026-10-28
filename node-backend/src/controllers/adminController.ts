@@ -330,13 +330,51 @@ export const syncExternalJobs = async (c: Context) => {
   try {
     const body = await c.req.json().catch(() => ({}));
     const { ScraperServiceClient } = await import('../services/scraperServiceClient');
-    const result = await ScraperServiceClient.triggerScan({
+    const { LeadService } = await import('../services/leadService');
+
+    const result = await ScraperServiceClient.runDiscovery({
       query: body.query,
       city: body.city,
       category: body.category,
       sources: Array.isArray(body.sources) ? body.sources : undefined,
       limit: Number(body.limit) || 25,
     });
+
+    // Upsert into prisma.jobs so admin panel displays jobs immediately in Pending Review
+    if (Array.isArray(result.items) && result.items.length > 0) {
+      for (const item of result.items) {
+        try {
+          await prisma.jobs.upsert({
+            where: { id: item.id },
+            create: {
+              id: item.id,
+              employer_id: item.employer_id || 'external_aggregator',
+              title: item.title,
+              employer_name: item.employer_name || 'Verified Employer',
+              description: item.description || '',
+              industry: item.industry || 'Field Operations & Logistics',
+              experience_years_required: item.experience_years_required || 0,
+              budget: item.budget ? Number(item.budget) : null,
+              status: 'PENDING_REVIEW',
+              city: item.city || body.city || 'Chennai',
+              location: item.location || item.city || body.city || 'Chennai',
+              is_external: true,
+              source_name: item.source_name || 'Web Discovery',
+              source_url: item.source_url || '',
+              source_hash: item.source_hash || item.id,
+              external_id: item.external_id || item.id,
+              created_at: item.created_at ? new Date(item.created_at) : new Date(),
+              updated_at: new Date(),
+            },
+            update: {
+              last_verified_at: new Date(),
+            }
+          });
+        } catch (_) {}
+      }
+      await LeadService.syncLeadsFromScrapedJobs().catch(() => {});
+    }
+
     return c.json(ApiResponse.ok("External jobs synchronized successfully via Python Scraper Service", result));
   } catch (err: any) {
     console.error("syncExternalJobs error:", err);
@@ -359,7 +397,45 @@ export const getScanStatus = async (c: Context) => {
   try {
     const id = c.req.param('id') as string;
     const { ScraperServiceClient } = await import('../services/scraperServiceClient');
+    const { LeadService } = await import('../services/leadService');
     const status = await ScraperServiceClient.getScanStatus(id);
+
+    // If scan is completed and contains items, ensure they are stored in PostgreSQL
+    const items = (status as any).items;
+    if (Array.isArray(items) && items.length > 0) {
+      for (const item of items) {
+        try {
+          await prisma.jobs.upsert({
+            where: { id: item.id },
+            create: {
+              id: item.id,
+              employer_id: item.employer_id || 'external_aggregator',
+              title: item.title,
+              employer_name: item.employer_name || 'Verified Employer',
+              description: item.description || '',
+              industry: item.industry || 'Field Operations & Logistics',
+              experience_years_required: item.experience_years_required || 0,
+              budget: item.budget ? Number(item.budget) : null,
+              status: 'PENDING_REVIEW',
+              city: item.city || 'Chennai',
+              location: item.location || item.city || 'Chennai',
+              is_external: true,
+              source_name: item.source_name || 'Web Discovery',
+              source_url: item.source_url || '',
+              source_hash: item.source_hash || item.id,
+              external_id: item.external_id || item.id,
+              created_at: item.created_at ? new Date(item.created_at) : new Date(),
+              updated_at: new Date(),
+            },
+            update: {
+              last_verified_at: new Date(),
+            }
+          });
+        } catch (_) {}
+      }
+      await LeadService.syncLeadsFromScrapedJobs().catch(() => {});
+    }
+
     return c.json(ApiResponse.ok(status));
   } catch (err: any) {
     console.error("getScanStatus error:", err);
