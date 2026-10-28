@@ -1,3 +1,4 @@
+import { requestContextStorage } from '../config/prisma';
 /**
  * ScraperServiceClient
  * Secure proxy client connecting Node.js backend to the Python FastAPI Blue-Collar Scraping Microservice.
@@ -66,6 +67,19 @@ export interface ScraperJobRecord {
 }
 
 export class ScraperServiceClient {
+  private static get scraperBinding(): any {
+    try {
+      const store = requestContextStorage.getStore();
+      if (store?.env?.PYTHON_SCRAPER) {
+        return store.env.PYTHON_SCRAPER;
+      }
+      if ((process.env as any)?.PYTHON_SCRAPER) {
+        return (process.env as any).PYTHON_SCRAPER;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   private static get baseUrl(): string {
     const configured = process.env.SCRAPER_SERVICE_URL;
     if (configured) {
@@ -95,6 +109,23 @@ export class ScraperServiceClient {
    * Safe fetch with development-only fallback across local ports
    */
   private static async safeFetch(path: string, options: RequestInit = {}): Promise<Response> {
+    const binding = this.scraperBinding;
+    if (binding && typeof binding.fetch === 'function') {
+      try {
+        const dummyUrl = 'https://trusthire-python-scraper' + path;
+        const res = await binding.fetch(dummyUrl, {
+          ...options,
+          headers: {
+            ...this.headers,
+            ...(options.headers || {}),
+          },
+        });
+        return res;
+      } catch (bindingErr) {
+        console.warn('[ScraperServiceClient] Service binding fetch fallback:', bindingErr);
+      }
+    }
+
     const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
     const urls = isDev
       ? Array.from(new Set(['http://localhost:5000', 'http://localhost:8000', this.baseUrl]))
