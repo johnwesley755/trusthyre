@@ -44,6 +44,7 @@ class DiscoveryPipeline:
         rejected_count = 0
         error_count = 0
         source_stats: Dict[str, Any] = {}
+        ingested_jobs: List[Any] = []
 
         # Resolve adapters to run
         all_adapters = SourceAdapterRegistry.list_adapters()
@@ -136,6 +137,7 @@ class DiscoveryPipeline:
                         valid_count += 1
                         source_stats[adapter.id]["valid"] += 1
                         new_job = await JobRepository.create_job(db, raw_job, source_hash)
+                        ingested_jobs.append(new_job)
                         await ScanRepository.log_event(
                             db, scan_id, adapter.id,
                             f"New Blue-Collar Job Ingested: {new_job.title} at {new_job.employer_name} in {new_job.city} (ID: {new_job.id})",
@@ -152,6 +154,7 @@ class DiscoveryPipeline:
             )
             await db.commit()
             logger.info(f"[DiscoveryPipeline][Step 5/5 - COMPLETE] Scan {scan_id} finished with status '{final_status}'. Total Found: {total_found}, Valid Jobs Ingested: {valid_count}, Duplicates: {duplicate_count}, Rejected: {rejected_count}, Errors: {error_count}")
+            return ingested_jobs
 
         except Exception as scan_ex:
             logger.error(f"Fatal error in scan {scan_id}: {scan_ex}")
@@ -160,5 +163,6 @@ class DiscoveryPipeline:
                 total_found, valid_count, duplicate_count, rejected_count, error_count + 1, source_stats
             )
             await db.commit()
+            return ingested_jobs
         finally:
             active_scan_cancellations.pop(scan_id, None)

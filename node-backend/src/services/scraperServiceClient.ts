@@ -44,7 +44,11 @@ export interface ScanResult {
 export interface ScraperJobRecord {
   id: string;
   title: string;
+  employer_id?: string | null;
   employer_name?: string;
+  description?: string;
+  industry?: string;
+  experience_years_required?: number;
   city?: string;
   location?: string;
   budget?: number;
@@ -52,11 +56,13 @@ export interface ScraperJobRecord {
   is_external: boolean;
   source_name?: string;
   source_url?: string;
+  source_hash?: string;
   external_id?: string;
   alternate_sources?: any[];
   date_posted?: string;
   last_verified_at?: string;
   created_at?: string;
+  [key: string]: any;
 }
 
 export class ScraperServiceClient {
@@ -224,6 +230,80 @@ export class ScraperServiceClient {
         },
       ];
     }
+  }
+
+  /**
+   * Synchronously runs live blue-collar discovery on the Python microservice
+   * and returns the scraped jobs array directly.
+   */
+  static async runDiscovery(options: {
+    query?: string;
+    city?: string;
+    category?: string;
+    sources?: string[];
+    limit?: number;
+  } = {}): Promise<{
+    success: boolean;
+    status: string;
+    total: number;
+    sources_scanned: string[];
+    items: ScraperJobRecord[];
+  }> {
+    const payload = {
+      query: options.query || null,
+      city: options.city || 'Chennai',
+      category: options.category || null,
+      sources: options.sources || null,
+      limit: Math.min(options.limit || 25, 100),
+    };
+
+    let res: Response | null = null;
+    try {
+      res = await this.safeFetch('/api/v1/sources/run-discovery', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(30000),
+      });
+    } catch (_) {
+      try {
+        res = await this.safeFetch('/api/v1/scans/run-discovery', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(30000),
+        });
+      } catch (_) {}
+    }
+
+    if (res && res.ok) {
+      const data = (await res.json()) as any;
+      if (Array.isArray(data)) {
+        return {
+          success: true,
+          status: 'COMPLETED',
+          total: data.length,
+          sources_scanned: ['lever_ats', 'greenhouse_ats', 'schema_org'],
+          items: data,
+        };
+      }
+      return {
+        success: data.success ?? true,
+        status: data.status || 'COMPLETED',
+        total: data.total ?? (data.items?.length || 0),
+        sources_scanned: data.sources_scanned || [],
+        items: data.items || [],
+      };
+    }
+
+    // Fallback: trigger scan and list recent jobs
+    const scan = await this.triggerScan(options);
+    const jobs = await this.listJobs({ city: options.city, limit: options.limit || 25 }).catch(() => ({ total: 0, page: 1, limit: 25, items: [] }));
+    return {
+      success: true,
+      status: scan.status,
+      total: jobs.items?.length || scan.total_found || 0,
+      sources_scanned: scan.sources_scanned || [],
+      items: jobs.items || (scan as any).items || [],
+    };
   }
 
   /**

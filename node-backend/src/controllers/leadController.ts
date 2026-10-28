@@ -1,5 +1,6 @@
 import { Context } from 'hono';
 import { LeadService } from '../services/leadService';
+import prisma from '../config/prisma';
 
 export class LeadController {
   static async getLeads(c: Context) {
@@ -151,19 +152,63 @@ export class LeadController {
       const preSync = await LeadService.syncLeadsFromScrapedJobs();
       console.log(`[LeadController] Pre-scan database sync result:`, preSync);
 
-      const results = await ScraperServiceClient.triggerScan({
+      const results = await ScraperServiceClient.runDiscovery({
         query: queryParam,
         city: cityParam,
         sources: Array.isArray(body.sources) ? body.sources : undefined,
         limit: limitParam,
       });
 
-      console.log(`[LeadController][Step 2/3 - DISPATCH] Scraper microservice accepted scan: ID=${results.id}, Status=${results.status}`);
+      console.log(`[LeadController][Step 2/3 - DISPATCH] Scraper microservice completed discovery: ${results.items?.length || 0} jobs returned.`);
+
+      // Persist discovered jobs into PostgreSQL prisma.jobs
+      if (Array.isArray(results.items) && results.items.length > 0) {
+        for (const item of results.items) {
+          try {
+            await prisma.jobs.upsert({
+              where: { id: item.id },
+              create: {
+                id: item.id,
+                employer_id: item.employer_id || 'external_aggregator',
+                title: item.title,
+                employer_name: item.employer_name || 'Verified Employer',
+                description: item.description || '',
+                industry: item.industry || 'Field Operations & Logistics',
+                experience_years_required: item.experience_years_required || 0,
+                budget: item.budget ? Number(item.budget) : null,
+                status: 'PENDING_REVIEW',
+                city: item.city || cityParam,
+                location: item.location || item.city || cityParam,
+                is_external: true,
+                source_name: item.source_name || 'Web Discovery',
+                source_url: item.source_url || '',
+                source_hash: item.source_hash || item.id,
+                external_id: item.external_id || item.id,
+                created_at: item.created_at ? new Date(item.created_at) : new Date(),
+                updated_at: new Date(),
+              },
+              update: {
+                last_verified_at: new Date(),
+              }
+            });
+          } catch (upsertErr: any) {
+            console.warn(`[LeadController] Notice upserting job ${item.id}:`, upsertErr?.message);
+          }
+        }
+      }
+
+      // Sync into employer_leads
+      const postSync = await LeadService.syncLeadsFromScrapedJobs();
+      console.log(`[LeadController][Step 3/3 - SYNC] Post-discovery lead sync result:`, postSync);
 
       return c.json({
+        ...results,
         success: true,
         sourcesScanned: results.sources_scanned?.length || 0,
-        ...results,
+        leadsIngested: postSync.newLeadsCount,
+        requirementsIngested: postSync.syncedCount,
+        totalDiscovered: results.total || results.items?.length || 0,
+        syncResult: postSync,
       });
     } catch (error: any) {
       console.error('[LeadController] Error running auto-discovery:', error);
