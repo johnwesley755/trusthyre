@@ -25,6 +25,8 @@
     }
   },
   "vars": {
-    "ENVIRONMENT": "production"
+    "ENVIRONMENT": "production",
+    "FIREBASE_API_KEY": "AIzaSyC4gevbnB8eDxk5nskKjf5Nepr_9tVxThE",
+    "FIREBASE_PROJECT_ID": "trust-hire-6edba"
   }
 }
