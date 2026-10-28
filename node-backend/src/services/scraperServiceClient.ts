@@ -176,7 +176,7 @@ export class ScraperServiceClient {
   static async getSources(): Promise<SourceHealth[]> {
     try {
       const res = await this.safeFetch('/api/v1/sources', {
-        signal: AbortSignal.timeout(6000),
+        signal: AbortSignal.timeout(8000),
       });
 
       if (!res.ok) {
@@ -293,14 +293,14 @@ export class ScraperServiceClient {
       res = await this.safeFetch('/api/v1/sources/run-discovery', {
         method: 'POST',
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(8000),
       });
     } catch (_) {
       try {
         res = await this.safeFetch('/api/v1/scans/run-discovery', {
           method: 'POST',
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(30000),
+          signal: AbortSignal.timeout(8000),
         });
       } catch (_) {}
     }
@@ -356,7 +356,7 @@ export class ScraperServiceClient {
         sources: options.sources || null,
         limit: Math.min(options.limit || 25, 100),
       }),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {

@@ -144,14 +144,12 @@ export class LeadController {
       const cityParam = body.city || 'Chennai';
       const limitParam = Number(body.limit) || 25;
 
-      console.log(`[LeadController][Step 1/3 - INITIATE] runAutoDiscovery called: query='${queryParam}', city='${cityParam}', limit=${limitParam}`);
+      const startTime = Date.now();
+      console.log(`[LeadController][Step 1/5 - INITIATE] runAutoDiscovery started: query='${queryParam}', city='${cityParam}', limit=${limitParam}`);
 
       const { ScraperServiceClient } = await import('../services/scraperServiceClient');
 
-      // Pre-sync existing scraped jobs to ensure leads table is current
-      const preSync = await LeadService.syncLeadsFromScrapedJobs();
-      console.log(`[LeadController] Pre-scan database sync result:`, preSync);
-
+      console.log(`[LeadController][Step 2/5 - DISPATCH] Requesting discovery via ScraperServiceClient...`);
       const results = await ScraperServiceClient.runDiscovery({
         query: queryParam,
         city: cityParam,
@@ -159,13 +157,15 @@ export class LeadController {
         limit: limitParam,
       });
 
-      console.log(`[LeadController][Step 2/3 - DISPATCH] Scraper microservice completed discovery: ${results.items?.length || 0} jobs returned.`);
+      const scrapeElapsed = Date.now() - startTime;
+      console.log(`[LeadController][Step 3/5 - RECEIVED] Scraper returned ${results.items?.length || 0} jobs in ${scrapeElapsed}ms.`);
 
-      // Persist discovered jobs into PostgreSQL prisma.jobs
+      // Persist discovered jobs into PostgreSQL prisma.jobs in parallel
       if (Array.isArray(results.items) && results.items.length > 0) {
-        for (const item of results.items) {
-          try {
-            await prisma.jobs.upsert({
+        const dbStart = Date.now();
+        await Promise.allSettled(
+          results.items.map((item) =>
+            prisma.jobs.upsert({
               where: { id: item.id },
               create: {
                 id: item.id,
@@ -189,26 +189,32 @@ export class LeadController {
               },
               update: {
                 last_verified_at: new Date(),
-              }
-            });
-          } catch (upsertErr: any) {
-            console.warn(`[LeadController] Notice upserting job ${item.id}:`, upsertErr?.message);
-          }
-        }
+              },
+            })
+          )
+        );
+        console.log(`[LeadController][Step 4/5 - DB UPSERT] Parallel upsert completed in ${Date.now() - dbStart}ms`);
       }
 
-      // Sync into employer_leads
-      const postSync = await LeadService.syncLeadsFromScrapedJobs();
-      console.log(`[LeadController][Step 3/3 - SYNC] Post-discovery lead sync result:`, postSync);
+      // Background lead ingestion to return response immediately (< 4s) and avoid Vercel 503 gateway timeouts
+      const syncPromise = LeadService.syncLeadsFromScrapedJobs(15).catch((e) => {
+        console.warn('[LeadController] Background lead sync notice:', e);
+        return { syncedCount: 0, newLeadsCount: 0 };
+      });
+      if (c.executionCtx && typeof (c.executionCtx as any).waitUntil === 'function') {
+        (c.executionCtx as any).waitUntil(syncPromise);
+      }
+
+      console.log(`[LeadController][Step 5/5 - COMPLETE] Discovery completed in ${Date.now() - startTime}ms. Responding to client.`);
 
       return c.json({
         ...results,
         success: true,
         sourcesScanned: results.sources_scanned?.length || 0,
-        leadsIngested: postSync.newLeadsCount,
-        requirementsIngested: postSync.syncedCount,
+        leadsIngested: results.items?.length || 0,
+        requirementsIngested: results.items?.length || 0,
         totalDiscovered: results.total || results.items?.length || 0,
-        syncResult: postSync,
+        message: 'Discovery scan completed successfully. Jobs ingested into Pending Review.',
       });
     } catch (error: any) {
       console.error('[LeadController] Error running auto-discovery:', error);

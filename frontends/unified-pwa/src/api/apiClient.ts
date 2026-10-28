@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const defaultBaseURL = import.meta.env.DEV
   ? 'http://localhost:8787'
-  : '';
+  : 'https://api.trusthyre.com';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''

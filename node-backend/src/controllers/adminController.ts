@@ -340,11 +340,11 @@ export const syncExternalJobs = async (c: Context) => {
       limit: Number(body.limit) || 25,
     });
 
-    // Upsert into prisma.jobs so admin panel displays jobs immediately in Pending Review
+    // Upsert into prisma.jobs so admin panel displays jobs immediately in Pending Review in parallel
     if (Array.isArray(result.items) && result.items.length > 0) {
-      for (const item of result.items) {
-        try {
-          await prisma.jobs.upsert({
+      await Promise.allSettled(
+        result.items.map((item) =>
+          prisma.jobs.upsert({
             where: { id: item.id },
             create: {
               id: item.id,
@@ -368,10 +368,10 @@ export const syncExternalJobs = async (c: Context) => {
             },
             update: {
               last_verified_at: new Date(),
-            }
-          });
-        } catch (_) {}
-      }
+            },
+          })
+        )
+      );
       await LeadService.syncLeadsFromScrapedJobs().catch(() => {});
     }
 
