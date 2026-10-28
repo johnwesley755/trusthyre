@@ -247,10 +247,9 @@ async def http_get_json(url: str, headers: Optional[Dict[str, str]] = None, time
         return None
 
 
-async def http_get_text(url: str, headers: Optional[Dict[str, str]] = None, timeout: float = 3.0) -> Optional[str]:
+async def http_get_text(url: str, headers: Optional[Dict[str, str]] = None, timeout: float = 2.5) -> Optional[str]:
     """Asynchronously fetches raw text/HTML from an external endpoint."""
     headers = headers or {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     }
 
@@ -259,9 +258,11 @@ async def http_get_text(url: str, headers: Optional[Dict[str, str]] = None, time
         resp = await pyfetch(url, headers=headers, method="GET")
         if resp.status == 200:
             return await resp.string()
+        else:
+            print(f"[Worker][http_get_text] {url} returned HTTP {resp.status}")
         return None
-    except (ImportError, Exception):
-        pass
+    except Exception as e:
+        print(f"[Worker][http_get_text] Fetch error for {url}: {e}")
 
     try:
         import httpx
@@ -363,147 +364,151 @@ def extract_json_ld_jobs(html: str, page_url: str, source_name: str, default_cit
 
 
 async def scrape_lever_jobs(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 25) -> List[Dict[str, Any]]:
-    """Scrapes live postings from verified enterprise Lever ATS feeds."""
-    results: List[Dict[str, Any]] = []
+    """Scrapes live postings from verified enterprise Lever ATS feeds in parallel."""
     target_city = normalize_city(city)
 
-    for comp in VERIFIED_LEVER_COMPANIES:
+    async def fetch_lever_comp(comp):
         url = f"https://api.lever.co/v0/postings/{comp['handle']}?mode=json"
-        data = await http_get_json(url)
-        if not isinstance(data, list):
-            continue
-
-        for item in data:
-            if not isinstance(item, dict):
-                continue
-            title = item.get("text", "").strip()
-            cats = item.get("categories", {}) or {}
-            loc = cats.get("location") or target_city
-            desc = item.get("descriptionPlain") or ""
-
-            if not is_blue_collar_job(title, desc, query):
-                continue
-
-            # Exclude non-Indian / foreign locations
-            loc_lower = (loc or "").lower()
-            if any(f in loc_lower for f in [", ma", ", fl", ", ca", ", ny", ", tx", "united states", "usa", "canada", "pompano", "worcester", "massachusetts"]):
-                continue
-
-            job_city = normalize_city(loc)
-            if target_city and target_city.upper() not in ["ALL", "ALL_CITIES"]:
-                if target_city.lower() not in job_city.lower() and target_city.lower() not in loc_lower:
+        try:
+            data = await http_get_json(url, timeout=2.0)
+            if not isinstance(data, list):
+                return []
+            comp_jobs = []
+            for item in data:
+                if not isinstance(item, dict):
                     continue
-            ext_id = item.get("id", str(uuid.uuid4())[:8])
-            s_hash = calculate_job_hash(comp["name"], title, job_city, ext_id)
+                title = item.get("text", "").strip()
+                cats = item.get("categories", {}) or {}
+                loc = cats.get("location") or target_city
+                desc = item.get("descriptionPlain") or ""
 
-            created_ts = item.get("createdAt")
-            date_str = datetime.fromtimestamp(created_ts / 1000.0, tz=timezone.utc).isoformat() if created_ts else datetime.now(timezone.utc).isoformat()
+                if not is_blue_collar_job(title, desc, query):
+                    continue
 
-            results.append({
-                "id": str(uuid.uuid4()),
-                "employer_id": "external_aggregator",
-                "title": title,
-                "employer_name": comp["name"],
-                "description": desc[:800].strip(),
-                "industry": comp["industry"],
-                "experience_years_required": 1,
-                "budget": 22000.0,
-                "status": "PENDING_REVIEW",
-                "city": job_city,
-                "location": loc,
-                "is_external": True,
-                "source_name": f"Lever ATS ({comp['name']})",
-                "source_url": item.get("hostedUrl") or item.get("applyUrl") or f"https://jobs.lever.co/{comp['handle']}",
-                "source_hash": s_hash,
-                "external_id": ext_id,
-                "alternate_sources": [{
-                    "sourceName": f"Lever ATS ({comp['name']})",
-                    "sourceUrl": item.get("hostedUrl") or "",
-                    "dateSeen": datetime.now(timezone.utc).isoformat(),
-                }],
-                "created_at": datetime.now(timezone.utc).isoformat(),
-                "date_posted": date_str,
-                "last_verified_at": datetime.now(timezone.utc).isoformat(),
-            })
+                loc_lower = (loc or "").lower()
+                if any(f in loc_lower for f in [", ma", ", fl", ", ca", ", ny", ", tx", "united states", "usa", "canada", "pompano", "worcester", "massachusetts"]):
+                    continue
 
-            if len(results) >= limit:
-                break
-        if len(results) >= limit:
-            break
+                job_city = normalize_city(loc)
+                if target_city and target_city.upper() not in ["ALL", "ALL_CITIES"]:
+                    if target_city.lower() not in job_city.lower() and target_city.lower() not in loc_lower:
+                        continue
+                ext_id = item.get("id", str(uuid.uuid4())[:8])
+                s_hash = calculate_job_hash(comp["name"], title, job_city, ext_id)
 
-    return results
+                created_ts = item.get("createdAt")
+                date_str = datetime.fromtimestamp(created_ts / 1000.0, tz=timezone.utc).isoformat() if created_ts else datetime.now(timezone.utc).isoformat()
+
+                comp_jobs.append({
+                    "id": str(uuid.uuid4()),
+                    "employer_id": "external_aggregator",
+                    "title": title,
+                    "employer_name": comp["name"],
+                    "description": desc[:800].strip(),
+                    "industry": comp["industry"],
+                    "experience_years_required": 1,
+                    "budget": 22000.0,
+                    "status": "PENDING_REVIEW",
+                    "city": job_city,
+                    "location": loc,
+                    "is_external": True,
+                    "source_name": f"Lever ATS ({comp['name']})",
+                    "source_url": item.get("hostedUrl") or item.get("applyUrl") or f"https://jobs.lever.co/{comp['handle']}",
+                    "source_hash": s_hash,
+                    "external_id": ext_id,
+                    "alternate_sources": [{
+                        "sourceName": f"Lever ATS ({comp['name']})",
+                        "sourceUrl": item.get("hostedUrl") or "",
+                        "dateSeen": datetime.now(timezone.utc).isoformat(),
+                    }],
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "date_posted": date_str,
+                    "last_verified_at": datetime.now(timezone.utc).isoformat(),
+                })
+            return comp_jobs
+        except Exception:
+            return []
+
+    fetch_tasks = [fetch_lever_comp(comp) for comp in VERIFIED_LEVER_COMPANIES]
+    results_lists = await asyncio.gather(*fetch_tasks, return_exceptions=True)
+    all_jobs = []
+    for r in results_lists:
+        if isinstance(r, list):
+            all_jobs.extend(r)
+    return all_jobs[:limit]
 
 
 async def scrape_greenhouse_jobs(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 25) -> List[Dict[str, Any]]:
-    """Scrapes live postings from verified enterprise Greenhouse ATS feeds."""
-    results: List[Dict[str, Any]] = []
+    """Scrapes live postings from verified enterprise Greenhouse ATS feeds in parallel."""
     target_city = normalize_city(city)
 
-    for b in VERIFIED_GREENHOUSE_BOARDS:
+    async def fetch_gh_board(b):
         url = f"https://boards-api.greenhouse.io/v1/boards/{b['board']}/jobs?content=true"
-        data = await http_get_json(url)
-        if not isinstance(data, dict):
-            continue
-
-        job_list = data.get("jobs", [])
-        for item in job_list:
-            if not isinstance(item, dict):
-                continue
-            title = item.get("title", "").strip()
-            loc_data = item.get("location", {})
-            loc_name = loc_data.get("name") if isinstance(loc_data, dict) else target_city
-            content = item.get("content", "") or ""
-
-            if not is_blue_collar_job(title, content, query):
-                continue
-
-            # Exclude non-Indian / foreign locations
-            loc_lower = (loc_name or "").lower()
-            if any(f in loc_lower for f in [", ma", ", fl", ", ca", ", ny", ", tx", "united states", "usa", "canada"]):
-                continue
-
-            job_city = normalize_city(loc_name)
-            if target_city and target_city.upper() not in ["ALL", "ALL_CITIES"]:
-                if target_city.lower() not in job_city.lower() and target_city.lower() not in loc_lower:
+        try:
+            data = await http_get_json(url, timeout=2.0)
+            if not isinstance(data, dict):
+                return []
+            board_jobs = []
+            for item in data.get("jobs", []):
+                if not isinstance(item, dict):
                     continue
-            ext_id = str(item.get("id", uuid.uuid4()))
-            s_hash = calculate_job_hash(b["name"], title, job_city, ext_id)
+                title = item.get("title", "").strip()
+                loc_data = item.get("location", {})
+                loc_name = loc_data.get("name") if isinstance(loc_data, dict) else target_city
+                content = item.get("content", "") or ""
 
-            updated_at = item.get("updated_at") or datetime.now(timezone.utc).isoformat()
+                if not is_blue_collar_job(title, content, query):
+                    continue
 
-            results.append({
-                "id": str(uuid.uuid4()),
-                "employer_id": "external_aggregator",
-                "title": title,
-                "employer_name": b["name"],
-                "description": re.sub(r'<[^>]+>', '', content)[:800].strip(),
-                "industry": b["industry"],
-                "experience_years_required": 1,
-                "budget": 24000.0,
-                "status": "PENDING_REVIEW",
-                "city": job_city,
-                "location": loc_name or job_city,
-                "is_external": True,
-                "source_name": f"Greenhouse ATS ({b['name']})",
-                "source_url": item.get("absolute_url") or f"https://boards.greenhouse.io/{b['board']}",
-                "source_hash": s_hash,
-                "external_id": ext_id,
-                "alternate_sources": [{
-                    "sourceName": f"Greenhouse ATS ({b['name']})",
-                    "sourceUrl": item.get("absolute_url") or "",
-                    "dateSeen": datetime.now(timezone.utc).isoformat(),
-                }],
-                "created_at": datetime.now(timezone.utc).isoformat(),
-                "date_posted": updated_at,
-                "last_verified_at": datetime.now(timezone.utc).isoformat(),
-            })
+                loc_lower = (loc_name or "").lower()
+                if any(f in loc_lower for f in [", ma", ", fl", ", ca", ", ny", ", tx", "united states", "usa", "canada"]):
+                    continue
 
-            if len(results) >= limit:
-                break
-        if len(results) >= limit:
-            break
+                job_city = normalize_city(loc_name)
+                if target_city and target_city.upper() not in ["ALL", "ALL_CITIES"]:
+                    if target_city.lower() not in job_city.lower() and target_city.lower() not in loc_lower:
+                        continue
+                ext_id = str(item.get("id", uuid.uuid4()))
+                s_hash = calculate_job_hash(b["name"], title, job_city, ext_id)
+                updated_at = item.get("updated_at") or datetime.now(timezone.utc).isoformat()
 
-    return results
+                board_jobs.append({
+                    "id": str(uuid.uuid4()),
+                    "employer_id": "external_aggregator",
+                    "title": title,
+                    "employer_name": b["name"],
+                    "description": re.sub(r'<[^>]+>', '', content)[:800].strip(),
+                    "industry": b["industry"],
+                    "experience_years_required": 1,
+                    "budget": 24000.0,
+                    "status": "PENDING_REVIEW",
+                    "city": job_city,
+                    "location": loc_name or job_city,
+                    "is_external": True,
+                    "source_name": f"Greenhouse ATS ({b['name']})",
+                    "source_url": item.get("absolute_url") or f"https://boards.greenhouse.io/{b['board']}",
+                    "source_hash": s_hash,
+                    "external_id": ext_id,
+                    "alternate_sources": [{
+                        "sourceName": f"Greenhouse ATS ({b['name']})",
+                        "sourceUrl": item.get("absolute_url") or "",
+                        "dateSeen": datetime.now(timezone.utc).isoformat(),
+                    }],
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "date_posted": updated_at,
+                    "last_verified_at": datetime.now(timezone.utc).isoformat(),
+                })
+            return board_jobs
+        except Exception:
+            return []
+
+    fetch_tasks = [fetch_gh_board(b) for b in VERIFIED_GREENHOUSE_BOARDS]
+    results_lists = await asyncio.gather(*fetch_tasks, return_exceptions=True)
+    all_jobs = []
+    for r in results_lists:
+        if isinstance(r, list):
+            all_jobs.extend(r)
+    return all_jobs[:limit]
 
 
 async def scrape_workindia_jobs(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 20) -> List[Dict[str, Any]]:

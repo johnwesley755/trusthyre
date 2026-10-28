@@ -160,10 +160,11 @@ export class LeadController {
       const scrapeElapsed = Date.now() - startTime;
       console.log(`[LeadController][Step 3/5 - RECEIVED] Scraper returned ${results.items?.length || 0} jobs in ${scrapeElapsed}ms.`);
 
-      // Persist discovered jobs into PostgreSQL prisma.jobs in parallel
+      // Step 4: Persist discovered jobs into PostgreSQL prisma.jobs with full error visibility
+      let dbFulfilled = 0;
       if (Array.isArray(results.items) && results.items.length > 0) {
         const dbStart = Date.now();
-        await Promise.allSettled(
+        const upsertResults = await Promise.allSettled(
           results.items.map((item) =>
             prisma.jobs.upsert({
               where: { id: item.id },
@@ -193,28 +194,30 @@ export class LeadController {
             })
           )
         );
-        console.log(`[LeadController][Step 4/5 - DB UPSERT] Parallel upsert completed in ${Date.now() - dbStart}ms`);
+
+        dbFulfilled = upsertResults.filter(r => r.status === 'fulfilled').length;
+        const failedUpserts = upsertResults.filter(r => r.status === 'rejected') as PromiseRejectedResult[];
+        if (failedUpserts.length > 0) {
+          console.error(`[LeadController][Step 4/5 - DB UPSERT] ${failedUpserts.length} of ${results.items.length} job writes failed:`, failedUpserts.map(f => f.reason?.message || f.reason));
+        }
+        console.log(`[LeadController][Step 4/5 - DB UPSERT] Successfully upserted ${dbFulfilled}/${results.items.length} jobs in ${Date.now() - dbStart}ms`);
       }
 
-      // Background lead ingestion to return response immediately (< 4s) and avoid Vercel 503 gateway timeouts
-      const syncPromise = LeadService.syncLeadsFromScrapedJobs(15).catch((e) => {
-        console.warn('[LeadController] Background lead sync notice:', e);
-        return { syncedCount: 0, newLeadsCount: 0 };
-      });
-      if (c.executionCtx && typeof (c.executionCtx as any).waitUntil === 'function') {
-        (c.executionCtx as any).waitUntil(syncPromise);
-      }
-
-      console.log(`[LeadController][Step 5/5 - COMPLETE] Discovery completed in ${Date.now() - startTime}ms. Responding to client.`);
+      // Step 5: Synchronously ingest newly discovered jobs directly into employer_leads & employer_lead_requirements
+      const syncStart = Date.now();
+      const syncResult = await LeadService.ingestJobsAsLeads(results.items || []);
+      console.log(`[LeadController][Step 5/5 - LEAD SYNC] Ingested ${syncResult.newLeadsCount} new leads (${syncResult.newRequirementsCount} reqs) in ${Date.now() - syncStart}ms (Total elapsed: ${Date.now() - startTime}ms)`);
 
       return c.json({
         ...results,
         success: true,
         sourcesScanned: results.sources_scanned?.length || 0,
-        leadsIngested: results.items?.length || 0,
-        requirementsIngested: results.items?.length || 0,
+        leadsIngested: syncResult.newLeadsCount + syncResult.updatedLeadsCount,
+        newLeadsCount: syncResult.newLeadsCount,
+        requirementsIngested: syncResult.newRequirementsCount,
         totalDiscovered: results.total || results.items?.length || 0,
-        message: 'Discovery scan completed successfully. Jobs ingested into Pending Review.',
+        syncResult,
+        message: `Discovery scan completed successfully. ${syncResult.newLeadsCount} new leads and ${syncResult.newRequirementsCount} requirements ingested.`,
       });
     } catch (error: any) {
       console.error('[LeadController] Error running auto-discovery:', error);

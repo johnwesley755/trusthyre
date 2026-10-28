@@ -255,7 +255,8 @@ export const AdminLeadsPage: React.FC = () => {
         setScanStatus(res);
         toast.info('Auto-Discovery scan started across live portals (Naukri, WorkIndia, Apna). Polling for new leads...');
       } else {
-        toast.success('Discovery scan completed');
+        const count = res?.newLeadsCount || res?.leadsIngested || res?.total || res?.items?.length || 0;
+        toast.success(`Auto-Discovery Complete! ${count} vacancies verified and ingested into Leads table!`, { duration: 5000 });
         queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
         queryClient.invalidateQueries({ queryKey: ['adminLeadStats'] });
       }

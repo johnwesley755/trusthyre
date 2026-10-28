@@ -631,6 +631,80 @@ export class LeadService {
   }
 
   /**
+   * Synchronously ingests an array of discovered jobs directly into employer_leads & employer_lead_requirements.
+   * Runs in parallel using Promise.allSettled and returns exact counts for live UI reactivity.
+   */
+  static async ingestJobsAsLeads(jobs: any[]): Promise<{
+    syncedCount: number;
+    newLeadsCount: number;
+    updatedLeadsCount: number;
+    newRequirementsCount: number;
+    failedCount: number;
+  }> {
+    if (!Array.isArray(jobs) || jobs.length === 0) {
+      return { syncedCount: 0, newLeadsCount: 0, updatedLeadsCount: 0, newRequirementsCount: 0, failedCount: 0 };
+    }
+
+    const results = await Promise.allSettled(
+      jobs.map(async (job) => {
+        const empName = (job.employer_name || '').trim();
+        if (!empName) return null;
+
+        const salaryStr = job.budget ? `₹${job.budget}` : undefined;
+        const isAggregator = !this.extractApexDomain(job.source_url);
+        const companyWebsite = isAggregator ? undefined : (job.source_url || undefined);
+
+        return await this.ingestLead({
+          companyName: empName,
+          companyWebsite: companyWebsite,
+          industry: job.industry || undefined,
+          city: job.city || undefined,
+          requirements: [
+            {
+              title: (job.title || '').trim(),
+              category: job.industry || 'Logistics & Operations',
+              description: job.description || undefined,
+              city: job.city || undefined,
+              location: job.location || undefined,
+              salaryRange: salaryStr,
+              sourceName: job.source_name || 'Web Discovery',
+              sourceUrl: job.source_url || '',
+              externalListingId: job.external_id || job.id,
+            }
+          ]
+        });
+      })
+    );
+
+    let newLeadsCount = 0;
+    let updatedLeadsCount = 0;
+    let newRequirementsCount = 0;
+    let failedCount = 0;
+
+    for (const r of results) {
+      if (r.status === 'fulfilled') {
+        const val = r.value;
+        if (val) {
+          if (val.isNewLead) newLeadsCount++;
+          else updatedLeadsCount++;
+          newRequirementsCount += val.newRequirementsCount || 0;
+        }
+      } else {
+        failedCount++;
+        console.error('[LeadService] Lead ingestion failure:', r.reason?.message || r.reason);
+      }
+    }
+
+    return {
+      syncedCount: jobs.length - failedCount,
+      newLeadsCount,
+      updatedLeadsCount,
+      newRequirementsCount,
+      failedCount,
+    };
+  }
+
+  /**
    * Synchronizes external jobs discovered by the Python microservice into employer_leads and employer_lead_requirements.
    */
   static async syncLeadsFromScrapedJobs(limit: number = 200): Promise<{
