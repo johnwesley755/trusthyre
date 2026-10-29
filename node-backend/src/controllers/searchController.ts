@@ -180,6 +180,8 @@ export const searchJobs = async (c: Context) => {
           datePosted: j.date_posted || j.created_at,
           createdAt: j.created_at,
           updatedAt: j.updated_at,
+          coverImageUrl: j.cover_image_url || null,
+          cover_image_url: j.cover_image_url || null,
         requiredSkills: sIndex?.required_skills
           ? sIndex.required_skills.split(',').map((s: string) => s.trim()).filter(Boolean)
           : [],

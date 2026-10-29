@@ -5,6 +5,7 @@ import { applicationService } from '../../../services/application.service';
 import { profileService } from '../../../services/profile.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { useState } from 'react';
+import { getEffectiveCoverUrl } from '../../../utils/coverImage.utils';
 import { formatMissingProfileFields, getMissingProfileFields } from '../../../utils/profileCompletion';
 import { useUser } from '../../../providers/AuthContext';
 import { AppLoader } from '../../../components/common/AppLoader';
@@ -62,6 +63,7 @@ export default function JobDetailPage() {
   });
   const [coverLetter, setCoverLetter] = useState('');
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
+  const [coverImageFailed, setCoverImageFailed] = useState(false);
 
   const { data: job, isLoading } = useQuery({
     queryKey: queryKeys.jobs.detail(id || ''),
@@ -97,6 +99,9 @@ export default function JobDetailPage() {
     (effectiveExpiry && effectiveExpiry.getTime() <= Date.now())
   );
   const expiryDate = rawExpiry || effectiveExpiry?.toISOString();
+  const effectiveCoverUrl = !coverImageFailed 
+    ? getEffectiveCoverUrl(job as any) 
+    : null;
 
   const { data: employerJobApps = [] } = useQuery({
     queryKey: queryKeys.jobs.allEmployerApplications(id ? [id] : []),
@@ -294,8 +299,30 @@ export default function JobDetailPage() {
         </div>
 
         {/* 1. HERO JOB CARD (Hallmark Tactile Aesthetic) */}
-        <div className="bg-[#f4f4f4] rounded-[2rem] p-6 sm:p-8 border border-[#e6e8ec] relative overflow-hidden">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div className="bg-[#f4f4f4] rounded-[2rem] border border-[#e6e8ec] relative overflow-hidden">
+          {/* Cover Image Banner if Present */}
+          {effectiveCoverUrl && (
+            <div className="w-full h-48 sm:h-64 md:h-72 overflow-hidden relative border-b border-[#e6e8ec] bg-slate-900 group">
+              <img 
+                src={effectiveCoverUrl} 
+                alt={job.title} 
+                onError={() => setCoverImageFailed(true)}
+                className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+              <div className="absolute bottom-3.5 left-4 sm:left-6 flex items-center gap-2 flex-wrap">
+                <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-xs font-semibold uppercase tracking-wider">
+                  {job.industry || 'Verified Opening'}
+                </span>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-600/90 backdrop-blur-xs text-white text-[11px] font-semibold flex items-center gap-1 shadow-xs">
+                  <ShieldCheck className="w-3 h-3" />
+                  <span>Verified Worksite</span>
+                </span>
+              </div>
+            </div>
+          )}
+          <div className="p-6 sm:p-8">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             
             {/* Identity & Company Cluster */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
@@ -410,6 +437,8 @@ export default function JobDetailPage() {
           </div>
         </div>
 
+
+        </div>
 
         {/* 3. MAIN 2-COLUMN PROFILE GRID (Even Layout) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

@@ -31,6 +31,8 @@ const formatJob = (job: any) => {
 
   return {
     ...job,
+    coverImageUrl: job.cover_image_url || job.coverImageUrl || null,
+    cover_image_url: job.cover_image_url || job.coverImageUrl || null,
     status: effectiveStatus,
     isExpired,
     applicationCount: appCount,
@@ -94,6 +96,7 @@ export const createJob = async (c: Context) => {
         address: data.address || '',
         industry: data.industry || 'General',
         experience_years_required: data.experienceYearsRequired ? Number(data.experienceYearsRequired) : (data.experience_years_required ? Number(data.experience_years_required) : 0),
+        cover_image_url: data.coverImageUrl || data.cover_image_url || null,
         status: 'OPEN',
         expires_at: expiresAt,
         created_at: new Date(),
@@ -404,6 +407,9 @@ export const updateJob = async (c: Context) => {
       updatePayload.experience_years_required = Number(data.experienceYearsRequired ?? data.experience_years_required);
     }
     if (data.status !== undefined) updatePayload.status = data.status;
+    if (data.coverImageUrl !== undefined || data.cover_image_url !== undefined) {
+      updatePayload.cover_image_url = data.coverImageUrl || data.cover_image_url || null;
+    }
 
     const whereClause: any = { id };
     if (authUser.role !== 'ADMIN') {

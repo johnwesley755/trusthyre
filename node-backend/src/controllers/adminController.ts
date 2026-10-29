@@ -1,3 +1,15 @@
+
+export const resolveTradeCoverImage = (title?: string, industry?: string): string => {
+  const text = `${title || ''} ${industry || ''}`.toLowerCase();
+  if (text.includes('electr')) return 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80';
+  if (text.includes('driv') || text.includes('deliver') || text.includes('logist')) return 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
+  if (text.includes('construct') || text.includes('mason') || text.includes('carpenter')) return 'https://images.unsplash.com/photo-1541888946425-d0fbb18615f8?auto=format&fit=crop&w=1200&q=80';
+  if (text.includes('cook') || text.includes('chef') || text.includes('kitchen') || text.includes('cater')) return 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=80';
+  if (text.includes('plumb') || text.includes('technician') || text.includes('ac') || text.includes('repair')) return 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80';
+  if (text.includes('secur') || text.includes('guard')) return 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=1200&q=80';
+  if (text.includes('wareh') || text.includes('pack')) return 'https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1200&q=80';
+  return 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80';
+};
 import { Context } from 'hono';
 import prisma from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
@@ -361,6 +373,7 @@ export const syncExternalJobs = async (c: Context) => {
               is_external: true,
               source_name: item.source_name || 'Web Discovery',
               source_url: item.source_url || '',
+              cover_image_url: item.cover_image_url || resolveTradeCoverImage(item.title, item.industry),
               source_hash: item.source_hash || item.id,
               external_id: item.external_id || item.id,
               created_at: item.created_at ? new Date(item.created_at) : new Date(),
@@ -422,6 +435,7 @@ export const getScanStatus = async (c: Context) => {
               is_external: true,
               source_name: item.source_name || 'Web Discovery',
               source_url: item.source_url || '',
+              cover_image_url: item.cover_image_url || resolveTradeCoverImage(item.title, item.industry),
               source_hash: item.source_hash || item.id,
               external_id: item.external_id || item.id,
               created_at: item.created_at ? new Date(item.created_at) : new Date(),
@@ -466,17 +480,22 @@ export const moderateJobByAdmin = async (c: Context) => {
   try {
     const id = c.req.param('id') as string;
     const { action, reason } = await c.req.json();
-    if (!['approve', 'reject', 'expire'].includes(action)) {
-      return c.json(ApiResponse.error("Invalid action. Must be 'approve', 'reject', or 'expire'."), 400 as any);
+    if (!['approve', 'reject', 'expire', 'update'].includes(action)) {
+      return c.json(ApiResponse.error("Invalid action. Must be 'approve', 'reject', 'expire', or 'update'."), 400 as any);
     }
 
-    const newStatus = action === 'approve' ? 'OPEN' : (action === 'reject' ? 'REJECTED' : 'EXPIRED');
+    const { coverImageUrl, cover_image_url } = (await c.req.json().catch(() => ({})));
+    const newStatus = action === 'approve' ? 'OPEN' : (action === 'reject' ? 'REJECTED' : (action === 'expire' ? 'EXPIRED' : undefined));
+    const updateData: any = {
+      updated_at: new Date()
+    };
+    if (newStatus) updateData.status = newStatus;
+    const cover = coverImageUrl || cover_image_url;
+    if (cover !== undefined) updateData.cover_image_url = cover || null;
+
     const updated = await prisma.jobs.update({
       where: { id },
-      data: {
-        status: newStatus,
-        updated_at: new Date(),
-      }
+      data: updateData
     });
 
     if (newStatus === 'OPEN') {

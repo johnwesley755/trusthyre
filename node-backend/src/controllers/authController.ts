@@ -144,30 +144,14 @@ export const login = async (c: Context) => {
       return c.json(ApiResponse.error("Invalid credentials"), 401 as any);
     }
 
-    // Role-based portal enforcement
-    if (role === 'WORKER') {
-      // Candidate Login Portal: Strictly for Candidates only
-      if (user.role === 'ADMIN') {
-        return c.json(ApiResponse.error("Platform administrators cannot sign in through the Candidate portal. Please use the Admin Command Center or Employer portal."), 403 as any);
-      }
-      if (user.role === 'EMPLOYER') {
-        return c.json(ApiResponse.error("This account is registered as an Employer. Please sign in using the Employer portal."), 403 as any);
-      }
-    } else if (role === 'EMPLOYER') {
-      // Employer Login Portal: For Employers and Admin accounts
-      if (user.role === 'WORKER') {
-        return c.json(ApiResponse.error("This account is registered as a Candidate. Please sign in using the Candidate portal."), 403 as any);
-      }
-    } else if (role === 'ADMIN') {
-      // Admin Login Portal: Strictly for Administrators
-      if (user.role !== 'ADMIN') {
-        return c.json(ApiResponse.error("Access denied: This account does not possess administrator privileges."), 403 as any);
-      }
-    }
-
     const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) {
       return c.json(ApiResponse.error("Invalid credentials"), 401 as any);
+    }
+
+    // Role-based portal enforcement: Admin portal is strictly reserved for administrators
+    if (role === 'ADMIN' && user.role !== 'ADMIN') {
+      return c.json(ApiResponse.error("Access denied: This account does not possess administrator privileges."), 403 as any);
     }
 
     const token = jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '30d' });
@@ -602,12 +586,7 @@ export const oauthSync = async (c: Context) => {
       if (user.role === 'ADMIN') {
         return c.json(ApiResponse.error("Admin accounts must sign in using the Admin portal."), 403 as any);
       }
-      if (requestedRole === 'WORKER' && user.role === 'EMPLOYER') {
-        return c.json(ApiResponse.error("This email is registered as an Employer profile. Please switch to the Employer Portal to sign in."), 403 as any);
-      }
-      if (requestedRole === 'EMPLOYER' && user.role === 'WORKER') {
-        return c.json(ApiResponse.error("This email is registered as a Candidate profile. Please switch to the Candidate Portal to sign in."), 403 as any);
-      }
+      // Existing verified users seamlessly authenticate under their registered role
     }
 
     if (!user) {

@@ -21,8 +21,12 @@ import {
   Sparkles,
   SlidersHorizontal,
   Languages,
-  Check
+  Check,
+  Image as ImageIcon,
+  UploadCloud,
+  Camera
 } from 'lucide-react';
+import { mediaService } from '../../../services/media.service';
 import { toast } from 'sonner';
 import { AppLoader } from '../../../components/common/AppLoader';
 
@@ -57,10 +61,65 @@ const DISCOVERY_SOURCES = [
   { id: 'headcount_labs', name: 'Headcount Labs API', free: false, desc: 'External API Key feed' },
 ];
 
+
+const TRADE_PRESETS = [
+  { id: 'electrical', label: 'Electrical', url: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'logistics', label: 'Delivery / Logistics', url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'construction', label: 'Construction', url: 'https://images.unsplash.com/photo-1541888946425-d0fbb18615f8?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'cooking', label: 'Kitchen / Chef', url: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'maintenance', label: 'Maintenance / AC', url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'security', label: 'Security', url: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=1200&q=80' },
+];
+
+const resolveAutoCover = (title?: string, industry?: string): string => {
+  const text = (title || '' + ' ' + (industry || '')).toLowerCase();
+  if (text.includes('electr')) return TRADE_PRESETS[0].url;
+  if (text.includes('driv') || text.includes('deliver') || text.includes('logist')) return TRADE_PRESETS[1].url;
+  if (text.includes('construct') || text.includes('mason') || text.includes('carpenter')) return TRADE_PRESETS[2].url;
+  if (text.includes('cook') || text.includes('chef') || text.includes('kitchen')) return TRADE_PRESETS[3].url;
+  if (text.includes('plumb') || text.includes('technician') || text.includes('repair')) return TRADE_PRESETS[4].url;
+  if (text.includes('secur') || text.includes('guard')) return TRADE_PRESETS[5].url;
+  return TRADE_PRESETS[4].url;
+};
+
 export const AdminJobsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingCoverJob, setEditingCoverJob] = useState<any | null>(null);
+  const [customCoverInput, setCustomCoverInput] = useState<string>('');
+  const adminFileInputRef = useRef<HTMLInputElement>(null);
+  const [isAdminUploading, setIsAdminUploading] = useState<boolean>(false);
+
+  const handleAdminFileUpload = async (file: File) => {
+    if (!file || !file.type.startsWith('image/')) {
+      toast.error('Please select an image file (PNG, JPG, WebP).');
+      return;
+    }
+    setIsAdminUploading(true);
+    const localReader = new FileReader();
+    localReader.onload = (e) => {
+      const localDataUrl = e.target?.result as string;
+      if (localDataUrl) {
+        setCustomCoverInput(localDataUrl);
+      }
+    };
+    localReader.readAsDataURL(file);
+
+    try {
+      const res = await mediaService.uploadFile(file);
+      if (res?.url) {
+        setCustomCoverInput(res.url);
+        toast.success('Cover image uploaded!');
+      }
+    } catch {
+      toast.success('Photo ready to save!');
+    } finally {
+      setIsAdminUploading(false);
+    }
+  };
+
+
   const [showSourcesModal, setShowSourcesModal] = useState(false);
   const [showDiscoveryModal, setShowDiscoveryModal] = useState(false);
   const [selectedCity, setSelectedCity] = useState<string>('Chennai');
@@ -176,10 +235,9 @@ export const AdminJobsPage: React.FC = () => {
   });
 
   const moderateMutation = useMutation({
-    mutationFn: ({ id, action }: { id: string; action: 'approve' | 'reject' | 'expire' }) =>
-      adminService.moderateJob(id, action),
+    mutationFn: ({ id, action, coverImageUrl }: { id: string; action: 'approve' | 'reject' | 'expire' | 'update'; coverImageUrl?: string }) => adminService.moderateJob(id, action, undefined, coverImageUrl),
     onSuccess: (_, vars) => {
-      toast.success(`Job ${vars.action}d successfully`);
+      if (vars.action === 'update') { toast.success('Cover image updated successfully'); } else { toast.success(`Job ${vars.action}d successfully`); }
       queryClient.invalidateQueries({ queryKey: ['adminJobs'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
     },
@@ -430,6 +488,32 @@ export const AdminJobsPage: React.FC = () => {
                 }`}
               >
                 <div>
+                  {/* Job Cover Banner with Direct Edit Button */}
+                  <div className="w-full h-28 -mx-5 -mt-5 mb-3 relative overflow-hidden bg-slate-100 border-b border-[#e6e8ec] group">
+                    <img 
+                      src={job.cover_image_url || job.coverImageUrl || resolveAutoCover(job.title, job.industry)} 
+                      alt={job.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingCoverJob(job);
+                        setCustomCoverInput(job.cover_image_url || job.coverImageUrl || '');
+                      }}
+                      className="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-xs text-white text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer shadow-xs"
+                      title="Upload or change cover photo for this job"
+                    >
+                      <Camera className="w-3 h-3" />
+                      <span>Cover Photo</span>
+                    </button>
+                    <span className="absolute bottom-2 left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-semibold">
+                      {job.industry || 'Field Operations'}
+                    </span>
+                  </div>
+
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
@@ -789,6 +873,134 @@ export const AdminJobsPage: React.FC = () => {
                 >
                   <Sparkles className="w-3.5 h-3.5 text-blue-300" />
                   <span>Launch Discovery Scan</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cover Image Editor Modal with Direct Upload */}
+      {editingCoverJob && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 border border-[#e6e8ec] shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between border-b border-[#e6e8ec] pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-[#0a0a0a]">Manage Job Cover Photo</h3>
+                <p className="text-xs text-[#717784] truncate max-w-xs">{editingCoverJob.title}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingCoverJob(null)}
+                className="p-1 rounded-full text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f4f4] cursor-pointer"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Current Active Preview */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[#0a0a0a]">Current Preview</label>
+              <div className="w-full h-36 rounded-2xl overflow-hidden bg-slate-100 relative border border-[#e6e8ec]">
+                <img
+                  src={customCoverInput || editingCoverJob.cover_image_url || editingCoverJob.coverImageUrl || resolveAutoCover(editingCoverJob.title, editingCoverJob.industry)}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+                {isAdminUploading && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xs font-semibold gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Uploading photo...</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Direct Device Upload Box */}
+            <div
+              onClick={() => adminFileInputRef.current?.click()}
+              className="p-4 border-2 border-dashed border-[#c5c8d0] hover:border-[#0f2f63] hover:bg-slate-50/80 rounded-2xl text-center cursor-pointer transition-all flex items-center justify-center gap-3 bg-white"
+            >
+              <input
+                ref={adminFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleAdminFileUpload(file);
+                }}
+              />
+              <div className="w-10 h-10 rounded-xl bg-[#0f2f63]/5 text-[#0f2f63] flex items-center justify-center shrink-0">
+                <UploadCloud className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <span className="block text-xs font-bold text-[#0a0a0a]">Upload Your Own Image</span>
+                <span className="block text-[11px] text-[#717784]">Click to browse photo from computer or phone</span>
+              </div>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[#0a0a0a]">Or Choose a Free Trade Preset</label>
+              <div className="grid grid-cols-3 gap-2">
+                {TRADE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => setCustomCoverInput(preset.url)}
+                    className={`p-1.5 rounded-xl border text-left cursor-pointer transition-all ${
+                      customCoverInput === preset.url
+                        ? 'border-[#0f2f63] bg-[#0f2f63]/5 font-bold shadow-xs'
+                        : 'border-[#e6e8ec] hover:border-slate-400'
+                    }`}
+                  >
+                    <img src={preset.url} alt={preset.label} className="w-full h-10 rounded-lg object-cover mb-1" />
+                    <span className="block text-[10px] text-[#0a0a0a] truncate">{preset.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between pt-2 border-t border-[#e6e8ec]">
+              <button
+                type="button"
+                onClick={() => {
+                  moderateMutation.mutate({
+                    id: editingCoverJob.id,
+                    action: 'update',
+                    coverImageUrl: ''
+                  });
+                  setEditingCoverJob(null);
+                }}
+                className="text-xs text-rose-600 hover:underline cursor-pointer"
+              >
+                Clear Cover
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingCoverJob(null)}
+                  className="px-4 py-2 rounded-full border border-[#e6e8ec] text-xs font-medium cursor-pointer hover:bg-[#f4f4f4]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={moderateMutation.isPending || isAdminUploading}
+                  onClick={() => {
+                    moderateMutation.mutate({
+                      id: editingCoverJob.id,
+                      action: 'update',
+                      coverImageUrl: customCoverInput
+                    });
+                    setEditingCoverJob(null);
+                  }}
+                  className="px-4 py-2 rounded-full bg-[#0f2f63] hover:bg-[#1a4487] text-white text-xs font-semibold cursor-pointer shadow-xs disabled:opacity-50"
+                >
+                  Save Cover Photo
                 </button>
               </div>
             </div>

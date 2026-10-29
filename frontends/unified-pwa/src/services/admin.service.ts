@@ -49,6 +49,9 @@ export interface AdminUserItem {
 export interface AdminJobItem {
   id: string;
   title: string;
+  industry?: string;
+  cover_image_url?: string;
+  coverImageUrl?: string;
   employer_name?: string;
   employer_id?: string;
   city?: string;
@@ -136,8 +139,8 @@ export const adminService = {
     return res.data;
   },
 
-  moderateJob: async (id: string, action: 'approve' | 'reject' | 'expire', reason?: string): Promise<any> => {
-    const res = await apiClient.patch(`/api/admin/jobs/${id}/moderate`, { action, reason });
+  moderateJob: async (id: string, action: 'approve' | 'reject' | 'expire' | 'update', reason?: string, coverImageUrl?: string): Promise<any> => {
+    const res = await apiClient.patch(`/api/admin/jobs/${id}/moderate`, { action, reason, coverImageUrl });
     return res.data;
   },
 

@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   Mail,
   RefreshCw,
-  Edit3
+  Edit3,
+  Languages
 } from 'lucide-react';
 import { SeoHead } from '../../../components/common/SeoHead';
 
@@ -286,32 +287,46 @@ export const SignUpPage = () => {
                             )}
                         </div>
 
-                        {/* Segmented Pill Role Switcher */}
-                        <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] border border-[#e6e8ec]">
-                            <button
-                                type="button"
-                                disabled={stage === 'OTP'}
-                                onClick={() => handleRoleToggle('WORKER')}
-                                className={`px-3.5 py-1.5 rounded-full text-xs font-medium uppercase transition-all cursor-pointer ${
-                                    isCandidate 
-                                        ? 'bg-[#0f2f63] text-white shadow-xs' 
-                                        : 'text-[#717784] hover:text-[#0a0a0a]'
-                                } ${stage === 'OTP' ? 'opacity-60 cursor-not-allowed' : ''}`}
-                            >
-                                Candidate
-                            </button>
-                            <button
-                                type="button"
-                                disabled={stage === 'OTP'}
-                                onClick={() => handleRoleToggle('EMPLOYER')}
-                                className={`px-3.5 py-1.5 rounded-full text-xs font-medium uppercase transition-all cursor-pointer ${
-                                    !isCandidate 
-                                        ? 'bg-[#0f2f63] text-white shadow-xs' 
-                                        : 'text-[#717784] hover:text-[#0a0a0a]'
-                                } ${stage === 'OTP' ? 'opacity-60 cursor-not-allowed' : ''}`}
-                            >
-                                Employer
-                            </button>
+                        {/* Top Right: Segmented Role Pill & Native Language Indicators */}
+                        <div className="flex items-center gap-2.5">
+                            {/* Segmented Pill Role Switcher */}
+                            <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] border border-[#e6e8ec]">
+                                <button
+                                    type="button"
+                                    disabled={stage === 'OTP'}
+                                    onClick={() => handleRoleToggle('WORKER')}
+                                    className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${
+                                        isCandidate 
+                                            ? 'bg-[#0f2f63] text-white shadow-xs' 
+                                            : 'text-[#717784] hover:text-[#0a0a0a]'
+                                    } ${stage === 'OTP' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                >
+                                    <User className="w-3 h-3" />
+                                    <span>Candidate</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={stage === 'OTP'}
+                                    onClick={() => handleRoleToggle('EMPLOYER')}
+                                    className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${
+                                        !isCandidate 
+                                            ? 'bg-[#0f2f63] text-white shadow-xs' 
+                                            : 'text-[#717784] hover:text-[#0a0a0a]'
+                                    } ${stage === 'OTP' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                >
+                                    <Building2 className="w-3 h-3" />
+                                    <span>Employer</span>
+                                </button>
+                            </div>
+
+                            <div className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#f4f4f4] border border-[#e6e8ec] text-[11px] font-semibold text-[#717784]">
+                                <Languages className="w-3.5 h-3.5 text-[#0f2f63]" />
+                                <span className="text-[#0f2f63] font-bold">EN</span>
+                                <span className="text-[#c5c8d0]">•</span>
+                                <span>தமிழ்</span>
+                                <span className="text-[#c5c8d0]">•</span>
+                                <span>हिंदी</span>
+                            </div>
                         </div>
                     </div>
 
@@ -336,7 +351,7 @@ export const SignUpPage = () => {
                                     <div className="mb-6">
                                         <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] mb-2">
                                             <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9]" />
-                                            <span>{isCandidate ? 'Candidate Registration' : 'Employer Registration'}</span>
+                                            <span>{isCandidate ? 'Candidate Registration (வேலை தேடுபவர்)' : 'Employer Registration (பணியமர்த்துபவர்)'}</span>
                                         </div>
                                         <h1 className="text-3xl sm:text-4xl font-medium text-[#0a0a0a] leading-[1.05]">
                                             Create an account
@@ -346,6 +361,63 @@ export const SignUpPage = () => {
                                                 ? 'Get verified, discover local jobs, and connect directly with verified employers.' 
                                                 : 'Access India’s pre-screened technical talent pool with reliable attendance commitment.'}
                                         </p>
+                                    </div>
+
+                                    {/* Dual High-Contrast Choice Cards */}
+                                    <div className="grid grid-cols-2 gap-3 mb-6">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRoleToggle('WORKER')}
+                                            className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer relative flex flex-col justify-between min-h-[92px] ${
+                                                isCandidate
+                                                    ? 'border-[#0f2f63] bg-[#0f2f63]/5 shadow-sm ring-2 ring-[#0f2f63]/15'
+                                                    : 'border-[#e6e8ec] hover:border-slate-300 bg-white'
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                                                    isCandidate ? 'bg-[#0f2f63] text-white' : 'bg-[#f4f4f4] text-[#717784]'
+                                                }`}>
+                                                    <User className="w-4 h-4" />
+                                                </div>
+                                                {isCandidate && (
+                                                    <span className="w-5 h-5 rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs">
+                                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <span className="block text-xs font-bold text-[#0a0a0a]">Looking for Work</span>
+                                                <span className="block text-[10px] text-[#717784]">வேலை தேடுகிறேன் · Daily jobs</span>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRoleToggle('EMPLOYER')}
+                                            className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer relative flex flex-col justify-between min-h-[92px] ${
+                                                !isCandidate
+                                                    ? 'border-[#0f2f63] bg-[#0f2f63]/5 shadow-sm ring-2 ring-[#0f2f63]/15'
+                                                    : 'border-[#e6e8ec] hover:border-slate-300 bg-white'
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                                                    !isCandidate ? 'bg-[#0f2f63] text-white' : 'bg-[#f4f4f4] text-[#717784]'
+                                                }`}>
+                                                    <Building2 className="w-4 h-4" />
+                                                </div>
+                                                {!isCandidate && (
+                                                    <span className="w-5 h-5 rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs">
+                                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <span className="block text-xs font-bold text-[#0a0a0a]">I Want to Hire</span>
+                                                <span className="block text-[10px] text-[#717784]">பணியமர்த்தல் · Post shifts</span>
+                                            </div>
+                                        </button>
                                     </div>
 
                                     {/* Error Alert Toast */}

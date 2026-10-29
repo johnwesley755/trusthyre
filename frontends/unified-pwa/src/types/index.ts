@@ -92,6 +92,8 @@ export interface Job {
   alternateSources?: Array<{ sourceName: string; sourceUrl: string; dateSeen?: string }>;
   datePosted?: string;
   jobType?: string;
+  coverImageUrl?: string | null;
+  cover_image_url?: string | null;
   employerProfile?: {
     id?: string;
     companyName: string;

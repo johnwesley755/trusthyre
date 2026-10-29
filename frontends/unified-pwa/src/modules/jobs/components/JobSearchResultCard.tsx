@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { useSavedStore } from '../../../hooks/useSavedStore';
 import { TranslateText } from '../../../components/common/TranslateText';
+import { getEffectiveCoverUrl } from '../../../utils/coverImage.utils';
 
 export interface JobCardData {
   id: string;
@@ -22,6 +24,8 @@ export interface JobCardData {
   sourceName?: string;
   sourceUrl?: string;
   alternateSources?: Array<{ sourceName: string; sourceUrl: string; dateSeen?: string }>;
+  coverImageUrl?: string | null;
+  cover_image_url?: string | null;
   employerProfile?: {
     id?: string;
     companyName?: string;
@@ -47,6 +51,8 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
   const navigate = useNavigate();
   const { isJobSaved, toggleSaveJob } = useSavedStore();
   const isSaved = isJobSaved(job.id);
+  const [imageError, setImageError] = useState(false);
+  const effectiveCoverUrl = !imageError ? getEffectiveCoverUrl(job) : null;
 
   const effectiveExpiry = job.expiresAt
     ? new Date(job.expiresAt)
@@ -114,13 +120,65 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
   return (
     <div 
       onClick={() => navigate(`/job/${job.id}`)}
-      className={`bg-white rounded-[1.75rem] p-5 sm:p-6 border transition-all duration-300 group cursor-pointer space-y-4 shadow-xs relative overflow-hidden font-['Onest',system-ui,sans-serif] ${
+      className={`bg-white rounded-[1.75rem] border transition-all duration-300 group cursor-pointer shadow-xs relative overflow-hidden font-['Onest',system-ui,sans-serif] flex flex-col ${
         isExpired 
           ? 'border-rose-200/80 bg-slate-50/50 hover:border-rose-300' 
           : 'border-[#e6e8ec] hover:border-[#0f2f63]/50 hover:shadow-xl hover:-translate-y-0.5'
       }`}
     >
-      {/* Top Header: Company Monogram + Title + Bookmark */}
+      {/* Top Cover Image Banner (when uploaded or preset image is available) */}
+      {effectiveCoverUrl && (
+        <div className="w-full h-36 sm:h-40 relative overflow-hidden bg-slate-100 border-b border-[#e6e8ec] group/cover shrink-0">
+          <img 
+            src={effectiveCoverUrl} 
+            alt={job.title} 
+            onError={() => setImageError(true)}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/30" />
+
+          {/* Industry Badge */}
+          <span className="absolute bottom-2.5 left-3.5 sm:left-4 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-semibold tracking-wide flex items-center gap-1 shadow-xs">
+            <span>{job.industry || 'Verified Opening'}</span>
+          </span>
+
+          {/* Bookmark Button on Cover Banner */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleSaveJob({
+                id: job.id,
+                title: job.title,
+                companyName,
+                logoUrl: job.employerProfile?.logoUrl,
+                location: locationText,
+                city: job.city,
+                budget: job.budget,
+                salaryText,
+                jobType: job.jobType,
+                experienceText,
+                experienceYearsRequired: job.experienceYearsRequired,
+                status: job.status,
+                createdAt: job.createdAt,
+                expiresAt: job.expiresAt,
+              });
+            }}
+            className={`absolute top-2.5 right-2.5 z-10 p-2 rounded-full backdrop-blur-xs transition-all cursor-pointer shadow-xs ${
+              isSaved 
+                ? 'bg-[#0f2f63] text-white shadow-sm ring-2 ring-white/50' 
+                : 'bg-black/50 hover:bg-black/80 text-white hover:scale-105'
+            }`}
+            title={isSaved ? 'Remove from Saved' : 'Save Job'}
+          >
+            <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+          </button>
+        </div>
+      )}
+
+      {/* Content wrapper with unified tactile padding */}
+      <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
+        {/* Top Header: Company Monogram + Title + Bookmark */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3.5 min-w-0">
           {/* Company Monogram Badge */}
@@ -174,6 +232,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
         </div>
 
         {/* Save Job Bookmark Button */}
+        {!effectiveCoverUrl && (
         <button
           type="button"
           onClick={(e) => {
@@ -204,6 +263,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
         >
           <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
         </button>
+        )}
       </div>
 
       {/* Middle Specs Grid */}
@@ -297,7 +357,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           )}
         </div>
       </div>
-
+    </div>
     </div>
   );
 };

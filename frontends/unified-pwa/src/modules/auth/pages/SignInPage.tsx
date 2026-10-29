@@ -13,7 +13,9 @@ import {
   Eye, 
   EyeOff, 
   ShieldCheck, 
-  ArrowRight 
+  ArrowRight,
+  Languages,
+  CheckCircle2
 } from 'lucide-react';
 import { SeoHead } from '../../../components/common/SeoHead';
 
@@ -27,6 +29,7 @@ export const SignInPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [currentLang, setCurrentLang] = useState<'en' | 'ta' | 'hi'>('en');
     
     const { user, isSignedIn, login, signInWithGoogle, authError, clearAuthError } = useAuth();
     const navigate = useNavigate();
@@ -123,7 +126,7 @@ export const SignInPage = () => {
                 {/* Right Side: Clean Modern Form with Independent Smooth Scroll */}
                 <div className="lg:col-span-7 xl:col-span-7 p-4 sm:p-8 lg:p-12 flex flex-col justify-between relative bg-white h-full overflow-y-auto">
                     
-                    {/* Top Navigation Row: Back Link + Role Segmented Switcher */}
+                    {/* Top Navigation Row: Back Link + Role Segmented Switcher + Vernacular Chip */}
                     <div className="flex flex-wrap items-center justify-between gap-3 mb-6 sm:mb-8">
                         {/* Mobile Brand Logo / Desktop Back Link */}
                         <div className="flex items-center gap-2">
@@ -136,30 +139,45 @@ export const SignInPage = () => {
                             </Link>
                         </div>
 
-                        {/* Segmented Pill Role Switcher */}
-                        <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] border border-[#e6e8ec]">
-                            <button
-                                type="button"
-                                onClick={() => handleRoleToggle('WORKER')}
-                                className={`px-3.5 py-1.5 rounded-full text-xs font-medium uppercase transition-all cursor-pointer ${
-                                    isCandidate 
-                                        ? 'bg-[#0f2f63] text-white shadow-xs' 
-                                        : 'text-[#717784] hover:text-[#0a0a0a]'
-                                }`}
-                            >
-                                Job Seeker
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleRoleToggle('EMPLOYER')}
-                                className={`px-3.5 py-1.5 rounded-full text-xs font-medium uppercase transition-all cursor-pointer ${
-                                    !isCandidate 
-                                        ? 'bg-[#0f2f63] text-white shadow-xs' 
-                                        : 'text-[#717784] hover:text-[#0a0a0a]'
-                                }`}
-                            >
-                                Employer
-                            </button>
+                        {/* Top Right: Segmented Role Pill & Native Language Indicators */}
+                        <div className="flex items-center gap-2.5">
+                            {/* Segmented Pill Role Switcher */}
+                            <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] border border-[#e6e8ec]">
+                                <button
+                                    type="button"
+                                    onClick={() => handleRoleToggle('WORKER')}
+                                    className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${
+                                        isCandidate 
+                                            ? 'bg-[#0f2f63] text-white shadow-xs' 
+                                            : 'text-[#717784] hover:text-[#0a0a0a]'
+                                    }`}
+                                >
+                                    <User className="w-3 h-3" />
+                                    <span>Candidate</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRoleToggle('EMPLOYER')}
+                                    className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${
+                                        !isCandidate 
+                                            ? 'bg-[#0f2f63] text-white shadow-xs' 
+                                            : 'text-[#717784] hover:text-[#0a0a0a]'
+                                    }`}
+                                >
+                                    <Building2 className="w-3 h-3" />
+                                    <span>Employer</span>
+                                </button>
+                            </div>
+
+                            {/* Vernacular Language Switcher Pill */}
+                            <div className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#f4f4f4] border border-[#e6e8ec] text-[11px] font-semibold text-[#717784]">
+                                <Languages className="w-3.5 h-3.5 text-[#0f2f63]" />
+                                <span className={currentLang === 'en' ? 'text-[#0f2f63] font-bold' : ''}>EN</span>
+                                <span className="text-[#c5c8d0]">•</span>
+                                <span className={currentLang === 'ta' ? 'text-[#0f2f63] font-bold' : ''}>தமிழ்</span>
+                                <span className="text-[#c5c8d0]">•</span>
+                                <span className={currentLang === 'hi' ? 'text-[#0f2f63] font-bold' : ''}>हिंदी</span>
+                            </div>
                         </div>
                     </div>
 
@@ -175,15 +193,15 @@ export const SignInPage = () => {
                         <div className="mb-6">
                             <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] mb-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9]" />
-                                <span>{isCandidate ? 'Candidate Portal' : 'Employer Portal'}</span>
+                                <span>{isCandidate ? 'Candidate Portal (வேலை தேடுபவர்)' : 'Employer Portal (பணியமர்த்துபவர்)'}</span>
                             </div>
                             <h1 className="text-3xl sm:text-4xl font-medium text-[#0a0a0a] leading-[1.05]">
                                 Sign in to TrustHyre
                             </h1>
                             <p className="text-xs sm:text-sm text-[#717784] mt-2 leading-relaxed">
                                 {isCandidate 
-                                    ? 'Access verified jobs, verified shifts, and direct employer connections.' 
-                                    : 'Access your hiring pipeline, active job postings, and verified candidates.'}
+                                    ? 'Access verified jobs, verified daily shifts, and direct employer phone calls.' 
+                                    : 'Access your hiring pipeline, active job postings, and pre-screened verified workers.'}
                             </p>
                         </div>
 
@@ -208,7 +226,7 @@ export const SignInPage = () => {
                             {/* Email Field */}
                             <div className="space-y-1.5">
                                 <label className="block text-xs font-medium uppercase text-[#0a0a0a]">
-                                    {isCandidate ? 'Email address or username' : 'Business email'}
+                                    {isCandidate ? 'Email address or mobile' : 'Official business email'}
                                 </label>
                                 <input
                                     type="email"

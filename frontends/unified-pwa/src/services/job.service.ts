@@ -16,6 +16,8 @@ export interface CreateJobDto {
   address?: string;
   city?: string;
   expiresAt?: string | null;
+  coverImageUrl?: string | null;
+  cover_image_url?: string | null;
 }
 
 export const jobService = {
