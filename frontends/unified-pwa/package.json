@@ -1,7 +1,7 @@
 {
     "name": "unified-pwa",
     "private": true,
-    "version": "1.0.5",
+    "version": "1.0.6",
     "type": "module",
     "scripts": {
         "dev": "vite",
@@ -43,6 +43,7 @@
         "sockjs-client": "^1.6.1",
         "sonner": "^2.0.7",
         "tailwind-merge": "^3.5.0",
+        "trust-hire-monorepo": "file:../..",
         "zod": "^4.4.2"
     },
     "devDependencies": {

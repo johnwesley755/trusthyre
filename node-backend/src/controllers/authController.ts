@@ -534,10 +534,15 @@ export const oauthSync = async (c: Context) => {
       // 3. Tertiary fallback: Structural & Claim verification of Firebase / Google JWT
       if (!verifiedEmail && decoded) {
         try {
-          const iss = String(decoded.iss || '');
-          const isGoogleIssuer = 
-            iss.includes('securetoken.google.com') ||
-            iss.includes('accounts.google.com');
+          const iss = String(decoded.iss || '').trim();
+          let isGoogleIssuer = false;
+          try {
+            const issUrl = new URL(iss.startsWith('http://') || iss.startsWith('https://') ? iss : `https://${iss}`);
+            const hostname = issUrl.hostname.toLowerCase();
+            isGoogleIssuer = hostname === 'accounts.google.com' || hostname === 'securetoken.google.com';
+          } catch {
+            isGoogleIssuer = false;
+          }
           // Allow up to 10 minutes clock skew on expiration
           const notExpired = !decoded.exp || (decoded.exp * 1000 + 600000 > Date.now());
           const hasValidSub = !!(decoded.sub || decoded.user_id);
