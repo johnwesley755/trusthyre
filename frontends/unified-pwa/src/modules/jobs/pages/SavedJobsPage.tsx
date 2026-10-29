@@ -121,7 +121,7 @@ export const SavedJobsPage: React.FC = () => {
 
                 <div className="flex items-center gap-2 text-xs font-medium text-[#717784] px-1">
                   <span>
-                    <strong className="text-[#0a0a0a] font-bold">{filteredJobs.length}</strong>{' '}
+                    <strong className="text-[#0a0a0a] font-bold tabular-nums">{filteredJobs.length}</strong>{' '}
                     {filteredJobs.length === 1 ? t("job", "job") : t("jobs", "jobs")}{' '}
                     {searchQuery ? t("matching", "matching") : t("saved", "saved")}
                   </span>

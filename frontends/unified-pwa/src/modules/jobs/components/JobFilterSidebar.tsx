@@ -177,7 +177,7 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
                 <span>{type}</span>
                 <div className="flex items-center gap-1.5">
                   {count !== undefined && (
-                    <span className={`text-[11px] ${isSelected ? 'text-white/80' : 'text-[#717784]'}`}>
+                    <span className={`text-[11px] tabular-nums ${isSelected ? 'text-white/80' : 'text-[#717784]'}`}>
                       ({count})
                     </span>
                   )}
@@ -216,7 +216,7 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
             <span>All Locations</span>
             <div className="flex items-center gap-1.5">
               {counts?.total !== undefined && (
-                <span className={`text-[11px] ${!selectedLocation ? 'text-white/80' : 'text-[#717784]'}`}>
+                <span className={`text-[11px] tabular-nums ${!selectedLocation ? 'text-white/80' : 'text-[#717784]'}`}>
                   ({counts.total})
                 </span>
               )}
@@ -237,7 +237,7 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
               >
                 <span>{city}</span>
                 <div className="flex items-center gap-1.5">
-                  <span className={`text-[11px] ${isSelected ? 'text-white/80' : 'text-[#717784]'}`}>
+                  <span className={`text-[11px] tabular-nums ${isSelected ? 'text-white/80' : 'text-[#717784]'}`}>
                     ({count})
                   </span>
                   {isSelected && <Check className="w-3.5 h-3.5 text-white" />}

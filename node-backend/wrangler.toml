@@ -3,6 +3,10 @@ main = "src/worker.ts"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 
+[vars]
+FIREBASE_API_KEY = "AIzaSyC4gevbnB8eDxk5nskKjf5Nepr_9tVxThE"
+FIREBASE_PROJECT_ID = "trust-hire-6edba"
+
 [previews]
 
 [observability]

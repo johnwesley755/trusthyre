@@ -186,7 +186,7 @@ export const BlogListingPage: React.FC = () => {
                 : 'bg-white text-[#5a6270] hover:text-[#0a0a0a] hover:bg-[#f4f4f4] border border-[#e6e8ec]'
             }`}
           >
-            All Insights ({pagination.total})
+            All Insights (<span className="tabular-nums">{pagination.total}</span>)
           </button>
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat.slug;

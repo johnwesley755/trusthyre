@@ -287,7 +287,7 @@ export const JobPostingPage = () => {
                         defaultValue={previewBudget}
                         onChange={(e) => setPreviewBudget(e.target.value)}
                         placeholder="28000"
-                        className="w-full bg-white border border-[#e6e8ec] rounded-xl pl-9 pr-3 py-3 text-xs font-bold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all"
+                        className="w-full bg-white border border-[#e6e8ec] rounded-xl pl-9 pr-3 py-3 text-xs font-bold text-[#0a0a0a] tabular-nums focus:border-[#0f2f63] outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -442,7 +442,7 @@ export const JobPostingPage = () => {
                       {previewTitle || 'Job Title'}
                     </h4>
                   </div>
-                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-xl">
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-xl tabular-nums">
                     ₹{Number(previewBudget || 0).toLocaleString('en-IN')}
                   </span>
                 </div>

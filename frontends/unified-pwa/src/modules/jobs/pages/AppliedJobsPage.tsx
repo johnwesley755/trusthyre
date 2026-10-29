@@ -125,7 +125,7 @@ export default function AppliedJobsPage() {
                 My Active Job Applications
               </h1>
               <p className="text-xs text-[#717784] font-medium leading-relaxed max-w-xl">
-                Tracking {applications.length} submitted applications with real-time status updates and direct hiring pipeline.
+                Tracking <span className="tabular-nums font-semibold">{applications.length}</span> submitted applications with real-time status updates and direct hiring pipeline.
               </p>
             </div>
 
@@ -185,7 +185,7 @@ export default function AppliedJobsPage() {
               >
                 {tab.pulse && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />}
                 <span>{tab.label}</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] tabular-nums font-medium ${
                   activeFilter === tab.id ? 'bg-white/20 text-white' : 'bg-[#f4f4f4] text-[#717784]'
                 }`}>
                   {tab.count}

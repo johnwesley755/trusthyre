@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { skillTestService } from '../../../services/skill-test.service';
 import type { SkillTest } from '../../../services/skill-test.service';
-import { Clock, Trophy, ChevronRight, Play } from 'lucide-react';
+import { Clock, Trophy, ChevronRight, ChevronLeft, Award } from 'lucide-react';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { SkillTestUI } from '../components/SkillTestUI';
+import { AppLoader } from '../../../components/common/AppLoader';
 
 export interface TestSubmission {
   testId: string;
@@ -14,6 +15,7 @@ export interface TestSubmission {
 }
 
 export const SkillTestsPage = () => {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [activeTest, setActiveTest] = useState<SkillTest | null>(null);
 
@@ -28,82 +30,132 @@ export const SkillTestsPage = () => {
         testId={activeTest.id}
         onClose={() => setActiveTest(null)}
         onComplete={() => {
-          // Success logic here (e.g., refetch profile)
+          setActiveTest(null);
         }}
       />
     );
   }
 
-  return (
-    <>
-      <div className="absolute inset-0 cloud-grid opacity-[0.05] pointer-events-none" />
-      
-      <header className="p-8 lg:p-12 border-b border-brand-border bg-brand-bg/80 backdrop-blur-3xl sticky top-0 z-40">
-        <div className="space-y-2">
-            <div className="flex items-center gap-2 text-brand-secondary/40 font-semibold tracking-widest text-[10px]">
-                <Trophy className="w-3.5 h-3.5 text-brand-primary" /> Accreditation Matrix
-            </div>
-            <h1 className="text-5xl font-bold tracking-tighter text-brand-secondary leading-[0.9]">Skill assessments</h1>
-            <p className="text-brand-muted font-medium text-lg opacity-60">Verify your expertise to unlock higher levels and premium opportunities.</p>
-        </div>
-      </header>
+  const categories = ['All', 'Electrical', 'Plumbing', 'Logistics', 'Cooking', 'Security'];
 
-      <main className="p-8 lg:p-12 pr-8 lg:pr-16 w-full space-y-10 relative z-10 pb-32">
-        {/* Categories */}
-        <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide">
-            {['All', 'Electrical', 'Cooking', 'Cleaning', 'Security'].map(cat => (
-            <button
+  return (
+    <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
+      <main className="max-w-6xl mx-auto space-y-6 pb-20">
+        
+        {/* Navigation Bar */}
+        <div className="pt-2">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] text-xs font-medium transition-all cursor-pointer"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>Back to Profile</span>
+          </button>
+        </div>
+
+        {/* 1. Header Hero Card */}
+        <div className="bg-[#f4f4f4] rounded-[2rem] p-6 sm:p-8 border border-[#e6e8ec]">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-[#0f2f63]" />
+                <span className="text-[10px] font-semibold uppercase text-[#0f2f63]">
+                  Technical Skill Assessments
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a]">
+                Trade Certification Tests
+              </h1>
+              <p className="text-xs text-[#717784] font-medium leading-relaxed max-w-xl">
+                Take verified trade skill assessments to earn certification badges and increase your profile level for premium contracts.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Category Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {categories.map(cat => {
+            const isSelected = (selectedCategory === cat || (cat === 'All' && !selectedCategory));
+            return (
+              <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat === 'All' ? undefined : cat)}
-                className={`px-8 py-3 rounded-full font-semibold whitespace-nowrap border transition-all text-[10px] tracking-widest ${
-                (selectedCategory === cat || (cat === 'All' && !selectedCategory))
-                    ? 'bg-brand-secondary border-brand-secondary text-brand-primary shadow-xl shadow-brand-secondary/10'
-                    : 'bg-white border-brand-border text-brand-muted'
+                className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
+                  isSelected
+                    ? 'bg-[#0f2f63] text-white shadow-xs'
+                    : 'bg-white text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f4f4] border border-[#e6e8ec]'
                 }`}
-            >
-                {cat.toUpperCase()}
-            </button>
-            ))}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
+        {/* 3. Available Assessments Feed */}
         {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-32 space-y-6">
-                <div className="w-16 h-16 border-4 border-brand-primary border-t-brand-secondary rounded-full animate-spin" />
-                <p className="text-brand-muted font-semibold tracking-widest text-[10px] animate-pulse">Syncing Assessments...</p>
+          <div className="py-20 flex justify-center">
+            <AppLoader variant="page" message="Loading technical skill assessments..." />
+          </div>
+        ) : !tests || tests.length === 0 ? (
+          <div className="bg-[#f4f4f4] rounded-[1.75rem] p-10 border border-[#e6e8ec] text-center space-y-3">
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto text-[#717784] border border-[#e6e8ec]">
+              <Award className="w-6 h-6" />
             </div>
+            <h3 className="text-base font-bold text-[#0a0a0a]">No Tests Available</h3>
+            <p className="text-xs text-[#717784] max-w-sm mx-auto">
+              No skill assessments currently scheduled for this trade category. Please check back soon or try another category.
+            </p>
+          </div>
         ) : (
-            <div className="grid grid-cols-1 gap-6">
-            {tests?.map(test => (
-                <button
-                key={test.id}
-                onClick={() => setActiveTest(test)}
-                className="bg-white border border-brand-border rounded-[2.5rem] p-8 flex items-center justify-between group hover:border-brand-primary transition-all text-left shadow-sm hover:shadow-2xl"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {tests.map(test => {
+              const difficultyBadgeClass = 
+                test.difficulty === 'Advanced' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                test.difficulty === 'Intermediate' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                'bg-emerald-50 text-emerald-700 border-emerald-200';
+
+              return (
+                <div
+                  key={test.id}
+                  onClick={() => setActiveTest(test)}
+                  className="bg-white rounded-2xl p-5 border border-[#e6e8ec] hover:border-[#0f2f63]/40 shadow-2xs hover:shadow-sm transition-all group cursor-pointer flex flex-col justify-between space-y-4"
                 >
-                <div className="flex items-center gap-6">
-                    <div className={`p-5 rounded-2xl shadow-lg transform group-hover:scale-110 transition-transform ${
-                    test.difficulty === 'Advanced' ? 'bg-rose-500/10 text-rose-500' :
-                    test.difficulty === 'Intermediate' ? 'bg-amber-500/10 text-amber-500' :
-                    'bg-emerald-500/10 text-emerald-500'
-                    }`}>
-                    <Trophy className="h-8 w-8 text-brand-primary" />
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-base font-bold text-[#0a0a0a] group-hover:text-[#0f2f63] transition-colors">
+                        {test.title}
+                      </h3>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${difficultyBadgeClass}`}>
+                        {test.difficulty}
+                      </span>
                     </div>
-                    <div>
-                    <h3 className="text-2xl font-bold text-brand-secondary tracking-tight group-hover:text-brand-primary transition-colors">{test.title}</h3>
-                    <div className="flex items-center gap-6 mt-1 text-[10px] font-bold tracking-widest text-brand-muted/40 group-hover:text-brand-muted transition-colors">
-                        <span className="flex items-center gap-2 uppercase"><Clock className="h-4 w-4" /> {test.durationMinutes}m</span>
-                        <div className="w-1 h-1 bg-brand-border rounded-full" />
-                        <span className="flex items-center gap-2 text-brand-secondary uppercase">+{test.points} PTS</span>
+
+                    <div className="flex items-center gap-3 text-xs text-[#717784]">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-[#0f2f63]" />
+                        <span className="tabular-nums font-medium">{test.durationMinutes} min</span>
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1 text-[#0a0a0a] font-semibold">
+                        <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                        <span className="tabular-nums">+{test.points} PTS</span>
+                      </span>
                     </div>
-                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#e6e8ec] flex items-center justify-between text-xs font-semibold text-[#0f2f63]">
+                    <span>Start Assessment</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
                 </div>
-                <div className="p-3 bg-brand-bg rounded-xl group-hover:bg-brand-secondary group-hover:text-brand-primary transition-all">
-                    <ChevronRight className="h-6 w-6" />
-                </div>
-                </button>
-            ))}
-            </div>
+              );
+            })}
+          </div>
         )}
+
       </main>
-    </>
+    </div>
   );
 };

@@ -369,7 +369,7 @@ export default function JobDetailPage() {
             <div className="flex flex-row lg:flex-col items-start lg:items-end justify-between w-full lg:w-auto gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-[#e6e8ec]">
               <div className="text-left lg:text-right">
                 <p className="text-[10px] font-bold uppercase text-[#717784]">Agreed Compensation</p>
-                <p className="text-xl sm:text-2xl font-bold text-emerald-700 mt-0.5">
+                <p className="text-xl sm:text-2xl font-bold text-emerald-700 mt-0.5 tabular-nums tracking-tight">
                   {job.budget ? `₹${Number(job.budget).toLocaleString('en-IN')}` : 'Compensation on Discussion'}
                   {job.budget && <span className="text-xs font-medium text-[#717784] ml-1">/ month</span>}
                 </p>
@@ -541,11 +541,11 @@ export default function JobDetailPage() {
                   <div className="grid grid-cols-2 gap-2 text-center">
                     <div className="p-3 bg-[#fbfbfb] rounded-xl border border-[#e6e8ec]">
                       <p className="text-[10px] font-bold uppercase text-[#717784]">Applicants</p>
-                      <p className="text-xl font-bold text-[#0f2f63] mt-0.5">{applicantCount}</p>
+                      <p className="text-xl font-bold text-[#0f2f63] mt-0.5 tabular-nums tracking-tight">{applicantCount}</p>
                     </div>
                     <div className="p-3 bg-[#fbfbfb] rounded-xl border border-[#e6e8ec]">
                       <p className="text-[10px] font-bold uppercase text-[#717784]">Experience</p>
-                      <p className="text-xl font-bold text-[#0a0a0a] mt-0.5">{job.experienceYearsRequired || 1}+ yr</p>
+                      <p className="text-xl font-bold text-[#0a0a0a] mt-0.5 tabular-nums tracking-tight">{job.experienceYearsRequired || 1}+ yr</p>
                     </div>
                   </div>
 

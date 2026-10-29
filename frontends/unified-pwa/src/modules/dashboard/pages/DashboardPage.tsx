@@ -51,7 +51,7 @@ export default function DashboardPage() {
         
         {/* 1. Hallmark Hero Header Banner */}
         <div className="rounded-[2rem] border border-[#e6e8ec] bg-[#f4f4f4] p-6 sm:p-8 shadow-xs relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#0f2f63]/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+          
           
           <div className="relative z-10 space-y-4">
             
@@ -59,11 +59,11 @@ export default function DashboardPage() {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-2">
               <div className="space-y-2 max-w-2xl">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0f2f63]/10 text-[#0f2f63] text-xs font-semibold">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>EMPLOYER COMMAND CENTER</span>
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>Employer Workspace</span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#0a0a0a] tracking-tight">
-                  Welcome back, {displayName} 👋
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a0a0a] tracking-tight text-balance">
+                  Welcome back, {displayName}
                 </h1>
                 <p className="text-[#717784] text-sm leading-relaxed">
                   Real-time talent operations, candidate application pipeline, and verified hiring overview.
@@ -109,7 +109,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <div>
-              <div className="text-3xl font-extrabold text-[#0a0a0a]">
+              <div className="text-3xl font-bold text-[#0a0a0a] tabular-nums tracking-tight">
                 {activeJobs}
               </div>
               <p className="text-xs font-bold uppercase text-[#717784] mt-1">
@@ -136,7 +136,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <div>
-              <div className="text-3xl font-extrabold text-[#0a0a0a]">
+              <div className="text-3xl font-bold text-[#0a0a0a] tabular-nums tracking-tight">
                 {totalApplicants}
               </div>
               <p className="text-xs font-bold uppercase text-[#717784] mt-1">
@@ -163,7 +163,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <div>
-              <div className="text-3xl font-extrabold text-[#0a0a0a]">
+              <div className="text-3xl font-bold text-[#0a0a0a] tabular-nums tracking-tight">
                 {interviewingCount}
               </div>
               <p className="text-xs font-bold uppercase text-[#717784] mt-1">
@@ -190,7 +190,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <div>
-              <div className="text-3xl font-extrabold text-[#0a0a0a]">
+              <div className="text-3xl font-bold text-[#0a0a0a] tabular-nums tracking-tight">
                 {totalHired}
               </div>
               <p className="text-xs font-bold uppercase text-[#717784] mt-1">
@@ -236,7 +236,7 @@ export default function DashboardPage() {
 
               <div className="p-4 sm:p-5 rounded-[1.5rem] bg-white border border-[#e6e8ec] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <div className="text-2xl sm:text-3xl font-extrabold text-[#0a0a0a]">
+                  <div className="text-2xl sm:text-3xl font-bold text-[#0a0a0a] tabular-nums tracking-tight">
                     {availableCandidates > 0 ? `${availableCandidates} Verified Candidates Available` : 'Search Verified Candidates'}
                   </div>
                   <p className="text-xs text-[#717784] mt-1">

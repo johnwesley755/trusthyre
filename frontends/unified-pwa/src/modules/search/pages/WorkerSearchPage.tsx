@@ -185,7 +185,7 @@ export const WorkerSearchPage = () => {
         <div className="lg:hidden px-1">
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs font-medium text-slate-500">
-              <strong className="text-[#0A1931] font-bold">{results.length}</strong> {t("verified specialists", "verified specialists")}
+              <strong className="text-[#0A1931] font-bold tabular-nums">{results.length}</strong> {t("verified specialists", "verified specialists")}
             </span>
             <button
               onClick={() => setIsMobileFilterOpen(true)}

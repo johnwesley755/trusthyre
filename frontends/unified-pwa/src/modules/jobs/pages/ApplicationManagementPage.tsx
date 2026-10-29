@@ -208,7 +208,7 @@ export default function ApplicationManagementPage() {
                 <div className="flex items-center gap-3">
                   <div className="bg-white px-3.5 py-1.5 rounded-full flex items-center gap-2 border border-[#e6e8ec] shadow-2xs">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-xs font-bold text-[#0a0a0a]">
+                    <span className="text-xs font-bold text-[#0a0a0a] tabular-nums">
                       {allApplications.length} Applicants Received
                     </span>
                   </div>
@@ -239,7 +239,7 @@ export default function ApplicationManagementPage() {
                   className="w-full text-xs pl-9 pr-4 py-2 rounded-xl bg-white border border-[#e6e8ec] focus:border-[#0f2f63] outline-none"
                 />
               </div>
-              <span className="text-xs font-semibold text-[#717784] shrink-0 px-2">
+              <span className="text-xs font-semibold text-[#717784] shrink-0 px-2 tabular-nums">
                 {filteredJobs.length} {filteredJobs.length === 1 ? 'Job' : 'Jobs'}
               </span>
             </div>
@@ -491,17 +491,17 @@ export default function ApplicationManagementPage() {
                       {/* Pipeline Counters Metric Pill */}
                       <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-[#e6e8ec] shadow-2xs">
                         <div className="text-center px-2">
-                          <p className="text-base font-bold text-[#0a0a0a]">{countAll}</p>
+                          <p className="text-base font-bold text-[#0a0a0a] tabular-nums tracking-tight">{countAll}</p>
                           <p className="text-[10px] text-[#717784] font-medium uppercase">Total</p>
                         </div>
                         <div className="w-px h-6 bg-[#e6e8ec]" />
                         <div className="text-center px-2">
-                          <p className="text-base font-bold text-amber-600">{countPending}</p>
+                          <p className="text-base font-bold text-amber-600 tabular-nums tracking-tight">{countPending}</p>
                           <p className="text-[10px] text-[#717784] font-medium uppercase">Review</p>
                         </div>
                         <div className="w-px h-6 bg-[#e6e8ec]" />
                         <div className="text-center px-2">
-                          <p className="text-base font-bold text-emerald-600">{countAccepted}</p>
+                          <p className="text-base font-bold text-emerald-600 tabular-nums tracking-tight">{countAccepted}</p>
                           <p className="text-[10px] text-[#717784] font-medium uppercase">Hired</p>
                         </div>
                       </div>

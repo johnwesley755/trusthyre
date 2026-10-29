@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { setupInterceptors } from '../api/apiClient';
 import type { User, UserRole } from '../types';
@@ -72,11 +72,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   };
 
+  const syncInProgressRef = useRef(false);
+
   const login = (token: string, userData: any) => {
     const mappedUser = mapUserFields(userData);
     secureStorage.setItem('token', token);
     secureStorage.setItem('user', JSON.stringify(mappedUser));
     setUser(mappedUser);
+  };
+
+  const syncUserWithBackend = async (fbUser: any, targetRole: UserRole) => {
+    const idToken = await fbUser.getIdToken(true);
+    const nameParts = (fbUser.displayName || (targetRole === 'EMPLOYER' ? 'Employer' : 'Worker')).split(' ');
+    const firstName = nameParts[0] || (targetRole === 'EMPLOYER' ? 'Employer' : 'Worker');
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    const syncRes = await apiClient.post('/api/auth/oauth-sync', {
+      idToken,
+      email: fbUser.email,
+      firstName,
+      lastName,
+      profileImageUrl: fbUser.photoURL,
+      role: targetRole,
+    });
+
+    const payload = syncRes.data?.data || syncRes.data;
+    if (payload?.token && payload?.user) {
+      setAuthError(null);
+      login(payload.token, payload.user);
+      return payload.user;
+    }
+    throw new Error(payload?.message || "Authentication sync returned an invalid response.");
   };
 
   useEffect(() => {
@@ -99,44 +125,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     initAuth();
 
-    let syncInProgress = false;
-
-    // 2. Listen to Firebase Auth state changes
+    // 2. Listen to Firebase Auth state changes (session restoration)
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      if (fbUser && !syncInProgress) {
+      if (fbUser && !syncInProgressRef.current) {
         const token = secureStorage.getItem('token');
         if (!token) {
-          syncInProgress = true;
+          syncInProgressRef.current = true;
           const targetRole = (secureStorage.getItem('target_role') || 'WORKER') as UserRole;
-          const nameParts = (fbUser.displayName || 'Worker').split(' ');
-          const firstName = nameParts[0] || 'Worker';
-          const lastName = nameParts.slice(1).join(' ') || '';
-
           try {
-            const idToken = await fbUser.getIdToken();
-            const syncRes = await apiClient.post('/api/auth/oauth-sync', {
-              idToken,
-              email: fbUser.email,
-              firstName,
-              lastName,
-              profileImageUrl: fbUser.photoURL,
-              role: targetRole,
-            });
-            const payload = syncRes.data?.data || syncRes.data;
-            if (payload?.token && payload?.user) {
-              setAuthError(null);
-              login(payload.token, payload.user);
-            }
+            await syncUserWithBackend(fbUser, targetRole);
           } catch (syncErr: any) {
-            console.error("Backend oauth sync failed:", syncErr);
+            console.error("Background oauth sync failed:", syncErr);
             const errorMessage = syncErr?.response?.data?.message || syncErr?.message || "Authentication failed.";
             setAuthError(errorMessage);
             window.dispatchEvent(new CustomEvent('auth:error', { detail: errorMessage }));
-            await firebaseSignOut(auth);
+            await firebaseSignOut(auth).catch(() => {});
             secureStorage.removeItem('token');
             secureStorage.removeItem('user');
           } finally {
-            syncInProgress = false;
+            syncInProgressRef.current = false;
           }
         }
       }
@@ -183,31 +190,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setAuthError(null);
     secureStorage.setItem('target_role', targetRole);
     try {
-      await signInWithPopup(auth, googleProvider);
-      // Wait for onAuthStateChanged to handle the sync
-      let retries = 0;
-      const checkToken = setInterval(() => {
-        if (secureStorage.getItem('token')) {
-          clearInterval(checkToken);
-          const storedUser = secureStorage.getItem('user');
-          let parsed: any = null;
-          try { 
-            parsed = storedUser ? JSON.parse(storedUser) : null; 
-          } catch {
-            /* ignore parse error */
-          }
-          if (!parsed?.phoneNumber && !parsed?.phone_number && parsed?.role !== 'EMPLOYER') {
-            window.location.href = '/onboarding';
-          } else {
-            const dest = parsed?.role === 'ADMIN' ? '/admin/dashboard' : parsed?.role === 'EMPLOYER' ? '/find-workers' : '/search';
-            window.location.href = dest;
-          }
-        } else if (retries > 40) { // 20 seconds timeout
-          clearInterval(checkToken);
-        }
-        retries++;
-      }, 500);
-      
+      syncInProgressRef.current = true;
+      const result = await signInWithPopup(auth, googleProvider);
+      if (!result?.user) {
+        throw new Error("Google authentication did not return user credentials.");
+      }
+
+      const syncedUser = await syncUserWithBackend(result.user, targetRole);
+
+      // Deterministic navigation after immediate sync
+      if (!syncedUser?.phoneNumber && !syncedUser?.phone_number && syncedUser?.role !== 'EMPLOYER') {
+        window.location.href = '/onboarding';
+      } else {
+        const dest = syncedUser?.role === 'ADMIN' ? '/admin/dashboard' : syncedUser?.role === 'EMPLOYER' ? '/find-workers' : '/search';
+        window.location.href = dest;
+      }
     } catch (error: any) {
       console.warn("Firebase Google Auth error:", error.code, error.message);
       // Suppress benign popup closure / cancellation
@@ -217,9 +214,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       ) {
         return;
       }
-      const errorMsg = error?.response?.data?.message || error.message || "Google Sign-In failed.";
+      const errorMsg = error?.response?.data?.message || error?.message || "Google Sign-In failed.";
       setAuthError(errorMsg);
       window.dispatchEvent(new CustomEvent('auth:error', { detail: errorMsg }));
+      await firebaseSignOut(auth).catch(() => {});
+      secureStorage.removeItem('token');
+      secureStorage.removeItem('user');
+      throw error;
+    } finally {
+      syncInProgressRef.current = false;
     }
   };
 

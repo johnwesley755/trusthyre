@@ -78,7 +78,7 @@ export default function TrackerPage() {
         id: `act-${act.id || idx}`,
         type: act.type?.toLowerCase().includes('milestone') ? 'milestone' : 'activity',
         title: act.description || act.title || 'System Milestone',
-        company: 'TrustHire Protocol',
+        company: 'TrustHyre System',
         location: 'Verified System',
         date: act.createdAt || new Date().toISOString(),
         status: act.type || 'EVENT',
@@ -139,22 +139,22 @@ export default function TrackerPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           <div className="bg-[#f4f4f4] p-4 rounded-2xl border border-[#e6e8ec] text-center space-y-1">
             <p className="text-[10px] font-bold uppercase text-[#717784]">Total Submitted</p>
-            <p className="text-xl font-bold text-[#0a0a0a]">{myApplications.length}</p>
+            <p className="text-xl font-bold text-[#0a0a0a] tabular-nums tracking-tight">{myApplications.length}</p>
             <p className="text-[10px] text-[#717784]">applications</p>
           </div>
           <div className="bg-[#f4f4f4] p-4 rounded-2xl border border-[#e6e8ec] text-center space-y-1">
             <p className="text-[10px] font-bold uppercase text-[#717784]">Under Review</p>
-            <p className="text-xl font-bold text-blue-700">{pendingApps.length}</p>
+            <p className="text-xl font-bold text-[#0f2f63] tabular-nums tracking-tight">{pendingApps.length}</p>
             <p className="text-[10px] text-[#717784]">active pipeline</p>
           </div>
           <div className="bg-[#f4f4f4] p-4 rounded-2xl border border-[#e6e8ec] text-center space-y-1">
             <p className="text-[10px] font-bold uppercase text-[#717784]">Offers Received</p>
-            <p className="text-xl font-bold text-amber-600">{offersReceived.length}</p>
+            <p className="text-xl font-bold text-amber-700 tabular-nums tracking-tight">{offersReceived.length}</p>
             <p className="text-[10px] text-[#717784]">action required</p>
           </div>
           <div className="bg-[#f4f4f4] p-4 rounded-2xl border border-[#e6e8ec] text-center space-y-1">
             <p className="text-[10px] font-bold uppercase text-[#717784]">Confirmed / Hired</p>
-            <p className="text-xl font-bold text-emerald-600">{completedApps.length}</p>
+            <p className="text-xl font-bold text-emerald-700 tabular-nums tracking-tight">{completedApps.length}</p>
             <p className="text-[10px] text-[#717784]">successful shifts</p>
           </div>
         </div>
@@ -170,7 +170,7 @@ export default function TrackerPage() {
                   : 'bg-white text-[#717784] hover:text-[#0a0a0a] border border-[#e6e8ec]'
               }`}
             >
-              All Activity ({filteredItems.length})
+              All Activity <span className="tabular-nums">({filteredItems.length})</span>
             </button>
             <button
               onClick={() => setFilterType('applications')}
@@ -180,7 +180,7 @@ export default function TrackerPage() {
                   : 'bg-white text-[#717784] hover:text-[#0a0a0a] border border-[#e6e8ec]'
               }`}
             >
-              Applications ({myApplications.length})
+              Applications <span className="tabular-nums">({myApplications.length})</span>
             </button>
             <button
               onClick={() => setFilterType('shifts')}
@@ -190,7 +190,7 @@ export default function TrackerPage() {
                   : 'bg-white text-[#717784] hover:text-[#0a0a0a] border border-[#e6e8ec]'
               }`}
             >
-              Confirmed Shifts ({completedApps.length})
+              Confirmed Shifts <span className="tabular-nums">({completedApps.length})</span>
             </button>
             <button
               onClick={() => setFilterType('milestones')}

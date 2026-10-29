@@ -14,24 +14,33 @@ import {
   Loader2, 
   LogOut,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  HardHat,
+  Wrench,
+  Truck,
+  ChefHat,
+  Hotel,
+  Home,
+  Store,
+  Shield,
+  Factory,
+  Scissors,
+  Stethoscope
 } from "lucide-react";
 import { OnboardingVisualHero } from "../components/OnboardingVisualHero";
 
 const INDUSTRY_OPTIONS = [
-  { id: 'CONSTRUCTION', label: 'Construction & Civil', icon: '🏗️' },
-  { id: 'MAINTENANCE', label: 'Maintenance & Facility', icon: '🔧' },
-  { id: 'LOGISTICS', label: 'Logistics & Warehousing', icon: '📦' },
-  { id: 'COOKING_CHEF', label: 'Commercial Kitchens', icon: '🍳' },
-  { id: 'HOSPITALITY', label: 'Hospitality & Dining', icon: '🏨' },
-  { id: 'DOMESTIC_HELP', label: 'Domestic & Facility Help', icon: '🧹' },
-  { id: 'RETAIL', label: 'Retail & Showrooms', icon: '🛒' },
-  { id: 'SECURITY', label: 'Physical Security', icon: '🛡️' },
-  { id: 'AGRICULTURE', label: 'Agriculture & Farm Ops', icon: '🌾' },
-  { id: 'MANUFACTURING', label: 'Manufacturing & Plants', icon: '⚙️' },
-  { id: 'GARMENT', label: 'Garment & Apparel', icon: '🧵' },
-  { id: 'BEAUTY', label: 'Salon & Wellness', icon: '✂️' },
-  { id: 'HEALTHCARE', label: 'Healthcare & Support', icon: '🏥' }
+  { id: 'CONSTRUCTION', label: 'Construction & Civil', icon: HardHat },
+  { id: 'MAINTENANCE', label: 'Maintenance & Facility', icon: Wrench },
+  { id: 'LOGISTICS', label: 'Logistics & Warehousing', icon: Truck },
+  { id: 'COOKING_CHEF', label: 'Commercial Kitchens', icon: ChefHat },
+  { id: 'HOSPITALITY', label: 'Hospitality & Dining', icon: Hotel },
+  { id: 'DOMESTIC_HELP', label: 'Domestic & Facility Help', icon: Home },
+  { id: 'RETAIL', label: 'Retail & Showrooms', icon: Store },
+  { id: 'SECURITY', label: 'Physical Security', icon: Shield },
+  { id: 'MANUFACTURING', label: 'Manufacturing & Plants', icon: Factory },
+  { id: 'GARMENT', label: 'Garment & Apparel', icon: Scissors },
+  { id: 'HEALTHCARE', label: 'Healthcare & Support', icon: Stethoscope }
 ];
 
 const STEP_TITLES: Record<number, string> = {
@@ -309,7 +318,7 @@ export default function EmployerOnboardingPage() {
                   </div>
                   <div className="relative flex items-center">
                     <div className="absolute left-3.5 flex items-center gap-1.5 text-slate-700 font-bold text-xs pointer-events-none select-none border-r border-slate-200 pr-2.5 z-10">
-                      <span className="text-sm leading-none">🇮🇳</span>
+                      <span className="text-[10px] tracking-wider uppercase font-bold text-neutral-500">IN</span>
                       <span>+91</span>
                     </div>
                     <input 
@@ -352,22 +361,26 @@ export default function EmployerOnboardingPage() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931]">
                     Select Primary Industry Sector *
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto p-1">
-                    {INDUSTRY_OPTIONS.map(opt => (
-                      <button 
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setFormData({...formData, industry: opt.id})}
-                        className={`flex items-center gap-2 p-3 rounded-xl border transition-all text-left cursor-pointer ${
-                          formData.industry === opt.id 
-                            ? 'bg-[#0f2f63] text-white border-[#0f2f63] shadow-xs' 
-                            : 'bg-[#f4f4f4] border-transparent text-[#717784] hover:text-[#0A1931] hover:bg-slate-200/70'
-                        }`}
-                      >
-                        <span className="text-base leading-none shrink-0">{opt.icon}</span>
-                        <span className="text-xs font-semibold truncate">{opt.label}</span>
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto p-1">
+                    {INDUSTRY_OPTIONS.map(opt => {
+                      const Icon = opt.icon;
+                      const isSelected = formData.industry === opt.id;
+                      return (
+                        <button 
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setFormData({...formData, industry: opt.id})}
+                          className={`flex items-center gap-2.5 p-3 rounded-xl border transition-all text-left cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#0f2f63] ${
+                            isSelected 
+                              ? 'bg-[#0f2f63] text-white border-[#0f2f63] shadow-xs' 
+                              : 'bg-white border-[#e6e8ec] text-neutral-700 hover:text-neutral-900 hover:border-neutral-300 hover:bg-neutral-50'
+                          }`}
+                        >
+                          <Icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-neutral-500'}`} />
+                          <span className="text-xs font-medium truncate">{opt.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -426,12 +439,12 @@ export default function EmployerOnboardingPage() {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#0f2f63]/5 border border-[#0f2f63]/15 flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#0f2f63] shrink-0 mt-0.5" />
+                <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-bold text-[#0A1931]">Instant Talent Discovery</p>
-                    <p className="text-[11px] text-[#717784] mt-0.5 leading-relaxed">
-                      Your company will be verified immediately upon submission, unlocking access to verified candidate portfolios, contact information, and direct hiring tools.
+                    <p className="text-xs font-semibold text-neutral-900">Direct Candidate Access</p>
+                    <p className="text-xs text-neutral-600 mt-0.5 leading-relaxed">
+                      Your company profile will be verified on completion, enabling direct phone connections and photo attendance verification.
                     </p>
                   </div>
                 </div>

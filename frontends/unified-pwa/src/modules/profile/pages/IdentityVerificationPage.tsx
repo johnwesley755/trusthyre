@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { verificationService } from '../../../services/verification.service';
 import apiClient from '../../../api/apiClient';
-import { HelpCircle, ArrowLeft, ShieldCheck, CheckCircle2, ChevronRight, Award, Lock } from 'lucide-react';
+import { HelpCircle, ArrowLeft, ShieldCheck, CheckCircle2, ChevronRight, Lock, FileCheck } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth, useUser } from '../../../providers/AuthContext';
 import { toast } from 'sonner';
 import { useState } from 'react';
@@ -28,12 +28,11 @@ export const IdentityVerificationPage = () => {
       await apiClient.post('/api/auth/sync', { onboarded: true, identityVerified: true });
       updateUser({ identityVerified: true, onboarded: true });
       await refetch();
-      toast.success('Identity verified & Trust Badge activated!');
+      toast.success('Identity verification confirmed.');
     } catch (e) {
       console.error(e);
-      // Fallback update in state
       updateUser({ identityVerified: true });
-      toast.success('Identity verified!');
+      toast.success('Identity verified.');
     } finally {
       setIsActivating(false);
     }
@@ -43,7 +42,7 @@ export const IdentityVerificationPage = () => {
     try {
       await apiClient.post('/api/auth/sync', { onboarded: true });
       updateUser({ onboarded: true });
-      toast.success('Profile active!');
+      toast.success('Profile active.');
       navigate('/search');
     } catch (e) {
       console.error(e);
@@ -54,80 +53,91 @@ export const IdentityVerificationPage = () => {
   const isVerified = user?.identityVerified === true || status?.status === 'VERIFIED';
 
   return (
-    <div className="min-h-screen bg-[#faf9f4] font-body text-[#1b1c19] selection:bg-[#ffe081] selection:text-[#1b1c19] relative overflow-hidden flex flex-col antialiased">
-      {/* Background Cloud Grid Overlay */}
-      <div className="absolute inset-0 cloud-grid opacity-[0.05] pointer-events-none -z-10" />
-
-      {/* TopAppBar */}
-      <header className="bg-[#F8FAFC]/80 backdrop-blur-xl sticky top-0 z-50 border-b border-[#c1c8c3]/10">
-        <div className="flex justify-between items-center w-full px-6 py-4">
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-neutral-50 font-['Onest',system-ui,sans-serif] text-neutral-900 selection:bg-[#0f2f63] selection:text-white flex flex-col antialiased">
+      {/* Top Header */}
+      <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-neutral-200/80">
+        <div className="flex justify-between items-center max-w-5xl mx-auto w-full px-4 sm:px-6 py-3.5">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-[#c1c8c3]/20 rounded-full transition-all active:scale-95 group"
+              className="p-2 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
+              aria-label="Go back"
             >
-              <ArrowLeft className="w-5 h-5 text-[#2d4d41] group-hover:text-[#0A1931]" />
+              <ArrowLeft className="w-4 h-4 text-neutral-700" />
             </button>
-            <span className="font-headline font-black tracking-tight text-xl text-[#2d4d41]">TrustHire</span>
+            <div className="flex items-center gap-2">
+              <span className="font-bold tracking-tight text-base text-[#0f2f63]">TrustHyre</span>
+              <span className="text-xs text-neutral-400">/</span>
+              <span className="text-xs font-semibold text-neutral-600">Verification</span>
+            </div>
           </div>
-          <div className="flex items-center gap-6">
-            <span className="hidden sm:block text-[#2d4d41]/60 font-headline font-bold text-sm tracking-tight">
-              {isVerified ? 'Verification Complete' : 'Profile Trust Activation'}
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:inline-block text-xs font-medium text-neutral-500">
+              {isVerified ? 'Verification Complete' : 'Candidate Verification'}
             </span>
-            <button className="p-2 hover:bg-[#c1c8c3]/20 rounded-full transition-all text-[#2d4d41]">
-              <HelpCircle className="w-5 h-5" />
-            </button>
+            <Link to="/contact" className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors text-neutral-500 hover:text-neutral-800">
+              <HelpCircle className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </header>
 
-      <main className="flex-grow flex flex-col items-center justify-center p-4 sm:p-8 lg:p-12">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 max-w-xl mx-auto w-full">
         <AnimatePresence mode="wait">
           {isVerified ? (
             <SuccessStep key="success" onDashboard={handleSyncAndRedirect} />
           ) : (
             <motion.div
               key="activate"
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              className="max-w-xl w-full bg-white rounded-3xl p-8 sm:p-12 shadow-xl border border-[#c1c8c3]/20 text-center"
+              exit={{ opacity: 0, y: -12 }}
+              className="w-full bg-white rounded-2xl p-6 sm:p-8 border border-neutral-200/80 shadow-xs"
             >
-              <div className="w-20 h-20 bg-[#d1fae5] rounded-full flex items-center justify-center mx-auto mb-6 text-[#002117]">
-                <ShieldCheck className="w-10 h-10 text-[#2d4d41]" />
+              <div className="w-12 h-12 bg-neutral-100 border border-neutral-200 rounded-xl flex items-center justify-center mb-5 text-[#0f2f63]">
+                <ShieldCheck className="w-6 h-6 text-[#0f2f63]" />
               </div>
 
-              <h1 className="font-headline font-black text-3xl sm:text-4xl text-[#1b1c19] mb-3">
-                Activate Trust Badge
+              <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight text-balance">
+                Verify Your Candidate Profile
               </h1>
-              <p className="text-[#414845] text-base leading-relaxed mb-8">
-                Verify your identity credentials to get prioritized by top employers and unlock verified candidate applications.
+              <p className="text-xs sm:text-sm text-neutral-600 mt-2 leading-relaxed">
+                Verified candidate profiles display an identity badge and are prioritized when employers review trade applications.
               </p>
 
-              <div className="space-y-3 mb-8 text-left bg-[#F8FAFC] p-5 rounded-2xl border border-neutral-100">
-                <div className="flex items-center gap-3 text-sm font-semibold text-neutral-800">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                  <span>Authenticated Phone & Account Security</span>
+              <div className="space-y-3 my-6 text-left bg-neutral-50 p-4 rounded-xl border border-neutral-200/70">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-semibold text-neutral-900">Verified Mobile Number</p>
+                    <p className="text-[11px] text-neutral-500">Enables direct phone calls from active employers.</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm font-semibold text-neutral-800">
-                  <Award className="w-5 h-5 text-[#2d4d41] flex-shrink-0" />
-                  <span>Direct Recruiter Visibility & 3x Application Weight</span>
+                <div className="flex items-start gap-3">
+                  <FileCheck className="w-4 h-4 text-[#0f2f63] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-semibold text-neutral-900">Government ID & Trade Credentials</p>
+                    <p className="text-[11px] text-neutral-500">Unlocks Level 1 / Level 2 verified tradesperson status.</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm font-semibold text-neutral-800">
-                  <Lock className="w-5 h-5 text-[#2d4d41] flex-shrink-0" />
-                  <span>Encrypted Bank-Grade Privacy Standards</span>
+                <div className="flex items-start gap-3">
+                  <Lock className="w-4 h-4 text-neutral-700 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-semibold text-neutral-900">Privacy Controlled</p>
+                    <p className="text-[11px] text-neutral-500">Your documents are securely encrypted and only shown to verified recruiters.</p>
+                  </div>
                 </div>
               </div>
 
               <button
                 onClick={handleActivateVerification}
                 disabled={isActivating}
-                className="w-full bg-[#FACD15] hover:bg-[#eec200] text-[#002117] font-headline font-black py-4 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-lg active:scale-98 disabled:opacity-50"
+                className="w-full bg-[#0f2f63] hover:bg-[#0c244c] active:bg-[#081a38] text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer disabled:opacity-50 shadow-xs"
               >
-                {isActivating ? 'Activating...' : (
+                {isActivating ? 'Activating Verification...' : (
                   <>
-                    Activate Verified Profile
-                    <ChevronRight className="w-5 h-5" />
+                    <span>Confirm & Activate Badge</span>
+                    <ChevronRight className="w-4 h-4" />
                   </>
                 )}
               </button>
@@ -136,23 +146,18 @@ export const IdentityVerificationPage = () => {
         </AnimatePresence>
       </main>
 
-      <footer className="bg-[#faf9f4] px-6 py-8 flex flex-col md:flex-row justify-between items-center text-[10px] text-[#414845] opacity-60 font-bold uppercase tracking-widest border-t border-[#c1c8c3]/10 mt-auto">
-        <p>© 2024 TrustHire Platforms. Secured by ISO 27001 Standards.</p>
-        <div className="flex gap-10 mt-6 md:mt-0">
-          <a className="hover:text-[#FACD15] transition-colors" href="#">Privacy Policy</a>
-          <a className="hover:text-[#FACD15] transition-colors" href="#">Terms of Service</a>
-          <a className="hover:text-[#FACD15] transition-colors" href="#">Support Center</a>
+      <footer className="bg-white border-t border-neutral-200/80 px-4 sm:px-6 py-4 mt-auto">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-neutral-500 font-normal">
+          <p>© 2026 TrustHyre Platforms. Direct Verified Workforce Hiring.</p>
+          <div className="flex items-center gap-6">
+            <Link className="hover:text-neutral-900 transition-colors" to="/privacy">Privacy Policy</Link>
+            <Link className="hover:text-neutral-900 transition-colors" to="/terms">Terms of Service</Link>
+            <Link className="hover:text-neutral-900 transition-colors" to="/contact">Support</Link>
+          </div>
         </div>
       </footer>
-
-      <style>{`
-        .cloud-grid {
-          background-image: 
-            linear-gradient(rgba(31, 63, 52, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(31, 63, 52, 0.05) 1px, transparent 1px);
-          background-size: 50px 50px;
-        }
-      `}</style>
     </div>
   );
 };
+
+export default IdentityVerificationPage;

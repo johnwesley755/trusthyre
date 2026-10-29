@@ -36,7 +36,17 @@ import {
   RotateCcw,
   Phone,
   MessageSquare,
-  Accessibility
+  Accessibility,
+  Car,
+  HardHat,
+  Hammer,
+  Flame,
+  Paintbrush,
+  ChefHat,
+  Settings,
+  Home,
+  Shield,
+  Package,
 } from "lucide-react";
 import { CandidateResumeModal } from "../components/resume/CandidateResumeModal";
 import type { ResumeData } from "../components/resume/CandidateResumeView";
@@ -55,62 +65,62 @@ const STEP_TITLES: Record<number, string> = {
 export const TRADE_SKILLS_CATALOG = [
   {
     category: "Driver & Delivery",
-    icon: "🚗",
+    icon: Car,
     skills: ["Heavy Vehicle (HCV)", "Light Motor Vehicle (LMV)", "Auto Rickshaw", "Two-Wheeler Delivery", "GPS Route Navigation", "Night Driving", "Defensive Driving", "Vehicle Maintenance"]
   },
   {
     category: "Electrician & Wiring",
-    icon: "⚡",
+    icon: Zap,
     skills: ["House Wiring", "3-Phase Industrial", "Circuit Breakers (MCB/ELCB)", "Inverter & Battery Setup", "Switchboard Fitting", "Appliance Repair", "Conduit Piping", "Electrical Fault Finding"]
   },
   {
     category: "Plumbing & Sanitary",
-    icon: "🔧",
+    icon: Wrench,
     skills: ["Pipe Fitting (CPVC/PVC)", "Leak Detection & Repair", "Bathroom Fixtures", "Drainage Lines", "Water Pump Repair", "Geyser Installation", "Valve & Tap Replacement"]
   },
   {
     category: "Carpentry & Woodwork",
-    icon: "🪚",
+    icon: Hammer,
     skills: ["Furniture Making", "Modular Kitchen", "Wood Polishing", "Door & Window Framing", "Wood Planing", "Interior Partition", "Cabinet Fitting"]
   },
   {
     category: "Masonry & Construction",
-    icon: "🧱",
+    icon: HardHat,
     skills: ["Brick Laying", "Plastering Work", "Floor Tile & Marble", "Concrete Mixing", "Bar Bending", "Waterproofing", "Foundation Work"]
   },
   {
     category: "Welding & Fabrication",
-    icon: "👨‍🏭",
+    icon: Flame,
     skills: ["Arc Welding", "Gas Welding", "TIG / MIG Welding", "Metal Grinding & Cutting", "Steel Grill Fabrication", "Sheet Metal Work"]
   },
   {
     category: "Painting & Putty",
-    icon: "🎨",
+    icon: Paintbrush,
     skills: ["Interior Wall Painting", "Exterior Weatherproof Coating", "Wall Putty Application", "Primer Coating", "Spray Painting", "Texture & Stencil Design"]
   },
   {
     category: "Cooking & Kitchen",
-    icon: "🍳",
+    icon: ChefHat,
     skills: ["South Indian Cooking", "North Indian Cooking", "Chinese / Fast Food", "Tandoor & Roti", "Vegetable Prep & Chopping", "Kitchen Hygiene", "Bulk Catering Prep"]
   },
   {
     category: "Mechanic & Automobile",
-    icon: "⚙️",
+    icon: Settings,
     skills: ["Two-Wheeler Servicing", "Four-Wheeler Servicing", "Brake & Clutch Repair", "Engine Tuning", "Tyre Fitting & Puncture", "Oil Change & Lubrication"]
   },
   {
     category: "Housekeeping & Facility",
-    icon: "🧹",
+    icon: Home,
     skills: ["Deep Cleaning", "Floor Mopping & Scrubbing", "Bathroom Sanitization", "Office Boy / Peon", "Waste Segregation", "Linen & Laundry"]
   },
   {
     category: "Security & Guarding",
-    icon: "🛡️",
+    icon: Shield,
     skills: ["Gate Security & Access Control", "CCTV Monitoring", "Visitor Register Entry", "Night Patrolling", "Fire Safety & Extinguisher"]
   },
   {
     category: "Warehouse & Packing",
-    icon: "📦",
+    icon: Package,
     skills: ["Package Delivery", "Cash on Delivery (COD)", "Inventory Sorting", "Carton Packing & Loading", "Barcode Scanning"]
   }
 ];
@@ -1152,17 +1162,18 @@ export default function WorkerOnboardingPage() {
             {currentStep === 3 && (
               <div className="space-y-5">
                 {/* 1. Quick PIN Code Auto-Discovery */}
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 to-indigo-50/50 border border-blue-200/80 space-y-2">
+                <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931]">
-                      ⚡ Quick PIN Code Auto-Fill
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931] flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#0f2f63]" />
+                      <span>PIN Code Auto-Fill</span>
                     </label>
-                    <span className="text-[10px] font-semibold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-full">
-                      Instant Auto-Detect
+                    <span className="text-[10px] font-semibold text-neutral-700 bg-neutral-200/60 px-2 py-0.5 rounded-full">
+                      Auto-Detect
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-600">
-                    Enter your 6-digit PIN code to instantly detect State, District, and Town Panchayat options.
+                  <p className="text-xs text-neutral-600">
+                    Enter your 6-digit PIN code to detect State, District, and Town Panchayat options.
                   </p>
                   <div className="relative flex items-center">
                     <input
@@ -1484,11 +1495,12 @@ export default function WorkerOnboardingPage() {
             {/* Step 5: Languages Known (1-Tap Selection, No English Proficiency Quiz) */}
             {currentStep === 5 && (
               <div className="space-y-6">
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/60 to-indigo-50/40 border border-blue-200/70 space-y-2">
-                  <span className="block text-xs font-bold uppercase tracking-wider text-[#0A1931]">
-                    🗣️ Communication & Languages
+                <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2">
+                  <span className="block text-xs font-bold uppercase tracking-wider text-[#0A1931] flex items-center gap-1.5">
+                    <Languages className="w-3.5 h-3.5 text-[#0f2f63]" />
+                    <span>Communication & Languages</span>
                   </span>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-xs text-neutral-600">
                     Select all the languages you can speak or understand comfortably at work.
                   </p>
                 </div>
@@ -1747,6 +1759,7 @@ export default function WorkerOnboardingPage() {
                     </span>
                     <div className="flex gap-1.5 overflow-x-auto pb-1.5 no-scrollbar">
                       {TRADE_SKILLS_CATALOG.map((cat) => {
+                        const Icon = cat.icon;
                         const isActive = selectedSkillCategory === cat.category;
                         const categorySkillsSelectedCount = cat.skills.filter(s => skills.includes(s)).length;
                         return (
@@ -1754,16 +1767,16 @@ export default function WorkerOnboardingPage() {
                             key={cat.category}
                             type="button"
                             onClick={() => setSelectedSkillCategory(cat.category)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border shrink-0 ${
+                            className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 border shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#0f2f63] ${
                               isActive
                                 ? "bg-[#0f2f63] text-white border-[#0f2f63] shadow-xs"
-                                : "bg-[#f8f9fa] text-slate-600 border-[#e6e8ec] hover:border-slate-300 hover:text-[#0A1931]"
+                                : "bg-white text-neutral-700 border-[#e6e8ec] hover:border-neutral-300 hover:text-neutral-900 hover:bg-neutral-50"
                             }`}
                           >
-                            <span>{cat.icon}</span>
+                            <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-neutral-500'}`} />
                             <span>{cat.category}</span>
                             {categorySkillsSelectedCount > 0 && (
-                              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? "bg-white/20 text-white" : "bg-blue-100 text-blue-800 font-bold"}`}>
+                              <span className={`text-[10px] px-1.5 py-0.2 rounded-full tabular-nums ${isActive ? "bg-white/20 text-white" : "bg-blue-100 text-blue-800 font-bold"}`}>
                                 {categorySkillsSelectedCount}
                               </span>
                             )}
@@ -1779,8 +1792,11 @@ export default function WorkerOnboardingPage() {
                     return (
                       <div className="p-3.5 rounded-2xl bg-[#fbfbfb] border border-[#e6e8ec] space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#0A1931] flex items-center gap-1.5">
-                            <span>{currentCatalog.icon}</span>
+                          <span className="text-xs font-semibold text-neutral-900 flex items-center gap-2">
+                            {(() => {
+                              const CurrentIcon = currentCatalog.icon;
+                              return <CurrentIcon className="w-4 h-4 text-neutral-600 shrink-0" />;
+                            })()}
                             <span>{currentCatalog.category} Skills</span>
                           </span>
                           <span className="text-[10px] text-slate-500 font-medium">Tap to toggle</span>

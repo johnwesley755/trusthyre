@@ -184,7 +184,7 @@ export const NotificationsPage: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-black text-[#0A1931] flex items-center gap-2.5">
               <span>Notifications</span>
               {unreadCount > 0 && (
-                <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 text-xs font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 text-xs font-semibold tabular-nums">
                   {unreadCount} unread
                 </span>
               )}
@@ -243,7 +243,7 @@ export const NotificationsPage: React.FC = () => {
                 : 'bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50'
             }`}
           >
-            All Updates ({notifications.length})
+            All Updates <span className="tabular-nums">({notifications.length})</span>
           </button>
           <button
             onClick={() => setFilter('unread')}
@@ -253,7 +253,7 @@ export const NotificationsPage: React.FC = () => {
                 : 'bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50'
             }`}
           >
-            Unread ({unreadCount})
+            Unread <span className="tabular-nums">({unreadCount})</span>
           </button>
         </div>
 

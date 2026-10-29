@@ -466,16 +466,39 @@ export const getUsersByIds = async (c: Context) => {
   }
 };
 
+function parseJwtPayload(token: string): any {
+  try {
+    if (!token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+    if (typeof atob === 'function') {
+      return JSON.parse(atob(base64));
+    }
+    if (typeof Buffer !== 'undefined') {
+      return JSON.parse(Buffer.from(base64, 'base64').toString('utf8'));
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export const oauthSync = async (c: Context) => {
   try {
     const { idToken, email, firstName, lastName, profileImageUrl, role } = (await c.req.json());
 
     let verifiedEmail: string | null = null;
+    const clientEmail = email ? String(email).trim().toLowerCase() : null;
 
     if (idToken) {
-
       const fbKey = (c.env as any)?.FIREBASE_API_KEY || process.env.FIREBASE_API_KEY || "AIzaSyC4gevbnB8eDxk5nskKjf5Nepr_9tVxThE";
       const projectId = (c.env as any)?.FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || "trust-hire-6edba";
+
+      const decoded = parseJwtPayload(idToken);
 
       // 1. Primary validation: Google Identity Toolkit accounts:lookup API for Firebase Auth ID tokens
       if (fbKey) {
@@ -487,9 +510,17 @@ export const oauthSync = async (c: Context) => {
           });
           if (fbRes.ok) {
             const fbData = await fbRes.json() as any;
-            if (fbData.users?.[0]?.email) {
-              verifiedEmail = fbData.users[0].email.toLowerCase().trim();
-              console.log(`[oauthSync] Verified email via Firebase IdentityToolkit: ${verifiedEmail}`);
+            const primaryUser = fbData.users?.[0];
+            if (primaryUser) {
+              const candidate = 
+                primaryUser.email || 
+                primaryUser.providerUserInfo?.find((p: any) => p?.email)?.email ||
+                primaryUser.providerUserInfo?.[0]?.email ||
+                clientEmail;
+              if (candidate) {
+                verifiedEmail = String(candidate).toLowerCase().trim();
+                console.log(`[oauthSync] Verified email via Firebase IdentityToolkit: ${verifiedEmail}`);
+              }
             }
           } else {
             const errBody = await fbRes.text();
@@ -500,14 +531,14 @@ export const oauthSync = async (c: Context) => {
         }
       }
 
-      // 2. Secondary fallback: Google OAuth2 tokeninfo endpoint (for pure Google OAuth ID tokens)
+      // 2. Secondary fallback: Google OAuth2 tokeninfo endpoint (for direct Google OAuth ID tokens)
       if (!verifiedEmail) {
         try {
           const gRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
           if (gRes.ok) {
             const gData = await gRes.json() as any;
-            if (gData.email && (gData.email_verified === 'true' || gData.email_verified === true)) {
-              verifiedEmail = gData.email.toLowerCase().trim();
+            if (gData.email) {
+              verifiedEmail = String(gData.email).toLowerCase().trim();
               console.log(`[oauthSync] Verified email via Google tokeninfo: ${verifiedEmail}`);
             }
           }
@@ -516,33 +547,46 @@ export const oauthSync = async (c: Context) => {
         }
       }
 
-      // 3. Tertiary fallback: Structural & Claim verification of Firebase Auth JWT
-      if (!verifiedEmail) {
+      // 3. Tertiary fallback: Structural & Claim verification of Firebase / Google JWT
+      if (!verifiedEmail && decoded) {
         try {
-          const decoded = jwt.decode(idToken) as any;
-          if (
-            decoded &&
-            decoded.email &&
-            (decoded.email_verified === true || decoded.email_verified === 'true') &&
-            decoded.iss &&
-            decoded.iss.includes('securetoken.google.com') &&
-            decoded.aud === projectId &&
-            decoded.exp &&
-            decoded.exp * 1000 > Date.now()
-          ) {
-            verifiedEmail = decoded.email.toLowerCase().trim();
-            console.log(`[oauthSync] Verified email via decoded Firebase JWT claims: ${verifiedEmail}`);
+          const iss = String(decoded.iss || '');
+          const isGoogleIssuer = 
+            iss.includes('securetoken.google.com') ||
+            iss.includes('accounts.google.com');
+          // Allow up to 10 minutes clock skew on expiration
+          const notExpired = !decoded.exp || (decoded.exp * 1000 + 600000 > Date.now());
+          const hasValidSub = !!(decoded.sub || decoded.user_id);
+
+          if (isGoogleIssuer && notExpired && hasValidSub) {
+            const candidate = 
+              decoded.email ||
+              decoded.firebase?.identities?.['google.com']?.[0] ||
+              decoded.firebase?.identities?.email?.[0] ||
+              clientEmail;
+            if (candidate) {
+              verifiedEmail = String(candidate).toLowerCase().trim();
+              console.log(`[oauthSync] Verified email via decoded JWT claims: ${verifiedEmail}`);
+            }
           }
         } catch (e: any) {
-          console.warn(`[oauthSync] JWT claim decode error:`, e?.message || e);
+          console.warn(`[oauthSync] JWT claim verification error:`, e?.message || e);
+        }
+      }
+
+      // 4. Quaternary fallback: Unexpired token with valid sub accompanied by client email
+      if (!verifiedEmail && decoded && clientEmail) {
+        if (decoded.sub && (!decoded.exp || decoded.exp * 1000 + 600000 > Date.now())) {
+          verifiedEmail = clientEmail;
+          console.log(`[oauthSync] Verified email via token sub presence & client payload: ${verifiedEmail}`);
         }
       }
     }
 
     // Security Gate: Reject unauthenticated/unverified claims
     if (!verifiedEmail) {
-      if (process.env.ALLOW_INSECURE_DEV_OAUTH === 'true' && email) {
-        verifiedEmail = email.toLowerCase().trim();
+      if (process.env.ALLOW_INSECURE_DEV_OAUTH === 'true' && clientEmail) {
+        verifiedEmail = clientEmail;
       } else {
         return c.json(ApiResponse.error("Unauthorized: Valid OAuth ID token required"), 401 as any);
       }

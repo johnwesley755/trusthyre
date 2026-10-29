@@ -63,6 +63,7 @@ export const AppTopNavbar = () => {
   const isAdmin = user?.role === 'ADMIN' || isSuperAdmin;
   const isEmployer = user?.role === 'EMPLOYER';
   const isWorker = !isAdmin && !isEmployer && Boolean(user);
+  const logoDestination = isAdmin ? '/admin/dashboard' : isEmployer ? '/find-workers' : isWorker ? '/search' : '/';
 
   const guestNavLinks = [
     { name: 'Find Jobs', path: '/search', icon: Briefcase },
@@ -104,7 +105,7 @@ export const AppTopNavbar = () => {
         
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-4 shrink-0">
-          <Link to={isAdmin ? "/admin/dashboard" : "/"} className="flex items-center group py-1 shrink-0" aria-label="TrustHyre Home">
+          <Link to={logoDestination} className="flex items-center group py-1 shrink-0" aria-label="TrustHyre Home">
             <img 
               src={trustHyreLogo} 
               alt="TrustHyre" 

@@ -42,7 +42,7 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
 }) => {
   const { user } = useUser();
   const displayName = user?.firstName || 'Candidate';
-  const resolvedTitle = title || (user ? `Welcome back, ${displayName}! 👋` : "Verified Job Openings");
+  const resolvedTitle = title || (user ? `Welcome back, ${displayName}` : "Verified Job Openings");
   const resolvedSubtitle = subtitle || (user 
     ? "Explore newly posted roles matching your verified trade skills with direct employer connection."
     : "Discover verified roles, verified workplace standards, and background-checked employers.");
@@ -106,7 +106,7 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
           {totalJobs > 0 && (
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#e6e8ec] text-xs font-medium text-[#0a0a0a] shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span><strong className="font-semibold text-[#0a0a0a]">{totalJobs}</strong> Openings Available</span>
+              <span><strong className="font-semibold text-[#0a0a0a] tabular-nums">{totalJobs}</strong> Openings Available</span>
             </div>
           )}
 

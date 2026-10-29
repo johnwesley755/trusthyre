@@ -200,7 +200,7 @@ export const WorkerProfilePage = () => {
 
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0A1931]">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-[#0A1931]">
                     {worker?.name || 'Candidate Specialist'}
                   </h1>
                   <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
@@ -222,7 +222,7 @@ export const WorkerProfilePage = () => {
                     <span>{worker?.city || worker?.location || 'Local Matching Area'}</span>
                   </span>
                   <span>•</span>
-                  <span>{worker?.experience || 0}+ Years Experience</span>
+                  <span className="tabular-nums">{worker?.experience || 0}+ Years Experience</span>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
