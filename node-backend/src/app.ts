@@ -110,17 +110,24 @@ app.use('*', secureHeaders({
 app.use('*', cors({
   origin: (origin) => {
     if (!origin) return ALLOWED_ORIGINS[0];
-    if (
-      ALLOWED_ORIGINS.includes(origin) ||
-      origin === 'https://trusthyre.com' ||
-      origin.endsWith('.trusthyre.com') ||
-      origin === 'https://trusthire.in' ||
-      origin.endsWith('.trusthire.in') ||
-      origin.endsWith('.vercel.app') ||
-      origin.endsWith('.web.app') ||
-      origin.endsWith('.firebaseapp.com')
-    ) {
-      return origin;
+    if (ALLOWED_ORIGINS.includes(origin)) return origin;
+    try {
+      const url = new URL(origin);
+      const host = url.hostname.toLowerCase();
+      if (
+        host === 'trusthyre.com' ||
+        host.endsWith('.trusthyre.com') ||
+        host === 'trusthire.in' ||
+        host.endsWith('.trusthire.in') ||
+        host === 'trust-hire-one.vercel.app' ||
+        host.endsWith('.trust-hire-one.vercel.app') ||
+        host === 'trust-hire-6edba.web.app' ||
+        host === 'trust-hire-6edba.firebaseapp.com'
+      ) {
+        return origin;
+      }
+    } catch {
+      // Invalid URL origin format
     }
     return '';
   },
