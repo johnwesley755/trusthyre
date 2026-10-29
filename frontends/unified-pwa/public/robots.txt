@@ -1,13 +1,25 @@
-# Robots.txt for TrustHyre
+# Robots.txt for TrustHyre (https://trusthyre.com)
 User-agent: *
 Allow: /
 Allow: /blog
+Allow: /blog/*
+Allow: /job/*
+Allow: /search
+Allow: /find-workers
 Allow: /sitemap.xml
+Allow: /rss.xml
+Allow: /feed.xml
+
+# Protect authenticated and administrative portals from crawl budget waste
 Disallow: /admin/
+Disallow: /admin/*
+Disallow: /dashboard
 Disallow: /tracker
 Disallow: /settings
 Disallow: /verify-identity
 Disallow: /onboarding
 Disallow: /api/
 
+# Sitemaps
 Sitemap: https://trusthyre.com/sitemap.xml
+Sitemap: https://api.trusthyre.com/sitemap.xml

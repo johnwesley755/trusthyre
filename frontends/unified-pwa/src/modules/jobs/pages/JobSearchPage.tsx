@@ -309,6 +309,8 @@ export default function JobSearchPage() {
         sourceUrl: j.sourceUrl || j.source_url,
         alternateSources: j.alternateSources || j.alternate_sources,
         employerProfile: j.employerProfile,
+        coverImageUrl: (j.coverImageUrl || j.cover_image_url || null),
+        cover_image_url: (j.cover_image_url || j.coverImageUrl || null),
         hasApplied: appliedJobIdsMap.has(j.id),
         applicationStatus: appliedJobIdsMap.get(j.id),
       };

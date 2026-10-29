@@ -5,6 +5,7 @@ import { applicationService } from '../../../services/application.service';
 import { profileService } from '../../../services/profile.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { useState } from 'react';
+import { SeoHead, buildJobPostingJsonLd, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
 import { getEffectiveCoverUrl } from '../../../utils/coverImage.utils';
 import { formatMissingProfileFields, getMissingProfileFields } from '../../../utils/profileCompletion';
 import { useUser } from '../../../providers/AuthContext';
@@ -235,6 +236,11 @@ export default function JobDetailPage() {
   if (!job) {
     return (
       <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
+        <SeoHead
+          title="Job Opening Not Found"
+          description="This job opening may have been filled or closed by the employer on TrustHyre."
+          noIndex={true}
+        />
         <div className="max-w-2xl mx-auto pt-20 text-center space-y-4">
           <div className="w-14 h-14 bg-[#f4f4f4] rounded-full flex items-center justify-center mx-auto text-[#717784]">
             <Briefcase className="w-6 h-6" />
@@ -262,6 +268,32 @@ export default function JobDetailPage() {
 
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
+      <SeoHead
+        title={`${job.title} at ${employerName}`}
+        description={`Apply for verified opening: ${job.title} in ${job.location || job.city || 'India'}. Verified Employer: ${employerName}. Agreed Salary: ${job.budget ? '₹' + Number(job.budget).toLocaleString('en-IN') + '/mo' : 'Best in Industry'}.`}
+        canonicalPath={`/job/${id}`}
+        ogType="website"
+        ogImage={effectiveCoverUrl || employer?.profileImageUrl || (job as any).logoUrl || undefined}
+        jsonLd={[
+          ...(job ? [buildJobPostingJsonLd({
+            title: job.title,
+            description: job.description || `${job.title} required in ${job.city || 'India'} at ${employerName}.`,
+            datePosted: createdDate ? new Date(createdDate).toISOString() : new Date().toISOString(),
+            validThrough: expiryDate ? new Date(expiryDate).toISOString() : undefined,
+            employmentType: job.jobType === 'PART_TIME' ? 'PART_TIME' : (job.jobType === 'CONTRACT' ? 'CONTRACTOR' : 'FULL_TIME'),
+            hiringOrganization: employerName,
+            hiringLogo: employer?.profileImageUrl || (job as any).logoUrl,
+            city: job.city || job.location,
+            address: job.address || job.location,
+            salary: job.budget ? Number(job.budget) : undefined,
+          })] : []),
+          ...(job ? [buildBreadcrumbJsonLd([
+            { name: 'Home', path: '/' },
+            { name: 'Search Jobs', path: '/search' },
+            { name: job.title, path: `/job/${id}` },
+          ])] : [])
+        ]}
+      />
       <main className="max-w-7xl mx-auto space-y-6 pb-12">
         
         {/* Navigation Breadcrumb Bar */}

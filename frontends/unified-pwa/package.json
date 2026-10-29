@@ -5,8 +5,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "prebuild": "node scripts/generate-version.js",
-        "build": "node scripts/generate-version.js && tsc -b && vite build",
+        "prebuild": "node scripts/generate-version.js && node scripts/generate-sitemap.js",
+        "build": "node scripts/generate-version.js && node scripts/generate-sitemap.js && tsc -b && vite build",
         "generate-version": "node scripts/generate-version.js",
         "optimize-images": "node scripts/optimize-images.js",
         "lint": "eslint .",

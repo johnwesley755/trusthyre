@@ -78,6 +78,61 @@ export function buildBreadcrumbJsonLd(items: Array<{ name: string; path: string 
   };
 }
 
+
+/**
+ * Helper to construct standard Google for Jobs JobPosting Schema.org JSON-LD
+ */
+export function buildJobPostingJsonLd(job: {
+  title: string;
+  description: string;
+  datePosted: string;
+  validThrough?: string;
+  employmentType?: string;
+  hiringOrganization: string;
+  hiringLogo?: string;
+  city?: string;
+  address?: string;
+  salary?: number;
+}) {
+  const salaryObj = job.salary && job.salary > 0 ? {
+    baseSalary: {
+      '@type': 'MonetaryAmount',
+      currency: 'INR',
+      value: {
+        '@type': 'QuantitativeValue',
+        value: job.salary,
+        unitText: 'MONTH',
+      },
+    },
+  } : {};
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'JobPosting',
+    title: job.title,
+    description: job.description,
+    datePosted: job.datePosted,
+    validThrough: job.validThrough || new Date(new Date(job.datePosted).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    employmentType: job.employmentType || 'FULL_TIME',
+    hiringOrganization: {
+      '@type': 'Organization',
+      name: job.hiringOrganization || 'TrustHyre Verified Employer',
+      sameAs: BASE_DOMAIN,
+      logo: job.hiringLogo || `${BASE_DOMAIN}/logo.png`,
+    },
+    jobLocation: {
+      '@type': 'Place',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: job.city || 'Chennai',
+        streetAddress: job.address || job.city || 'Pan India',
+        addressCountry: 'IN',
+      },
+    },
+    ...salaryObj,
+  };
+}
+
 export const SeoHead: React.FC<SeoHeadProps> = ({
   title,
   description = DEFAULT_DESCRIPTION,

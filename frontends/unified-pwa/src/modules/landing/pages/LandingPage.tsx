@@ -216,8 +216,8 @@ const DEFAULT_LANDING_ARTICLES = [
   },
   {
     id: "default-2",
-    slug: "commercial-kitchen-crew-hiring-bengaluru",
-    title: "Commercial Kitchen Crew Hiring: Compliance, Hygiene & Retention in Bengaluru",
+    slug: "solving-absenteeism-blue-collar-workforce-india",
+    title: "How Photo Check-In & Skill Verification Is Solving Absenteeism in India's Blue-Collar Workforce",
     excerpt: "How restaurant chains and cloud kitchens hire and retain verified line cooks, commis chefs, and kitchen stewards with zero recruiter commissions.",
     targetTrade: "Culinary",
     targetCity: "Bengaluru",
@@ -227,8 +227,8 @@ const DEFAULT_LANDING_ARTICLES = [
   },
   {
     id: "default-3",
-    slug: "warehouse-logistics-fair-wage-benchmark-india",
-    title: "Warehouse Logistics & Route Delivery: Fair Compensation Benchmark 2026",
+    slug: "hiring-delivery-drivers-warehouse-staff-chennai",
+    title: "Hiring Delivery Drivers & Warehouse Staff in Chennai: Complete Employer Compliance & Verification Checklist",
     excerpt: "Regional wage trends, overtime standards, and background verification checkpoints for hiring forklift operators and fulfillment crews in India.",
     targetTrade: "Logistics",
     targetCity: "All India",

@@ -68,6 +68,40 @@
   ],
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "https://api.trusthyre.com/sitemap.xml"
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "https://api.trusthyre.com/rss.xml"
+    },
+    {
+      "source": "/feed.xml",
+      "destination": "https://api.trusthyre.com/feed.xml"
+    },
+    {
+      "source": "/blog/:slug*",
+      "has": [
+        {
+          "type": "header",
+          "key": "User-Agent",
+          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+        }
+      ],
+      "destination": "https://api.trusthyre.com/api/seo/prerender?path=/blog/:slug*"
+    },
+    {
+      "source": "/blog",
+      "has": [
+        {
+          "type": "header",
+          "key": "User-Agent",
+          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+        }
+      ],
+      "destination": "https://api.trusthyre.com/api/seo/prerender?path=/blog"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://api.trusthyre.com/api/:path*"
     },
