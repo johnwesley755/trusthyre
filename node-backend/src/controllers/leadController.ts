@@ -143,65 +143,89 @@ export class LeadController {
       const queryParam = body.query || 'Delivery Driver';
       const cityParam = body.city || 'Chennai';
       const limitParam = Number(body.limit) || 25;
+      const demoParam = Boolean(body.demo || body.demo_mode);
 
       const startTime = Date.now();
-      console.log(`[LeadController][Step 1/5 - INITIATE] runAutoDiscovery started: query='${queryParam}', city='${cityParam}', limit=${limitParam}`);
+      console.log(`[LeadController][Step 1/5 - INITIATE] runAutoDiscovery started: query='${queryParam}', city='${cityParam}', limit=${limitParam}, demo=${demoParam}`);
 
       const { ScraperServiceClient } = await import('../services/scraperServiceClient');
 
-      console.log(`[LeadController][Step 2/5 - DISPATCH] Requesting discovery via ScraperServiceClient...`);
+      console.log(`[LeadController][Step 2/5 - DISPATCH] Requesting live discovery via ScraperServiceClient...`);
       const results = await ScraperServiceClient.runDiscovery({
         query: queryParam,
         city: cityParam,
         sources: Array.isArray(body.sources) ? body.sources : undefined,
         limit: limitParam,
+        demo: demoParam,
       });
 
       const scrapeElapsed = Date.now() - startTime;
-      console.log(`[LeadController][Step 3/5 - RECEIVED] Scraper returned ${results.items?.length || 0} jobs in ${scrapeElapsed}ms.`);
+      console.log(`[LeadController][Step 3/5 - RECEIVED] Scraper returned ${results.items?.length || 0} jobs in ${scrapeElapsed}ms (Status: ${results.status}).`);
+
+      if (!results.success) {
+        return c.json({
+          success: false,
+          error: results.error || 'Live scraper discovery failed to reach or execute on Python service.',
+          totalDiscovered: 0,
+          jobsSavedToDb: 0,
+          leadsIngested: 0,
+        }, 502);
+      }
+
+      if (!results.items || results.items.length === 0) {
+        return c.json({
+          ...results,
+          success: true,
+          sourcesScanned: results.sources_scanned?.length || 0,
+          leadsIngested: 0,
+          newLeadsCount: 0,
+          requirementsIngested: 0,
+          totalDiscovered: 0,
+          jobsSavedToDb: 0,
+          message: `Live discovery scan completed. No active vacancies found matching query '${queryParam}' in '${cityParam}'.`,
+        });
+      }
 
       // Step 4: Persist discovered jobs into PostgreSQL prisma.jobs with full error visibility
       let dbFulfilled = 0;
-      if (Array.isArray(results.items) && results.items.length > 0) {
-        const dbStart = Date.now();
-        const upsertResults = await Promise.allSettled(
-          results.items.map((item) =>
-            prisma.jobs.upsert({
-              where: { id: item.id },
-              create: {
-                id: item.id,
-                employer_id: item.employer_id || 'external_aggregator',
-                title: item.title,
-                employer_name: item.employer_name || 'Verified Employer',
-                description: item.description || '',
-                industry: item.industry || 'Field Operations & Logistics',
-                experience_years_required: item.experience_years_required || 0,
-                budget: item.budget ? Number(item.budget) : null,
-                status: 'PENDING_REVIEW',
-                city: item.city || cityParam,
-                location: item.location || item.city || cityParam,
-                is_external: true,
-                source_name: item.source_name || 'Web Discovery',
-                source_url: item.source_url || '',
-                source_hash: item.source_hash || item.id,
-                external_id: item.external_id || item.id,
-                created_at: item.created_at ? new Date(item.created_at) : new Date(),
-                updated_at: new Date(),
-              },
-              update: {
-                last_verified_at: new Date(),
-              },
-            })
-          )
-        );
+      const dbStart = Date.now();
+      const upsertResults = await Promise.allSettled(
+        results.items.map((item) =>
+          prisma.jobs.upsert({
+            where: { id: item.id },
+            create: {
+              id: item.id,
+              employer_id: item.employer_id || 'external_aggregator',
+              title: item.title,
+              employer_name: item.employer_name || 'Verified Employer',
+              description: item.description || '',
+              industry: item.industry || 'Field Operations & Logistics',
+              experience_years_required: item.experience_years_required || 0,
+              budget: item.budget ? Number(item.budget) : null,
+              status: 'PENDING_REVIEW',
+              city: item.city || cityParam,
+              location: item.location || item.city || cityParam,
+              is_external: true,
+              source_name: item.source_name || 'Web Discovery',
+              source_url: item.source_url || '',
+              source_hash: item.source_hash || item.id,
+              external_id: item.external_id || item.id,
+              created_at: item.created_at ? new Date(item.created_at) : new Date(),
+              updated_at: new Date(),
+            },
+            update: {
+              last_verified_at: new Date(),
+            },
+          })
+        )
+      );
 
-        dbFulfilled = upsertResults.filter(r => r.status === 'fulfilled').length;
-        const failedUpserts = upsertResults.filter(r => r.status === 'rejected') as PromiseRejectedResult[];
-        if (failedUpserts.length > 0) {
-          console.error(`[LeadController][Step 4/5 - DB UPSERT] ${failedUpserts.length} of ${results.items.length} job writes failed:`, failedUpserts.map(f => f.reason?.message || f.reason));
-        }
-        console.log(`[LeadController][Step 4/5 - DB UPSERT] Successfully upserted ${dbFulfilled}/${results.items.length} jobs in ${Date.now() - dbStart}ms`);
+      dbFulfilled = upsertResults.filter(r => r.status === 'fulfilled').length;
+      const failedUpserts = upsertResults.filter(r => r.status === 'rejected') as PromiseRejectedResult[];
+      if (failedUpserts.length > 0) {
+        console.error(`[LeadController][Step 4/5 - DB UPSERT] ${failedUpserts.length} of ${results.items.length} job writes failed:`, failedUpserts.map(f => f.reason?.message || f.reason));
       }
+      console.log(`[LeadController][Step 4/5 - DB UPSERT] Successfully upserted ${dbFulfilled}/${results.items.length} jobs in ${Date.now() - dbStart}ms`);
 
       // Step 5: Synchronously ingest newly discovered jobs directly into employer_leads & employer_lead_requirements
       const syncStart = Date.now();
@@ -215,15 +239,19 @@ export class LeadController {
         leadsIngested: syncResult.newLeadsCount + syncResult.updatedLeadsCount,
         newLeadsCount: syncResult.newLeadsCount,
         requirementsIngested: syncResult.newRequirementsCount,
-        totalDiscovered: results.total || results.items?.length || 0,
+        totalDiscovered: results.total || results.items.length,
+        jobsSavedToDb: dbFulfilled,
         syncResult,
-        message: `Discovery scan completed successfully. ${syncResult.newLeadsCount} new leads and ${syncResult.newRequirementsCount} requirements ingested.`,
+        message: `Discovery scan completed successfully. ${results.items.length} vacancies scraped, ${syncResult.newLeadsCount} new leads ingested.`,
       });
     } catch (error: any) {
       console.error('[LeadController] Error running auto-discovery:', error);
       return c.json({
         success: false,
         error: error.message || 'Scraper service is unreachable. Please verify Python service is running.',
+        totalDiscovered: 0,
+        jobsSavedToDb: 0,
+        leadsIngested: 0,
       }, 503);
     }
   }

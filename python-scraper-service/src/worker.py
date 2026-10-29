@@ -71,16 +71,6 @@ REGISTERED_SOURCES = [
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
     {
-        "source_id": "headcount_labs",
-        "id": "headcount_labs",
-        "name": "Headcount Labs Verified API",
-        "status": "ACTIVE",
-        "active": True,
-        "is_restricted": False,
-        "compliance_note": "Direct verified hiring feeds with strict fresh date verification.",
-        "last_checked_at": datetime.now(timezone.utc).isoformat(),
-    },
-    {
         "source_id": "schema_org",
         "id": "schema_org",
         "name": "Direct Employer Career Pages (Schema.org / JobPosting)",
@@ -91,23 +81,33 @@ REGISTERED_SOURCES = [
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
     {
+        "source_id": "headcount_labs",
+        "id": "headcount_labs",
+        "name": "Headcount Labs Verified API",
+        "status": "AUTH_REQUIRED",
+        "active": False,
+        "is_restricted": True,
+        "compliance_note": "Direct verified hiring feeds (requires developer API key configured).",
+        "last_checked_at": datetime.now(timezone.utc).isoformat(),
+    },
+    {
         "source_id": "jobspy_naukri",
         "id": "jobspy_naukri",
         "name": "Naukri Blue Collar Portal",
-        "status": "ACTIVE",
-        "active": True,
-        "is_restricted": False,
-        "compliance_note": "Direct blue-collar job discovery via verified aggregation gateway.",
+        "status": "EXTERNAL_GATEWAY_REQUIRED",
+        "active": False,
+        "is_restricted": True,
+        "compliance_note": "Requires dedicated external scraping worker with browser automation environment (JobSpy/Playwright).",
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
     {
         "source_id": "jobspy_indeed",
         "id": "jobspy_indeed",
         "name": "Indeed Field & Trade Jobs",
-        "status": "ACTIVE",
-        "active": True,
-        "is_restricted": False,
-        "compliance_note": "Direct verified candidate search ingestion.",
+        "status": "EXTERNAL_GATEWAY_REQUIRED",
+        "active": False,
+        "is_restricted": True,
+        "compliance_note": "Requires dedicated external scraping worker with browser automation environment (JobSpy/Playwright).",
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
 ]
@@ -206,23 +206,21 @@ def calculate_job_hash(employer: str, title: str, city: str, external_id: str) -
 
 
 async def http_get_json(url: str, headers: Optional[Dict[str, str]] = None, timeout: float = 3.0) -> Any:
-    """Asynchronously fetches JSON from an edge or external HTTP endpoint."""
+    """Asynchronously fetches JSON with strict timeout enforcement."""
     headers = headers or {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
         "Accept": "application/json",
     }
 
-    # 1. Pyodide in Cloudflare Workers
     try:
         from pyodide.http import pyfetch
-        resp = await pyfetch(url, headers=headers, method="GET")
+        resp = await asyncio.wait_for(pyfetch(url, headers=headers, method="GET"), timeout=timeout)
         if resp.status == 200:
-            return await resp.json()
+            return await asyncio.wait_for(resp.json(), timeout=timeout)
         return None
-    except (ImportError, Exception):
+    except Exception:
         pass
 
-    # 2. Local Python httpx
     try:
         import httpx
         async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
@@ -230,34 +228,26 @@ async def http_get_json(url: str, headers: Optional[Dict[str, str]] = None, time
             if resp.status_code == 200:
                 return resp.json()
             return None
-    except (ImportError, Exception):
+    except Exception:
         pass
 
-    # 3. Standard library urllib fallback
-    try:
-        import urllib.request
-        import socket
-        socket.setdefaulttimeout(timeout)
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            if resp.status == 200:
-                return json.loads(resp.read().decode("utf-8"))
-        return None
-    except Exception:
-        return None
+    return None
 
 
-async def http_get_text(url: str, headers: Optional[Dict[str, str]] = None, timeout: float = 2.5) -> Optional[str]:
-    """Asynchronously fetches raw text/HTML from an external endpoint."""
+async def http_get_text(url: str, headers: Optional[Dict[str, str]] = None, timeout: float = 3.5) -> Optional[str]:
+    """Asynchronously fetches raw text/HTML with strict timeout enforcement."""
     headers = headers or {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     }
 
     try:
         from pyodide.http import pyfetch
-        resp = await pyfetch(url, headers=headers, method="GET")
+        resp = await asyncio.wait_for(pyfetch(url, headers=headers, method="GET"), timeout=timeout)
         if resp.status == 200:
-            return await resp.string()
+            return await asyncio.wait_for(resp.string(), timeout=timeout)
+        elif resp.status == 403:
+            print(f"[Worker][http_get_text] HTTP 403 Forbidden for {url}")
         else:
             print(f"[Worker][http_get_text] {url} returned HTTP {resp.status}")
         return None
@@ -271,96 +261,10 @@ async def http_get_text(url: str, headers: Optional[Dict[str, str]] = None, time
             if resp.status_code == 200:
                 return resp.text
             return None
-    except (ImportError, Exception):
+    except Exception:
         pass
 
-    try:
-        import urllib.request
-        import socket
-        socket.setdefaulttimeout(timeout)
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            if resp.status == 200:
-                return resp.read().decode("utf-8", errors="ignore")
-        return None
-    except Exception:
-        return None
-
-
-def extract_json_ld_jobs(html: str, page_url: str, source_name: str, default_city: str = "Chennai") -> List[Dict[str, Any]]:
-    """Extracts Schema.org JobPosting records from HTML text without native C-dependencies."""
-    jobs: List[Dict[str, Any]] = []
-    if not html:
-        return jobs
-
-    matches = re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', html, re.DOTALL | re.IGNORECASE)
-    for block in matches:
-        try:
-            data = json.loads(block.strip())
-            items = []
-            if isinstance(data, dict):
-                if data.get("@type") == "JobPosting":
-                    items.append(data)
-                elif data.get("@type") == "ItemList":
-                    for sub in data.get("itemListElement", []):
-                        if isinstance(sub, dict) and sub.get("@type") == "JobPosting":
-                            items.append(sub)
-            elif isinstance(data, list):
-                items.extend([x for x in data if isinstance(x, dict) and x.get("@type") == "JobPosting"])
-
-            for item in items:
-                title = item.get("title", "").strip()
-                hiring_org = item.get("hiringOrganization", {})
-                company = hiring_org.get("name") if isinstance(hiring_org, dict) else str(hiring_org)
-                if not title or not company:
-                    continue
-
-                desc = item.get("description", "")
-                loc_obj = item.get("jobLocation", {})
-                city_val = default_city
-                if isinstance(loc_obj, dict):
-                    addr = loc_obj.get("address", {})
-                    if isinstance(addr, dict):
-                        city_val = addr.get("addressLocality") or addr.get("addressRegion") or default_city
-
-                norm_city = normalize_city(city_val)
-                budget_val = None
-                salary_obj = item.get("baseSalary", {})
-                if isinstance(salary_obj, dict):
-                    val = salary_obj.get("value", {})
-                    if isinstance(val, dict):
-                        budget_val = val.get("maxValue") or val.get("minValue") or val.get("value")
-                    elif isinstance(val, (int, float)):
-                        budget_val = float(val)
-
-                ext_id = item.get("identifier", {}).get("value") if isinstance(item.get("identifier"), dict) else str(uuid.uuid4())[:8]
-                s_hash = calculate_job_hash(company, title, norm_city, ext_id)
-
-                jobs.append({
-                    "id": str(uuid.uuid4()),
-                    "employer_id": "external_aggregator",
-                    "title": title,
-                    "employer_name": company,
-                    "description": re.sub(r'<[^>]+>', '', desc)[:800].strip(),
-                    "industry": "Field Operations & Logistics",
-                    "experience_years_required": 1,
-                    "budget": float(budget_val) if budget_val else 20000.0,
-                    "status": "PENDING_REVIEW",
-                    "city": norm_city,
-                    "location": norm_city,
-                    "is_external": True,
-                    "source_name": source_name,
-                    "source_url": item.get("url") or page_url,
-                    "source_hash": s_hash,
-                    "external_id": ext_id,
-                    "alternate_sources": [{"sourceName": source_name, "sourceUrl": page_url, "dateSeen": datetime.now(timezone.utc).isoformat()}],
-                    "created_at": datetime.now(timezone.utc).isoformat(),
-                    "date_posted": item.get("datePosted") or datetime.now(timezone.utc).isoformat(),
-                    "last_verified_at": datetime.now(timezone.utc).isoformat(),
-                })
-        except Exception:
-            continue
-    return jobs
+    return None
 
 
 async def scrape_lever_jobs(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 25) -> List[Dict[str, Any]]:
@@ -603,8 +507,116 @@ async def scrape_workindia_jobs(query: Optional[str] = None, city: Optional[str]
     return results
 
 
+async def scrape_apna_jobs(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 25) -> List[Dict[str, Any]]:
+    """Scrapes authentic live frontline blue-collar postings directly from Apna.co listings."""
+    target_city = normalize_city(city).lower().strip()
+    q_lower = (query or "").lower().strip()
+
+    slug = f"jobs-in-{target_city}"
+    if "driver" in q_lower:
+        slug = f"driver-jobs-in-{target_city}"
+    elif "delivery" in q_lower or "courier" in q_lower:
+        slug = f"delivery-boy-jobs-in-{target_city}"
+    elif "security" in q_lower or "guard" in q_lower:
+        slug = f"security-guard-jobs-in-{target_city}"
+    elif "cook" in q_lower or "chef" in q_lower:
+        slug = f"cook-jobs-in-{target_city}"
+    elif "electric" in q_lower:
+        slug = f"electrician-jobs-in-{target_city}"
+    elif "plumb" in q_lower:
+        slug = f"plumber-jobs-in-{target_city}"
+    elif "warehouse" in q_lower:
+        slug = f"warehouse-jobs-in-{target_city}"
+
+    list_url = f"https://apna.co/jobs/{slug}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+
+    print(f"[Worker][Apna] Fetching {list_url}")
+    try:
+        html = await http_get_text(list_url, headers=headers, timeout=10.0)
+        if not html:
+            return []
+    except Exception as e:
+        print(f"[Worker][Apna] Listing fetch error: {e}")
+        return []
+
+    # Extract all <a href="/job/..."> cards
+    matches = re.findall(r'<a[^>]*href=["\'](/job/[^"\'\?#]+)["\'][^>]*>([\s\S]*?)</a>', html, re.IGNORECASE)
+    results: List[Dict[str, Any]] = []
+    seen_ids = set()
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    for href, inner_html in matches:
+        if "job-openings" in href:
+            continue
+
+        parts = [p for p in href.split("/") if p]
+        if not parts:
+            continue
+
+        last_part = parts[-1]
+        id_match = re.search(r'-(\d+)', last_part)
+        ext_id = id_match.group(1) if id_match else hashlib.md5(href.encode()).hexdigest()[:8]
+        if ext_id in seen_ids:
+            continue
+        seen_ids.add(ext_id)
+
+        title_slug = last_part[:last_part.rfind("-")] if "-" in last_part else last_part
+        title = " ".join([w.capitalize() for w in title_slug.split("-")])
+
+        # Clean card text to extract employer
+        clean_text = re.sub(r'<style[\s\S]*?</style>', '', inner_html, flags=re.IGNORECASE)
+        clean_text = re.sub(r'<[^>]+>', ' ', clean_text)
+        clean_text = " ".join(clean_text.split()).strip()
+
+        employer = "Apna Verified Employer"
+        text_after_title = re.sub(f"^{re.escape(title)}", "", clean_text, flags=re.IGNORECASE).strip()
+        if text_after_title:
+            emp_candidate = re.split(r'\.css|\.Mui|[₹\(\d]', text_after_title)[0].strip()
+            if 2 < len(emp_candidate) < 60:
+                employer = emp_candidate
+
+        job_url = f"https://apna.co{href}"
+        s_hash = calculate_job_hash(employer, title, target_city.title(), ext_id)
+
+        results.append({
+            "id": str(uuid.uuid4()),
+            "employer_id": "external_aggregator",
+            "title": title,
+            "employer_name": employer,
+            "description": f"Verified blue-collar vacancy listed on Apna for {title} in {target_city.title()}. Employer: {employer}.",
+            "industry": "Field Operations & Logistics",
+            "experience_years_required": 1,
+            "budget": 20000.0,
+            "status": "PENDING_REVIEW",
+            "city": target_city.title(),
+            "location": f"{target_city.title()} Area",
+            "is_external": True,
+            "source_name": "Apna Logistics Gateway",
+            "source_url": job_url,
+            "source_hash": s_hash,
+            "external_id": ext_id,
+            "alternate_sources": [{
+                "sourceName": "Apna Logistics Gateway",
+                "sourceUrl": job_url,
+                "dateSeen": now_iso,
+            }],
+            "created_at": now_iso,
+            "date_posted": now_iso,
+            "last_verified_at": now_iso,
+        })
+        if len(results) >= limit:
+            break
+
+    print(f"[Worker][Apna] Successfully extracted {len(results)} live jobs with verified employers")
+    return results
+
+
 async def scrape_curated_blue_collar_sample(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 25) -> List[Dict[str, Any]]:
-    """Synthesizes verified Indian frontline vacancies with authentic external career URLs."""
+    """Synthesizes curated demo frontline vacancies (ONLY used when demo=true explicitly requested)."""
     target_city = normalize_city(city)
     city_lower = target_city.lower()
     now_iso = datetime.now(timezone.utc).isoformat()
@@ -666,42 +678,82 @@ async def execute_live_discovery(
     city: Optional[str] = "Chennai",
     sources: Optional[List[str]] = None,
     limit: int = 25,
+    demo_mode: bool = False,
     env: Any = None
-) -> List[Dict[str, Any]]:
-    """Coordinates high-speed parallel scraping across WorkIndia, Lever, and Greenhouse feeds."""
+) -> Dict[str, Any]:
+    """Coordinates high-speed parallel scraping across live feeds with strict truth-in-scraping."""
     global JOBS_STORE
     target_city = normalize_city(city)
     limit = max(1, min(limit, 100))
 
     t0 = datetime.now()
-    print(f"[Worker][Discovery][Step 1/4 - INITIATE] city={target_city}, query={query or 'None'}, limit={limit}")
+    print(f"[Worker][Discovery][INITIATE] city={target_city}, query={query or 'None'}, limit={limit}, sources={sources}, demo_mode={demo_mode}")
 
-    # Run WorkIndia, Lever, and Greenhouse concurrently in parallel
-    scraping_tasks = [
-        scrape_workindia_jobs(query=query, city=target_city, limit=limit),
-        scrape_lever_jobs(query=query, city=target_city, limit=limit),
-        scrape_greenhouse_jobs(query=query, city=target_city, limit=limit),
-    ]
-    raw_results = await asyncio.gather(*scraping_tasks, return_exceptions=True)
+    # Registered callable scrapers
+    available_scrapers = {
+        "lever_ats": lambda: scrape_lever_jobs(query=query, city=target_city, limit=limit),
+        "greenhouse_ats": lambda: scrape_greenhouse_jobs(query=query, city=target_city, limit=limit),
+        "workindia": lambda: scrape_workindia_jobs(query=query, city=target_city, limit=limit),
+        "apna": lambda: scrape_apna_jobs(query=query, city=target_city, limit=limit),
+    }
 
-    wi_jobs = raw_results[0] if isinstance(raw_results[0], list) else []
-    lever_jobs = raw_results[1] if isinstance(raw_results[1], list) else []
-    gh_jobs = raw_results[2] if isinstance(raw_results[2], list) else []
+    # Normalize requested sources
+    active_keys = []
+    if sources and isinstance(sources, list) and len(sources) > 0:
+        for s in sources:
+            s_clean = str(s).strip().lower()
+            if s_clean in available_scrapers and s_clean not in active_keys:
+                active_keys.append(s_clean)
+            elif s_clean in ["workindia_direct", "workindia"] and "workindia" not in active_keys:
+                active_keys.append("workindia")
+            elif s_clean in ["apna_direct", "apna"] and "apna" not in active_keys:
+                active_keys.append("apna")
 
-    elapsed_scrape = (datetime.now() - t0).total_seconds()
-    print(f"[Worker][Discovery][Step 2/4 - PARALLEL SCRAPED in {elapsed_scrape:.2f}s] WorkIndia: {len(wi_jobs)}, Lever: {len(lever_jobs)}, Greenhouse: {len(gh_jobs)}")
+    if not active_keys:
+        active_keys = ["lever_ats", "greenhouse_ats", "workindia", "apna"]
+
+    # Execute scrapers concurrently
+    tasks = [available_scrapers[k]() for k in active_keys]
+    raw_results = await asyncio.gather(*tasks, return_exceptions=True)
 
     scraped: List[Dict[str, Any]] = []
-    scraped.extend(wi_jobs)
-    scraped.extend(lever_jobs)
-    scraped.extend(gh_jobs)
+    source_stats: Dict[str, Any] = {}
 
-    # If external live feeds returned few matching items, enrich with authentic blue-collar openings
-    if len(scraped) < min(5, limit):
-        sample_needed = limit - len(scraped)
-        print(f"[Worker][Discovery][Step 2b - ENRICH] Adding {sample_needed} authentic verified blue-collar vacancies")
-        sample_jobs = await scrape_curated_blue_collar_sample(query=query, city=target_city, limit=sample_needed)
-        scraped.extend(sample_jobs)
+    for idx, key in enumerate(active_keys):
+        res = raw_results[idx]
+        if isinstance(res, list):
+            scraped.extend(res)
+            source_stats[key] = {
+                "discovered": len(res),
+                "valid": len(res),
+                "status": "ACTIVE" if len(res) > 0 else "NO_RESULTS"
+            }
+        elif isinstance(res, Exception):
+            print(f"[Worker][Discovery] Error in {key}: {res}")
+            source_stats[key] = {
+                "discovered": 0,
+                "valid": 0,
+                "status": "ERROR",
+                "error": str(res)
+            }
+        else:
+            source_stats[key] = {
+                "discovered": 0,
+                "valid": 0,
+                "status": "NO_RESULTS"
+            }
+
+    elapsed_scrape = (datetime.now() - t0).total_seconds()
+    print(f"[Worker][Discovery][PARALLEL SCRAPED in {elapsed_scrape:.2f}s] Total raw scraped: {len(scraped)}")
+
+    # Strict truth-in-scraping: only add synthetic jobs when demo_mode is explicitly requested
+    if demo_mode:
+        sample_needed = max(0, limit - len(scraped))
+        if sample_needed > 0:
+            print(f"[Worker][Discovery][DEMO MODE ONLY] Adding {sample_needed} curated demo vacancies")
+            sample_jobs = await scrape_curated_blue_collar_sample(query=query, city=target_city, limit=sample_needed)
+            scraped.extend(sample_jobs)
+            source_stats["curated_demo"] = {"discovered": len(sample_jobs), "valid": len(sample_jobs), "status": "DEMO"}
 
     # Deduplicate against source_hash
     unique_map: Dict[str, Dict[str, Any]] = {}
@@ -721,10 +773,14 @@ async def execute_live_discovery(
         JOBS_STORE = JOBS_STORE[:500]
 
     total_time = (datetime.now() - t0).total_seconds()
-    print(f"[Worker][Discovery][Step 3/4 - DEDUPLICATED] Total unique jobs: {len(unique_jobs)} (total time: {total_time:.2f}s)")
+    print(f"[Worker][Discovery][DEDUPLICATED in {total_time:.2f}s] Total unique jobs: {len(unique_jobs)}")
 
-    return unique_jobs
-
+    return {
+        "items": unique_jobs,
+        "source_stats": source_stats,
+        "sources_scanned": active_keys,
+        "total": len(unique_jobs)
+    }
 def json_response(data: Any, status: int = 200) -> Response:
     headers = {
         "Content-Type": "application/json",
@@ -768,8 +824,7 @@ class Default(WorkerEntrypoint):
                 "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Internal-Secret",
             }
             return Response("", status=204, headers=headers)
-
-        # 1. Health check
+# 1. Health check
         if path in ["/", "/health", "/api/v1/health"]:
             return json_response({
                 "status": "UP",
@@ -795,14 +850,19 @@ class Default(WorkerEntrypoint):
             query = payload.get("query")
             limit = min(payload.get("limit") or 25, 100)
             sources = payload.get("sources")
+            demo_mode = bool(payload.get("demo") or payload.get("demo_mode") or False)
 
-            discovered = await execute_live_discovery(
+            discovery_res = await execute_live_discovery(
                 query=query,
                 city=city,
                 sources=sources,
                 limit=limit,
+                demo_mode=demo_mode,
                 env=env
             )
+            discovered = discovery_res.get("items", [])
+            source_stats = discovery_res.get("source_stats", {})
+            sources_scanned = discovery_res.get("sources_scanned", [])
 
             return json_response({
                 "success": True,
@@ -810,7 +870,8 @@ class Default(WorkerEntrypoint):
                 "total": len(discovered),
                 "city": city,
                 "query": query,
-                "sources_scanned": [s["source_id"] for s in REGISTERED_SOURCES],
+                "sources_scanned": sources_scanned,
+                "source_stats": source_stats,
                 "items": discovered,
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }, status=200)
@@ -827,15 +888,19 @@ class Default(WorkerEntrypoint):
             query = payload.get("query")
             limit = min(payload.get("limit") or 25, 100)
             sources = payload.get("sources")
+            demo_mode = bool(payload.get("demo") or payload.get("demo_mode") or False)
 
-            # Execute discovery immediately so status is ready with genuine data
-            discovered = await execute_live_discovery(
+            discovery_res = await execute_live_discovery(
                 query=query,
                 city=city,
                 sources=sources,
                 limit=limit,
+                demo_mode=demo_mode,
                 env=env
             )
+            discovered = discovery_res.get("items", [])
+            source_stats = discovery_res.get("source_stats", {})
+            sources_scanned = discovery_res.get("sources_scanned", [])
 
             session_data = {
                 "id": scan_id,
@@ -845,10 +910,8 @@ class Default(WorkerEntrypoint):
                 "duplicate_count": 0,
                 "rejected_count": 0,
                 "error_count": 0,
-                "sources_scanned": [s["source_id"] for s in REGISTERED_SOURCES],
-                "source_stats": {
-                    "lever_ats": {"discovered": len(discovered), "valid": len(discovered)},
-                },
+                "sources_scanned": sources_scanned,
+                "source_stats": source_stats,
                 "started_at": datetime.now(timezone.utc).isoformat(),
                 "completed_at": datetime.now(timezone.utc).isoformat(),
                 "city": city,
@@ -858,7 +921,6 @@ class Default(WorkerEntrypoint):
             }
             SCAN_SESSIONS[scan_id] = session_data
 
-            # If Cloudflare Queue binding is available, dispatch async event
             if hasattr(env, "DISCOVERY_QUEUE"):
                 try:
                     await env.DISCOVERY_QUEUE.send(json.dumps({"id": scan_id, "city": city, "query": query}))
@@ -957,7 +1019,8 @@ class Default(WorkerEntrypoint):
                 scan_id = body.get("id")
                 city = body.get("city") or "Chennai"
                 query = body.get("query")
-                jobs = await execute_live_discovery(query=query, city=city, limit=25, env=self.env)
+                jobs_res = await execute_live_discovery(query=query, city=city, limit=25, env=self.env)
+                jobs = jobs_res.get("items", []) if isinstance(jobs_res, dict) else jobs_res
                 if scan_id and scan_id in SCAN_SESSIONS:
                     SCAN_SESSIONS[scan_id]["status"] = "COMPLETED"
                     SCAN_SESSIONS[scan_id]["total_found"] = len(jobs)

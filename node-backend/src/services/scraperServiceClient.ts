@@ -273,12 +273,15 @@ export class ScraperServiceClient {
     category?: string;
     sources?: string[];
     limit?: number;
+    demo?: boolean;
   } = {}): Promise<{
     success: boolean;
     status: string;
     total: number;
     sources_scanned: string[];
+    source_stats?: Record<string, any>;
     items: ScraperJobRecord[];
+    error?: string;
   }> {
     const payload = {
       query: options.query || null,
@@ -286,23 +289,29 @@ export class ScraperServiceClient {
       category: options.category || null,
       sources: options.sources || null,
       limit: Math.min(options.limit || 25, 100),
+      demo: options.demo || false,
     };
 
     let res: Response | null = null;
+    let fetchError: any = null;
     try {
       res = await this.safeFetch('/api/v1/sources/run-discovery', {
         method: 'POST',
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(20000),
       });
-    } catch (_) {
+    } catch (err: any) {
+      fetchError = err;
       try {
         res = await this.safeFetch('/api/v1/scans/run-discovery', {
           method: 'POST',
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(20000),
         });
-      } catch (_) {}
+        fetchError = null;
+      } catch (fallbackErr: any) {
+        fetchError = fallbackErr;
+      }
     }
 
     if (res && res.ok) {
@@ -312,7 +321,7 @@ export class ScraperServiceClient {
           success: true,
           status: 'COMPLETED',
           total: data.length,
-          sources_scanned: ['lever_ats', 'greenhouse_ats', 'schema_org'],
+          sources_scanned: options.sources || ['lever_ats', 'greenhouse_ats', 'workindia', 'apna'],
           items: data,
         };
       }
@@ -321,22 +330,26 @@ export class ScraperServiceClient {
         status: data.status || 'COMPLETED',
         total: data.total ?? (data.items?.length || 0),
         sources_scanned: data.sources_scanned || [],
+        source_stats: data.source_stats || {},
         items: data.items || [],
       };
     }
 
-    // Fallback: trigger scan and list recent jobs
-    const scan = await this.triggerScan(options);
-    const jobs = await this.listJobs({ city: options.city, limit: options.limit || 25 }).catch(() => ({ total: 0, page: 1, limit: 25, items: [] }));
+    // STRICT TRUTH-IN-SCRAPING: Never silently fall back to listJobs() or return stale cached jobs!
+    const errorMsg = res
+      ? `Python microservice returned HTTP ${res.status}`
+      : (fetchError?.message || 'Connection timed out after 20s while scraping external sources');
+
+    console.error(`[ScraperServiceClient] Live discovery failed: ${errorMsg}`);
     return {
-      success: true,
-      status: scan.status,
-      total: jobs.items?.length || scan.total_found || 0,
-      sources_scanned: scan.sources_scanned || [],
-      items: jobs.items || (scan as any).items || [],
+      success: false,
+      status: 'FAILED',
+      total: 0,
+      sources_scanned: options.sources || [],
+      items: [],
+      error: `Scraper discovery failed: ${errorMsg}`,
     };
   }
-
   /**
    * Triggers a compliant blue-collar discovery scan in the Python microservice.
    */
