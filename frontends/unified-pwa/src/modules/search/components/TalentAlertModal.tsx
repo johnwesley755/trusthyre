@@ -146,20 +146,8 @@ export const TalentAlertModal: React.FC<TalentAlertModalProps> = ({
       toast.success("Test Candidate Notification Sent!", {
         description: "Check your in-app notification bell 🔔 or push notification to confirm."
       });
-      // Direct cache patch - zero network GET
-      const mockCandidate = data?.mockCandidate;
-      const testNotif = {
-        id: `diag-cand-${Date.now()}`,
-        title: `⚡ New Candidate Match: ${mockCandidate?.name || 'Verified Specialist'}`,
-        message: `${mockCandidate?.name || 'Verified Specialist'} (${mockCandidate?.trade || 'Skilled Professional'}) matches your requirements in ${mockCandidate?.city || 'India'}.`,
-        type: 'CANDIDATE_MATCH_ALERT',
-        link: mockCandidate?.id ? `/worker/${mockCandidate.id}` : '/find-workers',
-        isRead: false,
-        is_read: false,
-        createdAt: new Date().toISOString()
-      };
-      queryClient.setQueryData<any[]>(['notifications'], (old = []) => [testNotif, ...old]);
-      queryClient.setQueryData<number>(['unreadCount'], (c = 0) => (c || 0) + 1);
+      // Invalidate query to pull the real server-persisted notification with real UUID
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
     onError: (err: any) => {
       toast.error("Test notification failed", {

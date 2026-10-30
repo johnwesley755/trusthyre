@@ -67,10 +67,11 @@ if (messaging) {
     return self.registration.showNotification(title, notificationOptions);
   });
 }
-
-// Fallback raw Web Push event listener
+// Fallback raw Web Push event listener (Runs ONLY if Firebase messaging is not active)
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
+  // If Firebase Messaging SDK is initialized, it already handles data-only and background pushes
+  if (messaging || !event.data) return;
+
   try {
     const raw = event.data.json();
     if (raw.notification) return; // Handled by browser push service
@@ -85,7 +86,9 @@ self.addEventListener('push', (event) => {
         icon: '/logo.png',
         badge: '/logo.png',
         data: { url: link, timestamp: Date.now() },
-        vibrate: [100, 50, 100]
+        vibrate: [100, 50, 100],
+        tag: raw.data?.id || 'trusthyre-push',
+        renotify: true
       })
     );
   } catch {
@@ -95,7 +98,9 @@ self.addEventListener('push', (event) => {
         body: text || 'You have a new update.',
         icon: '/logo.png',
         badge: '/logo.png',
-        data: { url: '/notifications' }
+        data: { url: '/notifications' },
+        tag: 'trusthyre-push',
+        renotify: true
       })
     );
   }

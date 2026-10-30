@@ -19,7 +19,7 @@ export const requestEarlyAccess = async (c: Context) => {
       return c.json(ApiResponse.error("Valid email address is required"), 400 as any);
     }
 
-    const safeName = name ? escapeHtml(name) : 'there';
+    const displayName = name ? String(name).trim() : 'there';
     const priorityId = `TH-${Date.now().toString(36).toUpperCase()}`;
     const frontendUrl = (process.env.FRONTEND_URL || "https://trusthyre.com").replace(/\/$/, "");
 
@@ -54,7 +54,7 @@ export const requestEarlyAccess = async (c: Context) => {
       title: "Welcome to TrustHyre Early Access",
       preheader: preheader,
       badgeText: "🚀 EARLY ACCESS CONFIRMED",
-      recipientName: safeName,
+      recipientName: displayName,
       bodyHtml: bodyHtml,
       targetLink: `${frontendUrl}/`,
       buttonText: "Explore TrustHyre Platform",
@@ -64,7 +64,7 @@ export const requestEarlyAccess = async (c: Context) => {
     const textContent = `
 Welcome to TrustHyre Early Access
 ------------------------------------------------------
-Hello ${safeName},
+Hello ${displayName},
 
 Thank you for requesting early access to TrustHyre!
 Your Priority Access ID: ${priorityId}

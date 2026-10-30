@@ -531,54 +531,15 @@ export const oauthSync = async (c: Context) => {
         }
       }
 
-      // 3. Tertiary fallback: Structural & Claim verification of Firebase / Google JWT
-      if (!verifiedEmail && decoded) {
-        try {
-          const iss = String(decoded.iss || '').trim();
-          let isGoogleIssuer = false;
-          try {
-            const issUrl = new URL(iss.startsWith('http://') || iss.startsWith('https://') ? iss : `https://${iss}`);
-            const hostname = issUrl.hostname.toLowerCase();
-            isGoogleIssuer = hostname === 'accounts.google.com' || hostname === 'securetoken.google.com';
-          } catch {
-            isGoogleIssuer = false;
-          }
-          // Allow up to 10 minutes clock skew on expiration
-          const notExpired = !decoded.exp || (decoded.exp * 1000 + 600000 > Date.now());
-          const hasValidSub = !!(decoded.sub || decoded.user_id);
-
-          if (isGoogleIssuer && notExpired && hasValidSub) {
-            const candidate = 
-              decoded.email ||
-              decoded.firebase?.identities?.['google.com']?.[0] ||
-              decoded.firebase?.identities?.email?.[0] ||
-              clientEmail;
-            if (candidate) {
-              verifiedEmail = String(candidate).toLowerCase().trim();
-              console.log(`[oauthSync] Verified email via decoded JWT claims: ${verifiedEmail}`);
-            }
-          }
-        } catch (e: any) {
-          console.warn(`[oauthSync] JWT claim verification error:`, e?.message || e);
-        }
-      }
-
-      // 4. Quaternary fallback: Unexpired token with valid sub accompanied by client email
-      if (!verifiedEmail && decoded && clientEmail) {
-        if (decoded.sub && (!decoded.exp || decoded.exp * 1000 + 600000 > Date.now())) {
-          verifiedEmail = clientEmail;
-          console.log(`[oauthSync] Verified email via token sub presence & client payload: ${verifiedEmail}`);
-        }
+      // 3. Reject unverified tokens if Google/Firebase cryptographic validation failed
+      if (!verifiedEmail) {
+        return c.json(ApiResponse.error("Unauthorized: Invalid or untrusted OAuth ID token"), 401 as any);
       }
     }
 
     // Security Gate: Reject unauthenticated/unverified claims
     if (!verifiedEmail) {
-      if (process.env.ALLOW_INSECURE_DEV_OAUTH === 'true' && clientEmail) {
-        verifiedEmail = clientEmail;
-      } else {
-        return c.json(ApiResponse.error("Unauthorized: Valid OAuth ID token required"), 401 as any);
-      }
+      return c.json(ApiResponse.error("Unauthorized: Valid OAuth ID token required"), 401 as any);
     }
 
     const targetEmail = verifiedEmail as string;

@@ -38,19 +38,29 @@ export const updateSettings = async (c: Context) => {
     // Fetch existing settings first to ensure partial updates do not overwrite other preferences
     const existing = await prisma.user_settings.findUnique({ where: { user_id: userId } });
 
+    const parseBoolean = (val: any, fallback: boolean): boolean => {
+      if (typeof val === 'boolean') return val;
+      if (typeof val === 'string') {
+        const lower = val.trim().toLowerCase();
+        if (lower === 'false' || lower === '0') return false;
+        if (lower === 'true' || lower === '1') return true;
+      }
+      return fallback;
+    };
+
     const emailNotifications = 
-      data.email_notifications !== undefined ? Boolean(data.email_notifications) :
-      data.emailNotifications !== undefined ? Boolean(data.emailNotifications) :
+      data.email_notifications !== undefined ? parseBoolean(data.email_notifications, true) :
+      data.emailNotifications !== undefined ? parseBoolean(data.emailNotifications, true) :
       (existing ? existing.email_notifications : true);
 
     const pushNotifications = 
-      data.push_notifications !== undefined ? Boolean(data.push_notifications) :
-      data.pushNotifications !== undefined ? Boolean(data.pushNotifications) :
+      data.push_notifications !== undefined ? parseBoolean(data.push_notifications, true) :
+      data.pushNotifications !== undefined ? parseBoolean(data.pushNotifications, true) :
       (existing ? existing.push_notifications : true);
 
     const marketingEmails = 
-      data.marketing_emails !== undefined ? Boolean(data.marketing_emails) :
-      data.marketingEmails !== undefined ? Boolean(data.marketingEmails) :
+      data.marketing_emails !== undefined ? parseBoolean(data.marketing_emails, false) :
+      data.marketingEmails !== undefined ? parseBoolean(data.marketingEmails, false) :
       (existing ? existing.marketing_emails : false);
 
     const language = data.language || existing?.language || 'en';

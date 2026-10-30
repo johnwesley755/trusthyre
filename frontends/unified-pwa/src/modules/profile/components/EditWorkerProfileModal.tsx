@@ -290,7 +290,7 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
         result.experience_years = Number(formData.experienceYears) || 0;
         return result;
       });
-      queryClient.setQueryData(queryKeys.workers.me, result);
+      queryClient.setQueryData(queryKeys.workers.me, (old: any) => ({ ...(old || {}), ...formData, profileImageUrl, profile_image_url: profileImageUrl, profilePhoto: profileImageUrl }));
       onClose();
     },
     onError: (err: any) => {

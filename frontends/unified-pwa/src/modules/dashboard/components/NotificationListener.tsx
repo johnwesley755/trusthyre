@@ -5,11 +5,14 @@ import { toast } from 'sonner';
 import { Bell, CheckCircle2, Info, AlertTriangle, Briefcase, Award, ShieldCheck, Users } from 'lucide-react';
 import { fcmService } from '../../../services/fcm.service';
 import { useAuth } from '../../../providers/AuthContext';
+import { useAppNotifications } from '../../../hooks/useAppNotifications';
+import { notificationService } from '../../../services/notification.service';
 
 export const NotificationListener = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { prependPushNotification } = useAppNotifications();
 
   useEffect(() => {
     if (!user) return;
@@ -20,8 +23,17 @@ export const NotificationListener = () => {
       const currentPerm = Notification.permission;
       
       if (currentPerm === 'granted') {
-        // Token refresh and keep alive with active user ID
-        fcmService.requestPushPermissionAndRegister(user.id, true).catch(() => {});
+        // Token refresh and keep alive with active user ID once per session to avoid spamming /fcm-token
+        const sessionRegistered = sessionStorage.getItem(`fcm_synced_${user.id}`);
+        if (!sessionRegistered) {
+          fcmService.requestPushPermissionAndRegister(user.id, false)
+            .then((res) => {
+              if (res.token) {
+                sessionStorage.setItem(`fcm_synced_${user.id}`, 'true');
+              }
+            })
+            .catch(() => {});
+        }
       } else if (currentPerm === 'default') {
         // Show non-intrusive prompt once per session so user can opt-in to instant alerts
         const hasPrompted = sessionStorage.getItem('push_prompt_dismissed');
@@ -64,8 +76,8 @@ export const NotificationListener = () => {
       const type = (payload.data?.type || 'SYSTEM').toUpperCase();
       const notificationId = payload.data?.notificationId || payload.data?.id || `fcm-${Date.now()}`;
 
-      // Patch TanStack query cache directly - ZERO GET calls to backend
-      const newNotification = {
+      // Safely prepend notification using our robust TanStack cache handler
+      prependPushNotification({
         id: notificationId,
         userId: user?.id || '',
         title,
@@ -75,13 +87,7 @@ export const NotificationListener = () => {
         isRead: false,
         is_read: false,
         createdAt: new Date().toISOString()
-      };
-
-      queryClient.setQueryData<any[]>(['notifications'], (old = []) => {
-        const exists = old.some((n: any) => n.id === newNotification.id);
-        return exists ? old : [newNotification, ...old];
       });
-      queryClient.setQueryData<number>(['unreadCount'], (c = 0) => (c || 0) + 1);
 
       // Gentle vibration feedback on mobile devices
       if ('vibrate' in navigator) {
@@ -110,7 +116,10 @@ export const NotificationListener = () => {
                 targetLink = '/jobs';
               }
             }
-            // Mark as read in cache directly before navigating
+            // Mark as read on server as well as locally
+            if (!notificationId.startsWith('fcm-')) {
+              notificationService.markAsRead(notificationId).catch(() => {});
+            }
             queryClient.setQueryData<any[]>(['notifications'], (old = []) =>
               old.map((n: any) => n.id === notificationId ? { ...n, isRead: true, is_read: true } : n)
             );

@@ -48,11 +48,16 @@ export const sendEmail = async (
     // Plain text fallback (MIME multipart/alternative compliance for anti-spam)
     const textContent = (options?.text || htmlToPlainText(html)).trim();
 
-    // Compliance & Anti-Spam Headers (RFC 8058 One-Click Unsubscribe)
+    // Compliance & Anti-Spam Headers
+    // Apply List-Unsubscribe only to alert/marketing emails with explicit opt-out targets (RFC 8058)
+    const isAlertEmail = options?.category === 'alert' && Boolean(options?.unsubscribeUrl);
     const headers: Record<string, string> = {
-      'List-Unsubscribe': `<${unsubscribeUrl}>, <mailto:support@trusthyre.com?subject=unsubscribe>`,
-      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
       'X-Entity-Ref-ID': `trusthyre-${Date.now()}`,
+      ...(isAlertEmail && options?.unsubscribeUrl
+        ? {
+            'List-Unsubscribe': `<${options.unsubscribeUrl}>, <mailto:support@trusthyre.com?subject=unsubscribe>`
+          }
+        : {}),
       ...(options?.headers || {})
     };
 

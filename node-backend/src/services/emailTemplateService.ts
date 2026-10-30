@@ -9,6 +9,17 @@ export const BRAND_BORDER = "#E2E8F0";
 export const LOGO_URL = (process.env.FRONTEND_URL || "https://trusthyre.com").replace(/\/$/, "") + "/logo.png";
 export const FALLBACK_LOGO_URL = "https://trust-hire-one.vercel.app/logo.png";
 
+/**
+ * Robust HTML sanitizer to prevent injection / XSS / phishing inside email clients
+ */
+export const esc = (v: unknown): string =>
+  String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 export interface EmailShellOptions {
   title: string;
   preheader: string;
@@ -45,7 +56,7 @@ export function renderEmailShell(options: EmailShellOptions): string {
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
-  <title>${options.title}</title>
+  <title>${esc(options.title)}</title>
   <!--[if !mso]><!-->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -79,7 +90,7 @@ export function renderEmailShell(options: EmailShellOptions): string {
   
   <!-- Hidden Preheader for Gmail / iOS Lock Screen Preview -->
   <div style="display: none; max-height: 0px; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: ${BRAND_SURFACE}; opacity: 0;">
-    ${options.preheader} &#847; &zwnj; &nbsp; &#8199; &shy; &#847; &zwnj; &nbsp; &#8199; &shy; &#847; &zwnj; &nbsp; &#8199; &shy; &#847; &zwnj; &nbsp; &#8199; &shy;
+    ${esc(options.preheader)} &#847; &zwnj; &nbsp; &#8199; &shy; &#847; &zwnj; &nbsp; &#8199; &shy; &#847; &zwnj; &nbsp; &#8199; &shy; &#847; &zwnj; &nbsp; &#8199; &shy;
   </div>
 
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="font-family: ${EMAIL_FONT_STACK};">
@@ -115,17 +126,17 @@ export function renderEmailShell(options: EmailShellOptions): string {
               
               <!-- Category Badge -->
               <div style="display: inline-block; padding: 4px 10px; background-color: #EFF6FF; border: 1px solid #DBEAFE; border-radius: 6px; color: ${BRAND_BLUE}; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; font-family: ${EMAIL_FONT_STACK};">
-                ${badge}
+                ${esc(badge)}
               </div>
 
               <!-- Main Title -->
               <h1 style="margin: 0 0 14px 0; color: ${BRAND_NAVY}; font-size: 20px; font-weight: 800; line-height: 1.35; letter-spacing: -0.3px; font-family: ${EMAIL_FONT_STACK};">
-                ${options.title}
+                ${esc(options.title)}
               </h1>
 
               <!-- Greeting -->
               <p style="margin: 0 0 18px 0; color: #475569; font-size: 15px; line-height: 1.6; font-family: ${EMAIL_FONT_STACK};">
-                Hello <strong style="color: #0F172A;">${recipient}</strong>,
+                Hello <strong style="color: #0F172A;">${esc(recipient)}</strong>,
               </p>
 
               <!-- Dynamic Body Section -->
@@ -146,19 +157,19 @@ export function renderEmailShell(options: EmailShellOptions): string {
               <!-- Call to Action Button -->
               <div style="margin: 24px 0 16px 0; text-align: left;">
                 <!--[if mso]>
-                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${targetLink}" style="height:44px;v-text-anchor:middle;width:240px;" arcsize="50%" fillcolor="${BRAND_NAVY}">
+                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${esc(targetLink)}" style="height:44px;v-text-anchor:middle;width:240px;" arcsize="50%" fillcolor="${BRAND_NAVY}">
                   <w:anchorlock/>
-                  <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;">${buttonText} &rarr;</center>
+                  <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;">${esc(buttonText)} &rarr;</center>
                 </v:roundrect>
                 <![endif]-->
                 <!--[if !mso]><!-->
-                <a href="${targetLink}" target="_blank" class="btn-cta" style="display: inline-block; background-color: ${BRAND_NAVY}; color: #FFFFFF !important; font-size: 14px; font-weight: 700; text-decoration: none; padding: 13px 28px; border-radius: 9999px; letter-spacing: 0.3px; box-shadow: 0 4px 14px rgba(15, 47, 99, 0.22); font-family: ${EMAIL_FONT_STACK};">
-                  ${buttonText} &nbsp;&rarr;
+                <a href="${esc(targetLink)}" target="_blank" class="btn-cta" style="display: inline-block; background-color: ${BRAND_NAVY}; color: #FFFFFF !important; font-size: 14px; font-weight: 700; text-decoration: none; padding: 13px 28px; border-radius: 9999px; letter-spacing: 0.3px; box-shadow: 0 4px 14px rgba(15, 47, 99, 0.22); font-family: ${EMAIL_FONT_STACK};">
+                  ${esc(buttonText)} &nbsp;&rarr;
                 </a>
                 <!--<![endif]-->
               </div>
 
-              ${options.secondaryInfo ? `<p style="margin: 16px 0 0 0; color: #64748B; font-size: 12px; line-height: 1.5;">${options.secondaryInfo}</p>` : ''}
+              ${options.secondaryInfo ? `<p style="margin: 16px 0 0 0; color: #64748B; font-size: 12px; line-height: 1.5;">${esc(options.secondaryInfo)}</p>` : ''}
 
             </td>
           </tr>
@@ -216,7 +227,7 @@ export function renderCandidateMatchEmail(data: {
     .slice(0, 5)
     .map(
       s =>
-        `<span style="display: inline-block; background-color: #F1F5F9; border: 1px solid #CBD5E1; color: #334155; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; margin-right: 6px; margin-bottom: 6px;">${s.trim()}</span>`
+        `<span style="display: inline-block; background-color: #F1F5F9; border: 1px solid #CBD5E1; color: #334155; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; margin-right: 6px; margin-bottom: 6px;">${esc(s.trim())}</span>`
     )
     .join('');
 
@@ -229,13 +240,13 @@ export function renderCandidateMatchEmail(data: {
             <tr>
               <td style="vertical-align: top;">
                 <div style="font-size: 18px; font-weight: 800; color: #0F2F63; margin-bottom: 4px;">
-                  ${data.candidateName}
+                  ${esc(data.candidateName)}
                   <span style="display: inline-block; background-color: #ECFDF5; color: #059669; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px; border: 1px solid #A7F3D0; vertical-align: middle; margin-left: 6px;">
                     ✓ VERIFIED PRO
                   </span>
                 </div>
                 <div style="font-size: 13px; color: #64748B; font-weight: 600; margin-bottom: 12px;">
-                  📍 ${data.location || 'Your Region'} &nbsp;•&nbsp; ⏱️ ${data.experienceYears ? `${data.experienceYears}+ yrs experience` : 'Field-Ready Professional'}
+                  📍 ${esc(data.location || 'Your Region')} &nbsp;•&nbsp; ⏱️ ${data.experienceYears ? `${esc(data.experienceYears)}+ yrs experience` : 'Field-Ready Professional'}
                 </div>
                 <div style="margin-top: 10px;">
                   ${skillsHtml}
@@ -303,7 +314,7 @@ export function renderJobMatchEmail(data: {
     .slice(0, 5)
     .map(
       s =>
-        `<span style="display: inline-block; background-color: #F1F5F9; border: 1px solid #CBD5E1; color: #334155; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; margin-right: 6px; margin-bottom: 6px;">${s.trim()}</span>`
+        `<span style="display: inline-block; background-color: #F1F5F9; border: 1px solid #CBD5E1; color: #334155; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; margin-right: 6px; margin-bottom: 6px;">${esc(s.trim())}</span>`
     )
     .join('');
 
@@ -313,13 +324,13 @@ export function renderJobMatchEmail(data: {
       <tr>
         <td style="padding: 20px 22px;">
           <div style="font-size: 18px; font-weight: 800; color: #0F2F63; margin-bottom: 4px;">
-            ${data.jobTitle}
+            ${esc(data.jobTitle)}
           </div>
           <div style="font-size: 14px; color: #0066FF; font-weight: 700; margin-bottom: 10px;">
-            🏢 ${data.companyName || 'Verified Employer'}
+            🏢 ${esc(data.companyName || 'Verified Employer')}
           </div>
           <div style="font-size: 13px; color: #64748B; font-weight: 600; margin-bottom: 12px;">
-            📍 ${data.location || 'Immediate Location'} ${data.salary ? `&nbsp;•&nbsp; 💰 ${data.salary}` : ''}
+            📍 ${esc(data.location || 'Immediate Location')} ${data.salary ? `&nbsp;•&nbsp; 💰 ${esc(data.salary)}` : ''}
           </div>
           <div style="margin-top: 10px;">
             ${skillsHtml}
@@ -382,7 +393,7 @@ export function renderNotificationEmail(data: {
       <tr>
         <td style="padding: 20px 22px;">
           <p style="margin: 0; color: #334155; font-size: 15px; line-height: 1.65;">
-            ${data.message}
+            ${esc(data.message)}
           </p>
         </td>
       </tr>

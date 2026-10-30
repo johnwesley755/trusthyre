@@ -12,6 +12,7 @@ export const queryKeys = {
     all: ['workers'] as const,
     search: (params?: Record<string, any>) => ['workers', 'search', params || {}] as const,
     detail: (id: string) => ['workers', 'detail', id] as const,
+    me: ['workers', 'me'] as const,
     ratings: (id: string) => ['workers', 'ratings', id] as const,
     scoring: (id: string) => ['workers', 'scoring', id] as const,
     level: (id: string) => ['workers', 'level', id] as const,

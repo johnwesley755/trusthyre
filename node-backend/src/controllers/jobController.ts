@@ -391,11 +391,6 @@ export const getJobById = async (c: Context) => {
         defaultSkills = ['Surface Prep', 'Color Mixing', 'Interior/Exterior Painting', 'Rollers & Sprayers', 'Scaffolding Safety'];
       }
       rawSkillsStr = defaultSkills.join(', ');
-
-      prisma.jobs.update({
-        where: { id },
-        data: { required_skills: rawSkillsStr } as any
-      }).catch(() => {});
     }
     (job as any).required_skills = rawSkillsStr || '';
 
@@ -477,7 +472,20 @@ export const updateJob = async (c: Context) => {
     }
     if (data.experienceYearsRequired !== undefined || data.experience_years_required !== undefined || data.experience !== undefined) {
       const expInput = data.experienceYearsRequired ?? data.experience_years_required ?? data.experience;
-      updatePayload.experience_years_required = (expInput !== null && expInput !== '' && !isNaN(Number(expInput))) ? Number(expInput) : 0;
+      if (expInput === '' || expInput === null) {
+        updatePayload.experience_years_required = 0;
+      } else {
+        const num = Number(expInput);
+        if (isNaN(num) || num < 0) {
+          return c.json(ApiResponse.error("Invalid experience years value. Must be a non-negative number."), 400 as any);
+        }
+        updatePayload.experience_years_required = num;
+      }
+    }
+    if (data.requiredSkills !== undefined || data.required_skills !== undefined || data.skills !== undefined) {
+      const rawSkills = data.requiredSkills ?? data.required_skills ?? data.skills;
+      const skillsStr = Array.isArray(rawSkills) ? rawSkills.join(', ') : (typeof rawSkills === 'string' ? rawSkills : '');
+      updatePayload.required_skills = skillsStr;
     }
     if (data.status !== undefined) updatePayload.status = data.status;
     if (data.coverImageUrl !== undefined || data.cover_image_url !== undefined) {

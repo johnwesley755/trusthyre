@@ -32,14 +32,21 @@ export const useAppNotifications = () => {
   const markReadMutation = useMutation({
     mutationFn: (id: string) => notificationService.markAsRead(id),
     onSuccess: (_, id) => {
+      const wasUnread = queryClient
+        .getQueryData<AppNotification[]>(NOTIFICATION_QUERY_KEY)
+        ?.some((n) => n.id === id && !n.isRead && !(n as any).is_read);
+
       queryClient.setQueryData<AppNotification[]>(NOTIFICATION_QUERY_KEY, (old = []) =>
         old.map((n) =>
           n.id === id ? { ...n, isRead: true, is_read: true } : n
         )
       );
-      queryClient.setQueryData<number>(UNREAD_COUNT_QUERY_KEY, (c = 0) =>
-        Math.max(0, (c || 0) - 1)
-      );
+
+      if (wasUnread) {
+        queryClient.setQueryData<number>(UNREAD_COUNT_QUERY_KEY, (c = 0) =>
+          Math.max(0, (c || 0) - 1)
+        );
+      }
     },
     onError: (err: any) => {
       console.error('[Notifications] markRead error:', err?.message || err);
@@ -64,12 +71,19 @@ export const useAppNotifications = () => {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => notificationService.deleteNotification(id),
     onSuccess: (_, id) => {
+      const wasUnread = queryClient
+        .getQueryData<AppNotification[]>(NOTIFICATION_QUERY_KEY)
+        ?.some((n) => n.id === id && !n.isRead && !(n as any).is_read);
+
       queryClient.setQueryData<AppNotification[]>(NOTIFICATION_QUERY_KEY, (old = []) =>
         old.filter((n) => n.id !== id)
       );
-      queryClient.setQueryData<number>(UNREAD_COUNT_QUERY_KEY, (c = 0) =>
-        Math.max(0, (c || 0) - 1)
-      );
+
+      if (wasUnread) {
+        queryClient.setQueryData<number>(UNREAD_COUNT_QUERY_KEY, (c = 0) =>
+          Math.max(0, (c || 0) - 1)
+        );
+      }
     },
     onError: (err: any) => {
       console.error('[Notifications] delete error:', err?.message || err);
@@ -88,13 +102,22 @@ export const useAppNotifications = () => {
     }
   });
 
-  // Helper to directly inject a notification received via foreground push (zero network GET)
+  /**
+   * Safely adds a push notification into TanStack cache without unseeded cache corruption
+   */
   const prependPushNotification = (newNotification: AppNotification) => {
-    queryClient.setQueryData<AppNotification[]>(NOTIFICATION_QUERY_KEY, (old = []) => {
-      const exists = old.some((n) => n.id === newNotification.id);
-      return exists ? old : [newNotification, ...old];
-    });
-    queryClient.setQueryData<number>(UNREAD_COUNT_QUERY_KEY, (c = 0) => (c || 0) + 1);
+    const current = queryClient.getQueryData<AppNotification[]>(NOTIFICATION_QUERY_KEY);
+    if (!current) {
+      // If notifications cache is not loaded yet, invalidate query to fetch fresh state safely
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_QUERY_KEY });
+      return;
+    }
+
+    const exists = current.some((n) => n.id === newNotification.id);
+    if (!exists) {
+      queryClient.setQueryData<AppNotification[]>(NOTIFICATION_QUERY_KEY, [newNotification, ...current]);
+      queryClient.setQueryData<number>(UNREAD_COUNT_QUERY_KEY, (c = 0) => (c || 0) + 1);
+    }
   };
 
   return {
@@ -110,6 +133,7 @@ export const useAppNotifications = () => {
     prependPushNotification,
     isMarkingAllRead: markAllReadMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isDeletingAll: deleteAllMutation.isPending,
   };
 };
 

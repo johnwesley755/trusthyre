@@ -34,7 +34,8 @@ export const NotificationsPage: React.FC = () => {
     deleteNotification,
     deleteAll,
     isMarkingAllRead,
-    isDeleting
+    isDeleting,
+    isDeletingAll
   } = useAppNotifications();
 
   const handleNotificationClick = (n: AppNotification) => {
@@ -175,9 +176,13 @@ export const NotificationsPage: React.FC = () => {
 
             {notifications.length > 0 && (
               <button
-                onClick={() => deleteAll()}
-                disabled={isDeleting}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 text-xs font-semibold transition-all cursor-pointer"
+                onClick={() => {
+                  if (window.confirm('Delete all notifications? This action cannot be undone.')) {
+                    deleteAll();
+                  }
+                }}
+                disabled={isDeletingAll}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Clear All</span>

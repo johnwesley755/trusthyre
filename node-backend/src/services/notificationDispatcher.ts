@@ -75,12 +75,12 @@ export class NotificationDispatcher {
 
             let emailPayload: { html: string; text: string; subject: string };
 
-            if (params.type === 'CANDIDATE_MATCH_ALERT' || params.title.toLowerCase().includes('candidate')) {
-              const candidateName = params.title.replace(/^Candidate\s*(Alert|Match):\s*/i, '').trim() || 'Verified Candidate';
+            if (params.type === 'CANDIDATE_MATCH_ALERT') {
+              const candidateName = params.data?.name || params.title.replace(/^Candidate\s*(Alert|Match):\s*/i, '').trim() || 'Verified Candidate';
               const skillMatch = params.message.match(/skills in "([^"]+)"/i);
-              const skills = skillMatch ? skillMatch[1].split(',').map(s => s.trim()) : (params.data?.category ? [params.data.category] : []);
+              const skills = params.data?.skills ? (Array.isArray(params.data.skills) ? params.data.skills : String(params.data.skills).split(',')) : (skillMatch ? skillMatch[1].split(',').map(s => s.trim()) : (params.data?.category ? [params.data.category] : []));
               const locationMatch = params.message.match(/in ([A-Za-z\s]+) is now available/i);
-              const location = locationMatch ? locationMatch[1].trim() : (params.data?.city || 'Your Area');
+              const location = params.data?.city || (locationMatch ? locationMatch[1].trim() : 'Your Area');
 
               emailPayload = renderCandidateMatchEmail({
                 recipientName: firstName,
@@ -89,12 +89,12 @@ export class NotificationDispatcher {
                 location,
                 targetLink
               });
-            } else if (params.type === 'JOB_MATCH_ALERT' || params.title.toLowerCase().includes('job')) {
-              const jobTitle = params.title.replace(/^Job\s*(Alert|Match):\s*/i, '').trim() || 'Verified Job';
-              const employerMatch = params.message.match(/^([^in]+) in/i);
-              const companyName = employerMatch ? employerMatch[1].trim() : (params.data?.company || 'Verified Employer');
+            } else if (params.type === 'JOB_MATCH_ALERT') {
+              const jobTitle = params.data?.title || params.title.replace(/^Job\s*(Alert|Match):\s*/i, '').trim() || 'Verified Job';
+              const employerMatch = params.message.match(/^(.+?) in /i);
+              const companyName = params.data?.company || (employerMatch ? employerMatch[1].trim() : 'Verified Employer');
               const cityMatch = params.message.match(/in ([A-Za-z\s]+) posted/i) || params.message.match(/in ([A-Za-z\s]+) offering/i);
-              const location = cityMatch ? cityMatch[1].trim() : (params.data?.city || 'Your Area');
+              const location = params.data?.city || (cityMatch ? cityMatch[1].trim() : 'Your Area');
               const skills = params.data?.category ? [params.data.category] : [];
 
               emailPayload = renderJobMatchEmail({
@@ -114,8 +114,10 @@ export class NotificationDispatcher {
               });
             }
 
+            const isAlert = params.type === 'JOB_MATCH_ALERT' || params.type === 'CANDIDATE_MATCH_ALERT';
             sendEmail(userMeta.email, emailPayload.subject, emailPayload.html, {
               text: emailPayload.text,
+              category: isAlert ? 'alert' : 'transactional',
               unsubscribeUrl: `${frontendUrl}/notifications`
             }).catch(err => {
               console.error(`[NotificationDispatcher] Email dispatch failed for ${userMeta.email}:`, err.message);
@@ -201,11 +203,10 @@ export class NotificationDispatcher {
           if (resp.error) {
             console.error(`[FCM] Device token failure: code="${resp.error.code}" message="${resp.error.message}"`);
             const code = resp.error.code;
+            // Clean up ONLY genuine dead/unregistered tokens, never temporary payload or credential mismatch errors
             if (
               code === 'messaging/registration-token-not-registered' ||
-              code === 'messaging/invalid-registration-token' ||
-              code === 'messaging/mismatched-credential' ||
-              code === 'messaging/invalid-argument'
+              code === 'messaging/invalid-registration-token'
             ) {
               deadTokens.push(tokens[idx]);
             }
