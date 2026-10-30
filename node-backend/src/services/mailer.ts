@@ -16,15 +16,12 @@ const ENTITY_MAP: Record<string, string> = {
   '&amp;': '&'
 };
 
-function htmlToPlainText(html: string): string {
+function stripHtmlToPlainText(html: string): string {
   if (!html || typeof html !== 'string') return '';
   return html
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, '')
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
+    .replace(/<[^>]*>/g, ' ')
     .replace(/&(?:nbsp|lt|gt|quot|#39|apos|amp);/g, (match) => ENTITY_MAP[match] || match)
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\n\s*\n/g, '\n\n')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -52,7 +49,7 @@ export const sendEmail = async (
     const unsubscribeUrl = options?.unsubscribeUrl || `${frontendUrl}/notifications`;
 
     // Plain text fallback (MIME multipart/alternative compliance for anti-spam)
-    const textContent = (options?.text || htmlToPlainText(html)).trim();
+    const textContent = (options?.text || stripHtmlToPlainText(html)).trim();
 
     // Compliance & Anti-Spam Headers
     // Apply List-Unsubscribe only to alert/marketing emails with explicit opt-out targets (RFC 8058)

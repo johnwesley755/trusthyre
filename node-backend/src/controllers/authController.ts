@@ -206,7 +206,10 @@ export const sendOtp = async (c: Context) => {
       });
     }
 
-    await sendEmail(email, `${otp} is your TrustHyre verification code`, getOtpTemplate(otp, email));
+    await sendEmail(email, `${otp} is your TrustHyre verification code`, getOtpTemplate(otp, email), {
+      category: 'auth',
+      text: `Your TrustHyre verification code is ${otp}. Valid for 15 minutes.`
+    });
     return c.json(ApiResponse.ok(`OTP sent to ${email}`, "sent"));
   } catch (err: any) {
     console.error("sendOtp error:", err);
@@ -274,7 +277,10 @@ export const forgotPassword = async (c: Context) => {
         where: { email },
         data: { reset_token: token, reset_token_expiry: new Date(Date.now() + 15 * 60 * 1000) }
       });
-      await sendEmail(email, `${token} is your TrustHyre password reset code`, getResetPasswordTemplate(token, email));
+      await sendEmail(email, `${token} is your TrustHyre password reset code`, getResetPasswordTemplate(token, email), {
+        category: 'auth',
+        text: `Your TrustHyre password reset code is ${token}. Valid for 1 hour.`
+      });
     }
     return c.json(ApiResponse.ok("Reset email sent successfully", "sent"));
   } catch (err: any) {
