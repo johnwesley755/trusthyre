@@ -3,7 +3,8 @@
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
 
-// Dynamically extract Firebase configuration passed via Service Worker registration URL parameters
+// Dynamically extract Firebase configuration passed securely via Service Worker registration URL parameters
+// Zero hardcoded credentials in public static files
 const urlParams = new URL(self.location.href).searchParams;
 const firebaseConfig = {
   apiKey: urlParams.get('apiKey'),
@@ -14,12 +15,16 @@ const firebaseConfig = {
   appId: urlParams.get('appId')
 };
 
-// Initialize Firebase App only if configuration parameters are present
+// Initialize Firebase App only when valid runtime configuration is provided
 if (firebaseConfig.apiKey && firebaseConfig.projectId) {
-  firebase.initializeApp(firebaseConfig);
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+  } catch (initErr) {
+    // Silent fail in production
+  }
 }
-
-console.log('👷 [FCM-SW:STEP-1:INIT] Initializing Firebase Cloud Messaging Background Service Worker...');
 
 let messaging = null;
 try {
@@ -27,27 +32,20 @@ try {
     messaging = firebase.messaging();
   }
 } catch (swInitErr) {
-  console.warn('⚠️ [FCM-SW] Firebase Messaging initialization notice:', swInitErr);
+  // Silent fallback
 }
 
-// Handle background push messages when PWA tab is closed or unfocused
+// Background push handler via Firebase Messaging
 if (messaging) {
   messaging.onBackgroundMessage((payload) => {
-    console.log('\n🔔 [FCM-SW:STEP-2:BACKGROUND-MESSAGE] Received background push payload:', payload);
-
-    // If the push already has a top-level notification object, the Firebase/Chrome runtime automatically displays it.
-    // Manually calling showNotification in that case creates a DUPLICATE notification.
+    // If the push already has a top-level notification object, browser displays it automatically
     if (payload.notification) {
-      console.log('ℹ️ [FCM-SW:STEP-3:AUTO-HANDLED] Top-level notification payload detected. Automatic WebPush display handled by browser.');
       return;
     }
 
-    // Handle data-only push messages manually with TrustHyre branding
     const title = payload.data?.title || 'TrustHyre Notification';
     const body = payload.data?.body || payload.data?.message || 'You have a new update on TrustHyre.';
     const link = payload.data?.url || payload.data?.link || '/notifications';
-
-    console.log(`📢 [FCM-SW:STEP-3:SHOW-NOTIFICATION] Displaying branded notification: "${title}" -> ${link}`);
 
     const notificationOptions = {
       body,
@@ -55,9 +53,12 @@ if (messaging) {
       badge: '/logo.png',
       data: {
         url: link,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        ...(payload.data || {})
       },
       vibrate: [100, 50, 100],
+      tag: payload.data?.id || 'trusthyre-push',
+      renotify: true,
       actions: [
         { action: 'open', title: 'Open TrustHyre' }
       ]
@@ -66,30 +67,64 @@ if (messaging) {
     return self.registration.showNotification(title, notificationOptions);
   });
 }
+// Fallback raw Web Push event listener (Runs ONLY if Firebase messaging is not active)
+self.addEventListener('push', (event) => {
+  // If Firebase Messaging SDK is initialized, it already handles data-only and background pushes
+  if (messaging || !event.data) return;
+
+  try {
+    const raw = event.data.json();
+    if (raw.notification) return; // Handled by browser push service
+
+    const title = raw.data?.title || 'TrustHyre Update';
+    const body = raw.data?.body || raw.data?.message || 'New update received.';
+    const link = raw.data?.url || raw.data?.link || '/notifications';
+
+    event.waitUntil(
+      self.registration.showNotification(title, {
+        body,
+        icon: '/logo.png',
+        badge: '/logo.png',
+        data: { url: link, timestamp: Date.now() },
+        vibrate: [100, 50, 100],
+        tag: raw.data?.id || 'trusthyre-push',
+        renotify: true
+      })
+    );
+  } catch {
+    const text = event.data.text();
+    event.waitUntil(
+      self.registration.showNotification('TrustHyre', {
+        body: text || 'You have a new update.',
+        icon: '/logo.png',
+        badge: '/logo.png',
+        data: { url: '/notifications' },
+        tag: 'trusthyre-push',
+        renotify: true
+      })
+    );
+  }
+});
 
 // Handle notification click to focus existing tab or navigate
 self.addEventListener('notificationclick', (event) => {
-  console.log('\n👆 [FCM-SW:STEP-4:NOTIFICATION-CLICK] Notification clicked:', event.notification);
   event.notification.close();
 
-  // Extract target URL whether created via webpush options, FCM_MSG, or custom data
   let targetPath = '/notifications';
   const data = event.notification.data;
   if (data) {
     targetPath = data.url || 
                  data.link || 
                  data.click_action || 
-                 data?.FCM_MSG?.notification?.click_action ||
-                 data?.FCM_MSG?.fcmOptions?.link ||
+                 data?.FCM_MSG?.notification?.click_action || 
+                 data?.FCM_MSG?.fcmOptions?.link || 
                  targetPath;
   }
 
   const fullTargetUrl = new URL(targetPath, self.location.origin).href;
-  console.log(`   Navigating client to: ${fullTargetUrl}`);
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // If a TrustHyre window is already open, focus it and navigate
       for (const client of windowClients) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           if ('navigate' in client && targetPath) {
@@ -98,7 +133,6 @@ self.addEventListener('notificationclick', (event) => {
           return client.focus();
         }
       }
-      // Otherwise open a new window
       if (clients.openWindow) {
         return clients.openWindow(fullTargetUrl);
       }

@@ -70,12 +70,12 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
   const isVerified = job.employerProfile?.isVerified ?? true;
 
   // Format experience
-  const expYears = job.experienceYearsRequired ?? 0;
+  const expYears = job.experienceYearsRequired ?? (job as any).experience_years_required ?? 0;
   const experienceText = expYears === 0 
-    ? '0 to 1 Year' 
-    : expYears <= 2 
-      ? '1 to 3 Years' 
-      : `${expYears}+ Years`;
+    ? 'Fresher (0 Yrs)' 
+    : expYears === 1
+      ? '1 Year Exp' 
+      : `${expYears} Years Exp`;
 
   // Format salary
   const budget = job.budget ?? 0;

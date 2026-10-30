@@ -146,10 +146,8 @@ export const TalentAlertModal: React.FC<TalentAlertModalProps> = ({
       toast.success("Test Candidate Notification Sent!", {
         description: "Check your in-app notification bell 🔔 or push notification to confirm."
       });
-      // Immediately invalidate queries so bell badge and dropdown update in real time
+      // Invalidate query to pull the real server-persisted notification with real UUID
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unreadCount'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
     },
     onError: (err: any) => {
       toast.error("Test notification failed", {

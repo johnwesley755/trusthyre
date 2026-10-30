@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { useAuth, useUser } from '../providers/AuthContext';
 import { UserAvatar } from '../components/common/UserAvatar';
 import { NotificationCenter } from '../modules/dashboard/features/notifications/NotificationCenter';
 import { NavbarSearchInput } from '../modules/search/components/NavbarSearchInput';
-import { notificationService, type AppNotification } from '../services/notification.service';
+import { useAppNotifications } from '../hooks/useAppNotifications';
 import trustHyreLogo from '../assets/TrustHyre Skills and Opportunities Logo.png';
 import { 
   Upload, 
@@ -42,16 +41,7 @@ export const AppTopNavbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { data: notifications = [] } = useQuery<AppNotification[]>({
-    queryKey: ['notifications'],
-    queryFn: async () => {
-      return notificationService.getNotifications();
-    },
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
-    enabled: Boolean(user),
-  });
-  const unreadCount = notifications.filter(n => !n.isRead && !(n as any).is_read).length;
+  const { unreadCount } = useAppNotifications();
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

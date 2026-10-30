@@ -473,7 +473,14 @@ export default function ApplicationManagementPage() {
                             <span>{selectedJob?.location || selectedJob?.city || 'Worksite'}</span>
                           </span>
                           <span>•</span>
-                          <span>{selectedJob?.experienceYearsRequired || 1}+ Years Experience</span>
+                          <span>
+                            {(() => {
+                              const exp = selectedJob?.experienceYearsRequired ?? (selectedJob as any)?.experience_years_required;
+                              if (exp === undefined || exp === null || exp === 0) return 'Fresher (0 Years)';
+                              if (exp === 1) return '1 Year Experience';
+                              return `${exp} Years Experience`;
+                            })()}
+                          </span>
                           {selectedJob?.expiresAt && (
                             <>
                               <span>•</span>

@@ -6,7 +6,7 @@ import { profileService } from '../../../services/profile.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { useState } from 'react';
 import { SeoHead, buildJobPostingJsonLd, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
-import { getEffectiveCoverUrl } from '../../../utils/coverImage.utils';
+import { getEffectiveCoverUrl, resolveTradeCover } from '../../../utils/coverImage.utils';
 import { formatMissingProfileFields, getMissingProfileFields } from '../../../utils/profileCompletion';
 import { useUser } from '../../../providers/AuthContext';
 import { AppLoader } from '../../../components/common/AppLoader';
@@ -52,6 +52,70 @@ const DefaultIcon = L.icon({
 });
 
 L.Marker.prototype.options.icon = DefaultIcon;
+
+const getCategoryDefaultSkills = (title?: string, industry?: string): string[] => {
+  const text = `${title || ''} ${industry || ''}`.toLowerCase();
+  if (text.includes('electr') || text.includes('wire') || text.includes('power')) {
+    return ['Circuit Wiring', 'Safety Protocol', 'Power Distribution', 'Maintenance', 'Quality Inspection'];
+  }
+  if (text.includes('cook') || text.includes('chef') || text.includes('kitchen') || text.includes('food') || text.includes('rice') || text.includes('hotel')) {
+    return ['Commercial Kitchen', 'Food Hygiene', 'Recipe Preparation', 'Time Management', 'Kitchen Safety'];
+  }
+  if (text.includes('driv') || text.includes('deliver') || text.includes('logist') || text.includes('courier')) {
+    return ['Navigation & Routing', 'Vehicle Inspection', 'Package Handling', 'Punctuality', 'Safety Protocol'];
+  }
+  if (text.includes('plumb') || text.includes('pipe')) {
+    return ['Pipe Fitting', 'Leak Detection', 'Drainage Systems', 'Tool Handling', 'Safety Compliance'];
+  }
+  if (text.includes('construct') || text.includes('mason') || text.includes('carpenter') || text.includes('build')) {
+    return ['Masonry & Brickwork', 'Blueprint Reading', 'Site Safety', 'Material Handling', 'Structural Assembly'];
+  }
+  if (text.includes('secur') || text.includes('guard')) {
+    return ['Surveillance Monitoring', 'Access Control', 'Emergency Response', 'Incident Reporting', 'Physical Fitness'];
+  }
+  if (text.includes('clean') || text.includes('housekeep') || text.includes('maid')) {
+    return ['Chemical Handling', 'Sanitization Protocol', 'Deep Cleaning', 'Inventory Management', 'Attention to Detail'];
+  }
+  if (text.includes('technician') || text.includes('mechanic') || text.includes('engine') || text.includes('ac repair') || text.includes('hvac')) {
+    return ['Diagnostic Testing', 'Preventative Maintenance', 'Equipment Calibration', 'Safety Compliance', 'Troubleshooting'];
+  }
+  return ['Trade Competencies', 'Safety Compliance', 'Quality Control', 'Punctuality', 'Team Coordination'];
+};
+
+const formatExactExperience = (jobData: any, mode: 'header' | 'stat' | 'detail' = 'header'): string => {
+  if (!jobData) return mode === 'stat' ? '0 Yrs' : 'Not Specified';
+
+  const raw = jobData.experienceYearsRequired ?? jobData.experience_years_required ?? jobData.experience;
+
+  if (raw === undefined || raw === null || raw === '') {
+    if (mode === 'stat') return 'Fresher';
+    if (mode === 'detail') return 'Fresher / Entry Level';
+    return 'Fresher (0 Years)';
+  }
+
+  // If employer typed a non-numeric string (e.g. "Fresher", "2-3 Years")
+  if (typeof raw === 'string' && isNaN(Number(raw))) {
+    return raw.trim();
+  }
+
+  const expNum = Number(raw);
+
+  if (isNaN(expNum) || expNum <= 0) {
+    if (mode === 'stat') return 'Fresher';
+    if (mode === 'detail') return 'Fresher / Entry Level (0 Yrs)';
+    return 'Fresher (0 Years)';
+  }
+
+  if (expNum === 1) {
+    if (mode === 'stat') return '1 Year';
+    if (mode === 'detail') return '1 Year';
+    return '1 Year Experience';
+  }
+
+  if (mode === 'stat') return `${expNum} Years`;
+  if (mode === 'detail') return `${expNum} Years`;
+  return `${expNum} Years Experience`;
+};
 
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -102,7 +166,7 @@ export default function JobDetailPage() {
   const expiryDate = rawExpiry || effectiveExpiry?.toISOString();
   const effectiveCoverUrl = !coverImageFailed 
     ? getEffectiveCoverUrl(job as any) 
-    : null;
+    : resolveTradeCover((job as any)?.title, (job as any)?.industry);
 
   const { data: employerJobApps = [] } = useQuery({
     queryKey: queryKeys.jobs.allEmployerApplications(id ? [id] : []),
@@ -219,7 +283,7 @@ export default function JobDetailPage() {
       budget: anyJob.budget,
       salaryText: anyJob.budget ? `₹${anyJob.budget.toLocaleString()}` : undefined,
       jobType: anyJob.jobType,
-      experienceYearsRequired: anyJob.experienceYearsRequired,
+      experienceYearsRequired: anyJob.experienceYearsRequired ?? anyJob.experience_years_required ?? 0,
       expiresAt: anyJob.expiresAt,
     });
     toast.success(isSaved ? 'Removed from saved jobs' : 'Job saved to your bookmarks!');
@@ -262,9 +326,23 @@ export default function JobDetailPage() {
   const hasCoordinates = typeof job.latitude === 'number' && typeof job.longitude === 'number' && !isNaN(job.latitude) && !isNaN(job.longitude);
   const locationCoordinates: [number, number] | null = hasCoordinates ? [job.latitude!, job.longitude!] : null;
 
-  const rawSkills = job.requiredSkills && Array.isArray(job.requiredSkills) && job.requiredSkills.length > 0 
-    ? job.requiredSkills 
-    : ((job as any).skills && Array.isArray((job as any).skills) ? (job as any).skills : []);
+  const explicitSkills: string[] = (() => {
+    const direct: any = (job as any)?.requiredSkills ?? (job as any)?.required_skills ?? (job as any)?.skills;
+    if (Array.isArray(direct)) {
+      return direct.map((s: any) => String(s).trim()).filter(Boolean);
+    }
+    if (typeof direct === 'string' && direct.trim() !== '') {
+      return direct.split(',').map((s: string) => s.trim()).filter(Boolean);
+    }
+    return [];
+  })();
+
+  const rawSkills = explicitSkills.length > 0 
+    ? explicitSkills 
+    : getCategoryDefaultSkills(job?.title, job?.industry);
+  // legacy fallback handled above 
+
+
 
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
@@ -334,14 +412,14 @@ export default function JobDetailPage() {
         <div className="bg-[#f4f4f4] rounded-[2rem] border border-[#e6e8ec] relative overflow-hidden">
           {/* Cover Image Banner if Present */}
           {effectiveCoverUrl && (
-            <div className="w-full h-48 sm:h-64 md:h-72 overflow-hidden relative border-b border-[#e6e8ec] bg-slate-900 group">
+            <div className="w-full min-w-full h-48 sm:h-64 md:h-72 overflow-hidden relative border-b border-[#e6e8ec] bg-slate-900 group rounded-t-[2rem]">
               <img 
                 src={effectiveCoverUrl} 
                 alt={job.title} 
                 onError={() => setCoverImageFailed(true)}
-                className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" 
+                className="w-full min-w-full h-full object-cover group-hover:scale-102 transition-transform duration-500 block" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
               <div className="absolute bottom-3.5 left-4 sm:left-6 flex items-center gap-2 flex-wrap">
                 <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-xs font-semibold uppercase tracking-wider">
                   {job.industry || 'Verified Opening'}
@@ -399,7 +477,7 @@ export default function JobDetailPage() {
                     <span>{job.location || job.city || 'Pan India'}</span>
                   </span>
                   <span>•</span>
-                  <span>{job.experienceYearsRequired || 1}+ Years Experience</span>
+                  <span>{formatExactExperience(job, 'header')}</span>
                   {job.industry && (
                     <>
                       <span>•</span>
@@ -606,7 +684,7 @@ export default function JobDetailPage() {
                     </div>
                     <div className="p-3 bg-[#fbfbfb] rounded-xl border border-[#e6e8ec]">
                       <p className="text-[10px] font-bold uppercase text-[#717784]">Experience</p>
-                      <p className="text-xl font-bold text-[#0a0a0a] mt-0.5 tabular-nums tracking-tight">{job.experienceYearsRequired || 1}+ yr</p>
+                      <p className="text-xl font-bold text-[#0a0a0a] mt-0.5 tabular-nums tracking-tight">{formatExactExperience(job, 'stat')}</p>
                     </div>
                   </div>
 
@@ -842,7 +920,7 @@ export default function JobDetailPage() {
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-[#e6e8ec]/60">
                   <span className="text-[#717784]">Experience Required:</span>
-                  <span className="font-semibold text-[#0a0a0a]">{job.experienceYearsRequired || 1}+ Years</span>
+                  <span className="font-semibold text-[#0a0a0a]">{formatExactExperience(job, 'detail')}</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-[#e6e8ec]/60">
                   <span className="text-[#717784]">Work Schedule:</span>

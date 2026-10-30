@@ -206,7 +206,10 @@ export const sendOtp = async (c: Context) => {
       });
     }
 
-    await sendEmail(email, `${otp} is your TrustHyre verification code`, getOtpTemplate(otp, email));
+    await sendEmail(email, `${otp} is your TrustHyre verification code`, getOtpTemplate(otp, email), {
+      category: 'auth',
+      text: `Your TrustHyre verification code is ${otp}. Valid for 15 minutes.`
+    });
     return c.json(ApiResponse.ok(`OTP sent to ${email}`, "sent"));
   } catch (err: any) {
     console.error("sendOtp error:", err);
@@ -274,7 +277,10 @@ export const forgotPassword = async (c: Context) => {
         where: { email },
         data: { reset_token: token, reset_token_expiry: new Date(Date.now() + 15 * 60 * 1000) }
       });
-      await sendEmail(email, `${token} is your TrustHyre password reset code`, getResetPasswordTemplate(token, email));
+      await sendEmail(email, `${token} is your TrustHyre password reset code`, getResetPasswordTemplate(token, email), {
+        category: 'auth',
+        text: `Your TrustHyre password reset code is ${token}. Valid for 1 hour.`
+      });
     }
     return c.json(ApiResponse.ok("Reset email sent successfully", "sent"));
   } catch (err: any) {
@@ -479,8 +485,8 @@ export const oauthSync = async (c: Context) => {
     const clientEmail = email ? String(email).trim().toLowerCase() : null;
 
     if (idToken) {
-      const fbKey = (c.env as any)?.FIREBASE_API_KEY || process.env.FIREBASE_API_KEY || "AIzaSyC4gevbnB8eDxk5nskKjf5Nepr_9tVxThE";
-      const projectId = (c.env as any)?.FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || "trust-hire-6edba";
+      const fbKey = (c.env as any)?.FIREBASE_API_KEY || process.env.FIREBASE_API_KEY;
+      const projectId = (c.env as any)?.FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
 
       const decoded = parseJwtPayload(idToken);
 
@@ -531,54 +537,15 @@ export const oauthSync = async (c: Context) => {
         }
       }
 
-      // 3. Tertiary fallback: Structural & Claim verification of Firebase / Google JWT
-      if (!verifiedEmail && decoded) {
-        try {
-          const iss = String(decoded.iss || '').trim();
-          let isGoogleIssuer = false;
-          try {
-            const issUrl = new URL(iss.startsWith('http://') || iss.startsWith('https://') ? iss : `https://${iss}`);
-            const hostname = issUrl.hostname.toLowerCase();
-            isGoogleIssuer = hostname === 'accounts.google.com' || hostname === 'securetoken.google.com';
-          } catch {
-            isGoogleIssuer = false;
-          }
-          // Allow up to 10 minutes clock skew on expiration
-          const notExpired = !decoded.exp || (decoded.exp * 1000 + 600000 > Date.now());
-          const hasValidSub = !!(decoded.sub || decoded.user_id);
-
-          if (isGoogleIssuer && notExpired && hasValidSub) {
-            const candidate = 
-              decoded.email ||
-              decoded.firebase?.identities?.['google.com']?.[0] ||
-              decoded.firebase?.identities?.email?.[0] ||
-              clientEmail;
-            if (candidate) {
-              verifiedEmail = String(candidate).toLowerCase().trim();
-              console.log(`[oauthSync] Verified email via decoded JWT claims: ${verifiedEmail}`);
-            }
-          }
-        } catch (e: any) {
-          console.warn(`[oauthSync] JWT claim verification error:`, e?.message || e);
-        }
-      }
-
-      // 4. Quaternary fallback: Unexpired token with valid sub accompanied by client email
-      if (!verifiedEmail && decoded && clientEmail) {
-        if (decoded.sub && (!decoded.exp || decoded.exp * 1000 + 600000 > Date.now())) {
-          verifiedEmail = clientEmail;
-          console.log(`[oauthSync] Verified email via token sub presence & client payload: ${verifiedEmail}`);
-        }
+      // 3. Reject unverified tokens if Google/Firebase cryptographic validation failed
+      if (!verifiedEmail) {
+        return c.json(ApiResponse.error("Unauthorized: Invalid or untrusted OAuth ID token"), 401 as any);
       }
     }
 
     // Security Gate: Reject unauthenticated/unverified claims
     if (!verifiedEmail) {
-      if (process.env.ALLOW_INSECURE_DEV_OAUTH === 'true' && clientEmail) {
-        verifiedEmail = clientEmail;
-      } else {
-        return c.json(ApiResponse.error("Unauthorized: Valid OAuth ID token required"), 401 as any);
-      }
+      return c.json(ApiResponse.error("Unauthorized: Valid OAuth ID token required"), 401 as any);
     }
 
     const targetEmail = verifiedEmail as string;

@@ -182,10 +182,8 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
       toast.success("Test Job Notification Sent!", {
         description: "Check your notification bell 🔔 or push notification to confirm."
       });
-      // Invalidate queries so bell badge and notification center update instantly
+      // Invalidate query to pull the real server-persisted notification with real UUID
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unreadCount'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
     },
     onError: (err: any) => {
       toast.error("Test notification failed", {

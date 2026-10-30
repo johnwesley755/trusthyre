@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notificationService, type AppNotification } from '../../../../services/notification.service';
+import { useAppNotifications } from '../../../../hooks/useAppNotifications';
+import { type AppNotification } from '../../../../services/notification.service';
 import { 
     Bell, 
     BellOff, 
@@ -26,22 +26,20 @@ import { fcmService } from '../../../../services/fcm.service';
 
 export const NotificationCenter = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const queryClient = useQueryClient();
     const navigate = useNavigate();
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Notification query: loaded on mount or explicit user actions (no continuous polling)
-    const { data: notifications = [], refetch, isRefetching } = useQuery<AppNotification[]>({
-        queryKey: ['notifications'],
-        queryFn: async () => {
-            const data = await notificationService.getNotifications();
-            return data;
-        },
-        staleTime: 60 * 1000,
-        refetchOnWindowFocus: false
-    });
-
-    const unreadCount = notifications.filter(n => !n.isRead && !(n as any).is_read).length;
+    // Centralized notification hook with 5-min stale cache and direct cache patching
+    const {
+        notifications,
+        unreadCount,
+        isRefetching,
+        refetch,
+        markRead,
+        markAllRead,
+        deleteNotification,
+        deleteAll
+    } = useAppNotifications();
 
     // Close on outside click
     useEffect(() => {
@@ -58,46 +56,9 @@ export const NotificationCenter = () => {
         };
     }, [isOpen]);
 
-    const deleteMutation = useMutation({
-        mutationFn: (id: string) => notificationService.deleteNotification(id),
-        onSuccess: (_, id) => {
-            queryClient.setQueryData<AppNotification[]>(['notifications'], (old = []) => old.filter(n => n.id !== id));
-            queryClient.setQueryData<number>(['unreadCount'], (c = 0) => Math.max(0, (c || 0) - 1));
-        }
-    });
-
-    const deleteAllMutation = useMutation({
-        mutationFn: () => notificationService.deleteAllNotifications(),
-        onSuccess: () => {
-            queryClient.setQueryData<AppNotification[]>(['notifications'], []);
-            queryClient.setQueryData<number>(['unreadCount'], 0);
-            setIsOpen(false);
-        }
-    });
-
-    const markAllReadMutation = useMutation({
-        mutationFn: () => notificationService.markAllAsRead(),
-        onSuccess: () => {
-            queryClient.setQueryData<AppNotification[]>(['notifications'], (old = []) =>
-                old.map(n => ({ ...n, isRead: true, is_read: true }))
-            );
-            queryClient.setQueryData<number>(['unreadCount'], 0);
-        }
-    });
-
-    const markReadMutation = useMutation({
-        mutationFn: (id: string) => notificationService.markAsRead(id),
-        onSuccess: (_, id) => {
-            queryClient.setQueryData<AppNotification[]>(['notifications'], (old = []) =>
-                old.map(n => n.id === id ? { ...n, isRead: true, is_read: true } : n)
-            );
-            queryClient.setQueryData<number>(['unreadCount'], (c = 0) => Math.max(0, (c || 0) - 1));
-        }
-    });
-
     const handleNotificationClick = (n: AppNotification) => {
         setIsOpen(false);
-        markReadMutation.mutate(n.id);
+        markRead(n.id);
 
         let targetLink = n.link;
         if (targetLink) {
@@ -231,7 +192,7 @@ export const NotificationCenter = () => {
 
                                 {unreadCount > 0 && (
                                     <button 
-                                        onClick={() => markAllReadMutation.mutate()}
+                                        onClick={() => markAllRead()}
                                         className="text-[11px] font-bold text-slate-600 hover:text-[#0f2f63] flex items-center gap-1 px-1.5 py-1 rounded cursor-pointer transition-colors"
                                         title="Mark all as read"
                                     >
@@ -248,7 +209,7 @@ export const NotificationCenter = () => {
                                 </button>
                                 {notifications.length > 0 && (
                                     <button 
-                                        onClick={() => deleteAllMutation.mutate()}
+                                        onClick={() => deleteAll()}
                                         className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
                                         title="Clear All"
                                     >
@@ -303,7 +264,7 @@ export const NotificationCenter = () => {
                                                     <button 
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            deleteMutation.mutate(n.id);
+                                                            deleteNotification(n.id);
                                                         }}
                                                         className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-rose-600 text-slate-400 transition-opacity"
                                                         title="Dismiss"

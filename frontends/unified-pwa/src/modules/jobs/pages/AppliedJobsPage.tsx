@@ -67,9 +67,7 @@ export default function AppliedJobsPage() {
       queryClient.setQueryData<any[]>(queryKeys.jobs.myApplications, (old = []) => 
         (old || []).map((app: any) => app.id === variables.id ? { ...app, status: variables.status } : app)
       );
-      queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
-      queryClient.invalidateQueries({ queryKey: ['recommendedJobs'] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.jobs.myApplications });
+
       toast.success(`Application updated: ${variables.status}`);
     },
     onError: (err: any) => {

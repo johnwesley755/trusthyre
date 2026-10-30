@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { logger } from 'hono/logger';
 
 // Fix: Prevent "Do not know how to serialize a BigInt" in JSON.stringify
 (BigInt.prototype as any).toJSON = function () {
