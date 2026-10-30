@@ -69,43 +69,43 @@ const WORKFORCE_TRACKS = [
     index: "01",
     name: "Commercial Culinary & Hospitality",
     description: "Executive chefs, line cooks, kitchen supervisors, and banquet crews for restaurants, hotels, and cloud kitchens.",
-    href: "/sign-up?role=employer",
+    href: "/find-workers",
   },
   {
     index: "02",
     name: "Electrical Systems & Industrial Wiring",
     description: "Licensed electricians, panel assemblers, high-voltage technicians, and maintenance wiremen.",
-    href: "/sign-up?role=employer",
+    href: "/find-workers",
   },
   {
     index: "03",
     name: "Warehouse Logistics, Fulfillment & Fleet",
     description: "Certified forklift drivers, inventory controllers, packaging staff, and route delivery personnel.",
-    href: "/sign-up?role=employer",
+    href: "/find-workers",
   },
   {
     index: "04",
     name: "Commercial Plumbing & Pipefitting",
     description: "Licensed plumbers, drainage specialists, pipeline welders, and water infrastructure technicians.",
-    href: "/sign-up?role=employer",
+    href: "/find-workers",
   },
   {
     index: "05",
     name: "Carpentry, Masonry & Construction",
     description: "Skilled carpenters, structural masons, drywall finish crews, and civil infrastructure specialists.",
-    href: "/sign-up?role=employer",
+    href: "/find-workers",
   },
   {
     index: "06",
     name: "Facility Security & Site Protection",
     description: "Licensed security personnel, access controllers, perimeter monitors, and verified safety officers.",
-    href: "/sign-up?role=employer",
+    href: "/find-workers",
   },
   {
     index: "07",
     name: "Commercial Cleaning & Sanitation",
     description: "Industrial deep-cleaning crews, food-grade facility sanitation, and corporate housekeeping.",
-    href: "/sign-up?role=employer",
+    href: "/find-workers",
   },
 ];
 
@@ -683,10 +683,10 @@ export default function LandingPage() {
                         {t("Find Candidates", "Find Candidates")}
                       </Link>
                       <Link
-                        to="/dashboard"
+                        to="/find-workers"
                         className="px-4 py-2 rounded-full text-xs font-medium bg-white text-[#0f2f63] hover:bg-[#5790e6] hover:text-white transition-colors"
                       >
-                        {t("Dashboard", "Dashboard")}
+                        {t("Find Workers", "Find Workers")}
                       </Link>
                     </>
                   ) : (
@@ -698,7 +698,7 @@ export default function LandingPage() {
                         {t("Find Jobs", "Find Jobs")}
                       </Link>
                       <Link
-                        to="/applied-jobs"
+                        to="/search"
                         className="px-4 py-2 rounded-full text-xs font-medium bg-white text-[#0f2f63] hover:bg-[#5790e6] hover:text-white transition-colors"
                       >
                         {t("My Jobs", "My Jobs")}
@@ -897,7 +897,7 @@ export default function LandingPage() {
                       {t(HERO_COLLECTIONS[activeHeroCollection].title, HERO_COLLECTIONS[activeHeroCollection].title)}
                     </span>
                     <Link 
-                      to="/sign-up?role=employer" 
+                      to="/find-workers" 
                       className="text-[0.65rem] underline text-[#5790e6] hover:text-white mt-1 transition-colors"
                     >
                       {t(HERO_COLLECTIONS[activeHeroCollection].cta, HERO_COLLECTIONS[activeHeroCollection].cta)} →

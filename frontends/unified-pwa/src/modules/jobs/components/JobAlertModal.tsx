@@ -182,10 +182,20 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
       toast.success("Test Job Notification Sent!", {
         description: "Check your notification bell 🔔 or push notification to confirm."
       });
-      // Invalidate queries so bell badge and notification center update instantly
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unreadCount'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+      // Direct cache patch - zero network GET
+      const mockJob = data?.mockJob;
+      const testNotif = {
+        id: `diag-job-${Date.now()}`,
+        title: `🎯 New Job Match: ${mockJob?.title || 'Verified Job'}`,
+        message: `${mockJob?.company || 'Verified Employer'} has an opening matching your criteria in ${mockJob?.location || 'your area'}.`,
+        type: 'JOB_MATCH_ALERT',
+        link: mockJob?.id ? `/job/${mockJob.id}` : '/search',
+        isRead: false,
+        is_read: false,
+        createdAt: new Date().toISOString()
+      };
+      queryClient.setQueryData<any[]>(['notifications'], (old = []) => [testNotif, ...old]);
+      queryClient.setQueryData<number>(['unreadCount'], (c = 0) => (c || 0) + 1);
     },
     onError: (err: any) => {
       toast.error("Test notification failed", {

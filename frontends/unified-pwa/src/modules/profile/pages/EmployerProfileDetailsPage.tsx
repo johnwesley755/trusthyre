@@ -145,7 +145,6 @@ export default function EmployerProfileDetailsPage() {
             profileImageUrl: compressedDataUrl,
             profile_image_url: compressedDataUrl
           }));
-          queryClient.invalidateQueries({ queryKey: queryKeys.employer.profile });
 
           setLogoFeedback({ type: 'success', message: "Company logo updated successfully!" });
           setTimeout(() => setLogoFeedback(null), 4000);

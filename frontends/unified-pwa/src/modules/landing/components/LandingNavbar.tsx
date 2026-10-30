@@ -85,11 +85,11 @@ export function LandingNavbar() {
                   <span>Find Candidates</span>
                 </Link>
                 <Link
-                  to="/dashboard"
+                  to="/find-workers"
                   className="bg-[#0066FF] hover:bg-[#0050CB] text-white font-extrabold px-5 py-2.5 rounded-xl uppercase text-xs tracking-wider shadow-md shadow-[#0066FF]/20 active:scale-95 transition-all flex items-center gap-2"
                 >
                   <LayoutDashboard className="w-4 h-4" />
-                  <span>Employer Dashboard</span>
+                  <span>Find Workers</span>
                 </Link>
               </div>
             ) : (
@@ -102,11 +102,11 @@ export function LandingNavbar() {
                   <span>Browse Jobs</span>
                 </Link>
                 <Link
-                  to="/applied-jobs"
+                  to="/search"
                   className="bg-[#0066FF] hover:bg-[#0050CB] text-white font-extrabold px-5 py-2.5 rounded-xl uppercase text-xs tracking-wider shadow-md shadow-[#0066FF]/20 active:scale-95 transition-all flex items-center gap-2"
                 >
                   <Briefcase className="w-4 h-4" />
-                  <span>My Applied Jobs</span>
+                  <span>My Jobs</span>
                 </Link>
               </div>
             )

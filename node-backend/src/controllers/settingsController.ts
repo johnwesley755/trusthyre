@@ -33,11 +33,28 @@ export const updateSettings = async (c: Context) => {
     const userId = c.get('user')?.sub;
     if (!userId) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
 
-    const data = (await c.req.json());
-    const emailNotifications = data.email_notifications ?? data.emailNotifications ?? true;
-    const pushNotifications = data.push_notifications ?? data.pushNotifications ?? true;
-    const marketingEmails = data.marketing_emails ?? data.marketingEmails ?? false;
-    const language = data.language || 'en';
+    const data = (await c.req.json().catch(() => ({})));
+    
+    // Fetch existing settings first to ensure partial updates do not overwrite other preferences
+    const existing = await prisma.user_settings.findUnique({ where: { user_id: userId } });
+
+    const emailNotifications = 
+      data.email_notifications !== undefined ? Boolean(data.email_notifications) :
+      data.emailNotifications !== undefined ? Boolean(data.emailNotifications) :
+      (existing ? existing.email_notifications : true);
+
+    const pushNotifications = 
+      data.push_notifications !== undefined ? Boolean(data.push_notifications) :
+      data.pushNotifications !== undefined ? Boolean(data.pushNotifications) :
+      (existing ? existing.push_notifications : true);
+
+    const marketingEmails = 
+      data.marketing_emails !== undefined ? Boolean(data.marketing_emails) :
+      data.marketingEmails !== undefined ? Boolean(data.marketingEmails) :
+      (existing ? existing.marketing_emails : false);
+
+    const language = data.language || existing?.language || 'en';
+    const theme = data.theme || existing?.theme || 'light';
 
     const settings = await prisma.user_settings.upsert({
       where: { user_id: userId },
@@ -46,6 +63,7 @@ export const updateSettings = async (c: Context) => {
         push_notifications: pushNotifications,
         marketing_emails: marketingEmails,
         language,
+        theme,
         updated_at: new Date()
       },
       create: {
@@ -54,11 +72,14 @@ export const updateSettings = async (c: Context) => {
         push_notifications: pushNotifications,
         marketing_emails: marketingEmails,
         language,
+        theme,
         updated_at: new Date()
       }
     });
+
     return c.json(ApiResponse.ok("Settings updated", settings));
   } catch (err: any) {
+    console.error('❌ [SettingsController] updateSettings error:', err.message);
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
 };

@@ -479,8 +479,8 @@ export const oauthSync = async (c: Context) => {
     const clientEmail = email ? String(email).trim().toLowerCase() : null;
 
     if (idToken) {
-      const fbKey = (c.env as any)?.FIREBASE_API_KEY || process.env.FIREBASE_API_KEY || "AIzaSyC4gevbnB8eDxk5nskKjf5Nepr_9tVxThE";
-      const projectId = (c.env as any)?.FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || "trust-hire-6edba";
+      const fbKey = (c.env as any)?.FIREBASE_API_KEY || process.env.FIREBASE_API_KEY;
+      const projectId = (c.env as any)?.FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
 
       const decoded = parseJwtPayload(idToken);
 

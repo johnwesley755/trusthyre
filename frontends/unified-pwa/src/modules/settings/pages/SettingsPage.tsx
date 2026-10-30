@@ -208,7 +208,7 @@ export const SettingsPage: React.FC = () => {
 
     if (key === 'push_notifications' || key === 'pushNotifications') {
       if (nextValue) {
-        const result = await fcmService.requestPushPermissionAndRegister(user?.id);
+        const result = await fcmService.requestPushPermissionAndRegister(user?.id, true);
         if (result.status === 'denied') {
           showFeedback('error', 'Push permission was denied in your browser settings. Please enable notifications in your browser.');
           return;
@@ -230,7 +230,7 @@ export const SettingsPage: React.FC = () => {
   const handleSendTestPush = async () => {
     try {
       setTestingPush(true);
-      const perm = await fcmService.requestPushPermissionAndRegister(user?.id);
+      const perm = await fcmService.requestPushPermissionAndRegister(user?.id, true);
       if (perm.status === 'denied') {
         showFeedback('error', 'Push permission is blocked in your browser settings. Please allow notifications to receive alerts.');
         return;

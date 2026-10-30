@@ -1,4 +1,33 @@
-export const sendEmail = async (to: string, subject: string, html: string) => {
+export interface SendEmailOptions {
+  text?: string;
+  replyTo?: { email: string; name?: string };
+  headers?: Record<string, string>;
+  category?: 'transactional' | 'alert' | 'auth';
+  unsubscribeUrl?: string;
+}
+
+function htmlToPlainText(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s{2,}/g, '\n\n')
+    .trim();
+}
+
+export const sendEmail = async (
+  to: string,
+  subject: string,
+  html: string,
+  options?: SendEmailOptions
+) => {
   try {
     const apiKey = (process.env.BREVO_API_KEY || '').trim();
     if (!apiKey) {
@@ -13,6 +42,19 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 
     const senderEmail = (process.env.BREVO_SENDER_EMAIL || 'noreply@trusthyre.com').trim();
     const senderName = (process.env.BREVO_SENDER_NAME || 'TrustHyre').trim();
+    const frontendUrl = (process.env.FRONTEND_URL || 'https://trusthyre.com').replace(/\/$/, '');
+    const unsubscribeUrl = options?.unsubscribeUrl || `${frontendUrl}/notifications`;
+
+    // Plain text fallback (MIME multipart/alternative compliance for anti-spam)
+    const textContent = (options?.text || htmlToPlainText(html)).trim();
+
+    // Compliance & Anti-Spam Headers (RFC 8058 One-Click Unsubscribe)
+    const headers: Record<string, string> = {
+      'List-Unsubscribe': `<${unsubscribeUrl}>, <mailto:support@trusthyre.com?subject=unsubscribe>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      'X-Entity-Ref-ID': `trusthyre-${Date.now()}`,
+      ...(options?.headers || {})
+    };
 
     // Extract OTP if present in subject for console visibility
     const otpMatch = subject.match(/\b\d{6}\b/);
@@ -42,8 +84,14 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
           email: senderEmail
         },
         to: [{ email: to }],
+        replyTo: options?.replyTo || {
+          email: (process.env.SUPPORT_EMAIL || 'support@trusthyre.com').trim(),
+          name: 'TrustHyre Support'
+        },
         subject: subject,
-        htmlContent: html
+        htmlContent: html,
+        textContent: textContent,
+        headers: headers
       })
     });
 

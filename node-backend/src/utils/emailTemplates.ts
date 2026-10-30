@@ -69,7 +69,7 @@ export const getOtpTemplate = (otp: string, email?: string) => {
                                                     <tr>
                                                         <td style="vertical-align: middle;">
                                                             <!-- Official High-Resolution Hosted Logo Asset -->
-                                                            <img src="https://trust-hire-one.vercel.app/logo.png" alt="TrustHyre" height="38" style="height: 38px; width: auto; max-width: 170px; display: block; border: 0; outline: none; object-fit: contain;" />
+                                                            <img src="https://trusthyre.com/logo.png" onerror="this.onerror=null;this.src='https://trust-hire-one.vercel.app/logo.png';" alt="TrustHyre" height="36" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -141,7 +141,7 @@ export const getOtpTemplate = (otp: string, email?: string) => {
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                     <tr>
                                         <td class="footer-stack" align="left" style="color: #94A3B8; font-size: 11px; font-weight: 500; font-family: ${EMAIL_FONT_STACK};">
-                                            &copy; ${new Date().getFullYear()} TrustHyre Inc. Verified Blue-Collar Staffing Platform.
+                                            &copy; ${new Date().getFullYear()} TrustHyre Technologies Pvt. Ltd. &bull; <a href="https://trusthyre.com/notifications" target="_blank" style="color: #0066FF; text-decoration: underline;">Preferences</a> &bull; <a href="https://trusthyre.com/privacy" target="_blank" style="color: #0066FF; text-decoration: underline;">Privacy</a>
                                         </td>
                                         <td class="footer-stack" align="right" style="color: #94A3B8; font-size: 11px; font-weight: 600; font-family: ${EMAIL_FONT_STACK};">
                                             🛡️ 256-Bit SSL Encrypted
@@ -233,7 +233,7 @@ export const getResetPasswordTemplate = (token: string, email?: string) => {
                                                     <tr>
                                                         <td style="vertical-align: middle;">
                                                             <!-- Official High-Resolution Hosted Logo Asset -->
-                                                            <img src="https://trust-hire-one.vercel.app/logo.png" alt="TrustHyre" height="38" style="height: 38px; width: auto; max-width: 170px; display: block; border: 0; outline: none; object-fit: contain;" />
+                                                            <img src="https://trusthyre.com/logo.png" onerror="this.onerror=null;this.src='https://trust-hire-one.vercel.app/logo.png';" alt="TrustHyre" height="36" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -313,7 +313,7 @@ export const getResetPasswordTemplate = (token: string, email?: string) => {
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                                     <tr>
                                         <td class="footer-stack" align="left" style="color: #94A3B8; font-size: 11px; font-weight: 500; font-family: ${EMAIL_FONT_STACK};">
-                                            &copy; ${new Date().getFullYear()} TrustHyre Inc. Verified Blue-Collar Staffing Platform.
+                                            &copy; ${new Date().getFullYear()} TrustHyre Technologies Pvt. Ltd. &bull; <a href="https://trusthyre.com/notifications" target="_blank" style="color: #0066FF; text-decoration: underline;">Preferences</a> &bull; <a href="https://trusthyre.com/privacy" target="_blank" style="color: #0066FF; text-decoration: underline;">Privacy</a>
                                         </td>
                                         <td class="footer-stack" align="right" style="color: #94A3B8; font-size: 11px; font-weight: 600; font-family: ${EMAIL_FONT_STACK};">
                                             🛡️ 256-Bit SSL Encrypted

@@ -14,13 +14,43 @@ export const NotificationListener = () => {
   useEffect(() => {
     if (!user) return;
 
+    let promptTimer: ReturnType<typeof setTimeout> | null = null;
+
     if (fcmService.isPushSupported()) {
       const currentPerm = Notification.permission;
-      console.log(`\n🎧 [NotificationListener] Mounting listener for user: ${user.id} (${user.email || 'user'}). Browser permission: ${currentPerm}`);
       
       if (currentPerm === 'granted') {
         // Token refresh and keep alive with active user ID
-        fcmService.requestPushPermissionAndRegister(user.id).catch(() => {});
+        fcmService.requestPushPermissionAndRegister(user.id, true).catch(() => {});
+      } else if (currentPerm === 'default') {
+        // Show non-intrusive prompt once per session so user can opt-in to instant alerts
+        const hasPrompted = sessionStorage.getItem('push_prompt_dismissed');
+        if (!hasPrompted) {
+          promptTimer = setTimeout(() => {
+            toast('Enable Push Notifications', {
+              description: 'Stay updated on new verified job matches, shifts, and application responses.',
+              icon: <Bell className="w-5 h-5 text-[#0f2f63] animate-bounce" />,
+              duration: 10000,
+              className: "bg-white text-slate-900 rounded-2xl border border-slate-200 shadow-xl p-4 font-sans",
+              action: {
+                label: 'Enable Alerts',
+                onClick: async () => {
+                  sessionStorage.setItem('push_prompt_dismissed', 'true');
+                  const res = await fcmService.requestPushPermissionAndRegister(user.id, true);
+                  if (res.status === 'granted') {
+                    toast.success('Push notifications successfully activated!');
+                  }
+                }
+              },
+              cancel: {
+                label: 'Later',
+                onClick: () => {
+                  sessionStorage.setItem('push_prompt_dismissed', 'true');
+                }
+              }
+            });
+          }, 3500);
+        }
       }
     }
 
@@ -28,15 +58,30 @@ export const NotificationListener = () => {
     let cleanupListener: (() => void) | null = null;
 
     fcmService.listenToForegroundMessages((payload) => {
-      // Invalidate TanStack query cache immediately to refresh bell badge count in real time
-      console.log('🔄 [FCM-CLIENT:STEP-9:CACHE-INVALIDATION] Invalidating notification queries in TanStack cache...');
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
-
       const title = payload.notification?.title || payload.data?.title || 'TrustHyre Notification';
       const message = payload.notification?.body || payload.data?.body || payload.data?.message || 'You have a new update.';
       const link = payload.data?.url || payload.data?.link || '/notifications';
       const type = (payload.data?.type || 'SYSTEM').toUpperCase();
+      const notificationId = payload.data?.notificationId || payload.data?.id || `fcm-${Date.now()}`;
+
+      // Patch TanStack query cache directly - ZERO GET calls to backend
+      const newNotification = {
+        id: notificationId,
+        userId: user?.id || '',
+        title,
+        message,
+        type,
+        link,
+        isRead: false,
+        is_read: false,
+        createdAt: new Date().toISOString()
+      };
+
+      queryClient.setQueryData<any[]>(['notifications'], (old = []) => {
+        const exists = old.some((n: any) => n.id === newNotification.id);
+        return exists ? old : [newNotification, ...old];
+      });
+      queryClient.setQueryData<number>(['unreadCount'], (c = 0) => (c || 0) + 1);
 
       // Gentle vibration feedback on mobile devices
       if ('vibrate' in navigator) {
@@ -65,9 +110,12 @@ export const NotificationListener = () => {
                 targetLink = '/jobs';
               }
             }
+            // Mark as read in cache directly before navigating
+            queryClient.setQueryData<any[]>(['notifications'], (old = []) =>
+              old.map((n: any) => n.id === notificationId ? { ...n, isRead: true, is_read: true } : n)
+            );
+            queryClient.setQueryData<number>(['unreadCount'], (c = 0) => Math.max(0, (c || 0) - 1));
             navigate(targetLink);
-            queryClient.invalidateQueries({ queryKey: ['notifications'] });
-            queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
           }
         }
       });
@@ -76,6 +124,9 @@ export const NotificationListener = () => {
     });
 
     return () => {
+      if (promptTimer) {
+        clearTimeout(promptTimer);
+      }
       if (cleanupListener) {
         cleanupListener();
       }

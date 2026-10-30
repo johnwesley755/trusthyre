@@ -127,7 +127,7 @@ export default function WorkerProfileDetailsPage() {
             profile_image_url: compressedDataUrl,
             profilePhoto: compressedDataUrl
           }));
-          queryClient.invalidateQueries({ queryKey: queryKeys.workers.detail('me') });
+          queryClient.setQueryData(queryKeys.workers.me, (old: any) => ({ ...(old || {}), profileImageUrl: compressedDataUrl, profilePhoto: compressedDataUrl }));
 
           setPhotoFeedback("Profile photo updated successfully!");
           setTimeout(() => setPhotoFeedback(null), 4000);

@@ -290,8 +290,7 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
         result.experience_years = Number(formData.experienceYears) || 0;
         return result;
       });
-      queryClient.invalidateQueries({ queryKey: queryKeys.workers.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.workers.detail('me') });
+      queryClient.setQueryData(queryKeys.workers.me, result);
       onClose();
     },
     onError: (err: any) => {
