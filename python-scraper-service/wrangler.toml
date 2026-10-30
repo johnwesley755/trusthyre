@@ -31,3 +31,4 @@ producers = [
 consumers = [
   { queue = "discovery-scans-queue", max_batch_size = 1, max_batch_timeout = 5, max_retries = 2 }
 ]
+
