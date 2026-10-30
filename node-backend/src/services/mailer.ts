@@ -6,19 +6,25 @@ export interface SendEmailOptions {
   unsubscribeUrl?: string;
 }
 
+const ENTITY_MAP: Record<string, string> = {
+  '&nbsp;': ' ',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&apos;': "'",
+  '&amp;': '&'
+};
+
 function htmlToPlainText(html: string): string {
-  if (!html) return '';
+  if (!html || typeof html !== 'string') return '';
   return html
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, '')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\s{2,}/g, '\n\n')
+    .replace(/&(?:nbsp|lt|gt|quot|#39|apos|amp);/g, (match) => ENTITY_MAP[match] || match)
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n/g, '\n\n')
     .trim();
 }
 
