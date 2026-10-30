@@ -1,0 +1,33 @@
+name = "trusthire-python-scraper"
+main = "src/worker.py"
+compatibility_date = "2026-10-25"
+compatibility_flags = ["python_workers"]
+
+[previews]
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[vars]
+ENVIRONMENT = "production"
+LOG_LEVEL = "INFO"
+MAX_CONCURRENT_REQUESTS_PER_SOURCE = "3"
+REQUEST_TIMEOUT_SECONDS = "10"
+CRAWL_MAX_DEPTH = "2"
+DEFAULT_SCAN_LIMIT = "25"
+DEFAULT_TARGET_CITY = "Chennai"
+HOST = "0.0.0.0"
+PORT = "8000"
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "f609b35608e84621a672b58500ec31ab"
+
+[queues]
+producers = [
+  { binding = "DISCOVERY_QUEUE", queue = "discovery-scans-queue" }
+]
+consumers = [
+  { queue = "discovery-scans-queue", max_batch_size = 1, max_batch_timeout = 5, max_retries = 2 }
+]
