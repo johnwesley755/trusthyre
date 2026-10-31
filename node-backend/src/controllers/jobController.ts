@@ -105,7 +105,6 @@ export const createJob = async (c: Context) => {
               ? Number(data.experience_years_required)
               : (data.experience !== undefined && data.experience !== null && data.experience !== '' ? Number(data.experience) : 0)),
         cover_image_url: data.coverImageUrl || data.cover_image_url || null,
-        required_skills: requiredSkillsStr,
         status: 'OPEN',
         expires_at: expiresAt,
         created_at: new Date(),
@@ -485,7 +484,6 @@ export const updateJob = async (c: Context) => {
     if (data.requiredSkills !== undefined || data.required_skills !== undefined || data.skills !== undefined) {
       const rawSkills = data.requiredSkills ?? data.required_skills ?? data.skills;
       const skillsStr = Array.isArray(rawSkills) ? rawSkills.join(', ') : (typeof rawSkills === 'string' ? rawSkills : '');
-      updatePayload.required_skills = skillsStr;
     }
     if (data.status !== undefined) updatePayload.status = data.status;
     if (data.coverImageUrl !== undefined || data.cover_image_url !== undefined) {

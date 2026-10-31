@@ -116,7 +116,6 @@ model jobs {
   updated_at                DateTime?             @default(now()) @db.Timestamp(6)
   employer_name             String?               @db.VarChar(255)
   cover_image_url           String?
-  required_skills           String?
   expires_at                DateTime?             @db.Timestamp(6)
   is_external               Boolean?              @default(false)
   source_name               String?               @db.VarChar(100)
