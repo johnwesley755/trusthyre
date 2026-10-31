@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import * as adminController from '../controllers/adminController';
+import * as diagnosticController from '../controllers/diagnosticController';
 import { authenticateJWT, requireAdmin } from '../middlewares/auth';
 
 const router = new Hono();
@@ -8,6 +9,7 @@ const router = new Hono();
 router.use('*', authenticateJWT);
 router.use('*', requireAdmin);
 
+router.get('/diagnostics/brevo', diagnosticController.getBrevoDiagnostics);
 router.get('/stats', adminController.getAdminStats);
 router.get('/analytics/visitors', adminController.getVisitorAnalytics);
 router.get('/analytics', adminController.getVisitorAnalytics);
