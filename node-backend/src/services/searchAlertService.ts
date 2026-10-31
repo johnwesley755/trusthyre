@@ -503,7 +503,7 @@ export class SearchAlertService {
         title: `Candidate Match: ${mockName}`,
         message: `A verified specialist with skills in "${mockSkills}" in ${mockCity} is now available for direct hire. Tap to view profile.`,
         type: 'CANDIDATE_MATCH_ALERT',
-        link: `/search?q=${encodeURIComponent(mockCategory)}&city=${encodeURIComponent(mockCity)}`,
+        link: `/find-workers?q=${encodeURIComponent(mockCategory)}&city=${encodeURIComponent(mockCity)}`,
         data: {
           workerId: mockWorkerId,
           city: mockCity,

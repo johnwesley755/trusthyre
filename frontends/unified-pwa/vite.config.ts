@@ -85,7 +85,7 @@ export default defineConfig({
       skipWaiting: true,
       maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       navigateFallback: '/index.html',
-      navigateFallbackDenylist: [/^\/api/],
+      navigateFallbackDenylist: [/^\/api/, /\.xml$/, /^\/sitemap/, /^\/robots\.txt/, /^\/rss/, /^\/feed/],
       runtimeCaching: [
         {
           urlPattern: /\.(?:png|jpg|jpeg|svg|webp|ico)$/i,

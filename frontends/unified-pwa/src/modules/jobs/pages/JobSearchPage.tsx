@@ -432,28 +432,55 @@ export default function JobSearchPage() {
           {/* CENTER COLUMN: Feed (Full width on mobile, 6 cols on desktop) */}
           <div className="col-span-1 lg:col-span-6 space-y-5">
             
-            {/* Top Promo Banner: Upload Resume */}
-            <div className="bg-[#f4f4f4] rounded-[1.5rem] p-4 sm:p-5 border border-[#e6e8ec] flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-white text-[#0f2f63] flex items-center justify-center shrink-0 border border-[#e6e8ec] shadow-2xs">
-                  <UploadCloud className="w-5 h-5" />
+            {/* Contextual Top Banner: Tailored for Employer vs Jobseeker */}
+            {user?.role === 'EMPLOYER' ? (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-[1.5rem] p-4 sm:p-5 flex items-center justify-between gap-4 shadow-2xs">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-white text-[#0f2f63] flex items-center justify-center shrink-0 border border-blue-200 shadow-2xs">
+                    <Briefcase className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#0f2f63] text-white uppercase tracking-wider">Employer Mode</span>
+                      <h4 className="text-sm font-bold text-[#0a0a0a]">
+                        Looking to hire verified trade specialists?
+                      </h4>
+                    </div>
+                    <p className="text-xs text-[#475467] font-medium truncate mt-0.5">
+                      Browse and contact ready-to-work electricians, plumbers, welders and more.
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h4 className="text-sm font-bold text-[#0a0a0a]">
-                    Upload your resume
-                  </h4>
-                  <p className="text-xs text-[#717784] font-medium truncate">
-                    AI-powered smart matching with verified local employers.
-                  </p>
-                </div>
+                <Link
+                  to="/find-workers"
+                  className="px-4 py-2 bg-[#0f2f63] hover:bg-[#1a4487] text-white rounded-full font-semibold text-xs shrink-0 transition-all shadow-xs cursor-pointer active:scale-95"
+                >
+                  Find Workers
+                </Link>
               </div>
-              <Link
-                to="/profile"
-                className="px-4 py-2 bg-[#0f2f63] hover:bg-[#1a4487] text-white rounded-full font-medium text-xs shrink-0 transition-all shadow-xs cursor-pointer active:scale-95 uppercase"
-              >
-                Upload
-              </Link>
-            </div>
+            ) : (
+              <div className="bg-[#f4f4f4] rounded-[1.5rem] p-4 sm:p-5 border border-[#e6e8ec] flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-white text-[#0f2f63] flex items-center justify-center shrink-0 border border-[#e6e8ec] shadow-2xs">
+                    <UploadCloud className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-[#0a0a0a]">
+                      Upload your resume
+                    </h4>
+                    <p className="text-xs text-[#717784] font-medium truncate">
+                      AI-powered smart matching with verified local employers.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to="/profile"
+                  className="px-4 py-2 bg-[#0f2f63] hover:bg-[#1a4487] text-white rounded-full font-medium text-xs shrink-0 transition-all shadow-xs cursor-pointer active:scale-95 uppercase"
+                >
+                  Upload
+                </Link>
+              </div>
+            )}
 
             {/* Results Count & Sort Row */}
             <div className="flex items-center justify-between px-1 flex-wrap gap-2.5">
