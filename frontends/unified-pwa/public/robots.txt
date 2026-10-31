@@ -4,6 +4,7 @@ Allow: /
 Allow: /blog
 Allow: /blog/*
 Allow: /job/*
+Allow: /jobs/*
 Allow: /search
 Allow: /find-workers
 Allow: /sitemap.xml

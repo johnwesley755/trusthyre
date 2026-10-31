@@ -1,7 +1,7 @@
 /**
  * Build-time static sitemap generator for TrustHyre
  * Runs during prebuild to guarantee public/sitemap.xml is always up to date
- * with all core landing pages, blog categories, and published blog articles.
+ * with all core landing pages, blog categories, published articles, and active job postings.
  */
 import fs from 'fs';
 import path from 'path';
@@ -60,14 +60,27 @@ const KNOWN_PUBLISHED_ARTICLES = [
   },
 ];
 
+// Fallback seed jobs if build is offline
+const KNOWN_ACTIVE_JOBS = [
+  {
+    id: 'b30f01f0-9a0e-4c14-ae67-c061005cf80c',
+    title: 'Hair Cutting Executive',
+    lastmod: today,
+    priority: '0.8',
+    image: null,
+  },
+];
+
 async function generateSitemap() {
   let articles = [...KNOWN_PUBLISHED_ARTICLES];
+  let jobs = [...KNOWN_ACTIVE_JOBS];
 
-  // Attempt to fetch fresh articles from live backend if available
+  const apiTarget = process.env.VITE_API_URL || 'https://api.trusthyre.com';
+
+  // 1. Fetch fresh articles from live backend if available
   try {
-    const apiTarget = process.env.VITE_API_URL || 'http://localhost:8787';
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
+    const timeout = setTimeout(() => controller.abort(), 3000);
     const res = await fetch(`${apiTarget}/api/blog`, { signal: controller.signal });
     clearTimeout(timeout);
     if (res.ok) {
@@ -84,6 +97,29 @@ async function generateSitemap() {
     }
   } catch (e) {
     // Graceful fallback to embedded verified article list
+  }
+
+  // 2. Fetch fresh active jobs from live backend
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(`${apiTarget}/api/jobs`, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      const rawJobs = Array.isArray(data) ? data : (data.data || data.jobs || []);
+      if (Array.isArray(rawJobs) && rawJobs.length > 0) {
+        jobs = rawJobs.map((j) => ({
+          id: j.id,
+          title: j.title,
+          lastmod: j.updated_at ? j.updated_at.split('T')[0] : (j.created_at ? j.created_at.split('T')[0] : today),
+          priority: '0.8',
+          image: j.cover_image_url || null,
+        }));
+      }
+    }
+  } catch (e) {
+    // Graceful fallback to embedded verified job list
   }
 
   const urlEntries = [];
@@ -121,6 +157,19 @@ async function generateSitemap() {
   </url>`);
   }
 
+  // Active Job Postings
+  for (const job of jobs) {
+    const imageXml = job.image
+      ? `\n    <image:image>\n      <image:loc>${escapeXml(job.image)}</image:loc>\n      <image:title>${escapeXml(job.title)}</image:title>\n    </image:image>`
+      : '';
+    urlEntries.push(`  <url>
+    <loc>${BASE_URL}/job/${job.id}</loc>
+    <lastmod>${job.lastmod}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>${job.priority}</priority>${imageXml}
+  </url>`);
+  }
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urlEntries.join('\n')}
@@ -141,4 +190,3 @@ function escapeXml(unsafe) {
 }
 
 generateSitemap();
-

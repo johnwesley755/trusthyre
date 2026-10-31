@@ -153,6 +153,116 @@ ${JSON.stringify(articleJsonLd, null, 2)}
     }
   }
 
+  // 1.5 Job Post Details: /job/:id or /jobs/:id
+  if (cleanPath.startsWith('/job/') || cleanPath.startsWith('/jobs/')) {
+    const jobId = cleanPath.replace(/^\/jobs?\//, '').trim();
+    const job = await (prisma as any).jobs.findFirst({
+      where: { id: jobId },
+    }).catch(() => null);
+
+    if (job) {
+      const pageTitle = `${job.title} | ${job.city || 'India'} | TrustHyre Verified Jobs`;
+      const pageDesc = job.description
+        ? (job.description.length > 160 ? job.description.slice(0, 157) + '...' : job.description)
+        : `Verified job opening for ${job.title} in ${job.city || 'India'}. Apply directly with verified skill check-in on TrustHyre.`;
+      const canonical = `${BASE_DOMAIN}/job/${job.id}`;
+      const imageUrl = job.cover_image_url || `${BASE_DOMAIN}/logo.png`;
+      const pubDate = job.created_at ? new Date(job.created_at).toISOString() : new Date().toISOString();
+      const validThrough = job.expires_at ? new Date(job.expires_at).toISOString() : new Date(Date.now() + 30 * 86400000).toISOString();
+
+      const jobPostingJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'JobPosting',
+        title: job.title,
+        description: job.description || pageDesc,
+        datePosted: pubDate,
+        validThrough: validThrough,
+        employmentType: 'FULL_TIME',
+        hiringOrganization: {
+          '@type': 'Organization',
+          name: job.employer_name || 'TrustHyre Verified Employer',
+          sameAs: BASE_DOMAIN,
+          logo: `${BASE_DOMAIN}/logo.png`,
+        },
+        jobLocation: {
+          '@type': 'Place',
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: job.city || 'Chennai',
+            streetAddress: job.address || job.city || 'India',
+            addressCountry: 'IN',
+          },
+        },
+        ...(job.budget && Number(job.budget) > 0 ? {
+          baseSalary: {
+            '@type': 'MonetaryAmount',
+            currency: 'INR',
+            value: {
+              '@type': 'QuantitativeValue',
+              value: Number(job.budget),
+              unitText: 'MONTH',
+            },
+          },
+        } : {}),
+      };
+
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${escapeHtml(pageTitle)}</title>
+  <meta name="description" content="${escapeHtml(pageDesc)}">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="${canonical}">
+  
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="TrustHyre">
+  <meta property="og:url" content="${canonical}">
+  <meta property="og:title" content="${escapeHtml(pageTitle)}">
+  <meta property="og:description" content="${escapeHtml(pageDesc)}">
+  <meta property="og:image" content="${imageUrl}">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="${canonical}">
+  <meta name="twitter:title" content="${escapeHtml(pageTitle)}">
+  <meta name="twitter:description" content="${escapeHtml(pageDesc)}">
+  <meta name="twitter:image" content="${imageUrl}">
+
+  <script type="application/ld+json">
+${JSON.stringify(jobPostingJsonLd, null, 2)}
+  </script>
+</head>
+<body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 24px; color: #111;">
+  <nav style="margin-bottom: 24px; border-bottom: 1px solid #eee; padding-bottom: 12px;">
+    <a href="${BASE_DOMAIN}/" style="text-decoration: none; font-weight: bold; color: #0f2f63;">TrustHyre</a> &gt; 
+    <a href="${BASE_DOMAIN}/search" style="text-decoration: none; color: #555;">Jobs</a> &gt; 
+    <span style="color: #777;">${escapeHtml(job.title)}</span>
+  </nav>
+  <article>
+    <header style="margin-bottom: 24px;">
+      <h1 style="font-size: 2rem; color: #0a0a0a; margin-bottom: 8px;">${escapeHtml(job.title)}</h1>
+      <p style="color: #666; font-size: 0.95rem;">
+        Employer: <strong>${escapeHtml(job.employer_name || 'TrustHyre Verified Employer')}</strong> • Location: <strong>${escapeHtml(job.city || 'India')}</strong>
+        ${job.budget && Number(job.budget) > 0 ? ` • Salary: <strong>₹${Number(job.budget).toLocaleString('en-IN')}/month</strong>` : ''}
+      </p>
+    </header>
+    <div style="font-size: 1.05rem; color: #222; margin-bottom: 32px;">
+      <p>${escapeHtml(job.description || 'Verified job requisition on TrustHyre.')}</p>
+    </div>
+    <div style="margin: 24px 0;">
+      <a href="${canonical}" style="display: inline-block; background-color: #0f2f63; color: white; padding: 12px 24px; border-radius: 9999px; text-decoration: none; font-weight: bold;">Apply on TrustHyre</a>
+    </div>
+  </article>
+</body>
+</html>`;
+
+      return c.html(html, 200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+      });
+    }
+  }
+
   // 2. Blog Listing Index: /blog
   if (cleanPath === '/blog') {
     const posts = await (prisma as any).blog_posts.findMany({

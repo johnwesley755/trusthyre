@@ -71,7 +71,7 @@ export class SitemapService {
         created_at: true,
         cover_image_url: true,
       },
-      take: 500,
+      take: 5000,
       orderBy: { created_at: 'desc' },
     }).catch(() => []);
 
