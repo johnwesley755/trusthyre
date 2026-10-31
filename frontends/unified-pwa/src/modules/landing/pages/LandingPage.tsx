@@ -27,6 +27,7 @@ import trustHyreLogo from "../../../assets/TrustHyre Skills and Opportunities Lo
 import trustHyreLightLogo from "../../../assets/TrustHyre Logo with Skills Tagline.png";
 import { SeoHead } from "../../../components/common/SeoHead";
 import { BlogService } from "../../../services/blog.service";
+import { LandingJobSearchBar } from "../components/LandingJobSearchBar";
 
 // Trust Carousel Slide Data (Sourced from LANDING_IMAGES.specialists)
 const TRUST_SLIDES = LANDING_IMAGES.specialists;
@@ -809,6 +810,11 @@ export default function LandingPage() {
                   </span>
               ))}
             </h1>
+
+            {/* Direct Job Search Bar for Public Discovery */}
+            <div className="pt-2">
+              <LandingJobSearchBar />
+            </div>
 
             {/* Direct Dual Call To Action Row (No Sales Consultation) */}
             <div className="flex flex-wrap items-center gap-3 pt-4">

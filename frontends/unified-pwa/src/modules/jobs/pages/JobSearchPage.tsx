@@ -165,15 +165,17 @@ export default function JobSearchPage() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Fetch user profile and applications to compute status badges
+  // Fetch user profile and applications to compute status badges (only for logged-in candidates)
   useQuery({
     queryKey: queryKeys.workers.detail('me'),
     queryFn: profileService.getProfile,
+    enabled: Boolean(user && user.role === 'WORKER')
   });
 
   const { data: myApplications = [] } = useQuery({
     queryKey: queryKeys.jobs.myApplications,
     queryFn: applicationService.getMyApplications,
+    enabled: Boolean(user && user.role === 'WORKER')
   });
 
   const appliedJobIdsMap = useMemo(() => {
