@@ -1,8 +1,7 @@
 import prisma from '../config/prisma';
 import { v4 as uuidv4 } from 'uuid';
-import { getFirebaseMessaging } from '../config/firebaseAdmin';
-import type { SendResponse } from 'firebase-admin/messaging';
 import { sendEmail } from './mailer';
+import { sendFcmMessagesV1 } from './fcmRestClient';
 import {
   renderCandidateMatchEmail,
   renderJobMatchEmail,
@@ -153,22 +152,12 @@ export class NotificationDispatcher {
         return notification;
       }
 
-      // 4. Send FCM Multicast Push via Firebase Admin SDK
-      const messaging = getFirebaseMessaging();
-      if (!messaging) {
-        return notification;
-      }
-
+      // 4. Send FCM Push via Edge-Native FCM v1 REST API (compatible with Cloudflare Workers isolate, no http2)
       const targetUrl = params.link || '/notifications';
-      const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
-      const iconUrl = `${frontendUrl}/logo.png`;
-
-      const response = await messaging.sendEachForMulticast({
-        tokens,
-        notification: {
-          title: params.title,
-          body: params.message
-        },
+      const fcmResult = await sendFcmMessagesV1(tokens, {
+        title: params.title,
+        body: params.message,
+        url: targetUrl,
         data: {
           id: notificationId,
           type: params.type,
@@ -179,54 +168,24 @@ export class NotificationDispatcher {
           click_action: targetUrl,
           createdAt: new Date().toISOString(),
           ...(params.data || {})
-        },
-        webpush: {
-          notification: {
-            title: params.title,
-            body: params.message,
-            icon: iconUrl,
-            badge: iconUrl
-          },
-          fcmOptions: {
-            link: targetUrl
-          }
         }
-      }).catch((e: any) => {
-        console.error('❌ [FCM-BACKEND:STEP-6:SEND-ERROR] FCM sendEachForMulticast rejected:', e.message);
-        return null;
       });
 
-      // 5. Automatic stale token cleanup if any device token is expired/unregistered/mismatched
-      if (response) {
-        const deadTokens: string[] = [];
-        response.responses.forEach((resp: SendResponse, idx: number) => {
-          if (resp.error) {
-            console.error(`[FCM] Device token failure: code="${resp.error.code}" message="${resp.error.message}"`);
-            const code = resp.error.code;
-            // Clean up ONLY genuine dead/unregistered tokens, never temporary payload or credential mismatch errors
-            if (
-              code === 'messaging/registration-token-not-registered' ||
-              code === 'messaging/invalid-registration-token'
-            ) {
-              deadTokens.push(tokens[idx]);
+      // 5. Automatic cleanup of dead or unregistered tokens
+      if (fcmResult.unregisteredTokens && fcmResult.unregisteredTokens.length > 0) {
+        try {
+          if ((prisma as any).user_fcm_tokens) {
+            await (prisma as any).user_fcm_tokens.deleteMany({
+              where: { token: { in: fcmResult.unregisteredTokens } }
+            });
+          } else {
+            for (const t of fcmResult.unregisteredTokens) {
+              await prisma.$executeRaw`DELETE FROM user_fcm_tokens WHERE token = ${t}`;
             }
           }
-        });
-
-        if (deadTokens.length > 0) {
-          try {
-            if ((prisma as any).user_fcm_tokens) {
-              await (prisma as any).user_fcm_tokens.deleteMany({
-                where: { token: { in: deadTokens } }
-              });
-            } else {
-              for (const t of deadTokens) {
-                await prisma.$executeRaw`DELETE FROM user_fcm_tokens WHERE token = ${t}`;
-              }
-            }
-          } catch (err: any) {
-            console.error('[FCM] Stale token cleanup error:', err.message);
-          }
+          console.log(`[FCM] Cleaned up ${fcmResult.unregisteredTokens.length} unregistered tokens.`);
+        } catch (cleanupErr: any) {
+          console.error('[FCM] Stale token cleanup error:', cleanupErr.message);
         }
       }
 
