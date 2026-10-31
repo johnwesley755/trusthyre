@@ -139,8 +139,8 @@ export const adminService = {
     return res.data;
   },
 
-  moderateJob: async (id: string, action: 'approve' | 'reject' | 'expire' | 'update', reason?: string, coverImageUrl?: string): Promise<any> => {
-    const res = await apiClient.patch(`/api/admin/jobs/${id}/moderate`, { action, reason, coverImageUrl });
+  moderateJob: async (id: string, action: 'approve' | 'reject' | 'expire' | 'update', reason?: string, coverImageUrl?: string, extra?: { description?: string; title?: string; budget?: number; city?: string }): Promise<any> => {
+    const res = await apiClient.patch(`/api/admin/jobs/${id}/moderate`, { action, reason, coverImageUrl, ...extra });
     return res.data;
   },
 

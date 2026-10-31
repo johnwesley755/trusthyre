@@ -479,12 +479,11 @@ export const getScraperSources = async (c: Context) => {
 export const moderateJobByAdmin = async (c: Context) => {
   try {
     const id = c.req.param('id') as string;
-    const { action, reason } = await c.req.json();
+    const body = await c.req.json().catch(() => ({}));
+    const { action, reason, title, description, coverImageUrl, cover_image_url, budget, city, location } = body;
     if (!['approve', 'reject', 'expire', 'update'].includes(action)) {
       return c.json(ApiResponse.error("Invalid action. Must be 'approve', 'reject', 'expire', or 'update'."), 400 as any);
     }
-
-    const { coverImageUrl, cover_image_url } = (await c.req.json().catch(() => ({})));
     const newStatus = action === 'approve' ? 'OPEN' : (action === 'reject' ? 'REJECTED' : (action === 'expire' ? 'EXPIRED' : undefined));
     const updateData: any = {
       updated_at: new Date()
@@ -492,6 +491,14 @@ export const moderateJobByAdmin = async (c: Context) => {
     if (newStatus) updateData.status = newStatus;
     const cover = coverImageUrl || cover_image_url;
     if (cover !== undefined) updateData.cover_image_url = cover || null;
+    if (description !== undefined) {
+      const { sanitizeHtmlDescription } = await import('../utils/textSanitizer');
+      updateData.description = sanitizeHtmlDescription(description);
+    }
+    if (title !== undefined) updateData.title = String(title).trim();
+    if (budget !== undefined) updateData.budget = budget ? Number(budget) : null;
+    if (city !== undefined) updateData.city = String(city).trim();
+    if (location !== undefined) updateData.location = String(location).trim();
 
     const updated = await prisma.jobs.update({
       where: { id },

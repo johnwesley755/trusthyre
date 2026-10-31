@@ -24,9 +24,13 @@ import {
   Check,
   Image as ImageIcon,
   UploadCloud,
-  Camera
+  Camera,
+  Edit3,
+  FileText,
+  Save
 } from 'lucide-react';
 import { mediaService } from '../../../services/media.service';
+import { sanitizeHtmlDescription } from '../../../utils/textSanitizer';
 import { toast } from 'sonner';
 import { AppLoader } from '../../../components/common/AppLoader';
 
@@ -87,6 +91,13 @@ export const AdminJobsPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [editingCoverJob, setEditingCoverJob] = useState<any | null>(null);
+  const [editingJob, setEditingJob] = useState<any | null>(null);
+  const [editJobForm, setEditJobForm] = useState<{ title: string; description: string; budget: number; city: string }>({
+    title: '',
+    description: '',
+    budget: 0,
+    city: ''
+  });
   const [customCoverInput, setCustomCoverInput] = useState<string>('');
   const adminFileInputRef = useRef<HTMLInputElement>(null);
   const [isAdminUploading, setIsAdminUploading] = useState<boolean>(false);
@@ -235,7 +246,7 @@ export const AdminJobsPage: React.FC = () => {
   });
 
   const moderateMutation = useMutation({
-    mutationFn: ({ id, action, coverImageUrl }: { id: string; action: 'approve' | 'reject' | 'expire' | 'update'; coverImageUrl?: string }) => adminService.moderateJob(id, action, undefined, coverImageUrl),
+    mutationFn: ({ id, action, coverImageUrl, extra }: { id: string; action: 'approve' | 'reject' | 'expire' | 'update'; coverImageUrl?: string; extra?: any }) => adminService.moderateJob(id, action, undefined, coverImageUrl, extra),
     onSuccess: (_, vars) => {
       if (vars.action === 'update') { toast.success('Cover image updated successfully'); } else { toast.success(`Job ${vars.action}d successfully`); }
       queryClient.invalidateQueries({ queryKey: ['adminJobs'] });
@@ -590,14 +601,33 @@ export const AdminJobsPage: React.FC = () => {
                     </span>
                   )}
 
-                  <button
-                    onClick={() => handleDelete(job.id, job.title)}
-                    disabled={deleteMutation.isPending}
-                    className="p-1.5 text-[#717784] hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-all cursor-pointer ml-auto"
-                    title="Delete permanently"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingJob(job);
+                        setEditJobForm({
+                          title: job.title || '',
+                          description: sanitizeHtmlDescription(job.description || ''),
+                          budget: job.budget ? Number(job.budget) : 0,
+                          city: job.city || job.location || ''
+                        });
+                      }}
+                      className="px-2.5 py-1 text-xs font-semibold text-[#0f2f63] hover:text-white bg-[#0f2f63]/5 hover:bg-[#0f2f63] rounded-full transition-all cursor-pointer flex items-center gap-1"
+                      title="Edit job description and details"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      <span>Edit JD</span>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(job.id, job.title)}
+                      disabled={deleteMutation.isPending}
+                      className="p-1.5 text-[#717784] hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
+                      title="Delete permanently"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -875,6 +905,118 @@ export const AdminJobsPage: React.FC = () => {
                   <span>Launch Discovery Scan</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Job Description & Details Modal */}
+      {editingJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-[#e6e8ec] space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-[#0f2f63]/10 text-[#0f2f63] flex items-center justify-center">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#0a0a0a]">Edit Job Requisition</h3>
+                  <p className="text-xs text-[#717784]">{editingJob.employer_name || 'Verified Employer'} • ID: {editingJob.id.slice(0, 8)}...</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingJob(null)}
+                className="p-1.5 text-[#717784] hover:text-[#0a0a0a] rounded-lg cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Title</label>
+                <input
+                  type="text"
+                  value={editJobForm.title}
+                  onChange={(e) => setEditJobForm({ ...editJobForm, title: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-semibold focus:outline-none focus:border-[#0f2f63]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">City / Location</label>
+                  <input
+                    type="text"
+                    value={editJobForm.city}
+                    onChange={(e) => setEditJobForm({ ...editJobForm, city: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Monthly Salary / Budget (₹)</label>
+                  <input
+                    type="number"
+                    value={editJobForm.budget || ''}
+                    onChange={(e) => setEditJobForm({ ...editJobForm, budget: Number(e.target.value) })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    placeholder="e.g. 25000"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-bold text-[#0a0a0a] uppercase">Job Description & Scope</label>
+                  <button
+                    type="button"
+                    onClick={() => setEditJobForm({ ...editJobForm, description: sanitizeHtmlDescription(editJobForm.description) })}
+                    className="text-[10px] text-[#0f2f63] font-semibold hover:underline cursor-pointer"
+                  >
+                    Clean HTML tags
+                  </button>
+                </div>
+                <textarea
+                  rows={8}
+                  value={editJobForm.description}
+                  onChange={(e) => setEditJobForm({ ...editJobForm, description: e.target.value })}
+                  placeholder="Enter clean job description, duties, and hiring requirements..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs leading-relaxed focus:outline-none focus:border-[#0f2f63] font-sans"
+                />
+                <span className="text-[10px] text-[#717784]">Any HTML tags like &lt;p&gt; or &lt;br&gt; will be automatically stripped upon saving.</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#e6e8ec]">
+              <button
+                type="button"
+                onClick={() => setEditingJob(null)}
+                className="px-4 py-2 rounded-full border border-[#e6e8ec] text-xs font-medium cursor-pointer hover:bg-[#f4f4f4]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={moderateMutation.isPending}
+                onClick={() => {
+                  moderateMutation.mutate({
+                    id: editingJob.id,
+                    action: 'update',
+                    extra: {
+                      title: editJobForm.title,
+                      description: editJobForm.description,
+                      budget: editJobForm.budget,
+                      city: editJobForm.city
+                    }
+                  });
+                  setEditingJob(null);
+                }}
+                className="px-5 py-2 rounded-full bg-[#0f2f63] hover:bg-[#1a4487] text-white text-xs font-bold cursor-pointer shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Changes</span>
+              </button>
             </div>
           </div>
         </div>
