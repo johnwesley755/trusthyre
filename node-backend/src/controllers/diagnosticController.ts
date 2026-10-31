@@ -38,3 +38,4 @@ export const getBrevoDiagnostics = async (c: Context) => {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
 };
+
