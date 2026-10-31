@@ -111,7 +111,7 @@ async function generateSitemap() {
   // Articles
   for (const art of articles) {
     const imageXml = art.image
-      ? `\n    <image:image>\n      <image:loc>${art.image}</image:loc>\n      <image:title>${escapeXml(art.title)}</image:title>\n    </image:image>`
+      ? `\n    <image:image>\n      <image:loc>${escapeXml(art.image)}</image:loc>\n      <image:title>${escapeXml(art.title)}</image:title>\n    </image:image>`
       : '';
     urlEntries.push(`  <url>
     <loc>${BASE_URL}/blog/${art.slug}</loc>

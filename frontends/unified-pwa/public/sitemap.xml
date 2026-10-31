@@ -2,25 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://trusthyre.com/</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://trusthyre.com/search</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://trusthyre.com/find-workers</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://trusthyre.com/blog</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
@@ -38,61 +38,65 @@
   </url>
   <url>
     <loc>https://trusthyre.com/blog/category/hiring-guides</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://trusthyre.com/blog/category/salary-benchmarks</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://trusthyre.com/blog/category/verification-standards</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://trusthyre.com/blog/category/career-guides</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://trusthyre.com/blog/electrician-jobs-in-chennai</loc>
-    <lastmod>2026-10-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://trusthyre.com/blog/solving-absenteeism-blue-collar-workforce-india</loc>
-    <lastmod>2026-10-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1200&auto=format&fit=crop</image:loc>
+      <image:loc>https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Electrician Jobs in Chennai: Skills, Qualifications and How to Apply</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://trusthyre.com/blog/solving-absenteeism-blue-collar-workforce-india</loc>
+    <lastmod>2026-10-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1541888946425-d0fbb18615f8?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
       <image:title>How Photo Check-In &amp; Skill Verification Is Solving Absenteeism in India&apos;s Blue-Collar Workforce</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://trusthyre.com/blog/hiring-delivery-drivers-warehouse-staff-chennai</loc>
-    <lastmod>2026-10-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1200&auto=format&fit=crop</image:loc>
+      <image:loc>https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
       <image:title>Hiring Delivery Drivers &amp; Warehouse Staff in Chennai: Complete Employer Compliance &amp; Verification Checklist</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://trusthyre.com/blog/electrician-hiring-guide-chennai</loc>
-    <lastmod>2026-10-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=1200&auto=format&fit=crop</image:loc>
+      <image:loc>https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
       <image:title>Electrician Jobs &amp; Hiring in Chennai: Required Skills, Safety Certifications, and Standard Rates (2026 Guide)</image:title>
     </image:image>
   </url>
