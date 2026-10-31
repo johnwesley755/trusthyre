@@ -79,11 +79,34 @@ export const AdminLeadsPage: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [editingReq, setEditingReq] = useState<any | null>(null);
-  const [editReqForm, setEditReqForm] = useState<{ title: string; description: string; salaryRange: string; workersNeeded: number }>({
+  const [editReqForm, setEditReqForm] = useState<{
+    title: string;
+    description: string;
+    salaryRange: string;
+    workersNeeded: number;
+    department: string;
+    roleCategory: string;
+    employmentType: string;
+    shift: string;
+    experience: string;
+    education: string;
+    languages: string;
+    ageLimit: string;
+    gender: string;
+  }>({
     title: '',
     description: '',
     salaryRange: '',
     workersNeeded: 1,
+    department: '',
+    roleCategory: '',
+    employmentType: '',
+    shift: '',
+    experience: '',
+    education: '',
+    languages: '',
+    ageLimit: '',
+    gender: '',
   });
 
   const updateReqMutation = useMutation({
@@ -1197,11 +1220,24 @@ export const AdminLeadsPage: React.FC = () => {
                             type="button"
                             onClick={() => {
                               setEditingReq(req);
+                              let reqExtra: any = {};
+                              if (req.normalized_title && req.normalized_title.startsWith('{')) {
+                                try { reqExtra = JSON.parse(req.normalized_title); } catch (e) {}
+                              }
                               setEditReqForm({
                                 title: req.title || '',
                                 description: req.description || '',
                                 salaryRange: req.salary_range || '',
                                 workersNeeded: req.workers_needed || 1,
+                                department: reqExtra.department || '',
+                                roleCategory: reqExtra.roleCategory || reqExtra.role_category || '',
+                                employmentType: reqExtra.employmentType || reqExtra.employment_type || '',
+                                shift: reqExtra.shift || '',
+                                experience: reqExtra.experience || '',
+                                education: reqExtra.education || '',
+                                languages: reqExtra.languages || reqExtra.englishLevel || '',
+                                ageLimit: reqExtra.ageLimit || '',
+                                gender: reqExtra.gender || '',
                               });
                             }}
                             className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#0f2f63]/5 hover:bg-[#0f2f63] text-[#0f2f63] hover:text-white rounded-lg text-xs font-semibold border border-[#0f2f63]/20 transition-all shadow-2xs cursor-pointer"
@@ -1415,6 +1451,133 @@ export const AdminLeadsPage: React.FC = () => {
                   className="w-full px-3 py-2.5 rounded-xl border border-[#e2e4e9] text-xs leading-relaxed focus:outline-none focus:border-[#0f2f63] font-sans"
                 />
               </div>
+
+                <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider">Role & Eligibility Criteria (Optional)</span>
+                    <span className="text-[10px] text-[#717784]">Inherited on onboarding</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Department</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Restaurant / Hospitality / Tourism"
+                        value={editReqForm.department}
+                        onChange={(e) => setEditReqForm({ ...editReqForm, department: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Role / Category</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Cook / Chef / Kitchen Help"
+                        value={editReqForm.roleCategory}
+                        onChange={(e) => setEditReqForm({ ...editReqForm, roleCategory: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Employment Type</label>
+                      <select
+                        value={editReqForm.employmentType}
+                        onChange={(e) => setEditReqForm({ ...editReqForm, employmentType: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
+                      >
+                        <option value="">Not specified</option>
+                        <option value="Full Time">Full Time</option>
+                        <option value="Part Time">Part Time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Shift Based">Shift Based</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Shift</label>
+                      <select
+                        value={editReqForm.shift}
+                        onChange={(e) => setEditReqForm({ ...editReqForm, shift: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
+                      >
+                        <option value="">Not specified</option>
+                        <option value="Day Shift">Day Shift</option>
+                        <option value="Night Shift">Night Shift</option>
+                        <option value="Rotational Shift">Rotational Shift</option>
+                        <option value="Flexible Hours">Flexible Hours</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Experience</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Any experience / 1-2 Yrs"
+                        value={editReqForm.experience}
+                        onChange={(e) => setEditReqForm({ ...editReqForm, experience: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Education</label>
+                      <select
+                        value={editReqForm.education}
+                        onChange={(e) => setEditReqForm({ ...editReqForm, education: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
+                      >
+                        <option value="">Not specified</option>
+                        <option value="Below 10th">Below 10th</option>
+                        <option value="10th Pass">10th Pass</option>
+                        <option value="12th Pass">12th Pass</option>
+                        <option value="Diploma / ITI">Diploma / ITI</option>
+                        <option value="Graduate">Graduate</option>
+                        <option value="Any Education">Any Education</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Languages</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. English, Tamil, Hindi"
+                        value={editReqForm.languages}
+                        onChange={(e) => setEditReqForm({ ...editReqForm, languages: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Age Limit</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 18 - 35 years"
+                        value={editReqForm.ageLimit}
+                        onChange={(e) => setEditReqForm({ ...editReqForm, ageLimit: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Gender Preference</label>
+                      <select
+                        value={editReqForm.gender}
+                        onChange={(e) => setEditReqForm({ ...editReqForm, gender: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
+                      >
+                        <option value="">Any gender</option>
+                        <option value="Male Only">Male Only</option>
+                        <option value="Female Only">Female Only</option>
+                        <option value="Any gender">Any gender</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#e6e8ec]">
@@ -1432,7 +1595,23 @@ export const AdminLeadsPage: React.FC = () => {
                   updateReqMutation.mutate({
                     leadId: selectedLead.id,
                     reqId: editingReq.id,
-                    data: editReqForm,
+                    data: {
+                      title: editReqForm.title,
+                      description: editReqForm.description,
+                      salaryRange: editReqForm.salaryRange,
+                      workersNeeded: editReqForm.workersNeeded,
+                      additionalDetails: {
+                        department: editReqForm.department,
+                        roleCategory: editReqForm.roleCategory,
+                        employmentType: editReqForm.employmentType,
+                        shift: editReqForm.shift,
+                        experience: editReqForm.experience,
+                        education: editReqForm.education,
+                        languages: editReqForm.languages,
+                        ageLimit: editReqForm.ageLimit,
+                        gender: editReqForm.gender,
+                      }
+                    },
                   });
                 }}
                 className="px-5 py-2 rounded-xl bg-[#0f2f63] hover:bg-[#163e7f] text-white text-xs font-bold cursor-pointer shadow-xs flex items-center gap-1.5 disabled:opacity-50"

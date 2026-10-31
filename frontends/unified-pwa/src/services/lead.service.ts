@@ -187,7 +187,7 @@ export const leadService = {
     return raw?.sources || raw?.data || [];
   },
 
-  updateRequirement: async (leadId: string, reqId: string, data: { title?: string; description?: string; salaryRange?: string; workersNeeded?: number }): Promise<any> => {
+  updateRequirement: async (leadId: string, reqId: string, data: { title?: string; description?: string; salaryRange?: string; workersNeeded?: number; additionalDetails?: any }): Promise<any> => {
     const response = await apiClient.patch(`/api/admin/leads/${encodeURIComponent(leadId)}/requirements/${encodeURIComponent(reqId)}`, data);
     return response.data;
   }

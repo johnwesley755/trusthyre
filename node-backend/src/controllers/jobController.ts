@@ -35,8 +35,14 @@ const formatJob = (job: any) => {
     ? rawSkillsVal.split(',').map((s: string) => s.trim()).filter(Boolean)
     : (Array.isArray(rawSkillsVal) ? rawSkillsVal.map((s: any) => String(s).trim()).filter(Boolean) : []);
 
+  const additionalDetails = (job.alternate_sources && typeof job.alternate_sources === 'object')
+    ? ((job.alternate_sources as any).additional_details || job.alternate_sources)
+    : {};
+
   return {
     ...job,
+    additionalDetails: additionalDetails || {},
+    additional_details: additionalDetails || {},
     description: sanitizeHtmlDescription(job.description),
     coverImageUrl: job.cover_image_url || job.coverImageUrl || null,
     cover_image_url: job.cover_image_url || job.coverImageUrl || null,
@@ -109,6 +115,7 @@ export const createJob = async (c: Context) => {
         cover_image_url: data.coverImageUrl || data.cover_image_url || null,
         status: 'OPEN',
         expires_at: expiresAt,
+        alternate_sources: data.additionalDetails || data.additional_details ? { additional_details: data.additionalDetails || data.additional_details } : undefined,
         created_at: new Date(),
         updated_at: new Date()
       } as any

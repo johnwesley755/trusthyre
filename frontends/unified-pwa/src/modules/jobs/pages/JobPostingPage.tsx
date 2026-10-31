@@ -183,6 +183,16 @@ export const JobPostingPage = () => {
       expiresAt: expiresAtIso,
       coverImageUrl: effectiveCoverUrl || null,
       cover_image_url: effectiveCoverUrl || null,
+      additionalDetails: {
+        department: (formData.get('department') as string) || undefined,
+        roleCategory: (formData.get('roleCategory') as string) || undefined,
+        employmentType: (formData.get('employmentType') as string) || undefined,
+        shift: (formData.get('shift') as string) || undefined,
+        education: (formData.get('education') as string) || undefined,
+        languages: (formData.get('languages') as string) || undefined,
+        ageLimit: (formData.get('ageLimit') as string) || undefined,
+        gender: (formData.get('gender') as string) || undefined,
+      }
     };
     mutation.mutate(jobData);
   };
@@ -667,6 +677,121 @@ export const JobPostingPage = () => {
                       ))}
                     </div>
                   </div>
+                </div>
+              </div>
+
+
+              {/* Step 5: Role & Eligibility Criteria (Optional) */}
+              <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] space-y-4">
+                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] pb-3">
+                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
+                    5
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold uppercase text-[#717784] tracking-wide">
+                      Role & Eligibility Criteria (Optional)
+                    </h3>
+                    <p className="text-[11px] text-[#717784]">Specify hiring requirements so candidates know exact shift and eligibility expectations.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#0a0a0a]">Department</label>
+                    <input 
+                      name="department"
+                      placeholder="e.g. Restaurant / Hospitality / Tourism"
+                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#0a0a0a]">Role / Category</label>
+                    <input 
+                      name="roleCategory"
+                      placeholder="e.g. Cook / Chef / Kitchen Help"
+                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#0a0a0a]">Employment Type</label>
+                    <select 
+                      name="employmentType"
+                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="Full Time">Full Time</option>
+                      <option value="Part Time">Part Time</option>
+                      <option value="Contract">Contract</option>
+                      <option value="Shift Based">Shift Based</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#0a0a0a]">Shift</label>
+                    <select 
+                      name="shift"
+                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="Day Shift">Day Shift</option>
+                      <option value="Night Shift">Night Shift</option>
+                      <option value="Rotational Shift">Rotational Shift</option>
+                      <option value="Flexible Hours">Flexible Hours</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#0a0a0a]">Education</label>
+                    <select 
+                      name="education"
+                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="Below 10th">Below 10th</option>
+                      <option value="10th Pass">10th Pass</option>
+                      <option value="12th Pass">12th Pass</option>
+                      <option value="Diploma / ITI">Diploma / ITI</option>
+                      <option value="Graduate">Graduate</option>
+                      <option value="Any Education">Any Education</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#0a0a0a]">Languages Required</label>
+                    <input 
+                      name="languages"
+                      placeholder="e.g. English, Tamil, Hindi"
+                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#0a0a0a]">Age Limit</label>
+                    <input 
+                      name="ageLimit"
+                      placeholder="e.g. 18 - 35 years"
+                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[#0a0a0a]">Gender Preference</label>
+                  <select 
+                    name="gender"
+                    className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
+                  >
+                    <option value="">Any gender</option>
+                    <option value="Male Only">Male Only</option>
+                    <option value="Female Only">Female Only</option>
+                    <option value="Any gender">Any gender</option>
+                  </select>
                 </div>
               </div>
 

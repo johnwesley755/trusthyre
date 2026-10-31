@@ -565,6 +565,12 @@ export class LeadService {
             }
           }
 
+          let reqDetails = null;
+          if (req.normalized_title && req.normalized_title.startsWith('{')) {
+            try {
+              reqDetails = JSON.parse(req.normalized_title);
+            } catch (e) {}
+          }
           const job = await prisma.jobs.create({
             data: {
               employer_id: user.id,
@@ -576,6 +582,7 @@ export class LeadService {
               location: req.location || req.city || lead.city,
               budget: budget ? budget : null,
               experience_years_required: 1,
+              alternate_sources: reqDetails ? { additional_details: reqDetails } : undefined,
               status: 'OPEN',
               is_external: false,
               source_name: req.source_name,

@@ -480,7 +480,7 @@ export const moderateJobByAdmin = async (c: Context) => {
   try {
     const id = c.req.param('id') as string;
     const body = await c.req.json().catch(() => ({}));
-    const { action, reason, title, description, coverImageUrl, cover_image_url, budget, city, location } = body;
+    const { action, reason, title, description, coverImageUrl, cover_image_url, budget, city, location, additionalDetails, additional_details } = body;
     if (!['approve', 'reject', 'expire', 'update'].includes(action)) {
       return c.json(ApiResponse.error("Invalid action. Must be 'approve', 'reject', 'expire', or 'update'."), 400 as any);
     }
@@ -499,6 +499,10 @@ export const moderateJobByAdmin = async (c: Context) => {
     if (budget !== undefined) updateData.budget = budget ? Number(budget) : null;
     if (city !== undefined) updateData.city = String(city).trim();
     if (location !== undefined) updateData.location = String(location).trim();
+    const details = additionalDetails || additional_details;
+    if (details !== undefined) {
+      updateData.alternate_sources = { additional_details: details };
+    }
 
     const updated = await prisma.jobs.update({
       where: { id },

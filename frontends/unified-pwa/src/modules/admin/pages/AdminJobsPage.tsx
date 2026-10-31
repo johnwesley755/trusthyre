@@ -92,11 +92,34 @@ export const AdminJobsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingCoverJob, setEditingCoverJob] = useState<any | null>(null);
   const [editingJob, setEditingJob] = useState<any | null>(null);
-  const [editJobForm, setEditJobForm] = useState<{ title: string; description: string; budget: number; city: string }>({
+  const [editJobForm, setEditJobForm] = useState<{
+    title: string;
+    description: string;
+    budget: number;
+    city: string;
+    department: string;
+    roleCategory: string;
+    employmentType: string;
+    shift: string;
+    experience: string;
+    education: string;
+    languages: string;
+    ageLimit: string;
+    gender: string;
+  }>({
     title: '',
     description: '',
     budget: 0,
-    city: ''
+    city: '',
+    department: '',
+    roleCategory: '',
+    employmentType: '',
+    shift: '',
+    experience: '',
+    education: '',
+    languages: '',
+    ageLimit: '',
+    gender: ''
   });
   const [customCoverInput, setCustomCoverInput] = useState<string>('');
   const adminFileInputRef = useRef<HTMLInputElement>(null);
@@ -606,11 +629,23 @@ export const AdminJobsPage: React.FC = () => {
                       type="button"
                       onClick={() => {
                         setEditingJob(job);
+                        const rawExtra = (job.alternate_sources && typeof job.alternate_sources === 'object')
+                          ? ((job.alternate_sources as any).additional_details || job.alternate_sources)
+                          : (job.additionalDetails || {});
                         setEditJobForm({
                           title: job.title || '',
                           description: sanitizeHtmlDescription(job.description || ''),
                           budget: job.budget ? Number(job.budget) : 0,
-                          city: job.city || job.location || ''
+                          city: job.city || job.location || '',
+                          department: rawExtra.department || '',
+                          roleCategory: rawExtra.roleCategory || rawExtra.role_category || '',
+                          employmentType: rawExtra.employmentType || rawExtra.employment_type || '',
+                          shift: rawExtra.shift || '',
+                          experience: rawExtra.experience || '',
+                          education: rawExtra.education || '',
+                          languages: rawExtra.languages || rawExtra.englishLevel || rawExtra.english_level || '',
+                          ageLimit: rawExtra.ageLimit || rawExtra.age_limit || '',
+                          gender: rawExtra.gender || ''
                         });
                       }}
                       className="px-2.5 py-1 text-xs font-semibold text-[#0f2f63] hover:text-white bg-[#0f2f63]/5 hover:bg-[#0f2f63] rounded-full transition-all cursor-pointer flex items-center gap-1"
@@ -986,6 +1021,134 @@ export const AdminJobsPage: React.FC = () => {
                 />
                 <span className="text-[10px] text-[#717784]">Any HTML tags like &lt;p&gt; or &lt;br&gt; will be automatically stripped upon saving.</span>
               </div>
+
+              {/* Rich Job Criteria & Eligibility Details (Optional) */}
+              <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider">Role & Eligibility Criteria (Optional)</span>
+                  <span className="text-[10px] text-[#717784]">Shown on Job Details Page</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Department</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Restaurant / Hospitality / Tourism"
+                      value={editJobForm.department}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, department: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Role / Category</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Cook / Chef / Kitchen Help"
+                      value={editJobForm.roleCategory}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, roleCategory: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Employment Type</label>
+                    <select
+                      value={editJobForm.employmentType}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, employmentType: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="Full Time">Full Time</option>
+                      <option value="Part Time">Part Time</option>
+                      <option value="Contract">Contract</option>
+                      <option value="Shift Based">Shift Based</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Shift</label>
+                    <select
+                      value={editJobForm.shift}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, shift: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="Day Shift">Day Shift</option>
+                      <option value="Night Shift">Night Shift</option>
+                      <option value="Rotational Shift">Rotational Shift</option>
+                      <option value="Flexible Hours">Flexible Hours</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Experience</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Any experience / 1-2 Yrs"
+                      value={editJobForm.experience}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, experience: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Education</label>
+                    <select
+                      value={editJobForm.education}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, education: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="Below 10th">Below 10th</option>
+                      <option value="10th Pass">10th Pass</option>
+                      <option value="12th Pass">12th Pass</option>
+                      <option value="Diploma / ITI">Diploma / ITI</option>
+                      <option value="Graduate">Graduate</option>
+                      <option value="Any Education">Any Education</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Languages</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. English, Tamil, Hindi"
+                      value={editJobForm.languages}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, languages: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Age Limit</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 18 - 35 years"
+                      value={editJobForm.ageLimit}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, ageLimit: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Gender Preference</label>
+                    <select
+                      value={editJobForm.gender}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, gender: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
+                    >
+                      <option value="">Any gender</option>
+                      <option value="Male Only">Male Only</option>
+                      <option value="Female Only">Female Only</option>
+                      <option value="Any gender">Any gender</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#e6e8ec]">

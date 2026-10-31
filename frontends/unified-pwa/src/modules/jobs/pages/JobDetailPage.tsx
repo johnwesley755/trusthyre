@@ -362,6 +362,14 @@ export default function JobDetailPage() {
   const hasCoordinates = typeof job.latitude === 'number' && typeof job.longitude === 'number' && !isNaN(job.latitude) && !isNaN(job.longitude);
   const locationCoordinates: [number, number] | null = hasCoordinates ? [job.latitude!, job.longitude!] : null;
 
+  const additionalDetails: any = (() => {
+    const raw = (job as any)?.additionalDetails ?? (job as any)?.additional_details ?? (job as any)?.alternate_sources;
+    if (raw && typeof raw === 'object') {
+      return raw.additional_details || raw;
+    }
+    return {};
+  })();
+
   const explicitSkills: string[] = (() => {
     const direct: any = (job as any)?.requiredSkills ?? (job as any)?.required_skills ?? (job as any)?.skills;
     if (Array.isArray(direct)) {
@@ -611,6 +619,83 @@ export default function JobDetailPage() {
                 {sanitizeHtmlDescription(job.description) || "Detailed scope and trade responsibilities will be provided during onboarding by the employer."}
               </div>
             </div>
+
+            {/* Role & Eligibility Criteria Card */}
+            {(additionalDetails.department || additionalDetails.roleCategory || additionalDetails.employmentType || additionalDetails.shift || additionalDetails.education || additionalDetails.languages || additionalDetails.ageLimit || additionalDetails.gender) && (
+              <div className="bg-[#f4f4f4] rounded-[1.75rem] p-6 sm:p-8 border border-[#e6e8ec] space-y-4">
+                <div className="flex items-center gap-2 border-b border-[#e6e8ec] pb-3">
+                  <Briefcase className="w-4 h-4 text-[#0f2f63]" />
+                  <h3 className="text-xs font-bold uppercase text-[#717784]">
+                    Role Requirements & Eligibility Criteria
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {additionalDetails.department && (
+                    <div className="bg-white rounded-2xl p-4 border border-[#e6e8ec] space-y-1">
+                      <span className="text-[10px] font-bold uppercase text-[#717784] tracking-wider block">Department</span>
+                      <p className="text-xs font-bold text-[#0a0a0a]">{additionalDetails.department}</p>
+                    </div>
+                  )}
+
+                  {additionalDetails.roleCategory && (
+                    <div className="bg-white rounded-2xl p-4 border border-[#e6e8ec] space-y-1">
+                      <span className="text-[10px] font-bold uppercase text-[#717784] tracking-wider block">Role / Category</span>
+                      <p className="text-xs font-bold text-[#0a0a0a]">{additionalDetails.roleCategory}</p>
+                    </div>
+                  )}
+
+                  {additionalDetails.employmentType && (
+                    <div className="bg-white rounded-2xl p-4 border border-[#e6e8ec] space-y-1">
+                      <span className="text-[10px] font-bold uppercase text-[#717784] tracking-wider block">Employment Type</span>
+                      <p className="text-xs font-bold text-[#0a0a0a]">{additionalDetails.employmentType}</p>
+                    </div>
+                  )}
+
+                  {additionalDetails.shift && (
+                    <div className="bg-white rounded-2xl p-4 border border-[#e6e8ec] space-y-1">
+                      <span className="text-[10px] font-bold uppercase text-[#717784] tracking-wider block">Shift Timing</span>
+                      <p className="text-xs font-bold text-[#0a0a0a]">{additionalDetails.shift}</p>
+                    </div>
+                  )}
+
+                  {additionalDetails.education && (
+                    <div className="bg-white rounded-2xl p-4 border border-[#e6e8ec] space-y-1">
+                      <span className="text-[10px] font-bold uppercase text-[#717784] tracking-wider block">Education</span>
+                      <p className="text-xs font-bold text-[#0a0a0a]">{additionalDetails.education}</p>
+                    </div>
+                  )}
+
+                  {additionalDetails.languages && (
+                    <div className="bg-white rounded-2xl p-4 border border-[#e6e8ec] space-y-1">
+                      <span className="text-[10px] font-bold uppercase text-[#717784] tracking-wider block">Languages Known</span>
+                      <p className="text-xs font-bold text-[#0a0a0a]">{additionalDetails.languages}</p>
+                    </div>
+                  )}
+
+                  {additionalDetails.ageLimit && (
+                    <div className="bg-white rounded-2xl p-4 border border-[#e6e8ec] space-y-1">
+                      <span className="text-[10px] font-bold uppercase text-[#717784] tracking-wider block">Age Limit</span>
+                      <p className="text-xs font-bold text-[#0a0a0a]">{additionalDetails.ageLimit}</p>
+                    </div>
+                  )}
+
+                  {additionalDetails.gender && (
+                    <div className="bg-white rounded-2xl p-4 border border-[#e6e8ec] space-y-1">
+                      <span className="text-[10px] font-bold uppercase text-[#717784] tracking-wider block">Gender Preference</span>
+                      <p className="text-xs font-bold text-[#0a0a0a]">{additionalDetails.gender}</p>
+                    </div>
+                  )}
+
+                  {additionalDetails.experience && (
+                    <div className="bg-white rounded-2xl p-4 border border-[#e6e8ec] space-y-1">
+                      <span className="text-[10px] font-bold uppercase text-[#717784] tracking-wider block">Experience Range</span>
+                      <p className="text-xs font-bold text-[#0a0a0a]">{additionalDetails.experience}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Required Skills & Competencies */}
             <div className="bg-[#f4f4f4] rounded-[1.75rem] p-6 sm:p-8 border border-[#e6e8ec] space-y-4">
@@ -958,16 +1043,34 @@ export default function JobDetailPage() {
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between items-center py-1 border-b border-[#e6e8ec]/60">
                   <span className="text-[#717784]">Job Type:</span>
-                  <span className="font-semibold text-[#0a0a0a]">{(job as any).jobType || (job.status === 'OPEN' ? 'Open Shift' : 'Full Time')}</span>
+                  <span className="font-semibold text-[#0a0a0a]">{additionalDetails.employmentType || (job as any).jobType || (job.status === 'OPEN' ? 'Open Shift' : 'Full Time')}</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-[#e6e8ec]/60">
                   <span className="text-[#717784]">Experience Required:</span>
-                  <span className="font-semibold text-[#0a0a0a]">{formatExactExperience(job, 'detail')}</span>
+                  <span className="font-semibold text-[#0a0a0a]">{additionalDetails.experience || formatExactExperience(job, 'detail')}</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-[#e6e8ec]/60">
                   <span className="text-[#717784]">Work Schedule:</span>
-                  <span className="font-semibold text-[#0a0a0a]">Regular Shifts</span>
+                  <span className="font-semibold text-[#0a0a0a]">{additionalDetails.shift || 'Regular Shifts'}</span>
                 </div>
+                {additionalDetails.education && (
+                  <div className="flex justify-between items-center py-1 border-b border-[#e6e8ec]/60">
+                    <span className="text-[#717784]">Education:</span>
+                    <span className="font-semibold text-[#0a0a0a]">{additionalDetails.education}</span>
+                  </div>
+                )}
+                {additionalDetails.languages && (
+                  <div className="flex justify-between items-center py-1 border-b border-[#e6e8ec]/60">
+                    <span className="text-[#717784]">Languages:</span>
+                    <span className="font-semibold text-[#0a0a0a]">{additionalDetails.languages}</span>
+                  </div>
+                )}
+                {additionalDetails.gender && (
+                  <div className="flex justify-between items-center py-1 border-b border-[#e6e8ec]/60">
+                    <span className="text-[#717784]">Gender:</span>
+                    <span className="font-semibold text-[#0a0a0a]">{additionalDetails.gender}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center py-1">
                   <span className="text-[#717784]">Verification Status:</span>
                   <span className="font-semibold text-emerald-700">Verified Employer</span>

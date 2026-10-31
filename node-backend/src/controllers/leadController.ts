@@ -334,7 +334,7 @@ export class LeadController {
       const id = c.req.param('id');
       const reqId = c.req.param('reqId');
       const body = await c.req.json().catch(() => ({}));
-      const { title, description, salaryRange, workersNeeded } = body;
+      const { title, description, salaryRange, workersNeeded, additionalDetails, additional_details } = body;
 
       const { sanitizeHtmlDescription } = await import('../utils/textSanitizer');
 
@@ -343,6 +343,10 @@ export class LeadController {
       if (description !== undefined) updateData.description = sanitizeHtmlDescription(description);
       if (salaryRange !== undefined) updateData.salary_range = String(salaryRange).trim();
       if (workersNeeded !== undefined) updateData.workers_needed = Number(workersNeeded);
+      const details = additionalDetails || additional_details;
+      if (details !== undefined) {
+        updateData.normalized_title = JSON.stringify(details);
+      }
 
       const updated = await prisma.employer_lead_requirements.update({
         where: { id: reqId },
