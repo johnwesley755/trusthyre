@@ -26,3 +26,4 @@ export const sanitizeRedirectUrl = (url: string | null | undefined): string => {
 
   return isSafePath ? trimmed : '/search';
 };
+

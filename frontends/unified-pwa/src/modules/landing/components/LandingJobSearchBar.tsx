@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
@@ -6,9 +6,7 @@ import {
   Briefcase, 
   LocateFixed, 
   Loader2, 
-  ArrowRight, 
-  Sparkles,
-  Zap
+  ArrowRight
 } from 'lucide-react';
 import { detectCurrentCity } from '../../../utils/geolocation';
 import { useTranslation } from '../../../providers/TranslationContext';
@@ -18,14 +16,14 @@ interface LandingJobSearchBarProps {
 }
 
 const TOP_BLUE_COLLAR_TRADES = [
-  { id: 'all', label: 'All Trades', icon: '✨' },
-  { id: 'electrician', label: 'Electrician', icon: '⚡' },
-  { id: 'cook', label: 'Cook / Chef', icon: '🍳' },
-  { id: 'driver', label: 'Delivery / Driver', icon: '🚚' },
-  { id: 'warehouse', label: 'Warehouse & Logistics', icon: '📦' },
-  { id: 'plumber', label: 'Plumber', icon: '🔧' },
-  { id: 'security', label: 'Security Guard', icon: '🛡️' },
-  { id: 'carpenter', label: 'Carpenter & Mason', icon: '🏗️' },
+  { id: 'all', label: 'All Trades' },
+  { id: 'electrician', label: 'Electrician' },
+  { id: 'cook', label: 'Cook / Chef' },
+  { id: 'driver', label: 'Delivery / Driver' },
+  { id: 'warehouse', label: 'Warehouse & Logistics' },
+  { id: 'plumber', label: 'Plumber' },
+  { id: 'security', label: 'Security Guard' },
+  { id: 'carpenter', label: 'Carpenter & Mason' },
 ];
 
 const EXPERIENCE_LEVELS = [
@@ -74,6 +72,7 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    setCitySuggestionsVisible(false);
     
     const params = new URLSearchParams();
     if (query.trim()) params.set('q', query.trim());
@@ -97,16 +96,16 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto my-4 sm:my-6 transition-all duration-300">
+    <div className="relative z-30 w-full max-w-4xl transition-all duration-300">
       
       {/* 1. Main Search Container Card */}
       <form 
         onSubmit={handleSearch}
-        className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-full p-2 sm:p-2.5 border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-1 text-[#0a0a0a]"
+        className="relative z-30 bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-full p-2 sm:p-2 border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-1 text-[#0a0a0a]"
       >
         
         {/* Segment A: Job Title / Keyword Input */}
-        <div className="flex-1 flex items-center gap-2.5 px-3.5 py-2 sm:py-1.5 border-b sm:border-b-0 sm:border-r border-slate-200/80">
+        <div className="flex-1 flex items-center gap-2.5 px-3.5 py-1.5 sm:py-1 border-b sm:border-b-0 sm:border-r border-slate-200/80">
           <Search className="w-4 h-4 text-[#0f2f63] shrink-0" />
           <input
             type="text"
@@ -119,7 +118,7 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
         </div>
 
         {/* Segment B: Experience Dropdown */}
-        <div className="flex items-center gap-2 px-3.5 py-2 sm:py-1.5 border-b sm:border-b-0 sm:border-r border-slate-200/80 min-w-[140px] shrink-0">
+        <div className="flex items-center gap-2 px-3.5 py-1.5 sm:py-1 border-b sm:border-b-0 sm:border-r border-slate-200/80 min-w-[140px] shrink-0">
           <Briefcase className="w-4 h-4 text-[#0f2f63] shrink-0" />
           <select
             value={experience}
@@ -136,7 +135,7 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
         </div>
 
         {/* Segment C: Location / City with Geolocation */}
-        <div className="relative flex-1 flex items-center gap-2 px-3.5 py-2 sm:py-1.5">
+        <div className="relative flex-1 flex items-center gap-2 px-3.5 py-1.5 sm:py-1">
           <MapPin className="w-4 h-4 text-[#0f2f63] shrink-0" />
           <input
             type="text"
@@ -160,15 +159,15 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
             {isLocating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
           </button>
 
-          {/* Quick Cities Popup */}
+          {/* Quick Cities Popup with High Z-Index & Solid White Opaque Styling */}
           {citySuggestionsVisible && (
             <>
               <div 
-                className="fixed inset-0 z-30" 
+                className="fixed inset-0 z-40" 
                 onClick={() => setCitySuggestionsVisible(false)} 
               />
-              <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-40">
-                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 overflow-hidden font-['Onest',system-ui,sans-serif]">
+                <div className="px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1">
                   Popular Hubs
                 </div>
                 {POPULAR_CITIES.map((popCity) => (
@@ -179,10 +178,10 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
                       setCity(popCity);
                       setCitySuggestionsVisible(false);
                     }}
-                    className="w-full text-left px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-[#0f2f63]/10 hover:text-[#0f2f63] transition-colors flex items-center justify-between"
+                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-[#0f2f63]/10 hover:text-[#0f2f63] transition-colors flex items-center justify-between cursor-pointer"
                   >
                     <span>{popCity}</span>
-                    <span className="text-[10px] text-slate-400">Verified</span>
+                    <span className="text-[10px] text-slate-400 font-medium">Verified</span>
                   </button>
                 ))}
               </div>
@@ -193,7 +192,7 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
         {/* Action Button: Search Jobs */}
         <button
           type="submit"
-          className="px-6 py-3 sm:py-2.5 rounded-xl sm:rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-95 shrink-0"
+          className="px-6 py-2.5 rounded-xl sm:rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-95 shrink-0"
         >
           <span>{t("Search Jobs", "Search Jobs")}</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -201,10 +200,9 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
 
       </form>
 
-      {/* 2. Visual Trade Chips (Quick Filters for Blue-Collar Workers) */}
-      <div className="mt-3 flex items-center gap-1.5 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth">
+      {/* 2. Visual Trade Chips - Rendered under search bar with z-10 so dropdown appears entirely on top */}
+      <div className="relative z-10 mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar scroll-smooth">
         <span className="text-[11px] font-bold uppercase tracking-wider text-white/70 whitespace-nowrap hidden sm:inline-flex items-center gap-1 mr-1">
-          <Zap className="w-3 h-3 text-amber-300" />
           <span>Top Trades:</span>
         </span>
         {TOP_BLUE_COLLAR_TRADES.map((trade) => {
@@ -215,19 +213,13 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
               type="button"
               onClick={() => {
                 setSelectedTrade(trade.id);
-                if (trade.id !== 'all') {
-                  navigate(`/search?trade=${encodeURIComponent(trade.label)}`);
-                } else {
-                  navigate('/search');
-                }
               }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 isSelected
                   ? 'bg-white text-[#0f2f63] shadow-xs scale-102 font-bold'
                   : 'bg-white/10 hover:bg-white/20 text-white/90 border border-white/15 backdrop-blur-xs'
               }`}
             >
-              <span>{trade.icon}</span>
               <span>{trade.label}</span>
             </button>
           );

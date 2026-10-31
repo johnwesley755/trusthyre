@@ -613,7 +613,7 @@ export default function LandingPage() {
         {/* =================================================================== */}
         {/* 1. HERO SECTION */}
         {/* =================================================================== */}
-        <section className="relative isolate overflow-hidden rounded-2xl sm:rounded-[2rem] bg-[#0f2f63] text-white min-h-[38rem] h-auto lg:h-[calc(100svh-1.5rem)] flex flex-col justify-between">
+        <section className="relative isolate overflow-hidden rounded-2xl sm:rounded-[2rem] bg-[#0f2f63] text-white min-h-[46rem] lg:min-h-[calc(100svh-1.5rem)] h-auto flex flex-col justify-between">
           
           {/* Parallax Background Plate with Multi-Sector Crossfade Transitions */}
           <div 
@@ -790,8 +790,8 @@ export default function LandingPage() {
           </header>
 
           {/* DYNAMIC TITLE BLOCK FOR BOTH CANDIDATES & EMPLOYERS */}
-          <div className="px-6 sm:px-10 pt-4 sm:pt-6">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.8rem] font-medium uppercase leading-[0.92] tracking-tight text-white max-w-5xl">
+          <div className="px-6 sm:px-10 pt-2 sm:pt-4">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-medium uppercase leading-[0.92] tracking-tight text-white max-w-5xl">
               {t(HERO_MODES[heroModeIdx].title, HERO_MODES[heroModeIdx].title)
                 .split(' ')
                 .map((word, wIdx) => (
@@ -812,7 +812,7 @@ export default function LandingPage() {
             </h1>
 
             {/* Direct Job Search Bar for Public Discovery */}
-            <div className="pt-2">
+            <div className="pt-6 sm:pt-8">
               <LandingJobSearchBar />
             </div>
 
@@ -836,7 +836,7 @@ export default function LandingPage() {
           </div>
 
           {/* BOTTOM ROW (Tagline + Floating Cluster) */}
-          <div className="mt-auto px-6 pb-8 sm:px-10 sm:pb-10 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
+          <div className="mt-8 sm:mt-auto px-6 pb-6 sm:px-10 sm:pb-8 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
             
             {/* Tagline Stacked Lines + Active Sector Indicator */}
             <div className="space-y-3">
