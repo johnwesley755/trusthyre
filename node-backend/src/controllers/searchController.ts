@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import prisma from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
+import { sanitizeHtmlDescription } from '../utils/textSanitizer';
 
 export const searchJobs = async (c: Context) => {
   try {
@@ -162,7 +163,7 @@ export const searchJobs = async (c: Context) => {
         return {
           id: j.id,
           title: j.title,
-          description: j.description || '',
+          description: sanitizeHtmlDescription(j.description),
           industry: j.industry || 'General',
           jobType: defaultJobType,
           location: j.location || '',

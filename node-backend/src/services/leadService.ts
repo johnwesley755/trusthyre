@@ -279,7 +279,7 @@ export class LeadService {
           where: { id: existingReq.id },
           data: {
             title: req.title || existingReq.title,
-            description: req.description || existingReq.description,
+            description: sanitizeHtmlDescription(req.description) || existingReq.description,
             workers_needed: req.workersNeeded !== undefined ? req.workersNeeded : existingReq.workers_needed,
             salary_range: req.salaryRange || existingReq.salary_range,
             source_url: normalizedSourceUrl,
@@ -296,7 +296,7 @@ export class LeadService {
             title: req.title,
             normalized_title: normTitle,
             category: req.category || input.industry || null,
-            description: req.description || null,
+            description: sanitizeHtmlDescription(req.description) || null,
             city: req.city || input.city || null,
             location: req.location || input.address || null,
             workers_needed: req.workersNeeded !== undefined ? req.workersNeeded : null,

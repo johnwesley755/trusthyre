@@ -7,6 +7,8 @@ import { SearchAlertService } from '../services/searchAlertService';
 
 const ALLOWED_JOB_STATUSES = ['OPEN', 'ACTIVE', 'IN_PROGRESS', 'COMPLETED', 'EXPIRED', 'CANCELLED', 'CLOSED'];
 
+import { sanitizeHtmlDescription } from '../utils/textSanitizer';
+
 const formatJob = (job: any) => {
   if (!job) return job;
   const effectiveExpiry = job.expires_at 
@@ -36,6 +38,7 @@ const formatJob = (job: any) => {
 
   return {
     ...job,
+    description: sanitizeHtmlDescription(job.description),
     coverImageUrl: job.cover_image_url || job.coverImageUrl || null,
     cover_image_url: job.cover_image_url || job.coverImageUrl || null,
     status: effectiveStatus,

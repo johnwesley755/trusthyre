@@ -1,3 +1,23 @@
+function cleanDescription(desc?: string | null): string {
+  if (!desc) return '';
+  return desc
+    .replace(/<(?:br\s*\/?>|\/p>|\/div>|\/li>|\/tr>)/gi, '\n')
+    .replace(/<li[^>]*>/gi, '• ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&apos;/gi, "'")
+    .split('\n')
+    .map(line => line.replace(/[ \t]+/g, ' ').trim())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { jobService } from '../../../services/job.service';
@@ -607,7 +627,7 @@ export default function JobDetailPage() {
               </div>
 
               <div className="bg-white rounded-2xl p-5 border border-[#e6e8ec] text-xs text-[#0a0a0a] leading-relaxed whitespace-pre-line">
-                {job.description || "Detailed scope and trade responsibilities will be provided during onboarding by the employer."}
+                {cleanDescription(job.description) || "Detailed scope and trade responsibilities will be provided during onboarding by the employer."}
               </div>
             </div>
 
