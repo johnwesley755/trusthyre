@@ -94,6 +94,24 @@ export const router = createBrowserRouter([
         path: '/blog/category/:slug',
         element: <BlogListingPage />,
       },
+      /* Public Discovery Routes (Accessible to Guests, Workers & Employers via AppLayout) */
+      {
+        element: <AppLayout />,
+        children: [
+          {
+            path: '/search',
+            element: <JobSearchPage />,
+          },
+          {
+            path: '/job/:id',
+            element: <JobDetailPage />,
+          },
+          {
+            path: '/jobs/:id',
+            element: <JobDetailPage />,
+          },
+        ]
+      },
       {
         path: '/onboarding',
         element: (
@@ -189,10 +207,6 @@ export const router = createBrowserRouter([
                 element: <TrackerPage />,
               },
               {
-                path: '/search',
-                element: <JobSearchPage />,
-              },
-              {
                 path: '/saved-jobs',
                 element: <SavedJobsPage />,
               },
@@ -216,14 +230,6 @@ export const router = createBrowserRouter([
           },
 
           /* Shared Authenticated Routes (Accessible to both Worker & Employer) */
-          {
-            path: '/job/:id',
-            element: <JobDetailPage />,
-          },
-          {
-            path: '/jobs/:id',
-            element: <JobDetailPage />,
-          },
           {
             path: '/worker/:id',
             element: <WorkerProfilePage />,

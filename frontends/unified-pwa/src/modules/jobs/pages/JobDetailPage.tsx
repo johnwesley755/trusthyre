@@ -1,14 +1,15 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { jobService } from '../../../services/job.service';
 import { applicationService } from '../../../services/application.service';
 import { profileService } from '../../../services/profile.service';
 import { queryKeys } from '../../../lib/queryKeys';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SeoHead, buildJobPostingJsonLd, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
 import { getEffectiveCoverUrl, resolveTradeCover } from '../../../utils/coverImage.utils';
 import { formatMissingProfileFields, getMissingProfileFields } from '../../../utils/profileCompletion';
 import { useUser } from '../../../providers/AuthContext';
+import { sanitizeRedirectUrl } from '../../../utils/redirectSanitizer';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { 
   CheckCircle2, 
@@ -129,6 +130,24 @@ export default function JobDetailPage() {
   const [coverLetter, setCoverLetter] = useState('');
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
   const [coverImageFailed, setCoverImageFailed] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  // Auto-trigger application if redirected here after guest sign-in intent
+  useEffect(() => {
+    if (searchParams.get('action') === 'apply' && user?.role === 'WORKER') {
+      try {
+        const pending = sessionStorage.getItem('trusthyre_pending_application');
+        if (pending) {
+          const parsed = JSON.parse(pending);
+          if (parsed.jobId === id) {
+            sessionStorage.removeItem('trusthyre_pending_application');
+            toast.info('Completing your application now that you are signed in...');
+            setShowCoverLetterInput(true);
+          }
+        }
+      } catch (_) {}
+    }
+  }, [searchParams, user, id]);
 
   const { data: job, isLoading } = useQuery({
     queryKey: queryKeys.jobs.detail(id || ''),
@@ -205,6 +224,22 @@ export default function JobDetailPage() {
   });
 
   const handleApply = () => {
+    if (!user) {
+      // Store intent for frictionless post-auth application
+      try {
+        sessionStorage.setItem('trusthyre_pending_application', JSON.stringify({
+          jobId: id,
+          jobTitle: job?.title,
+          timestamp: Date.now()
+        }));
+      } catch (_) {}
+
+      toast.info('Please sign in as a candidate to submit your application.');
+      const returnUrl = sanitizeRedirectUrl(`/job/${id}?action=apply`);
+      navigate(`/sign-in?role=worker&redirect=${encodeURIComponent(returnUrl)}`);
+      return;
+    }
+
     if (isEmployer) {
       toast.info('Employers cannot apply for openings. You can manage candidates from the pipeline.');
       return;
@@ -538,8 +573,14 @@ export default function JobDetailPage() {
                   disabled={mutation.isPending}
                   className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full font-medium text-xs shadow-xs transition-all cursor-pointer uppercase active:scale-95 disabled:opacity-50"
                 >
-                  {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                  <span>Instant Apply</span>
+                  {mutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : !user ? (
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  ) : (
+                    <Send className="w-3.5 h-3.5" />
+                  )}
+                  <span>{!user ? 'Sign In to Apply' : 'Instant Apply'}</span>
                 </button>
               ) : null}
             </div>
