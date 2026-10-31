@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from bs4 import BeautifulSoup
@@ -14,6 +15,24 @@ BROWSER_HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9,ta;q=0.8,hi;q=0.7",
 }
+
+
+def clean_html_tags(html_str: Optional[str]) -> str:
+    """Strips HTML tags cleanly and converts breaks to readable newlines."""
+    if not html_str:
+        return ""
+    s = re.sub(r'<(?:br\s*/?|/p|/div|/li|/tr)>', '\n', html_str, flags=re.IGNORECASE)
+    s = re.sub(r'<li[^>]*>', '• ', s, flags=re.IGNORECASE)
+    s = re.sub(r'<[^>]+>', '', s)
+    s = (s.replace('&nbsp;', ' ')
+          .replace('&amp;', '&')
+          .replace('&lt;', '<')
+          .replace('&gt;', '>')
+          .replace('&quot;', '"')
+          .replace('&#39;', "'")
+          .replace('&apos;', "'"))
+    lines = [re.sub(r'[ \t]+', ' ', line).strip() for line in s.split('\n')]
+    return re.sub(r'\n{3,}', '\n\n', '\n'.join(lines)).strip()
 
 
 class ApnaDirectAdapter(BaseSourceAdapter):
@@ -112,8 +131,51 @@ class ApnaDirectAdapter(BaseSourceAdapter):
             logger.error(f"[{self.id}] Discovery failed: {ex}")
             return []
 
+    def _extract_dom_salary(self, soup: BeautifulSoup, page_text: str) -> tuple[Optional[float], Optional[float], Optional[str]]:
+        """Deep DOM and regex salary extractor for Apna earning potential and monthly wage cards."""
+        # 1. Look for patterns like ₹35,000 - ₹75,000 or ₹35000 - 75000
+        salary_match = re.search(r'₹\s*([0-9,]+)\s*-\s*₹?\s*([0-9,]+)', page_text)
+        if salary_match:
+            try:
+                min_val = float(salary_match.group(1).replace(',', ''))
+                max_val = float(salary_match.group(2).replace(',', ''))
+                raw_str = f"₹{int(min_val):,} - ₹{int(max_val):,} monthly"
+                return min_val, max_val, raw_str
+            except (ValueError, IndexError):
+                pass
+
+        # 2. Look for Earning Potential or Fixed numbers
+        earning_match = re.search(r'(?:Earning Potential|Fixed|Salary)\s*[:\s]*₹?\s*([0-9,]+)', page_text, re.IGNORECASE)
+        if earning_match:
+            try:
+                val = float(earning_match.group(1).replace(',', ''))
+                return val, val, f"₹{int(val):,} monthly"
+            except ValueError:
+                pass
+
+        return None, None, None
+
+    def _extract_job_highlights(self, soup: BeautifulSoup) -> List[str]:
+        """Extracts bullet highlights like 'Weekly Payout', 'Joining Bonus', etc."""
+        highlights = []
+        for section in soup.find_all(lambda tag: tag.name in ['div', 'section'] and any(c in str(tag.get('class', [])) for c in ['highlight', 'benefit', 'perk'])):
+            text = section.get_text(separator=' ', strip=True)
+            if 'Benefits include' in text or 'Urgently hiring' in text:
+                clean = re.sub(r'[ \t]+', ' ', text)
+                if clean and clean not in highlights:
+                    highlights.append(clean)
+        return highlights
+
     def _parse_detail_html(self, html: str, url: str, default_city: str) -> Optional[RawJobRecord]:
         soup = BeautifulSoup(html, "lxml")
+        page_text = soup.get_text(separator=' ', strip=True)
+
+        title = None
+        company = None
+        loc_str = default_city
+        s_min, s_max, s_raw = None, None, None
+        date_posted = None
+        desc_parts: List[str] = []
 
         # 1. Parse Schema.org JobPosting
         for s in soup.find_all("script", type="application/ld+json"):
@@ -124,12 +186,8 @@ class ApnaDirectAdapter(BaseSourceAdapter):
                     hiring_org = data.get("hiringOrganization", {})
                     company = hiring_org.get("name") if isinstance(hiring_org, dict) else str(hiring_org)
 
-                    if not title or not company:
-                        continue
-
                     # Location
                     loc_obj = data.get("jobLocation", {})
-                    loc_str = default_city
                     if isinstance(loc_obj, dict):
                         addr = loc_obj.get("address", {})
                         if isinstance(addr, dict):
@@ -137,17 +195,17 @@ class ApnaDirectAdapter(BaseSourceAdapter):
                             region = addr.get("addressRegion")
                             loc_str = locality or region or default_city
 
-                    # Salary
+                    # Salary from Schema
                     base_sal = data.get("baseSalary", {})
-                    s_min, s_max = None, None
                     if isinstance(base_sal, dict):
                         val = base_sal.get("value", {})
                         if isinstance(val, dict):
                             s_min = float(val["minValue"]) if val.get("minValue") is not None else None
                             s_max = float(val["maxValue"]) if val.get("maxValue") is not None else None
+                            if s_min and s_max:
+                                s_raw = f"₹{int(s_min):,} - ₹{int(s_max):,} monthly"
 
                     # Date Posted
-                    date_posted = None
                     dp_raw = data.get("datePosted")
                     if dp_raw:
                         try:
@@ -155,28 +213,71 @@ class ApnaDirectAdapter(BaseSourceAdapter):
                         except Exception:
                             date_posted = None
 
-                    category = VernacularTradeMapper.get_category_for_trade(title)
-                    desc = data.get("description", "")[:2000]
+                    raw_desc = data.get("description", "")
+                    if raw_desc:
+                        desc_parts.append(clean_html_tags(raw_desc))
 
-                    return RawJobRecord(
-                        title=title.strip(),
-                        company_name=company.strip(),
-                        city=default_city,
-                        location=loc_str,
-                        category=category,
-                        description=desc,
-                        salary_min=s_min,
-                        salary_max=s_max,
-                        salary_period="MONTHLY",
-                        salary_currency="INR",
-                        source_name=self.name,
-                        source_url=url,
-                        date_posted=date_posted,
-                    )
+                    break
             except Exception:
                 continue
 
-        return None
+        # 2. Fallback DOM extraction for Title & Company if not found in Schema
+        if not title:
+            h1 = soup.find('h1')
+            if h1:
+                title = h1.get_text(strip=True)
+
+        if not company:
+            for c_elem in soup.find_all(['h2', 'span', 'p']):
+                text = c_elem.get_text(strip=True)
+                if text and len(text) < 50 and any(kw in text.lower() for kw in ['private limited', 'logistics', 'services', 'saloon', 'enterprises', 'minutes']):
+                    company = text
+                    break
+
+        if not title:
+            return None
+
+        # 3. Deep Salary Discovery if missing or zero in Schema
+        dom_min, dom_max, dom_raw = self._extract_dom_salary(soup, page_text)
+        if dom_min and (not s_min or dom_min > s_min):
+            s_min, s_max, s_raw = dom_min, dom_max, dom_raw
+
+        # 4. Deep Highlights & Benefits Extraction
+        highlights = self._extract_job_highlights(soup)
+        if highlights:
+            desc_parts.insert(0, "\n".join(highlights))
+
+        # 5. Extract Details & Work Arrangement pills
+        details_pills = []
+        for pill in soup.find_all(lambda tag: tag.name in ['span', 'div'] and any(w in tag.get_text().lower() for w in ['field job', 'work from office', 'work from home', 'full time', 'part time', 'no english required', 'any experience'])):
+            p_text = pill.get_text(strip=True)
+            if p_text and p_text not in details_pills and len(p_text) < 40:
+                details_pills.append(f"• {p_text}")
+
+        if details_pills:
+            desc_parts.append("\nJob Overview:\n" + "\n".join(details_pills))
+
+        category = VernacularTradeMapper.get_category_for_trade(title)
+        final_description = "\n\n".join([p for p in desc_parts if p.strip()]).strip()
+        if not final_description:
+            final_description = f"Verified hiring requisition for {title} in {default_city}."
+
+        return RawJobRecord(
+            title=title.strip(),
+            company_name=(company or "Verified Employer").strip(),
+            city=default_city,
+            location=loc_str,
+            category=category,
+            description=final_description,
+            salary_min=s_min,
+            salary_max=s_max,
+            salary_raw=s_raw,
+            salary_period="MONTHLY",
+            salary_currency="INR",
+            source_name=self.name,
+            source_url=url,
+            date_posted=date_posted,
+        )
 
     async def parse_job_detail(self, url: str) -> Optional[RawJobRecord]:
         try:

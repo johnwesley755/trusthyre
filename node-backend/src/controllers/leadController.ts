@@ -328,4 +328,31 @@ export class LeadController {
       return c.json({ success: true, data: [], sources: [] });
     }
   }
+
+  static async updateRequirement(c: Context) {
+    try {
+      const id = c.req.param('id');
+      const reqId = c.req.param('reqId');
+      const body = await c.req.json().catch(() => ({}));
+      const { title, description, salaryRange, workersNeeded } = body;
+
+      const { sanitizeHtmlDescription } = await import('../utils/textSanitizer');
+
+      const updateData: any = {};
+      if (title !== undefined) updateData.title = String(title).trim();
+      if (description !== undefined) updateData.description = sanitizeHtmlDescription(description);
+      if (salaryRange !== undefined) updateData.salary_range = String(salaryRange).trim();
+      if (workersNeeded !== undefined) updateData.workers_needed = Number(workersNeeded);
+
+      const updated = await prisma.employer_lead_requirements.update({
+        where: { id: reqId },
+        data: updateData,
+      });
+
+      return c.json({ success: true, message: 'Requirement updated successfully', data: updated });
+    } catch (error: any) {
+      console.error('Error updating lead requirement:', error);
+      return c.json({ success: false, error: error.message }, 500);
+    }
+  }
 }

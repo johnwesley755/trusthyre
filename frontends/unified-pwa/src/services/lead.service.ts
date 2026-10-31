@@ -185,6 +185,11 @@ export const leadService = {
     const raw = response.data;
     if (Array.isArray(raw)) return raw;
     return raw?.sources || raw?.data || [];
+  },
+
+  updateRequirement: async (leadId: string, reqId: string, data: { title?: string; description?: string; salaryRange?: string; workersNeeded?: number }): Promise<any> => {
+    const response = await apiClient.patch(/api/admin/leads//requirements/, data);
+    return response.data;
   }
 };
 

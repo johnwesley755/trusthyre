@@ -555,12 +555,13 @@ export class LeadService {
     if (lead.requirements && Array.isArray(lead.requirements)) {
       for (const req of lead.requirements) {
         if (req.status === 'OPEN') {
-          // Parse budget from salary_range if present
+          // Parse budget from salary_range prioritizing upper earning limit if range exists
           let budget = null;
           if (req.salary_range) {
-            const match = req.salary_range.replace(/,/g, '').match(/\d+/g);
-            if (match && match[0]) {
-              budget = parseFloat(match[0]);
+            const matches = req.salary_range.replace(/,/g, '').match(/\d+/g);
+            if (matches && matches.length > 0) {
+              const nums = matches.map(n => parseFloat(n)).filter(n => !isNaN(n) && n > 0);
+              budget = nums.length > 1 ? Math.max(...nums) : nums[0];
             }
           }
 

@@ -19,5 +19,6 @@ leadRouter.post('/batch-ingest', LeadController.batchIngest);
 leadRouter.patch('/:id/status', LeadController.updateLeadStatus);
 leadRouter.post('/:id/outreach', LeadController.logOutreach);
 leadRouter.post('/:id/convert', LeadController.convertLead);
+leadRouter.patch('/:id/requirements/:reqId', LeadController.updateRequirement);
 
 export { leadRouter };

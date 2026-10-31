@@ -24,7 +24,10 @@ import {
   Lightbulb,
   ChevronLeft,
   ChevronRight,
-  RotateCcw
+  RotateCcw,
+  Edit3,
+  Save,
+  FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLoader } from '../../../components/common/AppLoader';
@@ -75,6 +78,33 @@ export const AdminLeadsPage: React.FC = () => {
   const [selectedLead, setSelectedLead] = useState<EmployerLeadItem | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+  const [editingReq, setEditingReq] = useState<any | null>(null);
+  const [editReqForm, setEditReqForm] = useState<{ title: string; description: string; salaryRange: string; workersNeeded: number }>({
+    title: '',
+    description: '',
+    salaryRange: '',
+    workersNeeded: 1,
+  });
+
+  const updateReqMutation = useMutation({
+    mutationFn: ({ leadId, reqId, data }: { leadId: string; reqId: string; data: any }) =>
+      leadService.updateRequirement(leadId, reqId, data),
+    onSuccess: (res, vars) => {
+      toast.success('Job requisition updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['adminLeads'] });
+      if (selectedLead && selectedLead.requirements) {
+        setSelectedLead((prev: any) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            requirements: prev.requirements.map((r: any) => (r.id === vars.reqId ? { ...r, ...vars.data } : r)),
+          };
+        });
+      }
+      setEditingReq(null);
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.error || 'Failed to update requirement'),
+  });
   const [activeScanId, setActiveScanId] = useState<string | null>(null);
   const [scanStatus, setScanStatus] = useState<any | null>(null);
   const pollIntervalRef = useRef<any>(null);
@@ -1163,6 +1193,23 @@ export const AdminLeadsPage: React.FC = () => {
                           <strong className="text-[#0a0a0a] font-medium">{req.salary_range || 'Competitive'}</strong>
                         </div>
                         <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingReq(req);
+                              setEditReqForm({
+                                title: req.title || '',
+                                description: req.description || '',
+                                salaryRange: req.salary_range || '',
+                                workersNeeded: req.workers_needed || 1,
+                              });
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#0f2f63]/5 hover:bg-[#0f2f63] text-[#0f2f63] hover:text-white rounded-lg text-xs font-semibold border border-[#0f2f63]/20 transition-all shadow-2xs cursor-pointer"
+                            title="Edit this job vacancy description and salary"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            <span>Edit JD</span>
+                          </button>
                           {req.source_url ? (
                             <a
                               href={formatLink(req.source_url)}
@@ -1296,6 +1343,103 @@ export const AdminLeadsPage: React.FC = () => {
                   <span>Onboard to TrustHyre (Create Employer)</span>
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Vacancy / Requirement Modal */}
+      {editingReq && selectedLead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white border border-[#e2e4e9] w-full max-w-xl rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-[#0f2f63]/10 text-[#0f2f63] flex items-center justify-center">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#0a0a0a]">Edit Job Vacancy</h3>
+                  <p className="text-xs text-[#717784]">{selectedLead.company_name}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingReq(null)}
+                className="p-1.5 text-[#717784] hover:text-[#0a0a0a] rounded-lg cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Title</label>
+                <input
+                  type="text"
+                  value={editReqForm.title}
+                  onChange={(e) => setEditReqForm({ ...editReqForm, title: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-semibold focus:outline-none focus:border-[#0f2f63]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Salary Range</label>
+                  <input
+                    type="text"
+                    value={editReqForm.salaryRange}
+                    onChange={(e) => setEditReqForm({ ...editReqForm, salaryRange: e.target.value })}
+                    placeholder="e.g. ₹35,000 - ₹75,000 monthly"
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Workers Needed</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={editReqForm.workersNeeded}
+                    onChange={(e) => setEditReqForm({ ...editReqForm, workersNeeded: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Description & Scope</label>
+                <textarea
+                  rows={7}
+                  value={editReqForm.description}
+                  onChange={(e) => setEditReqForm({ ...editReqForm, description: e.target.value })}
+                  placeholder="Enter clean job description, duties, and hiring requirements..."
+                  className="w-full px-3 py-2.5 rounded-xl border border-[#e2e4e9] text-xs leading-relaxed focus:outline-none focus:border-[#0f2f63] font-sans"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#e6e8ec]">
+              <button
+                type="button"
+                onClick={() => setEditingReq(null)}
+                className="px-4 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium cursor-pointer hover:bg-[#f4f5f8]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={updateReqMutation.isPending}
+                onClick={() => {
+                  updateReqMutation.mutate({
+                    leadId: selectedLead.id,
+                    reqId: editingReq.id,
+                    data: editReqForm,
+                  });
+                }}
+                className="px-5 py-2 rounded-xl bg-[#0f2f63] hover:bg-[#163e7f] text-white text-xs font-bold cursor-pointer shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Changes</span>
+              </button>
             </div>
           </div>
         </div>

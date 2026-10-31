@@ -23,6 +23,7 @@ class RawJobRecord(BaseModel):
     salary_max: Optional[float] = None
     salary_period: Optional[str] = "MONTHLY"
     salary_currency: Optional[str] = "INR"
+    salary_raw: Optional[str] = None
     experience_years: Optional[int] = 0
     source_name: str
     source_url: str
