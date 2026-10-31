@@ -1,3 +1,4 @@
+import { sanitizeHtmlDescription } from '../utils/textSanitizer';
 import { Context } from 'hono';
 import prisma from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
@@ -6,8 +7,6 @@ import { NotificationDispatcher } from '../services/notificationDispatcher';
 import { SearchAlertService } from '../services/searchAlertService';
 
 const ALLOWED_JOB_STATUSES = ['OPEN', 'ACTIVE', 'IN_PROGRESS', 'COMPLETED', 'EXPIRED', 'CANCELLED', 'CLOSED'];
-
-import { sanitizeHtmlDescription } from '../utils/textSanitizer';
 
 const formatJob = (job: any) => {
   if (!job) return job;

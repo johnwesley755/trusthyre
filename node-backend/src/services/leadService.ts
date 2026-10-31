@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma';
+import { sanitizeHtmlDescription } from '../utils/textSanitizer';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
