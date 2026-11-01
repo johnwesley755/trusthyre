@@ -150,7 +150,7 @@ export const login = async (c: Context) => {
     }
 
     // Role-based portal enforcement: Admin portal is strictly reserved for administrators
-    if (role === 'ADMIN' && user.role !== 'ADMIN') {
+    if (role === 'ADMIN' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
       return c.json(ApiResponse.error("Access denied: This account does not possess administrator privileges."), 403 as any);
     }
 

@@ -17,7 +17,7 @@ export const AdminLoginPage = () => {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (isSignedIn && user?.role === 'ADMIN') {
+    if (isSignedIn && (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN')) {
       navigate('/admin/dashboard', { replace: true });
     }
   }, [isSignedIn, user, navigate]);
@@ -35,7 +35,7 @@ export const AdminLoginPage = () => {
       });
 
       const userData = response.data.user;
-      if (userData.role !== 'ADMIN') {
+      if (userData.role !== 'ADMIN' && userData.role !== 'SUPER_ADMIN') {
         setError('Access denied: This account does not possess administrator privileges.');
         return;
       }

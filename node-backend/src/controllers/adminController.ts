@@ -379,6 +379,10 @@ export const deleteUserByAdmin = async (c: Context) => {
 
 export const createAdminUser = async (c: Context) => {
   try {
+    const caller = c.get('user');
+    if (caller?.role !== 'SUPER_ADMIN') {
+      return c.json(ApiResponse.error("Forbidden: Only Super Administrators can directly create administrators"), 403 as any);
+    }
     const bcrypt = await import('bcryptjs');
     const { email, password, firstName, lastName } = (await c.req.json());
 
@@ -677,6 +681,9 @@ export const getVisitorAnalytics = async (c: Context) => {
 export const createAdminInvitation = async (c: Context) => {
   try {
     const caller = c.get('user');
+    if (caller?.role !== 'SUPER_ADMIN') {
+      return c.json(ApiResponse.error("Forbidden: Only Super Administrators can issue admin invitations"), 403 as any);
+    }
     const { email, firstName, lastName, sendEmailNotification = true } = (await c.req.json());
 
     if (!email || typeof email !== 'string' || !email.includes('@')) {

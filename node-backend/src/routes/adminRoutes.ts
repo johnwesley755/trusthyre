@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import * as adminController from '../controllers/adminController';
 import * as diagnosticController from '../controllers/diagnosticController';
-import { authenticateJWT, requireAdmin } from '../middlewares/auth';
+import { authenticateJWT, requireAdmin, requireSuperAdmin } from '../middlewares/auth';
 
 const router = new Hono();
 
@@ -14,13 +14,17 @@ router.post('/invitations/accept', adminController.acceptAdminInvitation);
 /**
  * Authenticated Administrative Endpoints
  */
-router.use('/diagnostics/*', authenticateJWT, requireAdmin);
+router.use('/diagnostics/*', authenticateJWT, requireSuperAdmin);
 router.use('/stats', authenticateJWT, requireAdmin);
 router.use('/analytics/*', authenticateJWT, requireAdmin);
 router.use('/verifications/*', authenticateJWT, requireAdmin);
 router.use('/users/*', authenticateJWT, requireAdmin);
 router.use('/jobs/*', authenticateJWT, requireAdmin);
-router.use('/invitations/create', authenticateJWT, requireAdmin);
+
+// Super-Admin Only routes for user deletion and admin provisioning
+router.post('/invitations/create', authenticateJWT, requireSuperAdmin, adminController.createAdminInvitation);
+router.post('/users/create-admin', authenticateJWT, requireSuperAdmin, adminController.createAdminUser);
+router.delete('/users/:id', authenticateJWT, requireSuperAdmin, adminController.deleteUserByAdmin);
 
 router.get('/diagnostics/brevo', diagnosticController.getBrevoDiagnostics);
 router.get('/stats', adminController.getAdminStats);
@@ -30,13 +34,10 @@ router.get('/visitors', adminController.getVisitorAnalytics);
 router.get('/verifications', adminController.getVerifications);
 router.patch('/verifications/:id/status', adminController.updateVerificationStatus);
 
-// User & Admin Provisioning
+// User Registry (Read operations for all admins)
 router.get('/users', adminController.getAllUsers);
-router.post('/users/create-admin', adminController.createAdminUser);
-router.delete('/users/:id', adminController.deleteUserByAdmin);
-router.post('/invitations/create', adminController.createAdminInvitation);
 
-// Jobs moderation
+// Jobs & Scraper operations (Full CRUD granted to both SUPER_ADMIN and ADMIN per operational policy)
 router.get('/jobs', adminController.getAllJobs);
 router.post('/jobs/sync-external', adminController.syncExternalJobs);
 router.get('/jobs/scan-status/:id', adminController.getScanStatus);

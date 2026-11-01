@@ -7,10 +7,13 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLoader } from '../../../components/common/AppLoader';
+import { useAuth } from '../../../providers/AuthContext';
 import { ConfirmModal } from '../../../components/common/ConfirmModal';
 
 export const AdminUsersPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const [selectedRole, setSelectedRole] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -167,16 +170,18 @@ export const AdminUsersPage: React.FC = () => {
             Manage all verified candidates, registered employers, and administrator accounts across the ecosystem.
           </p>
         </div>
-        <button
-          onClick={() => {
-            setIsModalOpen(true);
-            setGeneratedInvite(null);
-          }}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium uppercase tracking-wider bg-[#0f2f63] hover:bg-[#2563c9] text-white shadow-xs transition-all cursor-pointer self-start sm:self-auto"
-        >
-          <UserPlus className="w-3.5 h-3.5" />
-          <span>Invite Administrator</span>
-        </button>
+        {isSuperAdmin && (
+          <button
+            onClick={() => {
+              setIsModalOpen(true);
+              setGeneratedInvite(null);
+            }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium uppercase tracking-wider bg-[#0f2f63] hover:bg-[#2563c9] text-white shadow-xs transition-all cursor-pointer self-start sm:self-auto"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Invite Administrator</span>
+          </button>
+        )}
       </div>
 
       {/* Filter and Search Bar */}
@@ -288,18 +293,22 @@ export const AdminUsersPage: React.FC = () => {
                         {new Date(u.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => handleDeleteUser(u)}
-                          disabled={deleteUserMutation.isPending && (deleteUserMutation.variables as string) === u.id}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer inline-flex items-center justify-center disabled:opacity-40"
-                          title={`Delete ${u.email}`}
-                        >
-                          {deleteUserMutation.isPending && (deleteUserMutation.variables as string) === u.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-600" />
-                          ) : (
-                            <Trash2 className="w-3.5 h-3.5" />
-                          )}
-                        </button>
+                        {isSuperAdmin && u.id !== user?.id ? (
+                          <button
+                            onClick={() => handleDeleteUser(u)}
+                            disabled={deleteUserMutation.isPending && (deleteUserMutation.variables as string) === u.id}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer inline-flex items-center justify-center disabled:opacity-40"
+                            title={`Delete ${u.email}`}
+                          >
+                            {deleteUserMutation.isPending && (deleteUserMutation.variables as string) === u.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-600" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-slate-300 font-mono select-none">—</span>
+                        )}
                       </td>
                     </tr>
                   );

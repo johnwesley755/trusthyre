@@ -121,11 +121,12 @@ export const AppTopNavbar = () => {
         {/* Right Actions: CTA + Notifications + Profile Menu / Guest Buttons */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
           {isAdmin && (
-            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f4f4f4] border border-[#e6e8ec] shrink-0 mr-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2f63]">
-                {isSuperAdmin ? 'Super Admin' : 'Admin'}
-              </span>
+            <div className={`hidden sm:inline-flex items-center px-3 py-1 rounded-full border shrink-0 mr-1 text-xs font-semibold ${
+              isSuperAdmin 
+                ? 'bg-amber-50 border-amber-200 text-amber-900' 
+                : 'bg-blue-50 border-blue-200 text-[#0f2f63]'
+            }`}>
+              <span>{isSuperAdmin ? 'Super Admin' : 'Admin'}</span>
             </div>
           )}
 
@@ -210,7 +211,15 @@ export const AppTopNavbar = () => {
                             <p className="text-[10px] text-[#717784] font-normal truncate">
                               {user?.email}
                             </p>
-                            <span className="inline-block mt-1 px-2 py-0.5 bg-[#e6eefc] text-[#0f2f63] text-[9px] font-semibold rounded-full uppercase tracking-wider">
+                            <span className={`inline-block mt-1 px-2.5 py-0.5 text-[9px] font-bold rounded-full uppercase tracking-wider border ${
+                              isSuperAdmin
+                                ? 'bg-amber-50 text-amber-900 border-amber-200'
+                                : isAdmin
+                                ? 'bg-blue-50 text-[#0f2f63] border-blue-200'
+                                : isEmployer
+                                ? 'bg-purple-50 text-purple-800 border-purple-200'
+                                : 'bg-[#e6eefc] text-[#0f2f63] border-blue-100'
+                            }`}>
                               {isSuperAdmin
                                 ? 'Super Admin'
                                 : isAdmin
@@ -263,7 +272,7 @@ export const AppTopNavbar = () => {
                               className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <LayoutDashboard className="w-4 h-4 text-[#717784]" />
-                              <span>Admin Dashboard</span>
+                              <span>{isSuperAdmin ? 'Super Admin Command Center' : 'Admin Operations Hub'}</span>
                             </button>
                             <button
                               onClick={() => {
