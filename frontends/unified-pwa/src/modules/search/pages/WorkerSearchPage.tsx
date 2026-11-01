@@ -61,7 +61,7 @@ export const WorkerSearchPage = () => {
   const [selectedTrade, setSelectedTrade] = useState(searchParams.get('trade') || 'All');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(15);
   const [isManageAlertsOpen, setIsManageAlertsOpen] = useState(false);
   const [isTalentAlertModalOpen, setIsTalentAlertModalOpen] = useState(false);
 
@@ -479,7 +479,7 @@ export const WorkerSearchPage = () => {
                   totalPages={Math.max(1, Math.ceil(results.length / pageSize))}
                   totalItems={results.length}
                   pageSize={pageSize}
-                  pageSizeOptions={[5, 10, 20, 50]}
+                  pageSizeOptions={[15, 30, 45, 60]}
                   onPageChange={(page) => setCurrentPage(page)}
                   onPageSizeChange={(size) => {
                     setPageSize(size);

@@ -627,6 +627,7 @@ export class LeadService {
           });
 
           // Trigger worker notifications and matching search alerts for newly onboarded jobs
+          console.log(`\n📢 [LeadService:ONBOARD] Triggering candidate match alerts for newly onboarded job: "${job.title}" (Employer: ${lead.company_name})`);
           SearchAlertService.matchNewJobAgainstAlerts({
             id: job.id,
             title: job.title,
@@ -637,8 +638,10 @@ export class LeadService {
             employer_id: user.id,
             required_skills: req.title,
             experience_years_required: 1
+          }).then(() => {
+            console.log(`✅ [LeadService:ONBOARD] Finished processing alerts for job "${job.title}".`);
           }).catch((err: any) => {
-            console.warn('[LeadService] Alert matching notification notice:', err.message);
+            console.error('[LeadService:ONBOARD] Alert matching notification failure:', err.message);
           });
 
           publishedJobs.push(job.id);

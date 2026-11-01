@@ -154,10 +154,10 @@ export const AppTopNavbar = () => {
               ) : isWorker ? (
                 <Link
                   to="/profile"
-                  className="hidden xl:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0f2f63] border border-[#e6e8ec] text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 cursor-pointer shrink-0 whitespace-nowrap h-9 leading-none"
+                  className="hidden xl:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0f2f63] border border-[#e6e8ec] text-xs font-semibold transition-all active:scale-95 cursor-pointer shrink-0 whitespace-nowrap h-9 leading-none"
                 >
-                  <Upload className="w-3.5 h-3.5 shrink-0" />
-                  <span className="whitespace-nowrap">Upload Resume</span>
+                  {/* <Upload className="w-3.5 h-3.5 shrink-0" /> */}
+                  <span className="whitespace-nowrap">View Profile</span>
                 </Link>
               ) : null}
 

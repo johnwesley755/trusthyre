@@ -44,7 +44,7 @@ export default function JobSearchPage() {
 
   // Pagination & Display State
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(15);
   const [hideExpired, setHideExpired] = useState(true);
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -566,7 +566,7 @@ export default function JobSearchPage() {
                   totalPages={totalPages}
                   totalItems={totalItems}
                   pageSize={pageSize}
-                  pageSizeOptions={[5, 10, 20, 50]}
+                  pageSizeOptions={[15, 30, 45, 60]}
                   onPageChange={(page) => {
                     setCurrentPage(page);
                     window.scrollTo({ top: 380, behavior: 'smooth' });

@@ -171,7 +171,7 @@ export default function JobDetailPage() {
   });
 
   const employer = (job as any)?.employerProfile || (job as any)?.employer || null;
-  const isEmployer = user?.role === 'EMPLOYER' || user?.id === (job as any)?.employerId || user?.id === (job as any)?.employer?.userId;
+  const isEmployer = Boolean(user && (user.role === 'EMPLOYER' || (user.id && ((job as any)?.employerId === user.id || (job as any)?.employer?.userId === user.id))));
   const rawExpiry = (job as any)?.expiresAt || (job as any)?.expires_at;
   const createdDate = (job as any)?.createdAt || (job as any)?.created_at;
   const effectiveExpiry = rawExpiry
@@ -452,152 +452,214 @@ export default function JobDetailPage() {
           </div>
         </div>
 
-        {/* 1. HERO JOB CARD (Hallmark Tactile Aesthetic) */}
-        <div className="bg-[#f4f4f4] rounded-[2rem] border border-[#e6e8ec] relative overflow-hidden">
-          {/* Cover Image Banner if Present */}
+        {/* 1. HERO JOB CARD (Exact Match to User Reference Layout) */}
+        <div className="bg-white rounded-[2rem] border border-[#e6e8ec] shadow-xs relative overflow-hidden flex flex-col md:flex-row items-stretch">
+          
+          {/* Left: Cover Image Vertical Panel (Exact 20% on Desktop with Badges) */}
           {effectiveCoverUrl && (
-            <div className="w-full min-w-full h-48 sm:h-64 md:h-72 overflow-hidden relative border-b border-[#e6e8ec] bg-slate-900 group rounded-t-[2rem]">
+            <div className="w-full md:w-[22%] md:min-w-[210px] md:max-w-[250px] h-48 sm:h-56 md:h-auto min-h-[220px] overflow-hidden relative border-b md:border-b-0 md:border-r border-[#e6e8ec] bg-slate-900 group shrink-0">
               <img 
                 src={effectiveCoverUrl} 
                 alt={job.title} 
                 onError={() => setCoverImageFailed(true)}
-                className="w-full min-w-full h-full object-cover group-hover:scale-102 transition-transform duration-500 block" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 block" 
               />
-              <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
-              <div className="absolute bottom-3.5 left-4 sm:left-6 flex items-center gap-2 flex-wrap">
-                <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-xs font-semibold uppercase tracking-wider">
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-t md:bg-gradient-to-r from-black/85 via-black/20 to-transparent pointer-events-none" />
+              
+              <div className="absolute bottom-3 left-3 flex flex-col items-start gap-1.5 z-10">
+                <span className="px-3 py-1 rounded-md bg-black/75 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider">
                   {job.industry || 'Verified Opening'}
                 </span>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-600/90 backdrop-blur-xs text-white text-[11px] font-semibold flex items-center gap-1 shadow-xs">
-                  <ShieldCheck className="w-3 h-3" />
+                <span className="px-2.5 py-1 rounded-md bg-emerald-600 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                  <ShieldCheck className="w-3.5 h-3.5" />
                   <span>Verified Worksite</span>
                 </span>
               </div>
             </div>
           )}
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+
+          {/* Right: Content Details Area (Exact 80% Horizontal Flow) */}
+          <div className="p-6 lg:p-7 flex-1 w-full min-w-0 flex flex-col justify-between gap-6">
             
-            {/* Identity & Company Cluster */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            {/* Top Row: Monogram + Title + Employer / Expiry | Divider | Salary | Apply Button */}
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
               
-              {/* Company Monogram Badge */}
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-3xl border border-[#e6e8ec] flex items-center justify-center overflow-hidden shadow-2xs shrink-0">
-                {employer?.profileImageUrl || (job as any).logoUrl ? (
-                  <img 
-                    src={employer?.profileImageUrl || (job as any).logoUrl} 
-                    alt={employerName} 
-                    className="w-full h-full object-cover" 
-                  />
-                ) : (
-                  <Building2 className="w-8 h-8 text-[#0f2f63]/50" />
+              {/* Left Group: Company Monogram Badge + Title Cluster */}
+              <div className="flex items-center gap-4 min-w-0 flex-1">
+                <div className="w-14 h-14 bg-[#f8f9fa] rounded-2xl border border-[#e6e8ec] flex items-center justify-center overflow-hidden shrink-0">
+                  {employer?.profileImageUrl || (job as any).logoUrl ? (
+                    <img 
+                      src={employer?.profileImageUrl || (job as any).logoUrl} 
+                      alt={employerName} 
+                      className="w-full h-full object-cover" 
+                    />
+                  ) : (
+                    <Building2 className="w-7 h-7 text-[#0f2f63]/70" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <h1 className="text-2xl lg:text-3xl font-extrabold text-[#0a0a0a] tracking-tight leading-tight">
+                      {job.title}
+                    </h1>
+                    {isExpired ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
+                        <Clock className="w-3 h-3 text-rose-600" />
+                        <span>Expired</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Verified</span>
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#717784] font-medium">
+                    <span className="font-semibold text-[#0a0a0a]">{employerName}</span>
+                    {expiryDate && (
+                      <>
+                        <span>•</span>
+                        <span className={`flex items-center gap-1 ${isExpired ? 'text-rose-600 font-semibold' : 'text-[#717784]'}`}>
+                          <Calendar className="w-3.5 h-3.5 text-[#717784]" />
+                          <span>{isExpired ? 'Expired' : 'Expires'}: {new Date(expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Group: Vertical Divider + Salary + Action Button */}
+              <div className="flex items-center gap-6 w-full lg:w-auto justify-between lg:justify-end pt-4 lg:pt-0 border-t lg:border-t-0 border-[#e6e8ec] shrink-0">
+                
+                {/* Vertical Divider (Desktop) */}
+                <div className="hidden lg:block w-[1px] h-12 bg-[#e6e8ec]" />
+
+                {/* Salary Section */}
+                <div className="text-left lg:text-left">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] block leading-none">Salary</span>
+                  <p className="text-2xl lg:text-3xl font-black text-emerald-600 tracking-tight leading-none mt-1">
+                    {job.budget ? `₹${Number(job.budget).toLocaleString('en-IN')}` : 'Best in Industry'}
+                    {job.budget && <span className="text-xs font-normal text-[#717784] ml-1">/mo</span>}
+                  </p>
+                </div>
+
+                {/* Instant Apply Button */}
+                {isEmployer ? (
+                  <Link
+                    to={`/jobs?jobId=${id}`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#0f2f63] hover:bg-[#1a4484] text-white rounded-full font-bold text-xs tracking-wider shadow-sm transition-all active:scale-95 uppercase"
+                  >
+                    <Users className="w-4 h-4" />
+                    <span>Manage ({applicantCount})</span>
+                  </Link>
+                ) : isExpired ? (
+                  <div className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-slate-100 text-[#717784] rounded-full font-medium text-xs border border-[#e6e8ec]">
+                    <Clock className="w-4 h-4 text-rose-500" />
+                    <span>Closed</span>
+                  </div>
+                ) : !isApplied ? (
+                  <button
+                    onClick={handleApply}
+                    disabled={mutation.isPending}
+                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0f2f63] hover:bg-[#163b74] text-white rounded-full font-bold text-xs tracking-wider shadow-sm transition-all cursor-pointer uppercase active:scale-95 disabled:opacity-50"
+                  >
+                    {mutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-3.5 h-3.5" />
+                    )}
+                    <span>{!user ? 'Instant Apply' : 'Instant Apply'}</span>
+                  </button>
+                ) : null}
+              </div>
+
+            </div>
+
+            {/* Middle Row: 4 Pill Containers with Rounded Full / Rounded 2xl Borders */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              
+              {/* Location Pill */}
+              <div className="bg-[#fcfdfd] hover:bg-white rounded-2xl sm:rounded-full px-4 py-3 border border-[#e6e8ec] flex items-center gap-3 transition-colors">
+                <div className="w-9 h-9 rounded-full bg-blue-50 text-[#0f2f63] flex items-center justify-center shrink-0">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] block leading-none">Location</span>
+                  <p className="text-xs sm:text-sm font-bold text-[#0a0a0a] truncate mt-0.5">
+                    {job.city || job.location || 'Chennai'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Experience Pill */}
+              <div className="bg-[#fcfdfd] hover:bg-white rounded-2xl sm:rounded-full px-4 py-3 border border-[#e6e8ec] flex items-center gap-3 transition-colors">
+                <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                  <Award className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] block leading-none">Experience</span>
+                  <p className="text-xs sm:text-sm font-bold text-[#0a0a0a] truncate mt-0.5">
+                    {formatExactExperience(job, 'stat')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Work Mode Pill */}
+              <div className="bg-[#fcfdfd] hover:bg-white rounded-2xl sm:rounded-full px-4 py-3 border border-[#e6e8ec] flex items-center gap-3 transition-colors">
+                <div className="w-9 h-9 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                  <Briefcase className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] block leading-none">Work Mode</span>
+                  <p className="text-xs sm:text-sm font-bold text-[#0a0a0a] truncate mt-0.5 capitalize">
+                    {String(job.jobType || 'Full Time').toLowerCase().replace('_', ' ')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Shift / Hours Pill */}
+              <div className="bg-[#fcfdfd] hover:bg-white rounded-2xl sm:rounded-full px-4 py-3 border border-[#e6e8ec] flex items-center gap-3 transition-colors">
+                <div className="w-9 h-9 rounded-full bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] block leading-none">Shift / Hours</span>
+                  <p className="text-xs sm:text-sm font-bold text-[#0a0a0a] truncate mt-0.5">
+                    {additionalDetails.shift || 'Regular Day'}
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Bottom Row: Key Skills Tags (left) and Address (right) */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#f0f2f5] text-xs">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#717784] shrink-0">Key Skills:</span>
+                {rawSkills.slice(0, 4).map((skill: string, idx: number) => (
+                  <span key={idx} className="px-3 py-1 rounded-lg bg-white border border-[#e6e8ec] text-xs font-semibold text-[#0a0a0a] shadow-2xs">
+                    {skill}
+                  </span>
+                ))}
+                {rawSkills.length > 4 && (
+                  <span className="text-xs font-bold text-[#0f2f63] cursor-default">
+                    +{rawSkills.length - 4} more
+                  </span>
                 )}
               </div>
 
-              {/* Title, Company, Status Badges */}
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a]">
-                    {job.title}
-                  </h1>
-                  {isExpired ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200">
-                      <Clock className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
-                      <span>Job Expired</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Verified Employer</span>
-                    </span>
-                  )}
+              {job.location && (
+                <div className="flex items-center gap-1.5 text-xs text-[#717784] truncate shrink-0 max-w-md">
+                  <MapPin className="w-3.5 h-3.5 text-[#717784] shrink-0" />
+                  <span className="truncate">{job.location}</span>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-2.5 text-xs font-medium text-[#717784]">
-                  <span className="font-semibold text-[#0a0a0a]">{employerName}</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#0f2f63]" />
-                    <span>{job.location || job.city || 'Pan India'}</span>
-                  </span>
-                  <span>•</span>
-                  <span>{formatExactExperience(job, 'header')}</span>
-                  {job.industry && (
-                    <>
-                      <span>•</span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-[#0f2f63]/5 text-[#0f2f63] font-semibold border border-[#0f2f63]/10">
-                        {job.industry}
-                      </span>
-                    </>
-                  )}
-                  {expiryDate && (
-                    <>
-                      <span>•</span>
-                      <span className={`flex items-center gap-1 font-semibold ${isExpired ? 'text-rose-700' : 'text-[#717784]'}`}>
-                        <Calendar className={`w-3.5 h-3.5 ${isExpired ? 'text-rose-600' : 'text-[#0f2f63]'}`} />
-                        <span>
-                          {isExpired ? 'Expired on' : 'Auto-expires:'} {new Date(expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(expiryDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-            </div>
-
-            {/* Wage Highlight & Role-Aware Action Pill */}
-            <div className="flex flex-row lg:flex-col items-start lg:items-end justify-between w-full lg:w-auto gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-[#e6e8ec]">
-              <div className="text-left lg:text-right">
-                <p className="text-[10px] font-bold uppercase text-[#717784]">Agreed Compensation</p>
-                <p className="text-xl sm:text-2xl font-bold text-emerald-700 mt-0.5 tabular-nums tracking-tight">
-                  {job.budget ? `₹${Number(job.budget).toLocaleString('en-IN')}` : 'Compensation on Discussion'}
-                  {job.budget && <span className="text-xs font-medium text-[#717784] ml-1">/ month</span>}
-                </p>
-              </div>
-
-              {isEmployer ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link
-                    to={`/jobs?jobId=${id}`}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full font-semibold text-xs shadow-xs transition-all cursor-pointer uppercase active:scale-95"
-                  >
-                    <Users className="w-3.5 h-3.5" />
-                    <span>Manage Applicants ({applicantCount})</span>
-                  </Link>
-                  {isExpired && (
-                    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-800 border border-rose-200">
-                      Expired
-                    </span>
-                  )}
-                </div>
-              ) : isExpired ? (
-                <div className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#f4f4f4] text-[#717784] rounded-full font-semibold text-xs border border-[#e6e8ec] cursor-not-allowed">
-                  <Clock className="w-3.5 h-3.5 text-rose-500" />
-                  <span>Requisition Expired • Applications Closed</span>
-                </div>
-              ) : !isApplied ? (
-                <button
-                  onClick={handleApply}
-                  disabled={mutation.isPending}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full font-medium text-xs shadow-xs transition-all cursor-pointer uppercase active:scale-95 disabled:opacity-50"
-                >
-                  {mutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : !user ? (
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  ) : (
-                    <Send className="w-3.5 h-3.5" />
-                  )}
-                  <span>{!user ? 'Sign In to Apply' : 'Instant Apply'}</span>
-                </button>
-              ) : null}
+              )}
             </div>
 
           </div>
-        </div>
-
-
         </div>
 
         {/* 3. MAIN 2-COLUMN PROFILE GRID (Even Layout) */}

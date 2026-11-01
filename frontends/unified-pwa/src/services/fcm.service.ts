@@ -40,20 +40,43 @@ export const fcmService = {
     }
 
     try {
+      console.log(`[FCM:CLIENT] 🚀 Initializing Push Registration. UserId=${userId || 'anonymous'}, forceRefresh=${forceRefresh}`);
+
+      // If user comes after a long time or forceRefresh is true, purge existing FCM keys from localStorage and sessionStorage
+      if (forceRefresh) {
+        console.log('[FCM:CLIENT] 🧹 Purging cached FCM tokens from localStorage & sessionStorage to guarantee fresh registration.');
+        localStorage.removeItem(LOCAL_STORAGE_FCM_KEY);
+        if (userId) {
+          localStorage.removeItem(`trusthyre_fcm_registered_${userId}`);
+          sessionStorage.removeItem(`fcm_synced_${userId}`);
+        }
+        localStorage.removeItem('trusthyre_fcm_registered_current');
+        Object.keys(localStorage).forEach((k) => {
+          if (k.startsWith('trusthyre_fcm_')) {
+            localStorage.removeItem(k);
+          }
+        });
+      }
+
       // 1. Check or prompt browser permission
       let permission = Notification.permission;
+      console.log(`[FCM:CLIENT] 🔑 Browser permission state: "${permission}"`);
       if (permission !== 'granted') {
+        console.log('[FCM:CLIENT] 📣 Requesting browser Notification permission...');
         permission = await Notification.requestPermission();
+        console.log(`[FCM:CLIENT] 📣 User answered Notification permission prompt: "${permission}"`);
       }
 
       if (permission !== 'granted') {
+        console.warn(`[FCM:CLIENT] ⚠️ Notification permission not granted (${permission}). Registration halted.`);
         return { status: permission as 'denied' | 'default' };
       }
 
       // 2. Initialize Firebase Messaging
+      console.log('[FCM:CLIENT] ⚡ Getting Firebase Messaging instance...');
       const messaging = await getMessagingInstance();
       if (!messaging) {
-        console.error('[FCM] Firebase messaging not supported or failed to initialize.');
+        console.error('[FCM:CLIENT] ❌ Firebase messaging not supported or failed to initialize.');
         return { status: 'unsupported', error: 'Firebase messaging not supported' };
       }
 
@@ -70,43 +93,52 @@ export const fcmService = {
       const swUrl = `/firebase-messaging-sw.js?${swParams}`;
 
       try {
+        console.log(`[FCM:CLIENT] 🛠️ Registering ServiceWorker at ${swUrl}`);
         swRegistration = await navigator.serviceWorker.register(swUrl);
-      } catch {
+        console.log('[FCM:CLIENT] ✅ ServiceWorker registered successfully. Scope:', swRegistration.scope);
+      } catch (swErr: any) {
+        console.warn('[FCM:CLIENT] ⚠️ sw register failed, falling back to navigator.serviceWorker.ready:', swErr?.message);
         swRegistration = await navigator.serviceWorker.ready;
       }
 
       // 4. Retrieve FCM registration token
       const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+      console.log(`[FCM:CLIENT] 🌐 Requesting FCM token via getToken()... (VAPID key provided: ${Boolean(vapidKey)})`);
       const token = await getToken(messaging, {
         vapidKey: vapidKey || undefined,
         serviceWorkerRegistration: swRegistration
       });
 
       if (!token) {
-        console.error('[FCM] getToken returned an empty or null token.');
+        console.error('[FCM:CLIENT] ❌ getToken returned an empty or null token.');
         return { status: 'granted', token: null, error: 'Failed to retrieve FCM token' };
       }
+
+      console.log(`[FCM:CLIENT] 🎯 Live FCM Token acquired! (length: ${token.length}, prefix: ${token.substring(0, 15)}...)`);
 
       // 5. Synchronize token with backend for user session (silent background sync)
       const userTokenKey = userId ? `trusthyre_fcm_registered_${userId}` : 'trusthyre_fcm_registered_current';
       
-      // Always register token on backend to ensure token exists in DB and prevent silent expiration
+      console.log(`[FCM:CLIENT] 📡 Posting token to /api/notifications/fcm-token for userId=${userId || 'anonymous'}...`);
       try {
-        await apiClient.post('/api/notifications/fcm-token', {
+        const resp = await apiClient.post('/api/notifications/fcm-token', {
           token,
           deviceType: 'web'
         });
         localStorage.setItem(userTokenKey, token);
         localStorage.setItem(LOCAL_STORAGE_FCM_KEY, token);
+        if (userId) {
+          sessionStorage.setItem(`fcm_synced_${userId}`, 'true');
+        }
+        console.log(`[FCM:CLIENT] ✅ Token successfully registered & linked in DB and cached in localStorage. (HTTP ${resp.status})`);
       } catch (apiErr: any) {
-        // Log error to console only, never show toast in UI
-        console.error('[FCM] Failed to sync push token with backend:', apiErr?.response?.data || apiErr.message);
+        console.error('[FCM:CLIENT] ❌ Failed to sync push token with backend:', apiErr?.response?.data || apiErr.message);
         localStorage.removeItem(userTokenKey);
       }
 
       return { status: 'granted', token };
     } catch (err: any) {
-      console.error('[FCM] Push registration exception:', err.name, err.message);
+      console.error('[FCM:CLIENT] ❌ Push registration exception:', err.name, err.message);
       return { status: 'denied', error: err.message };
     }
   },

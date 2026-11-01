@@ -211,6 +211,7 @@ export class SearchAlertService {
     experience_years_required?: number | null;
   }) {
     try {
+      console.log(`\n🔍 [SearchAlertService:MATCH] Evaluating notifications for new job: "${job.title}" (ID: ${job.id}, City: "${job.city || ''}", Industry: "${job.industry || ''}", EmployerId: ${job.employer_id})`);
       const jobCity = (job.city || '').trim().toLowerCase();
       const jobIndustry = (job.industry || '').trim().toLowerCase();
       const jobBudget = job.budget ? Number(job.budget) : 0;
@@ -218,99 +219,56 @@ export class SearchAlertService {
       const jobDesc = (job.description || '').toLowerCase();
       const jobSkills = (job.required_skills || '').toLowerCase();
 
-      // Retrieve all active JOB_ALERT subscriptions where cooldown has expired (6 hours)
-      // or last_notified_at IS NULL, excluding the job's employer.
-      const candidateAlerts = await prisma.$queryRaw<any[]>`
-        SELECT id, user_id, title, query, city, category, min_salary, max_salary, experience
-        FROM user_search_alerts
-        WHERE is_active = true
-          AND alert_type = 'JOB_ALERT'
-          AND user_id != ${job.employer_id}
-          AND (last_notified_at IS NULL OR last_notified_at < NOW() - INTERVAL '6 hours')
-      `;
-
-      if (!candidateAlerts || candidateAlerts.length === 0) {
-        return;
-      }
-
       const matchedAlertIds: string[] = [];
       const notificationsByUser = new Map<string, { userId: string; alertTitle: string }>();
 
-      for (const alert of candidateAlerts) {
-        // 1. City constraint check
-        if (alert.city && alert.city.trim() !== '') {
-          const alertCity = alert.city.trim().toLowerCase();
-          if (jobCity && !jobCity.includes(alertCity) && !alertCity.includes(jobCity)) {
-            continue;
-          }
-        }
+      // 1. Retrieve all active JOB_ALERT subscriptions
+      try {
+        const candidateAlerts = await prisma.$queryRaw<any[]>`
+          SELECT id, user_id, title, query, city, category, min_salary, max_salary, experience
+          FROM user_search_alerts
+          WHERE is_active = true
+            AND alert_type = 'JOB_ALERT'
+            AND user_id != ${job.employer_id}
+            AND (last_notified_at IS NULL OR last_notified_at < NOW() - INTERVAL '6 hours')
+        `;
 
-        // 2. Industry / Category constraint check
-        if (alert.category && alert.category.trim() !== '' && alert.category.toLowerCase() !== 'all') {
-          const alertCategory = alert.category.trim().toLowerCase();
-          if (jobIndustry && !jobIndustry.includes(alertCategory) && !alertCategory.includes(jobIndustry)) {
-            continue;
-          }
-        }
+        console.log(`[SearchAlertService:MATCH] Found ${candidateAlerts?.length || 0} candidate job alert subscription(s) in database.`);
 
-        // 3. Minimum Salary threshold check
-        if (alert.min_salary) {
-          const minRequired = Number(alert.min_salary);
-          if (jobBudget > 0 && jobBudget < minRequired) {
-            continue;
-          }
-        }
-
-        // 4. Keyword Query match check
-        if (alert.query && alert.query.trim() !== '') {
-          const q = alert.query.trim().toLowerCase();
-          const matchesKeyword = 
-            jobTitle.includes(q) || 
-            jobDesc.includes(q) || 
-            jobSkills.includes(q) ||
-            jobIndustry.includes(q);
-          if (!matchesKeyword) {
-            continue;
-          }
-        }
-
-        // Passed all search intent filters!
-        matchedAlertIds.push(alert.id);
-        if (!notificationsByUser.has(alert.user_id)) {
-          notificationsByUser.set(alert.user_id, {
-            userId: alert.user_id,
-            alertTitle: alert.title || job.title
-          });
-        }
-      }
-
-      const notificationsToSend = Array.from(notificationsByUser.values());
-
-      if (notificationsToSend.length === 0) {
-        return;
-      }
-
-      console.log(`[SearchAlertService] Reverse matching found ${notificationsToSend.length} candidate alert(s) for job "${job.title}".`);
-
-      // Dispatch notifications to each matched candidate
-      await Promise.allSettled(
-        notificationsToSend.map(({ userId }) =>
-          NotificationDispatcher.dispatch({
-            userId,
-            title: `Job Alert: ${job.title}`,
-            message: `A new role in ${job.city || 'your area'} offering ₹${job.budget || 'Competitive'} matches your saved search alert. Tap to view and apply.`,
-            type: 'JOB_MATCH_ALERT',
-            link: `/search?jobId=${job.id}`,
-            data: {
-              jobId: String(job.id),
-              city: String(job.city || '')
+        if (candidateAlerts && candidateAlerts.length > 0) {
+          for (const alert of candidateAlerts) {
+            if (alert.city && alert.city.trim() !== '') {
+              const alertCity = alert.city.trim().toLowerCase();
+              if (jobCity && !jobCity.includes(alertCity) && !alertCity.includes(jobCity)) continue;
             }
-          })
-        )
-      );
+            if (alert.category && alert.category.trim() !== '' && alert.category.toLowerCase() !== 'all') {
+              const alertCategory = alert.category.trim().toLowerCase();
+              if (jobIndustry && !jobIndustry.includes(alertCategory) && !alertCategory.includes(jobIndustry)) continue;
+            }
+            if (alert.min_salary) {
+              const minRequired = Number(alert.min_salary);
+              if (jobBudget > 0 && jobBudget < minRequired) continue;
+            }
+            if (alert.query && alert.query.trim() !== '') {
+              const q = alert.query.trim().toLowerCase();
+              const matchesKeyword = jobTitle.includes(q) || jobDesc.includes(q) || jobSkills.includes(q) || jobIndustry.includes(q);
+              if (!matchesKeyword) continue;
+            }
 
-      // Also notify relevant registered workers in the same city or category
-      // even if they haven't explicitly set up an alert query, to ensure active workers discover new openings
+            matchedAlertIds.push(alert.id);
+            if (!notificationsByUser.has(alert.user_id)) {
+              notificationsByUser.set(alert.user_id, {
+                userId: alert.user_id,
+                alertTitle: alert.title || job.title
+              });
+            }
+          }
+        }
+      } catch (alertDbErr: any) {
+        console.error('[SearchAlertService:MATCH] Error querying user_search_alerts:', alertDbErr.message);
+      }
+
+      // 2. Also notify registered workers in the matching city or trade
       try {
         const cityFilter = jobCity ? { contains: jobCity, mode: 'insensitive' as const } : undefined;
         const matchingWorkers = await prisma.worker_profiles.findMany({
@@ -319,9 +277,11 @@ export class SearchAlertService {
             user_id: { not: job.employer_id },
             ...(cityFilter ? { city: cityFilter } : {})
           },
-          select: { user_id: true },
+          select: { user_id: true, full_name: true, city: true },
           take: 50
         });
+
+        console.log(`[SearchAlertService:MATCH] Found ${matchingWorkers.length} matching worker profile(s) for city="${job.city || 'Any'}".`);
 
         for (const wp of matchingWorkers) {
           if (!notificationsByUser.has(wp.user_id)) {
@@ -329,12 +289,40 @@ export class SearchAlertService {
               userId: wp.user_id,
               alertTitle: job.title
             });
-            notificationsToSend.push({ userId: wp.user_id, alertTitle: job.title });
           }
         }
       } catch (workerErr: any) {
-        console.warn('[SearchAlertService] Matching workers query notice:', workerErr.message);
+        console.warn('[SearchAlertService:MATCH] Error querying matching worker profiles:', workerErr.message);
       }
+
+      const notificationsToSend = Array.from(notificationsByUser.values());
+      console.log(`[SearchAlertService:MATCH] Total candidate recipients determined: ${notificationsToSend.length}`);
+
+      if (notificationsToSend.length === 0) {
+        console.log('[SearchAlertService:MATCH] No candidates or alert subscribers to notify for this job.');
+        return;
+      }
+
+      // 3. Dispatch notifications
+      const results = await Promise.allSettled(
+        notificationsToSend.map(({ userId }) => {
+          console.log(`   🚀 [SearchAlertService:MATCH] Dispatching notification to userId=${userId}`);
+          return NotificationDispatcher.dispatch({
+            userId,
+            title: `Job Alert: ${job.title}`,
+            message: `A new verified role in ${job.city || 'your area'} offering ₹${job.budget ? Number(job.budget).toLocaleString('en-IN') : 'Competitive'} is open for application.`,
+            type: 'JOB_MATCH_ALERT',
+            link: `/job/${job.id}`,
+            data: {
+              jobId: String(job.id),
+              city: String(job.city || ''),
+              title: job.title
+            }
+          });
+        })
+      );
+
+      console.log(`[SearchAlertService:MATCH] Completed dispatching ${results.length} notification(s).`);
 
       // Update cooldown timestamp and increment match count for matched alerts
       if (matchedAlertIds.length > 0) {
