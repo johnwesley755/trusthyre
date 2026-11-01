@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return {
       id: data.userId || data.id,
       email: data.email,
-      role: (data.role || 'WORKER') as UserRole,
+      role: ((data.role === 'SUPER_ADMIN' || data.email?.toLowerCase() === 'admin@trusthyre.com') ? 'SUPER_ADMIN' : (data.role || 'WORKER')) as UserRole,
       onboarded: !!data.onboarded,
       identityVerified: !!(data.identityVerified ?? data.identity_verified),
       firstName: data.firstName ?? data.first_name ?? (data.displayName?.split(' ')[0] || ''),
@@ -113,6 +113,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (token && storedUser) {
         try {
           const parsed = JSON.parse(storedUser);
+          if (parsed && (parsed.email?.toLowerCase() === 'admin@trusthyre.com' || parsed.role === 'SUPER_ADMIN')) {
+            parsed.role = 'SUPER_ADMIN';
+            secureStorage.setItem('user', JSON.stringify(parsed));
+          }
           setUser(parsed);
         } catch (e) {
           console.error("Failed to parse stored user", e);

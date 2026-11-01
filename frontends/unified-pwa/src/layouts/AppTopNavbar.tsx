@@ -49,7 +49,7 @@ export const AppTopNavbar = () => {
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const isAuthenticated = Boolean(user);
-  const isSuperAdmin = (user?.role as string) === 'SUPER_ADMIN';
+  const isSuperAdmin = (user?.role as string) === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';
   const isAdmin = user?.role === 'ADMIN' || isSuperAdmin;
   const isEmployer = user?.role === 'EMPLOYER';
   const isWorker = !isAdmin && !isEmployer && Boolean(user);
@@ -314,7 +314,8 @@ export const AppTopNavbar = () => {
                               <CheckCircle2 className="w-4 h-4 text-[#717784]" />
                               <span>Identity Verifications</span>
                             </button>
-                            <button
+                            {isSuperAdmin && (
+  <button
                               onClick={() => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/admin/users');
@@ -324,6 +325,7 @@ export const AppTopNavbar = () => {
                               <Users className="w-4 h-4 text-[#717784]" />
                               <span>User Directory</span>
                             </button>
+)}
                             <button
                               onClick={() => {
                                 setIsProfileMenuOpen(false);

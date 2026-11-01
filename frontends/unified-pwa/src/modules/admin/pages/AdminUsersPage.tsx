@@ -13,7 +13,7 @@ import { ConfirmModal } from '../../../components/common/ConfirmModal';
 export const AdminUsersPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';
   const [selectedRole, setSelectedRole] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -293,7 +293,7 @@ export const AdminUsersPage: React.FC = () => {
                         {new Date(u.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        {isSuperAdmin && u.id !== user?.id ? (
+                        {isSuperAdmin && u.id !== user?.id && u.email?.toLowerCase() !== user?.email?.toLowerCase() ? (
                           <button
                             onClick={() => handleDeleteUser(u)}
                             disabled={deleteUserMutation.isPending && (deleteUserMutation.variables as string) === u.id}
