@@ -3,8 +3,16 @@
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
 
+// Instantly activate new service worker versions
+self.addEventListener('install', () => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
 // Dynamically extract Firebase configuration passed securely via Service Worker registration URL parameters
-// Zero hardcoded credentials in public static files
 const urlParams = new URL(self.location.href).searchParams;
 const firebaseConfig = {
   apiKey: urlParams.get('apiKey'),
@@ -22,7 +30,7 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId) {
       firebase.initializeApp(firebaseConfig);
     }
   } catch (initErr) {
-    // Silent fail in production
+    console.warn('[FCM SW] App init notice:', initErr);
   }
 }
 
@@ -32,32 +40,33 @@ try {
     messaging = firebase.messaging();
   }
 } catch (swInitErr) {
-  // Silent fallback
+  console.warn('[FCM SW] Messaging init notice:', swInitErr);
 }
 
 // Background push handler via Firebase Messaging
 if (messaging) {
   messaging.onBackgroundMessage((payload) => {
-    // If the push already has a top-level notification object, browser displays it automatically
-    if (payload.notification) {
-      return;
-    }
+    console.log('[FCM SW] Received background message:', payload);
 
-    const title = payload.data?.title || 'TrustHyre Notification';
-    const body = payload.data?.body || payload.data?.message || 'You have a new update on TrustHyre.';
-    const link = payload.data?.url || payload.data?.link || '/notifications';
+    // Extract title, body, icon, and destination link
+    const title = payload.notification?.title || payload.data?.title || 'TrustHyre';
+    const body = payload.notification?.body || payload.data?.body || payload.data?.message || 'New update available on TrustHyre!';
+    const icon = payload.notification?.icon || payload.data?.icon || '/logo.png';
+    const image = payload.notification?.image || payload.data?.image;
+    const clickAction = payload.fcmOptions?.link || payload.data?.url || payload.data?.link || '/notifications';
 
     const notificationOptions = {
       body,
-      icon: '/logo.png',
+      icon,
+      image,
       badge: '/logo.png',
       data: {
-        url: link,
+        url: clickAction,
         timestamp: Date.now(),
         ...(payload.data || {})
       },
       vibrate: [100, 50, 100],
-      tag: payload.data?.id || 'trusthyre-push',
+      tag: payload.data?.id || `trusthyre-${Date.now()}`,
       renotify: true,
       actions: [
         { action: 'open', title: 'Open TrustHyre' }
@@ -67,27 +76,28 @@ if (messaging) {
     return self.registration.showNotification(title, notificationOptions);
   });
 }
-// Fallback raw Web Push event listener (Runs ONLY if Firebase messaging is not active)
+
+// Fallback raw Web Push event listener
 self.addEventListener('push', (event) => {
-  // If Firebase Messaging SDK is initialized, it already handles data-only and background pushes
-  if (messaging || !event.data) return;
+  if (!event.data) return;
 
   try {
     const raw = event.data.json();
-    if (raw.notification) return; // Handled by browser push service
-
-    const title = raw.data?.title || 'TrustHyre Update';
-    const body = raw.data?.body || raw.data?.message || 'New update received.';
-    const link = raw.data?.url || raw.data?.link || '/notifications';
+    const title = raw.notification?.title || raw.data?.title || 'TrustHyre Update';
+    const body = raw.notification?.body || raw.data?.body || raw.data?.message || 'New update received.';
+    const icon = raw.notification?.icon || raw.data?.icon || '/logo.png';
+    const image = raw.notification?.image || raw.data?.image;
+    const clickAction = raw.fcmOptions?.link || raw.data?.url || raw.data?.link || '/notifications';
 
     event.waitUntil(
       self.registration.showNotification(title, {
         body,
-        icon: '/logo.png',
+        icon,
+        image,
         badge: '/logo.png',
-        data: { url: link, timestamp: Date.now() },
+        data: { url: clickAction, timestamp: Date.now() },
         vibrate: [100, 50, 100],
-        tag: raw.data?.id || 'trusthyre-push',
+        tag: raw.data?.id || `trusthyre-push-${Date.now()}`,
         renotify: true
       })
     );
@@ -98,43 +108,26 @@ self.addEventListener('push', (event) => {
         body: text || 'You have a new update.',
         icon: '/logo.png',
         badge: '/logo.png',
-        data: { url: '/notifications' },
-        tag: 'trusthyre-push',
-        renotify: true
+        data: { url: '/notifications', timestamp: Date.now() }
       })
     );
   }
 });
 
-// Handle notification click to focus existing tab or navigate
+// Handle notification click to focus or open target page
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-
-  let targetPath = '/notifications';
-  const data = event.notification.data;
-  if (data) {
-    targetPath = data.url || 
-                 data.link || 
-                 data.click_action || 
-                 data?.FCM_MSG?.notification?.click_action || 
-                 data?.FCM_MSG?.fcmOptions?.link || 
-                 targetPath;
-  }
-
-  const fullTargetUrl = new URL(targetPath, self.location.origin).href;
+  const targetUrl = event.notification.data?.url || '/notifications';
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      for (const client of windowClients) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          if ('navigate' in client && targetPath) {
-            client.navigate(targetPath);
-          }
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(targetUrl) && 'focus' in client) {
           return client.focus();
         }
       }
       if (clients.openWindow) {
-        return clients.openWindow(fullTargetUrl);
+        return clients.openWindow(targetUrl);
       }
     })
   );

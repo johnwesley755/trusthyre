@@ -133,11 +133,15 @@ export async function sendFcmMessagesV1(
             ...(payload.data || {})
           },
           webpush: {
+            headers: {
+              Urgency: 'high'
+            },
             notification: {
               title: payload.title,
               body: payload.body,
               icon: iconUrl,
-              badge: iconUrl
+              badge: iconUrl,
+              requireInteraction: true
             },
             fcm_options: {
               link: targetUrl

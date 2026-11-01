@@ -15,6 +15,11 @@ router.delete('/all', authenticateJWT, notificationController.deleteAllNotificat
 router.post('/fcm-token', authenticateJWT, notificationController.registerFcmToken);
 router.delete('/fcm-token', authenticateJWT, notificationController.unregisterFcmToken);
 router.post('/test-push', authenticateJWT, notificationController.testPushNotification);
+router.post('/trigger-digest', authenticateJWT, async (c) => {
+  const { DailyDigestService } = await import('../services/dailyDigestService');
+  const result = await DailyDigestService.sendDailyDigests();
+  return c.json({ success: true, message: 'Daily digest evaluation complete', ...result });
+});
 
 // Individual item parameter routes
 router.patch('/:id/read', authenticateJWT, notificationController.markAsRead);

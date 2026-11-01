@@ -113,14 +113,18 @@ export class NotificationDispatcher {
               });
             }
 
-            const isAlert = params.type === 'JOB_MATCH_ALERT' || params.type === 'CANDIDATE_MATCH_ALERT';
-            sendEmail(userMeta.email, emailPayload.subject, emailPayload.html, {
-              text: emailPayload.text,
-              category: isAlert ? 'alert' : 'transactional',
-              unsubscribeUrl: `${frontendUrl}/notifications`
-            }).catch(err => {
-              console.error(`[NotificationDispatcher] Email dispatch failed for ${userMeta.email}:`, err.message);
-            });
+            const isAlert = params.type === 'JOB_MATCH_ALERT' || params.type === 'CANDIDATE_MATCH_ALERT' || params.type === 'JOB_ALERT';
+            // Alert emails are handled exclusively by DailyDigestService to prevent spamming users on every single job post.
+            // Only critical transactional & account emails (e.g. applications, offers, verifications) are dispatched immediately.
+            if (!isAlert) {
+              sendEmail(userMeta.email, emailPayload.subject, emailPayload.html, {
+                text: emailPayload.text,
+                category: 'transactional',
+                unsubscribeUrl: `${frontendUrl}/notifications`
+              }).catch(err => {
+                console.error(`[NotificationDispatcher] Email dispatch failed for ${userMeta.email}:`, err.message);
+              });
+            }
           }
         } catch (mailErr: any) {
           console.error(`[NotificationDispatcher] Failed checking email recipient:`, mailErr.message);
