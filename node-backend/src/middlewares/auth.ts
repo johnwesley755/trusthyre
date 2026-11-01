@@ -45,3 +45,11 @@ export const requireAdmin = async (c: Context, next: Next) => {
   }
   await next();
 };
+
+export const requireSuperAdmin = async (c: Context, next: Next) => {
+  const user = c.get('user');
+  if (!user || user.role !== 'SUPER_ADMIN') {
+    return c.json({ success: false, message: 'Forbidden: Super Administrator access required' }, 403 as any);
+  }
+  await next();
+};

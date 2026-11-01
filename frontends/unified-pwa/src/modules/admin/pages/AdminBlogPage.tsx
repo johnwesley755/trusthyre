@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { BlogService } from '../../../services/blog.service';
 import type { BlogPost } from '../../../services/blog.service';
+import { ConfirmModal } from '../../../components/common/ConfirmModal';
 
 export const AdminBlogPage: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -24,6 +25,7 @@ export const AdminBlogPage: React.FC = () => {
   const [search, setSearch] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [articleToDelete, setArticleToDelete] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     loadAdminArticles();
@@ -69,15 +71,19 @@ export const AdminBlogPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) {
-      return;
-    }
+  const handleDelete = (id: string, title: string) => {
+    setArticleToDelete({ id, title });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!articleToDelete) return;
+    const { id } = articleToDelete;
     setActionLoadingId(id);
     try {
       const res = await BlogService.deleteArticle(id);
       if (res.success) {
         setPosts((prev) => prev.filter((p) => p.id !== id));
+        setArticleToDelete(null);
       }
     } catch (err) {
       console.error('Failed to delete article:', err);
@@ -286,6 +292,19 @@ export const AdminBlogPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={Boolean(articleToDelete)}
+        title="Delete Article"
+        description="Are you sure you want to permanently delete this blog article? This action cannot be undone."
+        entityName={articleToDelete?.title}
+        confirmText="Delete Article"
+        cancelText="Cancel"
+        isDestructive={true}
+        isLoading={Boolean(articleToDelete && actionLoadingId === articleToDelete.id)}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setArticleToDelete(null)}
+      />
     </div>
   );
 };

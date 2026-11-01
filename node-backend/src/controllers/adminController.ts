@@ -294,6 +294,89 @@ export const deleteJobByAdmin = async (c: Context) => {
   }
 };
 
+
+/**
+ * Delete a user profile and clean up associated records
+ * Protected: Requires ADMIN or SUPER_ADMIN
+ */
+export const deleteUserByAdmin = async (c: Context) => {
+  try {
+    const caller = c.get('user');
+    const id = c.req.param('id') as string;
+
+    if (!id) {
+      return c.json(ApiResponse.error("User ID is required"), 400 as any);
+    }
+
+    // Prevent admin from deleting their own active session
+    if (caller?.id === id || caller?.sub === id) {
+      return c.json(ApiResponse.error("You cannot delete your own active administrator account"), 400 as any);
+    }
+
+    const user = await prisma.user_metadata.findUnique({ where: { id } });
+    if (!user) {
+      return c.json(ApiResponse.error("User account not found"), 404 as any);
+    }
+
+    // Only SUPER_ADMIN can delete other ADMIN or SUPER_ADMIN accounts
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+      if (caller?.role !== 'SUPER_ADMIN') {
+        return c.json(ApiResponse.error("Only Super Administrators can delete administrator accounts"), 403 as any);
+      }
+    }
+
+    // Clean up all related child records safely in a transaction
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete notifications & tokens
+      await tx.notifications.deleteMany({ where: { user_id: id } }).catch(() => {});
+      await tx.user_fcm_tokens.deleteMany({ where: { user_id: id } }).catch(() => {});
+      await tx.user_search_alerts.deleteMany({ where: { user_id: id } }).catch(() => {});
+      await tx.user_settings.deleteMany({ where: { user_id: id } }).catch(() => {});
+      await tx.user_activities.deleteMany({ where: { user_id: id } }).catch(() => {});
+      await tx.verification_records.deleteMany({ where: { user_id: id } }).catch(() => {});
+
+      // 2. Delete worker search index and applications (indexed by user_id)
+      await tx.worker_search_index.deleteMany({ where: { user_id: id } }).catch(() => {});
+      const worker = await tx.worker_profiles.findFirst({ where: { user_id: id } });
+      const workerIdsToDelete = [id, worker?.id].filter(Boolean) as string[];
+      await tx.job_applications.deleteMany({ where: { worker_id: { in: workerIdsToDelete } } }).catch(() => {});
+      await (tx as any).saved_jobs?.deleteMany({ where: { user_id: id } }).catch(() => {});
+      if (worker) {
+        await tx.worker_profiles.deleteMany({ where: { user_id: id } }).catch(() => {});
+      }
+
+      // 3. If employer profile exists, delete employer jobs or detach
+      const employer = await tx.employer_profiles.findFirst({ where: { user_id: id } });
+      if (employer) {
+        const empJobs = await tx.jobs.findMany({
+          where: {
+            OR: [
+              { employer_id: id },
+              { employer_id: employer.id }
+            ]
+          },
+          select: { id: true }
+        });
+        const jobIds = empJobs.map(j => j.id);
+        if (jobIds.length > 0) {
+          await tx.job_applications.deleteMany({ where: { job_id: { in: jobIds } } }).catch(() => {});
+          await tx.job_search_index.deleteMany({ where: { job_id: { in: jobIds } } }).catch(() => {});
+          await tx.jobs.deleteMany({ where: { id: { in: jobIds } } }).catch(() => {});
+        }
+        await tx.employer_profiles.deleteMany({ where: { user_id: id } }).catch(() => {});
+      }
+
+      // 4. Finally delete user metadata
+      await tx.user_metadata.delete({ where: { id } });
+    });
+
+    return c.json(ApiResponse.ok("User account and related data deleted successfully"));
+  } catch (err: any) {
+    console.error("deleteUserByAdmin error:", err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
 export const createAdminUser = async (c: Context) => {
   try {
     const bcrypt = await import('bcryptjs');
@@ -585,3 +668,249 @@ export const getVisitorAnalytics = async (c: Context) => {
 
 
 
+
+/**
+ * Create a secure Admin invitation
+ * Allowed: SUPER_ADMIN or ADMIN with proper credentials
+ * Sends Brevo email and returns shareable link for WhatsApp/Slack
+ */
+export const createAdminInvitation = async (c: Context) => {
+  try {
+    const caller = c.get('user');
+    const { email, firstName, lastName, sendEmailNotification = true } = (await c.req.json());
+
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return c.json(ApiResponse.error("A valid email address is required"), 400 as any);
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Check if user already exists
+    const existingUser = await prisma.user_metadata.findUnique({ where: { email: cleanEmail } });
+    if (existingUser) {
+      if (existingUser.role === 'ADMIN' || existingUser.role === 'SUPER_ADMIN') {
+        return c.json(ApiResponse.error("This user is already an administrator"), 400 as any);
+      }
+      return c.json(ApiResponse.error("A user with this email already exists in the registry"), 400 as any);
+    }
+
+    // Generate secure cryptographic invitation token (32 hex characters)
+    const crypto = await import('crypto');
+    const token = crypto.randomBytes(24).toString('hex');
+    const invitationId = uuidv4();
+    const expiresInHours = 48;
+    const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
+
+    // Save invitation to admin_invitations table safely via raw SQL (handles if table was just created)
+    await prisma.$executeRaw`
+      INSERT INTO admin_invitations (
+        id, email, first_name, last_name, role, token, invited_by, status, expires_at, created_at, updated_at
+      ) VALUES (
+        ${invitationId}::uuid, ${cleanEmail}, ${firstName || null}, ${lastName || null}, 'ADMIN',
+        ${token}, ${caller?.email || 'Super Admin'}, 'PENDING', ${expiresAt}, NOW(), NOW()
+      )
+      ON CONFLICT (token) DO UPDATE SET
+        email = ${cleanEmail},
+        expires_at = ${expiresAt},
+        status = 'PENDING',
+        updated_at = NOW();
+    `;
+
+    // Dynamically detect client origin from request headers (Origin / Referer) or fall back to FRONTEND_URL
+    const reqOrigin = c.req.header('origin') || c.req.header('referer');
+    let clientBaseUrl = process.env.FRONTEND_URL;
+    if (reqOrigin) {
+      try {
+        const parsed = new URL(reqOrigin);
+        clientBaseUrl = `${parsed.protocol}//${parsed.host}`;
+      } catch {}
+    }
+    const frontendUrl = (clientBaseUrl || 'https://trusthyre.com').replace(/\/$/, '');
+    const inviteLink = `${frontendUrl}/admin/accept-invite?token=${token}`;
+
+    let emailDelivered = false;
+    if (sendEmailNotification) {
+      try {
+        const { renderAdminInvitationEmail } = await import('../services/emailTemplateService');
+        const { sendEmail } = await import('../services/mailer');
+
+        const emailContent = renderAdminInvitationEmail({
+          recipientName: firstName || 'Administrator',
+          email: cleanEmail,
+          inviteLink: inviteLink,
+          invitedBy: caller?.first_name ? `${caller.first_name} ${caller.last_name || ''}`.trim() : 'Platform Administrator',
+          expiresInHours
+        });
+
+        await sendEmail(cleanEmail, emailContent.subject, emailContent.html, {
+          category: 'auth',
+          text: emailContent.text
+        });
+        emailDelivered = true;
+      } catch (mailErr: any) {
+        console.warn('[AdminInvitation] Notice: Email dispatch error (share link remains active):', mailErr.message);
+      }
+    }
+
+    return c.json(ApiResponse.ok("Administrator invitation created successfully", {
+      invitationId,
+      email: cleanEmail,
+      firstName: firstName || null,
+      lastName: lastName || null,
+      token,
+      inviteLink,
+      expiresAt: expiresAt.toISOString(),
+      expiresInHours,
+      emailDelivered
+    }));
+  } catch (err: any) {
+    console.error("createAdminInvitation error:", err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * Public validation endpoint for an invitation token
+ * Validates token expiration and returns invited email for confirmation UI
+ */
+export const getAdminInvitationByToken = async (c: Context) => {
+  try {
+    const token = c.req.query('token') || c.req.param('token');
+    if (!token) {
+      return c.json(ApiResponse.error("Invitation token is required"), 400 as any);
+    }
+
+    const rows: any[] = await prisma.$queryRaw`
+      SELECT id, email, first_name, last_name, role, status, expires_at
+      FROM admin_invitations
+      WHERE token = ${token}
+      LIMIT 1;
+    `;
+
+    if (!rows || rows.length === 0) {
+      return c.json(ApiResponse.error("Invalid or expired invitation link"), 404 as any);
+    }
+
+    const invitation = rows[0];
+
+    if (invitation.status === 'ACCEPTED') {
+      return c.json(ApiResponse.error("This invitation has already been accepted"), 400 as any);
+    }
+
+    if (invitation.status === 'REVOKED' || new Date(invitation.expires_at).getTime() <= Date.now()) {
+      return c.json(ApiResponse.error("This invitation link has expired or been revoked"), 410 as any);
+    }
+
+    return c.json(ApiResponse.ok({
+      email: invitation.email,
+      firstName: invitation.first_name,
+      lastName: invitation.last_name,
+      role: invitation.role,
+      expiresAt: invitation.expires_at
+    }));
+  } catch (err: any) {
+    console.error("getAdminInvitationByToken error:", err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * Public endpoint to accept an invitation and configure private administrator password
+ */
+export const acceptAdminInvitation = async (c: Context) => {
+  try {
+    const bcrypt = await import('bcryptjs');
+    const { token, password, firstName, lastName } = (await c.req.json());
+
+    if (!token || !password) {
+      return c.json(ApiResponse.error("Token and new password are required"), 400 as any);
+    }
+
+    if (password.length < 8) {
+      return c.json(ApiResponse.error("Password must be at least 8 characters"), 400 as any);
+    }
+
+    const rows: any[] = await prisma.$queryRaw`
+      SELECT id, email, first_name, last_name, role, status, expires_at
+      FROM admin_invitations
+      WHERE token = ${token}
+      LIMIT 1;
+    `;
+
+    if (!rows || rows.length === 0) {
+      return c.json(ApiResponse.error("Invalid invitation token"), 404 as any);
+    }
+
+    const invitation = rows[0];
+
+    if (invitation.status === 'ACCEPTED') {
+      return c.json(ApiResponse.error("This invitation has already been activated"), 400 as any);
+    }
+
+    if (new Date(invitation.expires_at).getTime() <= Date.now() || invitation.status === 'REVOKED') {
+      return c.json(ApiResponse.error("This invitation has expired"), 410 as any);
+    }
+
+    const cleanEmail = invitation.email.toLowerCase();
+
+    // Check if user already exists
+    const existing = await prisma.user_metadata.findUnique({ where: { email: cleanEmail } });
+    if (existing) {
+      return c.json(ApiResponse.error("An account with this email already exists"), 400 as any);
+    }
+
+    const passwordHash = await bcrypt.default.hash(password, 10);
+    const userId = uuidv4();
+
+    // Create the new administrator account
+    const newAdmin = await prisma.user_metadata.create({
+      data: {
+        id: userId,
+        email: cleanEmail,
+        password_hash: passwordHash,
+        first_name: firstName || invitation.first_name || 'Admin',
+        last_name: lastName || invitation.last_name || '',
+        role: invitation.role || 'ADMIN',
+        email_verified: true,
+        onboarded: true,
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+
+    // Mark invitation as ACCEPTED
+    await prisma.$executeRaw`
+      UPDATE admin_invitations
+      SET status = 'ACCEPTED', accepted_at = NOW(), updated_at = NOW()
+      WHERE id = ${invitation.id}::uuid;
+    `;
+
+    // Issue JWT token so new admin is immediately authenticated
+    const jwt = await import('jsonwebtoken');
+    const secret = (c.env?.JWT_SECRET as string) || (process.env.JWT_SECRET as string) || 'trusthyre_jwt_secret_default';
+    const authToken = jwt.default.sign(
+      {
+        sub: newAdmin.id,
+        id: newAdmin.id,
+        email: newAdmin.email,
+        role: newAdmin.role
+      },
+      secret,
+      { expiresIn: '7d' }
+    );
+
+    return c.json(ApiResponse.ok("Administrator account successfully activated", {
+      token: authToken,
+      user: {
+        id: newAdmin.id,
+        email: newAdmin.email,
+        firstName: newAdmin.first_name,
+        lastName: newAdmin.last_name,
+        role: newAdmin.role
+      }
+    }));
+  } catch (err: any) {
+    console.error("acceptAdminInvitation error:", err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};

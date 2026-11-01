@@ -33,6 +33,7 @@ import { mediaService } from '../../../services/media.service';
 import { sanitizeHtmlDescription } from '../../../utils/textSanitizer';
 import { toast } from 'sonner';
 import { AppLoader } from '../../../components/common/AppLoader';
+import { ConfirmModal } from '../../../components/common/ConfirmModal';
 
 const TN_PRIORITY_CITIES = [
   { name: 'Chennai', label: 'Chennai (சென்னை)' },
@@ -92,6 +93,7 @@ export const AdminJobsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingCoverJob, setEditingCoverJob] = useState<any | null>(null);
   const [editingJob, setEditingJob] = useState<any | null>(null);
+  const [jobToDelete, setJobToDelete] = useState<{ id: string; title: string } | null>(null);
   const [editJobForm, setEditJobForm] = useState<{
     title: string;
     description: string;
@@ -261,10 +263,22 @@ export const AdminJobsPage: React.FC = () => {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminService.deleteJob(id),
-    onSuccess: () => {
+    onSuccess: (_data, deletedJobId) => {
       toast.success('Job removed by administrator');
-      queryClient.invalidateQueries({ queryKey: ['adminJobs'] });
-      queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+      // Patch TanStack query cache directly without re-fetching
+      queryClient.setQueriesData<AdminJobItem[]>({ queryKey: ['adminJobs'] }, (old: AdminJobItem[] | undefined) => {
+        if (!Array.isArray(old)) return old;
+        return old.filter((j) => j.id !== deletedJobId);
+      });
+      // Optionally adjust cached stats if present
+      queryClient.setQueriesData<any>({ queryKey: ['adminStats'] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          totalJobs: Math.max(0, (old.totalJobs || 0) - 1),
+          jobsCount: Math.max(0, (old.jobsCount || 0) - 1)
+        };
+      });
     }
   });
 
@@ -312,9 +326,7 @@ export const AdminJobsPage: React.FC = () => {
   });
 
   const handleDelete = (id: string, title: string) => {
-    if (window.confirm(`Are you sure you want to permanently delete the job posting "${title}"?`)) {
-      deleteMutation.mutate(id);
-    }
+    setJobToDelete({ id, title });
   };
 
   const statusTabs = [
@@ -1312,6 +1324,26 @@ export const AdminJobsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Confirm Delete Job Modal */}
+      <ConfirmModal
+        isOpen={Boolean(jobToDelete)}
+        title="Delete Job Posting"
+        description="Are you sure you want to permanently delete this job posting? This action cannot be undone."
+        entityName={jobToDelete?.title}
+        confirmText="Delete Job"
+        cancelText="Cancel"
+        isDestructive={true}
+        isLoading={deleteMutation.isPending}
+        onConfirm={() => {
+          if (jobToDelete?.id) {
+            deleteMutation.mutate(jobToDelete.id, {
+              onSettled: () => setJobToDelete(null)
+            });
+          }
+        }}
+        onCancel={() => setJobToDelete(null)}
+      />
     </div>
   );
 };

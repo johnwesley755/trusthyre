@@ -13,9 +13,9 @@ export const getOtpTemplate = (otp: string, email?: string) => {
         <!--[if !mso]><!-->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" type="text/css">
         <style type="text/css">
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
         </style>
         <!--<![endif]-->
         <!--[if mso]>
@@ -26,8 +26,11 @@ export const getOtpTemplate = (otp: string, email?: string) => {
         </style>
         <![endif]-->
         <style type="text/css">
+            * {
+                font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+            }
             body, table, td, p, a, h1, span, div {
-                font-family: ${EMAIL_FONT_STACK} !important;
+                font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
             }
             .otp-code {
                 user-select: all !important;
@@ -177,9 +180,9 @@ export const getResetPasswordTemplate = (token: string, email?: string) => {
         <!--[if !mso]><!-->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" type="text/css">
         <style type="text/css">
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
         </style>
         <!--<![endif]-->
         <!--[if mso]>
@@ -190,8 +193,11 @@ export const getResetPasswordTemplate = (token: string, email?: string) => {
         </style>
         <![endif]-->
         <style type="text/css">
+            * {
+                font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+            }
             body, table, td, p, a, h1, span, div {
-                font-family: ${EMAIL_FONT_STACK} !important;
+                font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
             }
             .otp-code {
                 user-select: all !important;

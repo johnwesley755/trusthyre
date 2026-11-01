@@ -60,9 +60,12 @@ export function renderEmailShell(options: EmailShellOptions): string {
   <!--[if !mso]><!-->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" type="text/css">
   <style type="text/css">
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
+    * {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    }
   </style>
   <!--<![endif]-->
   <!--[if mso]>
@@ -430,3 +433,80 @@ Manage Notifications: ${(process.env.FRONTEND_URL || 'https://trusthyre.com').re
   return { html, text, subject };
 }
 
+
+/**
+ * Admin Invitation Email Template
+ */
+export function renderAdminInvitationEmail(data: {
+  recipientName?: string;
+  email: string;
+  inviteLink: string;
+  invitedBy?: string;
+  expiresInHours?: number;
+}): { html: string; text: string; subject: string } {
+  const inviter = data.invitedBy || 'A Platform Administrator';
+  const hours = data.expiresInHours || 48;
+  const subject = "🛡️ Invitation to join TrustHyre as an Administrator";
+  const preheader = `You have been invited by ${inviter} to join the TrustHyre Administrative Portal.`;
+
+  const bodyHtml = `
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #FFFFFF; border: 1.5px solid #E2E8F0; border-radius: 14px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 47, 99, 0.04); font-family: ${EMAIL_FONT_STACK};">
+      <tr>
+        <td style="padding: 24px 26px; font-family: ${EMAIL_FONT_STACK};">
+          <div style="display: inline-block; padding: 4px 10px; background-color: #EFF6FF; border: 1px solid #DBEAFE; border-radius: 6px; color: #1D4ED8; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-family: ${EMAIL_FONT_STACK};">
+            Administrative Provisioning
+          </div>
+          <h2 style="margin: 0 0 12px 0; color: #0F2F63; font-size: 20px; font-weight: 800; letter-spacing: -0.3px; line-height: 1.3; font-family: ${EMAIL_FONT_STACK};">
+            You're Invited to Manage TrustHyre
+          </h2>
+          <p style="margin: 0 0 16px 0; color: #334155; font-size: 14px; line-height: 1.65; font-family: ${EMAIL_FONT_STACK};">
+            <strong>${esc(inviter)}</strong> has authorized administrator privileges for your account (<strong>${esc(data.email)}</strong>).
+          </p>
+          <p style="margin: 0 0 20px 0; color: #64748B; font-size: 13px; line-height: 1.6; font-family: ${EMAIL_FONT_STACK};">
+            As an administrator, you will have secure access to moderate incoming job postings, verify candidate credentials, manage lead workflows, and review platform performance.
+          </p>
+
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border-radius: 10px; border: 1px solid #E2E8F0; margin-bottom: 8px;">
+            <tr>
+              <td style="padding: 14px 18px; font-family: ${EMAIL_FONT_STACK};">
+                <p style="margin: 0; color: #0F2F63; font-size: 12px; font-weight: 700; font-family: ${EMAIL_FONT_STACK};">
+                  🔒 Security Notice
+                </p>
+                <p style="margin: 4px 0 0 0; color: #64748B; font-size: 12px; line-height: 1.5; font-family: ${EMAIL_FONT_STACK};">
+                  This secure invitation link is single-use and will automatically expire in <strong>${hours} hours</strong>. You will configure your own confidential password upon activation.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
+
+  const html = renderEmailShell({
+    title: subject,
+    preheader: preheader,
+    badgeText: '🛡️ ADMIN INVITATION',
+    recipientName: data.recipientName || 'Administrator',
+    bodyHtml: bodyHtml,
+    targetLink: data.inviteLink,
+    buttonText: 'Accept Invitation & Activate Account'
+  });
+
+  const text = `
+TrustHyre Administrator Invitation
+------------------------------------------------------
+Hello ${data.recipientName || 'Administrator'},
+
+${inviter} has authorized an administrator account for ${data.email}.
+
+To accept this invitation and configure your confidential password, open the secure link below:
+${data.inviteLink}
+
+Note: This link is single-use and expires in ${hours} hours.
+
+TrustHyre Technologies Pvt. Ltd.
+  `.trim();
+
+  return { html, text, subject };
+}
