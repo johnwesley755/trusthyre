@@ -287,7 +287,11 @@ export const router = createBrowserRouter([
               },
               {
                 path: 'users',
-                element: <AdminUsersPage />,
+                element: (
+                  <RoleGuard allowedRoles={['SUPER_ADMIN']}>
+                    <AdminUsersPage />
+                  </RoleGuard>
+                ),
               },
               {
                 path: 'jobs',

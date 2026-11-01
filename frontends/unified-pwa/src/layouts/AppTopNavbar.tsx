@@ -314,16 +314,18 @@ export const AppTopNavbar = () => {
                               <CheckCircle2 className="w-4 h-4 text-[#717784]" />
                               <span>Identity Verifications</span>
                             </button>
-                            <button
-                              onClick={() => {
-                                setIsProfileMenuOpen(false);
-                                navigate('/admin/users');
-                              }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
-                            >
-                              <Users className="w-4 h-4 text-[#717784]" />
-                              <span>User Directory</span>
-                            </button>
+                            {isSuperAdmin && (
+                              <button
+                                onClick={() => {
+                                  setIsProfileMenuOpen(false);
+                                  navigate('/admin/users');
+                                }}
+                                className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              >
+                                <Users className="w-4 h-4 text-[#717784]" />
+                                <span>User Directory</span>
+                              </button>
+                            )}
                             <button
                               onClick={() => {
                                 setIsProfileMenuOpen(false);

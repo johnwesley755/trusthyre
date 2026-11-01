@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService } from '../../../services/admin.service';
 import { Link } from 'react-router-dom';
 import { AppLoader } from '../../../components/common/AppLoader';
+import { useAuth } from '../../../providers/AuthContext';
 import { 
   Users, 
   Briefcase, 
@@ -19,6 +20,8 @@ import { toast } from 'sonner';
 
 export const AdminDashboardPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['adminStats'],
@@ -284,9 +287,11 @@ export const AdminDashboardPage: React.FC = () => {
                 <UserCheck className="w-4 h-4 text-[#0f2f63] shrink-0" />
                 <h3 className="text-sm font-semibold text-[#0a0a0a] truncate">Recent Registrations</h3>
               </div>
-              <Link to="/admin/users" className="text-xs font-medium text-[#2563c9] hover:underline shrink-0 whitespace-nowrap">
-                View All
-              </Link>
+              {isSuperAdmin && (
+                <Link to="/admin/users" className="text-xs font-medium text-[#2563c9] hover:underline shrink-0 whitespace-nowrap">
+                  View All
+                </Link>
+              )}
             </div>
 
             <div className="space-y-2.5 min-w-0">
@@ -335,13 +340,15 @@ export const AdminDashboardPage: React.FC = () => {
                 <Building2 className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
                 <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Companies</span>
               </Link>
-              <Link
-                to="/admin/users"
-                className="p-2.5 bg-[#f8fafc] hover:bg-sky-50/60 border border-[#e6e8ec] hover:border-sky-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
-              >
-                <Users className="w-4 h-4 text-sky-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Directory</span>
-              </Link>
+              {isSuperAdmin && (
+                <Link
+                  to="/admin/users"
+                  className="p-2.5 bg-[#f8fafc] hover:bg-sky-50/60 border border-[#e6e8ec] hover:border-sky-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+                >
+                  <Users className="w-4 h-4 text-sky-600 group-hover:scale-110 transition-transform shrink-0" />
+                  <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Directory</span>
+                </Link>
+              )}
               <Link
                 to="/admin/jobs"
                 className="p-2.5 bg-[#f8fafc] hover:bg-amber-50/60 border border-[#e6e8ec] hover:border-amber-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
