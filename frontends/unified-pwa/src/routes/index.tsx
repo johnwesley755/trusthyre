@@ -1,3 +1,4 @@
+import { AdminAcceptInvitePage } from '../modules/admin/pages/AdminAcceptInvitePage';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import LandingPage from '../modules/landing/pages/LandingPage';
 import DashboardPage from '../modules/dashboard/pages/DashboardPage';
@@ -57,6 +58,10 @@ export const router = createBrowserRouter([
       {
         path: '/admin/login',
         element: <AdminLoginPage />,
+      },
+      {
+        path: '/admin/accept-invite',
+        element: <AdminAcceptInvitePage />,
       },
       {
         path: '/sign-in/*',

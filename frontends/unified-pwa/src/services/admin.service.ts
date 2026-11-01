@@ -124,6 +124,11 @@ export const adminService = {
     return res.data;
   },
 
+  deleteUser: async (id: string): Promise<any> => {
+    const res = await apiClient.delete(`/api/admin/users/${id}`);
+    return res.data;
+  },
+
   getUsers: async (params?: { role?: string; q?: string }): Promise<AdminUserItem[]> => {
     const res = await apiClient.get<AdminUserItem[]>('/api/admin/users', { params });
     return res.data || [];
@@ -152,6 +157,49 @@ export const adminService = {
   getScraperSources: async (): Promise<AdminSourceItem[]> => {
     const res = await apiClient.get<AdminSourceItem[]>('/api/admin/jobs/sources');
     return res.data || [];
+  },
+
+
+  inviteAdmin: async (data: {
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    sendEmailNotification?: boolean;
+  }): Promise<{
+    invitationId: string;
+    email: string;
+    token: string;
+    inviteLink: string;
+    expiresAt: string;
+    expiresInHours: number;
+    emailDelivered: boolean;
+  }> => {
+    const res = await apiClient.post('/api/admin/invitations/create', data);
+    return res.data;
+  },
+
+  verifyAdminInvitation: async (token: string): Promise<{
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    role: string;
+    expiresAt: string;
+  }> => {
+    const res = await apiClient.get('/api/admin/invitations/verify', { params: { token } });
+    return res.data;
+  },
+
+  acceptAdminInvitation: async (data: {
+    token: string;
+    password: string;
+    firstName?: string;
+    lastName?: string;
+  }): Promise<{
+    token: string;
+    user: any;
+  }> => {
+    const res = await apiClient.post('/api/admin/invitations/accept', data);
+    return res.data;
   },
 
   createAdmin: async (data: {
