@@ -23,8 +23,7 @@ export const NotificationListener = () => {
       const currentPerm = Notification.permission;
       
       if (currentPerm === 'granted') {
-        // Always ensure live FCM token is freshly validated and registered with backend
-        // on page load or hard refresh (clears stale dead tokens)
+        // Keep live FCM token synced if permission was already granted by user
         fcmService.requestPushPermissionAndRegister(user.id, true)
           .then((res) => {
             if (res.token) {
@@ -32,35 +31,6 @@ export const NotificationListener = () => {
             }
           })
           .catch(() => {});
-      } else if (currentPerm === 'default') {
-        // Show non-intrusive prompt once per session so user can opt-in to instant alerts
-        const hasPrompted = sessionStorage.getItem('push_prompt_dismissed');
-        if (!hasPrompted) {
-          promptTimer = setTimeout(() => {
-            toast('Enable Push Notifications', {
-              description: 'Stay updated on new verified job matches, shifts, and application responses.',
-              icon: <Bell className="w-5 h-5 text-[#0f2f63] animate-bounce" />,
-              duration: 10000,
-              className: "bg-white text-slate-900 rounded-2xl border border-slate-200 shadow-xl p-4 font-sans",
-              action: {
-                label: 'Enable Alerts',
-                onClick: async () => {
-                  sessionStorage.setItem('push_prompt_dismissed', 'true');
-                  const res = await fcmService.requestPushPermissionAndRegister(user.id, true);
-                  if (res.status === 'granted') {
-                    toast.success('Push notifications successfully activated!');
-                  }
-                }
-              },
-              cancel: {
-                label: 'Later',
-                onClick: () => {
-                  sessionStorage.setItem('push_prompt_dismissed', 'true');
-                }
-              }
-            });
-          }, 3500);
-        }
       }
     }
 

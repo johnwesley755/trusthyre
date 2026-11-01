@@ -269,7 +269,7 @@ export const AdminJobsPage: React.FC = () => {
       queryClient.setQueriesData<AdminJobItem[]>({ queryKey: ['adminJobs'] }, (old: AdminJobItem[] | undefined) => {
         if (!Array.isArray(old)) return old;
         return old.filter((j) => j.id !== deletedJobId);
-      });
+      }); 
       // Optionally adjust cached stats if present
       queryClient.setQueriesData<any>({ queryKey: ['adminStats'] }, (old: any) => {
         if (!old) return old;
