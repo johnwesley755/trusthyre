@@ -309,6 +309,33 @@ export class SearchAlertService {
         )
       );
 
+      // Also notify relevant registered workers in the same city or category
+      // even if they haven't explicitly set up an alert query, to ensure active workers discover new openings
+      try {
+        const cityFilter = jobCity ? { contains: jobCity, mode: 'insensitive' as const } : undefined;
+        const matchingWorkers = await prisma.worker_profiles.findMany({
+          where: {
+            is_available: true,
+            user_id: { not: job.employer_id },
+            ...(cityFilter ? { city: cityFilter } : {})
+          },
+          select: { user_id: true },
+          take: 50
+        });
+
+        for (const wp of matchingWorkers) {
+          if (!notificationsByUser.has(wp.user_id)) {
+            notificationsByUser.set(wp.user_id, {
+              userId: wp.user_id,
+              alertTitle: job.title
+            });
+            notificationsToSend.push({ userId: wp.user_id, alertTitle: job.title });
+          }
+        }
+      } catch (workerErr: any) {
+        console.warn('[SearchAlertService] Matching workers query notice:', workerErr.message);
+      }
+
       // Update cooldown timestamp and increment match count for matched alerts
       if (matchedAlertIds.length > 0) {
         await prisma.$executeRaw`

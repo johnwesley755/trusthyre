@@ -23,17 +23,15 @@ export const NotificationListener = () => {
       const currentPerm = Notification.permission;
       
       if (currentPerm === 'granted') {
-        // Token refresh and keep alive with active user ID once per session to avoid spamming /fcm-token
-        const sessionRegistered = sessionStorage.getItem(`fcm_synced_${user.id}`);
-        if (!sessionRegistered) {
-          fcmService.requestPushPermissionAndRegister(user.id, false)
-            .then((res) => {
-              if (res.token) {
-                sessionStorage.setItem(`fcm_synced_${user.id}`, 'true');
-              }
-            })
-            .catch(() => {});
-        }
+        // Always ensure live FCM token is freshly validated and registered with backend
+        // on page load or hard refresh (clears stale dead tokens)
+        fcmService.requestPushPermissionAndRegister(user.id, true)
+          .then((res) => {
+            if (res.token) {
+              sessionStorage.setItem(`fcm_synced_${user.id}`, 'true');
+            }
+          })
+          .catch(() => {});
       } else if (currentPerm === 'default') {
         // Show non-intrusive prompt once per session so user can opt-in to instant alerts
         const hasPrompted = sessionStorage.getItem('push_prompt_dismissed');

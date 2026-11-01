@@ -1,3 +1,4 @@
+import { SearchAlertService } from './searchAlertService';
 import { prisma } from '../config/prisma';
 import { sanitizeHtmlDescription } from '../utils/textSanitizer';
 import crypto from 'crypto';
@@ -623,6 +624,21 @@ export class LeadService {
           await prisma.employer_lead_requirements.update({
             where: { id: req.id },
             data: { status: 'FILLED' }
+          });
+
+          // Trigger worker notifications and matching search alerts for newly onboarded jobs
+          SearchAlertService.matchNewJobAgainstAlerts({
+            id: job.id,
+            title: job.title,
+            description: job.description,
+            industry: job.industry,
+            city: job.city,
+            budget: job.budget ? Number(job.budget) : null,
+            employer_id: user.id,
+            required_skills: req.title,
+            experience_years_required: 1
+          }).catch((err: any) => {
+            console.warn('[LeadService] Alert matching notification notice:', err.message);
           });
 
           publishedJobs.push(job.id);

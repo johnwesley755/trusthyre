@@ -89,21 +89,19 @@ export const fcmService = {
 
       // 5. Synchronize token with backend for user session (silent background sync)
       const userTokenKey = userId ? `trusthyre_fcm_registered_${userId}` : 'trusthyre_fcm_registered_current';
-      const lastRegisteredToken = localStorage.getItem(userTokenKey);
-
-      if (forceRefresh || lastRegisteredToken !== token) {
-        try {
-          await apiClient.post('/api/notifications/fcm-token', {
-            token,
-            deviceType: 'web'
-          });
-          localStorage.setItem(userTokenKey, token);
-          localStorage.setItem(LOCAL_STORAGE_FCM_KEY, token);
-        } catch (apiErr: any) {
-          // Log error to console only, never show toast in UI
-          console.error('[FCM] Failed to sync push token with backend:', apiErr?.response?.data || apiErr.message);
-          localStorage.removeItem(userTokenKey);
-        }
+      
+      // Always register token on backend to ensure token exists in DB and prevent silent expiration
+      try {
+        await apiClient.post('/api/notifications/fcm-token', {
+          token,
+          deviceType: 'web'
+        });
+        localStorage.setItem(userTokenKey, token);
+        localStorage.setItem(LOCAL_STORAGE_FCM_KEY, token);
+      } catch (apiErr: any) {
+        // Log error to console only, never show toast in UI
+        console.error('[FCM] Failed to sync push token with backend:', apiErr?.response?.data || apiErr.message);
+        localStorage.removeItem(userTokenKey);
       }
 
       return { status: 'granted', token };
