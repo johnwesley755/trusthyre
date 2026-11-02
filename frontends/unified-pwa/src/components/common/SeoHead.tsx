@@ -65,6 +65,21 @@ export function buildArticleJsonLd(article: {
 /**
  * Helper to construct standard BreadcrumbList Schema.org JSON-LD
  */
+export function buildFaqJsonLd(faqs: Array<{ question: string; answer: string }>) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+}
+
 export function buildBreadcrumbJsonLd(items: Array<{ name: string; path: string }>) {
   return {
     '@context': 'https://schema.org',
