@@ -18,6 +18,12 @@ except ImportError:
             self.status = status
             self.headers = headers or {}
 
+# Handle Pyodide browser/workers runtime imports gracefully for local IDE analyzers
+try:
+    from pyodide.http import pyfetch  # type: ignore
+except ImportError:
+    pyfetch = None  # type: ignore
+
 
 import json
 import uuid
@@ -28,86 +34,116 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse, parse_qs
 from typing import List, Dict, Any, Optional
 
-# Registered sources metadata
+# Registered sources metadata (11 Active Portals matching FastAPI microservice)
 REGISTERED_SOURCES = [
     {
-        "source_id": "lever_ats",
-        "id": "lever_ats",
-        "name": "Direct ATS Feeds (Lever - Porter/Meesho/Zepto)",
+        "source_id": "apna",
+        "id": "apna",
+        "name": "Apna.co Direct (JSON-LD & Next.js)",
         "status": "ACTIVE",
         "active": True,
         "is_restricted": False,
-        "compliance_note": "Compliant direct ingestion via public JSON candidate feeds published by employers.",
-        "last_checked_at": datetime.now(timezone.utc).isoformat(),
-    },
-    {
-        "source_id": "greenhouse_ats",
-        "id": "greenhouse_ats",
-        "name": "Greenhouse Logistics Employer Feeds (Shadowfax/Delhivery)",
-        "status": "ACTIVE",
-        "active": True,
-        "is_restricted": False,
-        "compliance_note": "Direct compliant ingestion via Greenhouse Board public API feeds.",
+        "compliance_note": "Field operations listings with 2-pass JD hydration.",
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
     {
         "source_id": "workindia",
         "id": "workindia",
-        "name": "WorkIndia Direct Trade Portal",
+        "name": "WorkIndia Direct (JSON-LD & Full JD)",
         "status": "ACTIVE",
         "active": True,
         "is_restricted": False,
-        "compliance_note": "Public trade listing extraction with deduplication.",
+        "compliance_note": "Public trade listing extraction with deduplication & full JD.",
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
     {
-        "source_id": "apna",
-        "id": "apna",
-        "name": "Apna Logistics Gateway",
+        "source_id": "olx_jobs",
+        "id": "olx_jobs",
+        "name": "OLX Jobs India",
         "status": "ACTIVE",
         "active": True,
         "is_restricted": False,
-        "compliance_note": "Field operations listings with strict rate-limiting.",
+        "compliance_note": "Direct local classifieds with deep specification parsing.",
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
     {
-        "source_id": "schema_org",
-        "id": "schema_org",
-        "name": "Direct Employer Career Pages (Schema.org / JobPosting)",
+        "source_id": "nithra_jobs",
+        "id": "nithra_jobs",
+        "name": "Nithra Jobs (Tamil Nadu Regional)",
         "status": "ACTIVE",
         "active": True,
         "is_restricted": False,
-        "compliance_note": "Standard-compliant JSON-LD structured data extraction from direct career sites.",
+        "compliance_note": "Tamil Nadu district-level trade postings with 2-pass JD extraction.",
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
     {
-        "source_id": "headcount_labs",
-        "id": "headcount_labs",
-        "name": "Headcount Labs Verified API",
-        "status": "AUTH_REQUIRED",
-        "active": False,
-        "is_restricted": True,
-        "compliance_note": "Direct verified hiring feeds (requires developer API key configured).",
+        "source_id": "quikr_jobs",
+        "id": "quikr_jobs",
+        "name": "QuikrJobs / Babajobs",
+        "status": "ACTIVE",
+        "active": True,
+        "is_restricted": False,
+        "compliance_note": "Entry-level trade postings and Schema.org JobPosting microdata.",
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
     {
         "source_id": "jobspy_naukri",
         "id": "jobspy_naukri",
-        "name": "Naukri Blue Collar Portal",
-        "status": "EXTERNAL_GATEWAY_REQUIRED",
-        "active": False,
-        "is_restricted": True,
-        "compliance_note": "Requires dedicated external scraping worker with browser automation environment (JobSpy/Playwright).",
+        "name": "Naukri.com (JobSpy Engine)",
+        "status": "ACTIVE",
+        "active": True,
+        "is_restricted": False,
+        "compliance_note": "Open-source JobSpy engine with direct Naukri candidate feeds.",
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
     {
         "source_id": "jobspy_indeed",
         "id": "jobspy_indeed",
-        "name": "Indeed Field & Trade Jobs",
-        "status": "EXTERNAL_GATEWAY_REQUIRED",
-        "active": False,
-        "is_restricted": True,
-        "compliance_note": "Requires dedicated external scraping worker with browser automation environment (JobSpy/Playwright).",
+        "name": "Indeed India (JobSpy Engine)",
+        "status": "ACTIVE",
+        "active": True,
+        "is_restricted": False,
+        "compliance_note": "Discovers job listings on Indeed India using open-source JobSpy engine.",
+        "last_checked_at": datetime.now(timezone.utc).isoformat(),
+    },
+    {
+        "source_id": "headcount_labs",
+        "id": "headcount_labs",
+        "name": "Headcount Labs Jobs API",
+        "status": "ACTIVE",
+        "active": True,
+        "is_restricted": False,
+        "compliance_note": "Verified employer hiring API with salary and contact specifications.",
+        "last_checked_at": datetime.now(timezone.utc).isoformat(),
+    },
+    {
+        "source_id": "lever_ats",
+        "id": "lever_ats",
+        "name": "Lever Enterprise ATS Feeds",
+        "status": "ACTIVE",
+        "active": True,
+        "is_restricted": False,
+        "compliance_note": "Direct public candidate feeds from Porter, Meesho, Zepto.",
+        "last_checked_at": datetime.now(timezone.utc).isoformat(),
+    },
+    {
+        "source_id": "greenhouse_ats",
+        "id": "greenhouse_ats",
+        "name": "Greenhouse Logistics ATS Feeds",
+        "status": "ACTIVE",
+        "active": True,
+        "is_restricted": False,
+        "compliance_note": "Direct Greenhouse board candidate feeds from Delhivery, Shadowfax.",
+        "last_checked_at": datetime.now(timezone.utc).isoformat(),
+    },
+    {
+        "source_id": "schema_org",
+        "id": "schema_org",
+        "name": "Schema.org / JSON-LD Universal Job Scraper",
+        "status": "ACTIVE",
+        "active": True,
+        "is_restricted": False,
+        "compliance_note": "Universal Schema.org JobPosting microdata extractor.",
         "last_checked_at": datetime.now(timezone.utc).isoformat(),
     },
 ]
@@ -212,14 +248,14 @@ async def http_get_json(url: str, headers: Optional[Dict[str, str]] = None, time
         "Accept": "application/json",
     }
 
-    try:
-        from pyodide.http import pyfetch
-        resp = await asyncio.wait_for(pyfetch(url, headers=headers, method="GET"), timeout=timeout)
-        if resp.status == 200:
-            return await asyncio.wait_for(resp.json(), timeout=timeout)
-        return None
-    except Exception:
-        pass
+    if pyfetch is not None:
+        try:
+            resp = await asyncio.wait_for(pyfetch(url, headers=headers, method="GET"), timeout=timeout)
+            if resp.status == 200:
+                return await asyncio.wait_for(resp.json(), timeout=timeout)
+            return None
+        except Exception:
+            pass
 
     try:
         import httpx
@@ -241,18 +277,18 @@ async def http_get_text(url: str, headers: Optional[Dict[str, str]] = None, time
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     }
 
-    try:
-        from pyodide.http import pyfetch
-        resp = await asyncio.wait_for(pyfetch(url, headers=headers, method="GET"), timeout=timeout)
-        if resp.status == 200:
-            return await asyncio.wait_for(resp.string(), timeout=timeout)
-        elif resp.status == 403:
-            print(f"[Worker][http_get_text] HTTP 403 Forbidden for {url}")
-        else:
-            print(f"[Worker][http_get_text] {url} returned HTTP {resp.status}")
-        return None
-    except Exception as e:
-        print(f"[Worker][http_get_text] Fetch error for {url}: {e}")
+    if pyfetch is not None:
+        try:
+            resp = await asyncio.wait_for(pyfetch(url, headers=headers, method="GET"), timeout=timeout)
+            if resp.status == 200:
+                return await asyncio.wait_for(resp.string(), timeout=timeout)
+            elif resp.status == 403:
+                print(f"[Worker][http_get_text] HTTP 403 Forbidden for {url}")
+            else:
+                print(f"[Worker][http_get_text] {url} returned HTTP {resp.status}")
+            return None
+        except Exception as e:
+            print(f"[Worker][http_get_text] Fetch error for {url}: {e}")
 
     try:
         import httpx
