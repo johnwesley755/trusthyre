@@ -190,6 +190,119 @@ ${JSON.stringify(articleJsonLd, null, 2)}
     }
   }
 
+  // 1.4 Programmatic City & Trade Hubs: /jobs-in-:city or /jobs-in-:city/:trade
+  if (cleanPath.startsWith('/jobs-in-')) {
+    const hubParts = cleanPath.replace(/^\/jobs-in-/, '').split('/');
+    const citySlug = (hubParts[0] || 'chennai').toLowerCase().trim();
+    const tradeSlug = (hubParts[1] || '').toLowerCase().trim();
+    const normCity = citySlug.charAt(0).toUpperCase() + citySlug.slice(1);
+
+    // Fetch up to 20 active jobs in this city
+    const hubJobs = await (prisma as any).jobs.findMany({
+      where: {
+        city: { contains: normCity, mode: 'insensitive' },
+        OR: [{ status: 'ACTIVE' }, { status: 'OPEN' }],
+      },
+      select: {
+        id: true,
+        title: true,
+        city: true,
+        employer_name: true,
+        budget: true,
+        description: true,
+        created_at: true,
+      },
+      take: 20,
+      orderBy: { created_at: 'desc' },
+    }).catch(() => []);
+
+    const pageTitle = tradeSlug
+      ? `${tradeSlug.charAt(0).toUpperCase() + tradeSlug.slice(1)} Jobs in ${normCity} | Verified Openings 2026 - TrustHyre`
+      : `Verified Skilled & Blue Collar Jobs in ${normCity} - TrustHyre`;
+
+    const pageDesc = tradeSlug
+      ? `Apply to verified ${tradeSlug} vacancies in ${normCity}. Transparent monthly pay, direct employer hiring, and zero middleman commissions on TrustHyre.`
+      : `Explore verified frontline and skilled trade jobs across ${normCity}. Instant direct application with photo-verified worksite inspections.`;
+
+    const canonical = `${BASE_DOMAIN}${cleanPath}`;
+
+    const itemListJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: pageTitle,
+      description: pageDesc,
+      numberOfItems: hubJobs.length,
+      itemListElement: hubJobs.map((j: any, idx: number) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        url: `${BASE_DOMAIN}/job/${j.id}`,
+        name: j.title,
+        item: {
+          '@type': 'JobPosting',
+          title: j.title,
+          hiringOrganization: {
+            '@type': 'Organization',
+            name: j.employer_name || 'TrustHyre Verified Employer',
+          },
+          jobLocation: {
+            '@type': 'Place',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: j.city || normCity,
+              addressRegion: 'Tamil Nadu',
+              addressCountry: 'IN',
+            },
+          },
+        },
+      })),
+    };
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(pageTitle)}</title>
+  <meta name="description" content="${escapeHtml(pageDesc)}">
+  <link rel="canonical" href="${canonical}">
+  <meta property="og:title" content="${escapeHtml(pageTitle)}">
+  <meta property="og:description" content="${escapeHtml(pageDesc)}">
+  <meta property="og:url" content="${canonical}">
+  <meta property="og:type" content="website">
+  <script type="application/ld+json">
+${JSON.stringify(itemListJsonLd, null, 2)}
+  </script>
+</head>
+<body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 24px; color: #111;">
+  <header style="margin-bottom: 24px; border-bottom: 1px solid #eee; padding-bottom: 16px;">
+    <h1 style="font-size: 2rem; color: #0f2f63; margin-bottom: 8px;">${escapeHtml(pageTitle)}</h1>
+    <p style="color: #555; font-size: 1rem;">${escapeHtml(pageDesc)}</p>
+  </header>
+  <section>
+    <h2 style="font-size: 1.3rem; margin-bottom: 16px;">Active Verified Openings in ${escapeHtml(normCity)} (${hubJobs.length})</h2>
+    <div style="display: grid; gap: 16px;">
+      ${hubJobs.map((j: any) => `
+        <article style="border: 1px solid #e2e4e9; border-radius: 12px; padding: 16px; background: #fff;">
+          <h3 style="margin: 0 0 8px 0; font-size: 1.15rem;">
+            <a href="${BASE_DOMAIN}/job/${j.id}" style="color: #0f2f63; text-decoration: none; font-weight: bold;">${escapeHtml(j.title)}</a>
+          </h3>
+          <p style="margin: 0 0 8px 0; color: #666; font-size: 0.9rem;">
+            Employer: <strong>${escapeHtml(j.employer_name || 'TrustHyre Verified Employer')}</strong>  Location: <strong>${escapeHtml(j.city || normCity)}</strong>
+            ${j.budget ? `  Salary: <strong>₹${Number(j.budget).toLocaleString('en-IN')}/mo</strong>` : ''}
+          </p>
+          <a href="${BASE_DOMAIN}/job/${j.id}" style="display: inline-block; background: #0f2f63; color: white; padding: 6px 14px; border-radius: 9999px; text-decoration: none; font-size: 0.85rem; font-weight: bold;">View Details &amp; Apply</a>
+        </article>
+      `).join('')}
+    </div>
+  </section>
+</body>
+</html>`;
+
+    return c.html(html, 200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=1800, s-maxage=3600',
+    });
+  }
+
   // 1.5 Job Post Details: /job/:slug-or-id or /jobs/:slug-or-id
   if (cleanPath.startsWith('/job/') || cleanPath.startsWith('/jobs/')) {
     const rawSlugOrId = cleanPath.replace(/^\/jobs?\//, '').trim();

@@ -87,6 +87,28 @@ export class SitemapService {
   </url>`);
     }
 
+    // 1.8 Programmatic City & Trade Hub URLs (High-Priority Landing Hubs)
+    const featuredCities = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
+    const featuredTrades = ['electrician', 'driver', 'cook', 'plumber', 'welder', 'security', 'warehouse'];
+
+    for (const city of featuredCities) {
+      urlEntries.push(`  <url>
+    <loc>${this.BASE_URL}/jobs-in-${city}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>`);
+
+      for (const trade of featuredTrades) {
+        urlEntries.push(`  <url>
+    <loc>${this.BASE_URL}/jobs-in-${city}/${trade}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>`);
+      }
+    }
+
     // 2. Category URLs
     for (const cat of categories) {
       const lastmodDate = cat.updated_at ? new Date(cat.updated_at).toISOString().split('T')[0] : today;

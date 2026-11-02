@@ -23,7 +23,8 @@ import {
   ShieldCheck, 
   Share2, 
   Bookmark, 
-  ChevronLeft, 
+  ChevronLeft,
+  ChevronRight, 
   Briefcase, 
   Building2, 
   Calendar, 
@@ -687,6 +688,27 @@ export default function JobDetailPage() {
           {/* LEFT COLUMN (8 Cols): Scope, Skills & Worksite Details */}
           <div className="col-span-1 lg:col-span-8 space-y-6">
             
+            {isExpired && (
+              <div className="bg-amber-50 border border-amber-200 rounded-[1.75rem] p-6 text-[#78350f] space-y-3">
+                <div className="flex items-center gap-2 font-bold text-sm text-amber-900">
+                  <Clock className="w-4 h-4 text-amber-700" />
+                  <span>This position has been filled or expired</span>
+                </div>
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  The employer has closed applications for this opening. Explore active verified vacancies matching this trade and locality below.
+                </p>
+                {job.city && (
+                  <Link
+                    to={`/jobs-in-${job.city.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0f2f63] text-white rounded-full text-xs font-bold hover:bg-[#1a4484] transition"
+                  >
+                    <span>View all verified jobs in {job.city}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                )}
+              </div>
+            )}
+
             {/* Job Description Card */}
             <div className="bg-[#f4f4f4] rounded-[1.75rem] p-6 sm:p-8 border border-[#e6e8ec] space-y-4">
               <div className="flex items-center gap-2 border-b border-[#e6e8ec] pb-3">
@@ -863,6 +885,30 @@ export default function JobDetailPage() {
                 )}
               </div>
             </div>
+
+            {/* SEO Trade & Location Equity Card */}
+            {job.city && (
+              <div className="bg-[#f4f4f4] rounded-[1.75rem] p-6 border border-[#e6e8ec] space-y-3">
+                <div className="flex items-center gap-2 border-b border-[#e6e8ec] pb-3">
+                  <MapPin className="w-4 h-4 text-[#0f2f63]" />
+                  <h3 className="text-xs font-bold uppercase text-[#717784]">
+                    Explore More Verified Jobs in {job.city}
+                  </h3>
+                </div>
+                <p className="text-xs text-[#5a6270] leading-relaxed">
+                  Looking for more verified openings in {job.city}? Browse direct employer opportunities across trades with guaranteed wage transparency.
+                </p>
+                <div className="pt-1">
+                  <Link
+                    to={`/jobs-in-${job.city.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="inline-flex items-center justify-between w-full p-3 bg-white hover:bg-slate-50 border border-[#e2e4e9] rounded-xl text-xs font-bold text-[#0f2f63] transition shadow-2xs"
+                  >
+                    <span>View all {job.city} Openings</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            )}
 
           </div>
 
