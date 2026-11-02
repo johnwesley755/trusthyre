@@ -82,6 +82,43 @@ export function buildBreadcrumbJsonLd(items: Array<{ name: string; path: string 
 /**
  * Helper to construct standard Google for Jobs JobPosting Schema.org JSON-LD
  */
+const CITY_STATE_PIN_MAP: Record<string, { state: string; postalCode: string }> = {
+  chennai: { state: 'Tamil Nadu', postalCode: '600001' },
+  coimbatore: { state: 'Tamil Nadu', postalCode: '641001' },
+  madurai: { state: 'Tamil Nadu', postalCode: '625001' },
+  tiruchirappalli: { state: 'Tamil Nadu', postalCode: '620001' },
+  trichy: { state: 'Tamil Nadu', postalCode: '620001' },
+  salem: { state: 'Tamil Nadu', postalCode: '636001' },
+  tiruppur: { state: 'Tamil Nadu', postalCode: '641601' },
+  bengaluru: { state: 'Karnataka', postalCode: '560001' },
+  bangalore: { state: 'Karnataka', postalCode: '560001' },
+  hyderabad: { state: 'Telangana', postalCode: '500001' },
+  mumbai: { state: 'Maharashtra', postalCode: '400001' },
+  pune: { state: 'Maharashtra', postalCode: '411001' },
+  delhi: { state: 'Delhi', postalCode: '110001' },
+  kolkata: { state: 'West Bengal', postalCode: '700001' },
+};
+
+function resolveGeoAddress(city?: string, rawAddress?: string) {
+  const normCity = (city || 'Chennai').trim().toLowerCase();
+  const info = CITY_STATE_PIN_MAP[normCity] || { state: 'Tamil Nadu', postalCode: '600001' };
+
+  let postalCode = info.postalCode;
+  if (rawAddress) {
+    const pinMatch = rawAddress.match(/\b\d{6}\b/);
+    if (pinMatch) postalCode = pinMatch[0];
+  }
+
+  return {
+    '@type': 'PostalAddress' as const,
+    addressLocality: city || 'Chennai',
+    addressRegion: info.state,
+    postalCode: postalCode,
+    streetAddress: rawAddress || city || 'India',
+    addressCountry: 'IN',
+  };
+}
+
 export function buildJobPostingJsonLd(job: {
   title: string;
   description: string;
@@ -122,12 +159,7 @@ export function buildJobPostingJsonLd(job: {
     },
     jobLocation: {
       '@type': 'Place',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: job.city || 'Chennai',
-        streetAddress: job.address || job.city || 'Pan India',
-        addressCountry: 'IN',
-      },
+      address: resolveGeoAddress(job.city, job.address),
     },
     ...salaryObj,
   };
