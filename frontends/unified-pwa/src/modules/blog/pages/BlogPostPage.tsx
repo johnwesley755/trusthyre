@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   Clock, 
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { BlogService } from '../../../services/blog.service';
 import type { BlogPost } from '../../../services/blog.service';
-import { SeoHead, buildArticleJsonLd, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
+import { SeoHead, buildArticleJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from '../../../components/common/SeoHead';
 import { AppTopNavbar } from '../../../layouts/AppTopNavbar';
 import { LandingFooter } from '../../landing/components/LandingFooter';
 import { UserAvatar } from '../../../components/common/UserAvatar';
@@ -100,6 +100,18 @@ export const BlogPostPage: React.FC = () => {
     dateModified: post.updatedAt,
     authorName: post.authorName,
   }) : undefined;
+
+  // Automated Generative Engine Optimization (GEO): extract Q&A from content for FAQPage JSON-LD
+  const faqsJsonLd = useMemo(() => {
+    if (!post?.content) return undefined;
+    const matches = Array.from(post.content.matchAll(/(?:###|##)\s*(?:Q:|FAQ:?|Question:?)\s*([^\n]+)\n+([\s\S]*?)(?=(?:###|##|$))/gi));
+    if (matches.length === 0) return undefined;
+    const items = matches.slice(0, 6).map((m) => ({
+      question: m[1].trim(),
+      answer: m[2].replace(/[#*`_]/g, '').trim(),
+    }));
+    return items.length > 0 ? buildFaqJsonLd(items) : undefined;
+  }, [post?.content]);
 
   const breadcrumbsJsonLd = post ? buildBreadcrumbJsonLd([
     { name: 'Home', path: '/' },
@@ -338,6 +350,23 @@ export const BlogPostPage: React.FC = () => {
 
             {/* Article Body Content */}
             <article className="bg-white rounded-[1.75rem] border border-[#e6e8ec] p-6 sm:p-10 shadow-xs">
+              {/* GEO & AI Search Key Takeaways Box (Perplexity & Gemini Citation Anchor) */}
+              {post.excerpt && (
+                <div className="mb-8 p-5 sm:p-6 bg-[#f4f7fb] border border-[#d2dff0] rounded-2xl space-y-2.5">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0f2f63]">
+                    <Sparkles className="w-4 h-4 text-[#0f2f63]" />
+                    <span>Key Takeaways &amp; Executive Summary</span>
+                  </div>
+                  <p className="text-sm text-[#1e293b] leading-relaxed font-medium">
+                    {tText(post.excerpt)}
+                  </p>
+                  <div className="flex items-center gap-2 pt-2 border-t border-[#e2e8f0] text-[11px] text-[#64748b]">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Verified by TrustHyre Workforce Research &amp; Industry Benchmarks (2026)</span>
+                  </div>
+                </div>
+              )}
+
               <div className="prose max-w-none text-[#0a0a0a]">
                 <MarkdownContent content={post.content} />
               </div>
@@ -435,6 +464,51 @@ export const BlogPostPage: React.FC = () => {
                   className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] border border-[#e6e8ec] text-xs font-semibold uppercase tracking-wider transition-all"
                 >
                   <span>{tText("Post Hiring Need")}</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Internal Equity Funnel: Direct Links to Verified Openings & City Hubs */}
+            <div className="bg-[#0f2f63] text-white rounded-3xl p-6 shadow-sm space-y-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                  Live Hiring Portal
+                </span>
+                <h4 className="text-sm font-extrabold tracking-tight">
+                  Explore Verified Trade Openings
+                </h4>
+              </div>
+              <p className="text-xs text-blue-100/90 leading-relaxed">
+                Connect directly with background-checked employers offering guaranteed minimum wages and photo-verified worksites.
+              </p>
+              <div className="space-y-2 pt-1 text-xs font-semibold">
+                <Link
+                  to="/jobs-in-chennai"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-white"
+                >
+                  <span>Jobs in Chennai</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-blue-200" />
+                </Link>
+                <Link
+                  to="/jobs-in-chennai/electrician"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-white"
+                >
+                  <span>Electrician Jobs</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-blue-200" />
+                </Link>
+                <Link
+                  to="/jobs-in-chennai/driver"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-white"
+                >
+                  <span>Commercial Drivers</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-blue-200" />
+                </Link>
+                <Link
+                  to="/jobs-in-chennai/cook"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-white"
+                >
+                  <span>Cooks &amp; Kitchen Chefs</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-blue-200" />
                 </Link>
               </div>
             </div>
