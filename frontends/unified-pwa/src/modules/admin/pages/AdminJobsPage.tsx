@@ -57,10 +57,13 @@ const VERNACULAR_TRADE_CHIPS = [
 ];
 
 const DISCOVERY_SOURCES = [
+  { id: 'apna', name: 'Apna.co Direct (JSON-LD)', free: true, desc: 'Zero-spend pan-India blue & grey collar feed' },
+  { id: 'olx_jobs', name: 'OLX Jobs India', free: true, desc: 'Zero-spend local trade, factory & driver classifieds' },
+  { id: 'nithra_jobs', name: 'Nithra Jobs (Tamil Nadu Regional)', free: true, desc: 'Deep Tamil Nadu SME, factory & field opportunities' },
+  { id: 'quikr_jobs', name: 'QuikrJobs / Babajobs', free: true, desc: 'Zero-spend entry-level trade & logistics postings' },
+  { id: 'workindia', name: 'WorkIndia Direct (JSON-LD)', free: true, desc: 'Zero-spend public Schema.org trade feed' },
   { id: 'jobspy_naukri', name: 'Naukri.com (JobSpy Engine)', free: true, desc: 'Zero-spend open-source direct engine' },
   { id: 'jobspy_indeed', name: 'Indeed India (JobSpy Engine)', free: true, desc: 'Zero-spend open-source direct engine' },
-  { id: 'workindia', name: 'WorkIndia Direct (JSON-LD)', free: true, desc: 'Zero-spend public Schema.org feed' },
-  { id: 'apna', name: 'Apna.co Direct (JSON-LD)', free: true, desc: 'Zero-spend public Schema.org feed' },
   { id: 'lever_ats', name: 'Employer ATS (Lever)', free: true, desc: 'Shadowfax / Meesho / Porter career feeds' },
   { id: 'greenhouse_ats', name: 'Greenhouse Logistics ATS', free: true, desc: 'Public Greenhouse board APIs' },
   { id: 'headcount_labs', name: 'Headcount Labs API', free: false, desc: 'External API Key feed' },

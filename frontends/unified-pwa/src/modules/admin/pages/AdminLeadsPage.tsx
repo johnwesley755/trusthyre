@@ -1198,7 +1198,7 @@ export const AdminLeadsPage: React.FC = () => {
                         <div className="min-w-0 flex-1">
                           <h5 className="text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-snug">{req.title}</h5>
                           {cleanDesc ? (
-                            <p className="text-[11px] sm:text-xs text-[#5a6270] mt-1 leading-relaxed line-clamp-3">
+                            <p className="text-[11px] sm:text-xs text-[#5a6270] mt-1 leading-relaxed line-clamp-4 whitespace-pre-line">
                               {cleanDesc}
                             </p>
                           ) : (

@@ -64,12 +64,17 @@ def validate_job_quality(job: RawJobRecord) -> Tuple[bool, Optional[str]]:
         if pattern.search(loc_and_title):
             return False, f"Rejected: Foreign/Gulf overseas recruitment listing detected ('{pattern.pattern}')."
 
-    # 4c. Blue-collar salary guard: Indian frontline roles rarely exceed ₹70k/mo or ₹8.5 LPA
+    # 4c. Blue-collar salary guard: Indian frontline roles rarely exceed 75k/mo or 9 LPA
     if job.salary_max:
         if job.salary_period == "MONTHLY" and job.salary_max > 75000:
-            return False, f"Rejected: Salary ₹{job.salary_max}/mo exceeds blue-collar wage threshold (likely corporate/white-collar)."
+            return False, f"Rejected: Salary Rs.{job.salary_max}/mo exceeds blue-collar wage threshold (likely corporate/white-collar)."
         elif job.salary_period == "YEARLY" and job.salary_max > 900000:
-            return False, f"Rejected: Salary ₹{job.salary_max}/yr exceeds blue-collar wage threshold (likely corporate/white-collar)."
+            return False, f"Rejected: Salary Rs.{job.salary_max}/yr exceeds blue-collar wage threshold (likely corporate/white-collar)."
+
+    # 4d. Complete JD Verification: Reject empty, placeholder, or truncated descriptions
+    desc = (job.description or "").strip()
+    if len(desc) < 100:
+        return False, f"Rejected: Job description is too short ({len(desc)} characters). Full JD required."
 
     # 5. Blue-Collar Role Classification
     is_blue_collar, reject_reason = BlueCollarClassifier.evaluate(job.title, job.description)

@@ -37,6 +37,9 @@ class JobResponse(BaseModel):
     id: UUID
     title: str
     employer_name: Optional[str] = None
+    description: Optional[str] = None
+    industry: Optional[str] = None
+    experience_years_required: Optional[int] = 0
     city: Optional[str] = None
     location: Optional[str] = None
     budget: Optional[float] = None

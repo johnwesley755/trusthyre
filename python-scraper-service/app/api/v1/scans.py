@@ -2,13 +2,27 @@ from typing import List
 from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from app.api.deps import DBSessionDep, AuthSecretDep
-from app.models.schemas import ScanQueryConfig, ScanSummaryResponse
+from app.models.schemas import ScanQueryConfig, ScanSummaryResponse, JobResponse
 from app.repositories.scan_repo import ScanRepository
 from app.scrapers.registry import SourceAdapterRegistry
 from app.services.discovery import DiscoveryPipeline
 from app.tasks.scheduler import execute_background_scan
 
 router = APIRouter(prefix="/scans", tags=["Scans"])
+
+@router.post("/run-discovery", response_model=List[JobResponse])
+async def run_discovery_alias(
+    config: ScanQueryConfig,
+    db: DBSessionDep,
+    _auth: AuthSecretDep,
+):
+    """Synchronous live discovery alias under /api/v1/scans/run-discovery"""
+    all_adapters = SourceAdapterRegistry.list_adapters()
+    sources_to_run = config.sources or [a.id for a in all_adapters]
+    scan = await ScanRepository.create_scan(db, config, sources_to_run)
+    await db.commit()
+    return await DiscoveryPipeline.run_scan(db, scan.id, config)
+
 
 
 @router.post("", response_model=ScanSummaryResponse, status_code=status.HTTP_202_ACCEPTED)

@@ -298,15 +298,23 @@ export class ScraperServiceClient {
       res = await this.safeFetch('/api/v1/sources/run-discovery', {
         method: 'POST',
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(20000),
+        signal: AbortSignal.timeout(25000),
       });
+      // If endpoint returns method not allowed or not found, try fallback route
+      if (!res.ok && (res.status === 405 || res.status === 404)) {
+        res = await this.safeFetch('/api/v1/scans/run-discovery', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(25000),
+        });
+      }
     } catch (err: any) {
       fetchError = err;
       try {
         res = await this.safeFetch('/api/v1/scans/run-discovery', {
           method: 'POST',
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(20000),
+          signal: AbortSignal.timeout(25000),
         });
         fetchError = null;
       } catch (fallbackErr: any) {

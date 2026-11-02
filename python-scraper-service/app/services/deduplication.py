@@ -104,5 +104,9 @@ class DeduplicationService:
             })
             existing_job.alternate_sources = current_sources
 
+        # Backfill/upgrade description if existing job had empty or truncated JD
+        if new_job.description and (not existing_job.description or len(existing_job.description) < len(new_job.description)):
+            existing_job.description = new_job.description
+
         existing_job.last_verified_at = now
         await db.flush()

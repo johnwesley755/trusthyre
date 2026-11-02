@@ -3,13 +3,13 @@ from app.scrapers.base import BaseSourceAdapter
 from app.scrapers.jobspy_adapter import JobSpyNaukriAdapter, JobSpyIndeedAdapter
 from app.scrapers.workindia_direct import WorkIndiaDirectAdapter
 from app.scrapers.apna_direct import ApnaDirectAdapter
+from app.scrapers.olx_jobs import OLXJobsAdapter
+from app.scrapers.nithra_jobs import NithraJobsAdapter
+from app.scrapers.quikr_jobs import QuikrJobsAdapter
 from app.scrapers.headcount_labs import HeadcountLabsAdapter
 from app.scrapers.lever_ats import LeverATSAdapter
 from app.scrapers.greenhouse_ats import GreenhouseATSAdapter
 from app.scrapers.schema_org import SchemaOrgAdapter
-from app.scrapers.workindia import WorkIndiaAdapter
-from app.scrapers.apna import ApnaAdapter
-from app.scrapers.naukri import NaukriAdapter
 from app.models.schemas import SourceHealthStatus
 
 
@@ -19,10 +19,13 @@ class SourceAdapterRegistry:
     @classmethod
     def initialize(cls):
         adapters = [
+            ApnaDirectAdapter(),
+            WorkIndiaDirectAdapter(),
+            OLXJobsAdapter(),
+            NithraJobsAdapter(),
+            QuikrJobsAdapter(),
             JobSpyNaukriAdapter(),
             JobSpyIndeedAdapter(),
-            WorkIndiaDirectAdapter(),
-            ApnaDirectAdapter(),
             HeadcountLabsAdapter(),
             LeverATSAdapter(),
             GreenhouseATSAdapter(),
@@ -34,6 +37,9 @@ class SourceAdapterRegistry:
         cls._adapters["indeed"] = cls._adapters["jobspy_indeed"]
         cls._adapters["workindia_direct"] = cls._adapters["workindia"]
         cls._adapters["apna_direct"] = cls._adapters["apna"]
+        cls._adapters["olx"] = cls._adapters["olx_jobs"]
+        cls._adapters["nithra"] = cls._adapters["nithra_jobs"]
+        cls._adapters["quikr"] = cls._adapters["quikr_jobs"]
 
     @classmethod
     def get_adapter(cls, source_id: str) -> Optional[BaseSourceAdapter]:
@@ -56,7 +62,7 @@ class SourceAdapterRegistry:
 
         async def safe_check(a: BaseSourceAdapter) -> SourceHealthStatus:
             try:
-                return await asyncio.wait_for(a.check_health(), timeout=3.0)
+                return await asyncio.wait_for(a.check_health(), timeout=4.0)
             except Exception as e:
                 return SourceHealthStatus(
                     source_id=a.id,

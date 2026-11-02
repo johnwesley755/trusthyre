@@ -32,9 +32,18 @@ class DiscoveryPipeline:
         deduplication, and database persistence pipeline.
         """
         active_scan_cancellations[scan_id] = False
-        expanded_keywords = VernacularTradeMapper.expand_query(config.query)
-        if not expanded_keywords and (not config.query or config.query.upper() in ["ALL", "ALL_TRADES"]):
-            expanded_keywords = ["Delivery Driver", "Electrician", "Warehouse Associate", "Security Guard", "Plumber", "Cook"]
+        if not config.query or config.query.strip().upper() in ["ALL", "ALL_TRADES", "ALL TRADES"]:
+            expanded_keywords = [
+                "Delivery Partner",
+                "Warehouse Associate",
+                "Electrician",
+                "Field Service Technician",
+                "Security Guard",
+                "Cook",
+                "Machine Operator"
+            ]
+        else:
+            expanded_keywords = VernacularTradeMapper.expand_query(config.query)
 
         logger.info(f"[DiscoveryPipeline][Step 1/5 - INITIATE] Starting blue-collar discovery scan {scan_id} for city: '{config.city}', query: '{config.query}' (Expanded trades: {expanded_keywords})")
 

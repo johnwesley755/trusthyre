@@ -8,6 +8,7 @@ import httpx
 from app.scrapers.base import BaseSourceAdapter
 from app.models.schemas import RawJobRecord, SourceHealthStatus, ScanQueryConfig
 from app.extractors.vernacular_mapper import VernacularTradeMapper
+from app.scrapers.jd_synthesizer import synthesize_rich_jd, clean_html_to_text
 from app.core.logger import logger
 
 BROWSER_HEADERS = {
@@ -17,31 +18,13 @@ BROWSER_HEADERS = {
 }
 
 
-def clean_html_tags(html_str: Optional[str]) -> str:
-    """Strips HTML tags cleanly and converts breaks to readable newlines."""
-    if not html_str:
-        return ""
-    s = re.sub(r'<(?:br\s*/?|/p|/div|/li|/tr)>', '\n', html_str, flags=re.IGNORECASE)
-    s = re.sub(r'<li[^>]*>', '• ', s, flags=re.IGNORECASE)
-    s = re.sub(r'<[^>]+>', '', s)
-    s = (s.replace('&nbsp;', ' ')
-          .replace('&amp;', '&')
-          .replace('&lt;', '<')
-          .replace('&gt;', '>')
-          .replace('&quot;', '"')
-          .replace('&#39;', "'")
-          .replace('&apos;', "'"))
-    lines = [re.sub(r'[ \t]+', ' ', line).strip() for line in s.split('\n')]
-    return re.sub(r'\n{3,}', '\n\n', '\n'.join(lines)).strip()
-
-
 class ApnaDirectAdapter(BaseSourceAdapter):
     id = "apna"
-    name = "Apna.co Direct (JSON-LD)"
+    name = "Apna.co Direct (JSON-LD & Next.js)"
     is_restricted = False
     compliance_note = (
-        "Parses public Schema.org JobPosting JSON-LD published by Apna.co "
-        "for search engine indexing. Free, zero-spend direct integration."
+        "Parses public Schema.org JobPosting JSON-LD and Next.js hydration payload "
+        "published by Apna.co for search indexing. Zero-spend direct integration."
     )
 
     async def check_health(self) -> SourceHealthStatus:
@@ -107,7 +90,7 @@ class ApnaDirectAdapter(BaseSourceAdapter):
                             job_urls.append(full_url)
 
                 job_urls = job_urls[:limit]
-                logger.info(f"[{self.id}] Found {len(job_urls)} job URLs on Apna.")
+                logger.info(f"[{self.id}] Discovered {len(job_urls)} job URLs on Apna. Hydrating full JDs...")
 
                 sem = asyncio.Semaphore(4)
 
@@ -124,67 +107,88 @@ class ApnaDirectAdapter(BaseSourceAdapter):
 
                 results = await asyncio.gather(*[_fetch_and_parse(u) for u in job_urls])
                 records = [r for r in results if r is not None]
-                logger.info(f"[{self.id}] Successfully extracted {len(records)} jobs from Apna.")
+                logger.info(f"[{self.id}] Successfully hydrated {len(records)} full JDs from Apna.")
                 return records
 
         except Exception as ex:
             logger.error(f"[{self.id}] Discovery failed: {ex}")
             return []
 
-    def _extract_dom_salary(self, soup: BeautifulSoup, page_text: str) -> tuple[Optional[float], Optional[float], Optional[str]]:
-        """Deep DOM and regex salary extractor for Apna earning potential and monthly wage cards."""
-        # 1. Look for patterns like ₹35,000 - ₹75,000 or ₹35000 - 75000
-        salary_match = re.search(r'₹\s*([0-9,]+)\s*-\s*₹?\s*([0-9,]+)', page_text)
-        if salary_match:
+    def _parse_next_data(self, soup: BeautifulSoup) -> Dict[str, Any]:
+        """Extracts Apna's __NEXT_DATA__ state object."""
+        script = soup.find("script", id="__NEXT_DATA__")
+        if script and script.string:
             try:
-                min_val = float(salary_match.group(1).replace(',', ''))
-                max_val = float(salary_match.group(2).replace(',', ''))
-                raw_str = f"₹{int(min_val):,} - ₹{int(max_val):,} monthly"
-                return min_val, max_val, raw_str
-            except (ValueError, IndexError):
+                data = json.loads(script.string)
+                page_props = data.get("props", {}).get("pageProps", {})
+                return page_props.get("jobDetails", {}) or page_props.get("job", {}) or {}
+            except Exception:
                 pass
+        return {}
 
-        # 2. Look for Earning Potential or Fixed numbers
-        earning_match = re.search(r'(?:Earning Potential|Fixed|Salary)\s*[:\s]*₹?\s*([0-9,]+)', page_text, re.IGNORECASE)
-        if earning_match:
-            try:
-                val = float(earning_match.group(1).replace(',', ''))
-                return val, val, f"₹{int(val):,} monthly"
-            except ValueError:
-                pass
-
-        return None, None, None
-
-    def _extract_job_highlights(self, soup: BeautifulSoup) -> List[str]:
-        """Extracts bullet highlights like 'Weekly Payout', 'Joining Bonus', etc."""
-        highlights = []
-        for section in soup.find_all(lambda tag: tag.name in ['div', 'section'] and any(c in str(tag.get('class', [])) for c in ['highlight', 'benefit', 'perk'])):
-            text = section.get_text(separator=' ', strip=True)
-            if 'Benefits include' in text or 'Urgently hiring' in text:
-                clean = re.sub(r'[ \t]+', ' ', text)
-                if clean and clean not in highlights:
-                    highlights.append(clean)
-        return highlights
-
-    def _parse_detail_html(self, html: str, url: str, default_city: str) -> Optional[RawJobRecord]:
-        soup = BeautifulSoup(html, "lxml")
-        page_text = soup.get_text(separator=' ', strip=True)
+    def _parse_detail_html(self, html_doc: str, url: str, default_city: str) -> Optional[RawJobRecord]:
+        soup = BeautifulSoup(html_doc, "lxml")
+        next_job = self._parse_next_data(soup)
 
         title = None
         company = None
         loc_str = default_city
         s_min, s_max, s_raw = None, None, None
         date_posted = None
-        desc_parts: List[str] = []
+        raw_desc = ""
+        requirements: List[str] = []
+        skills: List[str] = []
+        shifts_text = ""
+        benefits: List[str] = []
+        extra_specs: Dict[str, Any] = {}
 
-        # 1. Parse Schema.org JobPosting
+        # 1. Inspect Next.js jobDetails payload if available
+        if next_job:
+            title = next_job.get("title")
+            comp_obj = next_job.get("company", {})
+            company = comp_obj.get("name") if isinstance(comp_obj, dict) else next_job.get("company_name")
+            raw_desc = next_job.get("description") or next_job.get("job_description") or ""
+
+            # Requirements & Specs
+            if next_job.get("min_education"):
+                extra_specs["Education"] = next_job.get("min_education")
+            if next_job.get("experience_required"):
+                extra_specs["Experience"] = next_job.get("experience_required")
+            if next_job.get("gender_preference"):
+                extra_specs["Gender Preference"] = next_job.get("gender_preference")
+            if next_job.get("english_fluency"):
+                extra_specs["English Level"] = next_job.get("english_fluency")
+            if next_job.get("working_days"):
+                shifts_text = f"Working Days: {next_job.get('working_days')}"
+            if next_job.get("shift_type"):
+                shifts_text = f"{shifts_text} | Shift: {next_job.get('shift_type')}".strip(" |")
+
+            for req in next_job.get("requirements", []) or []:
+                if isinstance(req, str):
+                    requirements.append(req)
+                elif isinstance(req, dict) and req.get("text"):
+                    requirements.append(req["text"])
+
+            skills.extend([s.get("name", s) if isinstance(s, dict) else s for s in next_job.get("skills", []) or []])
+            for b in next_job.get("perks", []) or next_job.get("benefits", []) or []:
+                benefits.append(str(b))
+
+            # Salary from Next.js payload
+            salary_data = next_job.get("salary", {}) or {}
+            if isinstance(salary_data, dict):
+                s_min = float(salary_data["min"]) if salary_data.get("min") is not None else None
+                s_max = float(salary_data["max"]) if salary_data.get("max") is not None else None
+
+        # 2. Parse Schema.org JSON-LD
         for s in soup.find_all("script", type="application/ld+json"):
             try:
                 data = json.loads(s.string)
                 if isinstance(data, dict) and data.get("@type") == "JobPosting":
-                    title = data.get("title")
-                    hiring_org = data.get("hiringOrganization", {})
-                    company = hiring_org.get("name") if isinstance(hiring_org, dict) else str(hiring_org)
+                    if not title:
+                        title = data.get("title")
+                    if not company:
+                        hiring_org = data.get("hiringOrganization", {})
+                        company = hiring_org.get("name") if isinstance(hiring_org, dict) else str(hiring_org)
 
                     # Location
                     loc_obj = data.get("jobLocation", {})
@@ -195,72 +199,81 @@ class ApnaDirectAdapter(BaseSourceAdapter):
                             region = addr.get("addressRegion")
                             loc_str = locality or region or default_city
 
-                    # Salary from Schema
+                    # Salary
                     base_sal = data.get("baseSalary", {})
-                    if isinstance(base_sal, dict):
+                    if isinstance(base_sal, dict) and not s_min:
                         val = base_sal.get("value", {})
                         if isinstance(val, dict):
                             s_min = float(val["minValue"]) if val.get("minValue") is not None else None
                             s_max = float(val["maxValue"]) if val.get("maxValue") is not None else None
-                            if s_min and s_max:
-                                s_raw = f"₹{int(s_min):,} - ₹{int(s_max):,} monthly"
 
-                    # Date Posted
                     dp_raw = data.get("datePosted")
-                    if dp_raw:
+                    if dp_raw and not date_posted:
                         try:
                             date_posted = datetime.fromisoformat(dp_raw.replace("Z", "+00:00")).replace(tzinfo=None)
                         except Exception:
                             date_posted = None
 
-                    raw_desc = data.get("description", "")
-                    if raw_desc:
-                        desc_parts.append(clean_html_tags(raw_desc))
-
+                    if not raw_desc:
+                        raw_desc = data.get("description", "")
                     break
             except Exception:
                 continue
 
-        # 2. Fallback DOM extraction for Title & Company if not found in Schema
+        # 3. DOM Fallbacks for Title & Company
         if not title:
             h1 = soup.find('h1')
             if h1:
                 title = h1.get_text(strip=True)
-
         if not company:
             for c_elem in soup.find_all(['h2', 'span', 'p']):
                 text = c_elem.get_text(strip=True)
-                if text and len(text) < 50 and any(kw in text.lower() for kw in ['private limited', 'logistics', 'services', 'saloon', 'enterprises', 'minutes']):
+                if text and len(text) < 50 and any(kw in text.lower() for kw in ['private limited', 'logistics', 'services', 'enterprises']):
                     company = text
                     break
 
         if not title:
             return None
 
-        # 3. Deep Salary Discovery if missing or zero in Schema
-        dom_min, dom_max, dom_raw = self._extract_dom_salary(soup, page_text)
-        if dom_min and (not s_min or dom_min > s_min):
-            s_min, s_max, s_raw = dom_min, dom_max, dom_raw
+        # 4. Fallback DOM extraction for Job Description & Highlights
+        if not raw_desc:
+            desc_el = soup.select_one("div[data-testid='job-description'], .job-description, #job-description, article")
+            if desc_el:
+                raw_desc = desc_el.decode_contents()
 
-        # 4. Deep Highlights & Benefits Extraction
-        highlights = self._extract_job_highlights(soup)
-        if highlights:
-            desc_parts.insert(0, "\n".join(highlights))
-
-        # 5. Extract Details & Work Arrangement pills
-        details_pills = []
-        for pill in soup.find_all(lambda tag: tag.name in ['span', 'div'] and any(w in tag.get_text().lower() for w in ['field job', 'work from office', 'work from home', 'full time', 'part time', 'no english required', 'any experience'])):
+        # Highlights & Perks from DOM
+        for pill in soup.select("span[class*='Pill'], div[class*='highlight'], div[class*='badge']"):
             p_text = pill.get_text(strip=True)
-            if p_text and p_text not in details_pills and len(p_text) < 40:
-                details_pills.append(f"• {p_text}")
+            if p_text and len(p_text) < 40:
+                if any(k in p_text.lower() for k in ['shift', 'hours', 'day']):
+                    if not shifts_text:
+                        shifts_text = p_text
+                elif any(k in p_text.lower() for k in ['bonus', 'pf', 'esi', 'allowance', 'payout']):
+                    benefits.append(p_text)
+                elif any(k in p_text.lower() for k in ['experience', 'pass', 'english', 'license']):
+                    requirements.append(p_text)
 
-        if details_pills:
-            desc_parts.append("\nJob Overview:\n" + "\n".join(details_pills))
+        # Salary formatting
+        if s_min and s_max:
+            s_raw = f"₹{int(s_min):,} - ₹{int(s_max):,} monthly"
+        elif s_max:
+            s_raw = f"Up to ₹{int(s_max):,} monthly"
+
+        # Synthesize Complete Markdown JD
+        final_jd = synthesize_rich_jd(
+            title=title.strip(),
+            raw_description=raw_desc,
+            company=(company or "Reputed Employer").strip(),
+            location=loc_str,
+            salary_text=s_raw,
+            requirements=requirements,
+            skills=skills,
+            shifts_and_hours=shifts_text,
+            benefits=benefits,
+            extra_specs=extra_specs,
+        )
 
         category = VernacularTradeMapper.get_category_for_trade(title)
-        final_description = "\n\n".join([p for p in desc_parts if p.strip()]).strip()
-        if not final_description:
-            final_description = f"Verified hiring requisition for {title} in {default_city}."
 
         return RawJobRecord(
             title=title.strip(),
@@ -268,7 +281,7 @@ class ApnaDirectAdapter(BaseSourceAdapter):
             city=default_city,
             location=loc_str,
             category=category,
-            description=final_description,
+            description=final_jd,
             salary_min=s_min,
             salary_max=s_max,
             salary_raw=s_raw,

@@ -222,8 +222,14 @@ export const adminService = {
     return res.data;
   },
 
-  getVisitorAnalytics: async (refresh = false): Promise<VisitorAnalyticsData> => {
-    const res = await apiClient.get<VisitorAnalyticsData>(`/api/admin/analytics/visitors${refresh ? '?refresh=true' : ''}`);
+  getVisitorAnalytics: async (options?: { refresh?: boolean; dateRange?: string; channel?: string; device?: string }): Promise<VisitorAnalyticsData> => {
+    const params = new URLSearchParams();
+    if (options?.refresh) params.append('refresh', 'true');
+    if (options?.dateRange) params.append('dateRange', options.dateRange);
+    if (options?.channel) params.append('channel', options.channel);
+    if (options?.device) params.append('device', options.device);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const res = await apiClient.get<VisitorAnalyticsData>(`/api/admin/analytics/visitors${qs}`);
     return res.data;
   }
 };

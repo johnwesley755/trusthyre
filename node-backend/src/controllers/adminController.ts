@@ -659,10 +659,14 @@ export const moderateJobByAdmin = async (c: Context) => {
 export const getVisitorAnalytics = async (c: Context) => {
   try {
     const refresh = c.req.query('refresh') === 'true';
+    const dateRange = c.req.query('dateRange') || '30d';
+    const channel = c.req.query('channel') || undefined;
+    const device = c.req.query('device') || undefined;
+
     if (refresh) {
       GoogleAnalyticsService.clearCache();
     }
-    const data = await GoogleAnalyticsService.getOverview();
+    const data = await GoogleAnalyticsService.getOverview(dateRange, channel, device);
     return c.json(ApiResponse.ok("Visitor analytics retrieved successfully", data));
   } catch (err: any) {
     console.error("getVisitorAnalytics error:", err);
