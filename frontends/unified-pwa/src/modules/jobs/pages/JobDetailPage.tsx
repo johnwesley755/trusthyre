@@ -1,5 +1,6 @@
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { sanitizeHtmlDescription } from '../../../utils/textSanitizer';
+import { extractJobIdFromSlug, generateJobSeoSlug } from '../../../utils/seoSlug.utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { jobService } from '../../../services/job.service';
 import { applicationService } from '../../../services/application.service';
@@ -120,7 +121,8 @@ const formatExactExperience = (jobData: any, mode: 'header' | 'stat' | 'detail' 
 };
 
 export default function JobDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: rawSlugOrId } = useParams<{ id: string }>();
+  const id = extractJobIdFromSlug(rawSlugOrId);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useUser();
@@ -155,6 +157,23 @@ export default function JobDetailPage() {
     queryFn: () => jobService.getJobById(id!),
     enabled: !!id
   });
+
+  // Seamless SEO URL canonicalization: upgrade /job/:uuid to /job/:area-:title-:date-:uuid in browser address bar
+  useEffect(() => {
+    if (job && rawSlugOrId && job.id) {
+      const canonicalSlug = generateJobSeoSlug({
+        id: job.id,
+        title: job.title,
+        city: job.city,
+        location: job.location,
+        created_at: job.createdAt || (job as any).created_at,
+      });
+      if (canonicalSlug && rawSlugOrId !== canonicalSlug && !window.location.pathname.includes(canonicalSlug)) {
+        const newPath = `/job/${canonicalSlug}${window.location.search}${window.location.hash}`;
+        window.history.replaceState(null, '', newPath);
+      }
+    }
+  }, [job, rawSlugOrId]);
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.workers.detail('me'),
@@ -393,7 +412,7 @@ export default function JobDetailPage() {
       <SeoHead
         title={`${job.title} at ${employerName}`}
         description={`Apply for verified opening: ${job.title} in ${job.location || job.city || 'India'}. Verified Employer: ${employerName}. Agreed Salary: ${job.budget ? '₹' + Number(job.budget).toLocaleString('en-IN') + '/mo' : 'Best in Industry'}.`}
-        canonicalPath={`/job/${id}`}
+        canonicalPath={`/job/${generateJobSeoSlug(job ? { id: (job as any).id, title: (job as any).title, city: (job as any).city, location: (job as any).location, created_at: (job as any).createdAt } : { id })}`}
         ogType="website"
         ogImage={effectiveCoverUrl || employer?.profileImageUrl || (job as any).logoUrl || undefined}
         jsonLd={[
@@ -412,7 +431,7 @@ export default function JobDetailPage() {
           ...(job ? [buildBreadcrumbJsonLd([
             { name: 'Home', path: '/' },
             { name: 'Search Jobs', path: '/search' },
-            { name: job.title, path: `/job/${id}` },
+            { name: job.title, path: `/job/${generateJobSeoSlug(job)}` },
           ])] : [])
         ]}
       />

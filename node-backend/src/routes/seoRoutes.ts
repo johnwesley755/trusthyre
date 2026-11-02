@@ -2,6 +2,43 @@ import { Hono } from 'hono';
 import { prisma } from '../config/prisma';
 import { SitemapService } from '../services/sitemapService';
 
+const CITY_STATE_PIN_MAP: Record<string, { state: string; postalCode: string }> = {
+  chennai: { state: 'Tamil Nadu', postalCode: '600001' },
+  coimbatore: { state: 'Tamil Nadu', postalCode: '641001' },
+  madurai: { state: 'Tamil Nadu', postalCode: '625001' },
+  tiruchirappalli: { state: 'Tamil Nadu', postalCode: '620001' },
+  trichy: { state: 'Tamil Nadu', postalCode: '620001' },
+  salem: { state: 'Tamil Nadu', postalCode: '636001' },
+  tiruppur: { state: 'Tamil Nadu', postalCode: '641601' },
+  bengaluru: { state: 'Karnataka', postalCode: '560001' },
+  bangalore: { state: 'Karnataka', postalCode: '560001' },
+  hyderabad: { state: 'Telangana', postalCode: '500001' },
+  mumbai: { state: 'Maharashtra', postalCode: '400001' },
+  pune: { state: 'Maharashtra', postalCode: '411001' },
+  delhi: { state: 'Delhi', postalCode: '110001' },
+  kolkata: { state: 'West Bengal', postalCode: '700001' },
+};
+
+function resolveGeoAddress(city?: string | null, rawAddress?: string | null) {
+  const normCity = (city || 'Chennai').trim().toLowerCase();
+  const info = CITY_STATE_PIN_MAP[normCity] || { state: 'Tamil Nadu', postalCode: '600001' };
+
+  // Try extracting 6-digit pin code if present in rawAddress
+  let postalCode = info.postalCode;
+  if (rawAddress) {
+    const pinMatch = rawAddress.match(/\b\d{6}\b/);
+    if (pinMatch) postalCode = pinMatch[0];
+  }
+
+  return {
+    addressLocality: city || 'Chennai',
+    addressRegion: info.state,
+    postalCode: postalCode,
+    streetAddress: rawAddress || city || 'India',
+    addressCountry: 'IN',
+  };
+}
+
 export const seoRouter = new Hono();
 
 const BASE_DOMAIN = 'https://trusthyre.com';
@@ -153,9 +190,12 @@ ${JSON.stringify(articleJsonLd, null, 2)}
     }
   }
 
-  // 1.5 Job Post Details: /job/:id or /jobs/:id
+  // 1.5 Job Post Details: /job/:slug-or-id or /jobs/:slug-or-id
   if (cleanPath.startsWith('/job/') || cleanPath.startsWith('/jobs/')) {
-    const jobId = cleanPath.replace(/^\/jobs?\//, '').trim();
+    const rawSlugOrId = cleanPath.replace(/^\/jobs?\//, '').trim();
+    // Extract UUID (either exact match or trailing 36-char UUID from SEO slug)
+    const uuidMatch = rawSlugOrId.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/);
+    const jobId = uuidMatch ? uuidMatch[0] : rawSlugOrId;
     const job = await (prisma as any).jobs.findFirst({
       where: { id: jobId },
     }).catch(() => null);
@@ -188,9 +228,7 @@ ${JSON.stringify(articleJsonLd, null, 2)}
           '@type': 'Place',
           address: {
             '@type': 'PostalAddress',
-            addressLocality: job.city || 'Chennai',
-            streetAddress: job.address || job.city || 'India',
-            addressCountry: 'IN',
+            ...resolveGeoAddress(job.city, job.address || job.location),
           },
         },
         ...(job.budget && Number(job.budget) > 0 ? {

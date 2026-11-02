@@ -26,6 +26,7 @@ except ImportError:
 
 
 import json
+import html
 import uuid
 import re
 import hashlib
@@ -303,6 +304,98 @@ async def http_get_text(url: str, headers: Optional[Dict[str, str]] = None, time
     return None
 
 
+
+def clean_html_to_text(raw_html: str) -> str:
+    """Converts raw HTML into clean text while preserving line breaks and lists."""
+    if not raw_html:
+        return ""
+    text = html.unescape(raw_html)
+    text = re.sub(r'<(?:br|br\s*/|/p|/div|/tr)>', '\n', text, flags=re.IGNORECASE)
+    text = re.sub(r'<li[^>]*>', '\n- ', text, flags=re.IGNORECASE)
+    text = re.sub(r'</li>', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'<[^>]+>', ' ', text)
+    lines = [re.sub(r'[ \t]+', ' ', line).strip() for line in text.split('\n')]
+    cleaned_lines = []
+    prev_blank = False
+    for line in lines:
+        if not line:
+            if not prev_blank:
+                cleaned_lines.append("")
+                prev_blank = True
+        else:
+            cleaned_lines.append(line)
+            prev_blank = False
+    return "\n".join(cleaned_lines).strip()
+
+def synthesize_rich_jd(
+    title: str,
+    raw_description: Optional[str] = None,
+    company: Optional[str] = None,
+    location: Optional[str] = None,
+    salary_text: Optional[str] = None,
+    requirements: Optional[List[str]] = None,
+    skills: Optional[List[str]] = None,
+    shifts_and_hours: Optional[str] = None,
+    benefits: Optional[List[str]] = None,
+    contact_or_venue: Optional[str] = None,
+    extra_specs: Optional[Dict[str, Any]] = None,
+) -> str:
+    """Synthesizes a standardized, professional, rich markdown Job Description."""
+    sections = []
+    cleaned_desc = clean_html_to_text(raw_description or "")
+    if cleaned_desc:
+        sections.append(f"### Job Summary\n{cleaned_desc}")
+    elif title and company and location:
+        sections.append(
+            f"### Job Summary\n{company} is urgently hiring candidates for the position of **{title}** located in {location}."
+        )
+
+    if extra_specs:
+        specs_lines = []
+        for k, v in extra_specs.items():
+            if v:
+                specs_lines.append(f"- **{k.strip()}:** {str(v).strip()}")
+        if specs_lines:
+            sections.append("### Role Specifications\n" + "\n".join(specs_lines))
+
+    req_items = []
+    if requirements:
+        for r in requirements:
+            cleaned_r = clean_html_to_text(str(r))
+            if cleaned_r:
+                req_items.append(f"- {cleaned_r}")
+    if skills:
+        cleaned_skills = [str(s).strip() for s in skills if str(s).strip()]
+        if cleaned_skills:
+            req_items.append(f"- **Key Skills:** {', '.join(cleaned_skills)}")
+
+    if req_items:
+        sections.append("### Requirements & Eligibility\n" + "\n".join(req_items))
+
+    if shifts_and_hours:
+        cleaned_shift = clean_html_to_text(shifts_and_hours)
+        sections.append(f"### Working Hours & Shifts\n{cleaned_shift}")
+
+    comp_lines = []
+    if salary_text:
+        comp_lines.append(f"- **Salary:** {salary_text.strip()}")
+    if benefits:
+        for b in benefits:
+            cleaned_b = clean_html_to_text(str(b))
+            if cleaned_b:
+                comp_lines.append(f"- {cleaned_b}")
+
+    if comp_lines:
+        sections.append("### Compensation & Benefits\n" + "\n".join(comp_lines))
+
+    if contact_or_venue:
+        cleaned_contact = clean_html_to_text(contact_or_venue)
+        sections.append(f"### Interview & Application Details\n{cleaned_contact}")
+
+    result = "\n\n".join(sections).strip()
+    return result if len(result) >= 120 else (cleaned_desc or f"Hiring for {title} at {company or 'Reputed Employer'}.")
+
+
 async def scrape_lever_jobs(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 25) -> List[Dict[str, Any]]:
     """Scrapes live postings from verified enterprise Lever ATS feeds in parallel."""
     target_city = normalize_city(city)
@@ -452,7 +545,7 @@ async def scrape_greenhouse_jobs(query: Optional[str] = None, city: Optional[str
 
 
 async def scrape_workindia_jobs(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 20) -> List[Dict[str, Any]]:
-    """Scrapes live WorkIndia vacancies via public Schema.org ItemList feeds with authentic WorkIndia URLs."""
+    """Scrapes live WorkIndia vacancies via public Schema.org feeds with 2-pass full JD hydration."""
     target_city = normalize_city(city).lower()
     q_lower = (query or "").lower().strip()
 
@@ -474,22 +567,23 @@ async def scrape_workindia_jobs(query: Optional[str] = None, city: Optional[str]
 
     url = f"https://www.workindia.in/{slug}/"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
     }
 
     print(f"[Worker][WorkIndia] Fetching {url}")
     try:
-        html = await http_get_text(url, headers=headers, timeout=3.0)
+        html = await http_get_text(url, headers=headers, timeout=6.0)
         if not html:
             return []
     except Exception as e:
         print(f"[Worker][WorkIndia] Fetch error: {e}")
         return []
 
-    results: List[Dict[str, Any]] = []
+    discovered_items: List[Dict[str, Any]] = []
     now_iso = datetime.now(timezone.utc).isoformat()
 
+    # Step 1: Extract cards from Schema.org ItemList
     for s in re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', html, re.DOTALL):
         try:
             d = json.loads(s)
@@ -505,46 +599,120 @@ async def scrape_workindia_jobs(query: Optional[str] = None, city: Optional[str]
 
                     ext_id_match = re.search(r'-(\d+)/?$', job_url)
                     ext_id = ext_id_match.group(1) if ext_id_match else hashlib.md5(job_url.encode()).hexdigest()[:8]
-                    employer = "WorkIndia Verified Employer"
-                    s_hash = calculate_job_hash(employer, title, target_city, ext_id)
-
-                    results.append({
-                        "id": str(uuid.uuid4()),
-                        "employer_id": "external_aggregator",
+                    discovered_items.append({
                         "title": title,
-                        "employer_name": employer,
-                        "description": f"Verified blue-collar vacancy listed on WorkIndia for {title} in {target_city.title()}. Direct applicant portal.",
-                        "industry": "Field Operations & Services",
-                        "experience_years_required": 1,
-                        "budget": 22000.0,
-                        "status": "PENDING_REVIEW",
-                        "city": target_city.title(),
-                        "location": f"{target_city.title()} Area",
-                        "is_external": True,
-                        "source_name": "WorkIndia Direct (JSON-LD)",
-                        "source_url": job_url,
-                        "source_hash": s_hash,
-                        "external_id": ext_id,
-                        "alternate_sources": [{
-                            "sourceName": "WorkIndia Direct (JSON-LD)",
-                            "sourceUrl": job_url,
-                            "dateSeen": now_iso,
-                        }],
-                        "created_at": now_iso,
-                        "date_posted": now_iso,
-                        "last_verified_at": now_iso,
+                        "url": job_url,
+                        "ext_id": ext_id
                     })
-                    if len(results) >= limit:
+                    if len(discovered_items) >= limit:
                         break
         except Exception:
-            pass
+            continue
 
-    print(f"[Worker][WorkIndia] Extracted {len(results)} valid blue-collar jobs")
-    return results
+    if not discovered_items:
+        # Fallback: parse direct links
+        link_matches = re.findall(r"""<a[^>]*href=["'](/jobs-in-[^"'?#]+-\d+/)["'][^>]*>([\s\S]*?)</a>""", html, re.IGNORECASE)
+        for rel_href, inner in link_matches:
+            full_url = f"https://www.workindia.in{rel_href}"
+            clean_t = re.sub(r'<[^>]+>', ' ', inner).strip()
+            if clean_t and is_blue_collar_job(clean_t, "", query):
+                ext_id = re.search(r'-(\d+)/?$', rel_href)
+                discovered_items.append({
+                    "title": clean_t.split(" - ")[0].strip(),
+                    "url": full_url,
+                    "ext_id": ext_id.group(1) if ext_id else hashlib.md5(full_url.encode()).hexdigest()[:8]
+                })
+                if len(discovered_items) >= limit:
+                    break
+
+    # Step 2: 2-Pass Hydration for full Job Descriptions
+    async def _hydrate_workindia_job(item: Dict[str, Any]) -> Dict[str, Any]:
+        j_url = item["url"]
+        title = item["title"]
+        ext_id = item["ext_id"]
+        employer = "WorkIndia Verified Employer"
+        raw_desc = ""
+        salary_text = None
+        budget = 22000.0
+        extra_specs = {}
+
+        try:
+            detail_html = await http_get_text(j_url, headers=headers, timeout=5.0)
+            if detail_html:
+                # Check Schema.org JobPosting on detail page
+                for ds in re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', detail_html, re.DOTALL):
+                    try:
+                        ddata = json.loads(ds)
+                        if isinstance(ddata, dict) and ddata.get("@type") == "JobPosting":
+                            if ddata.get("hiringOrganization", {}).get("name"):
+                                employer = ddata["hiringOrganization"]["name"].strip()
+                            if ddata.get("description"):
+                                raw_desc = ddata["description"].strip()
+                            if ddata.get("baseSalary", {}).get("value", {}).get("value"):
+                                try:
+                                    budget = float(ddata["baseSalary"]["value"]["value"])
+                                    salary_text = f"₹{int(budget):,}/month"
+                                except Exception:
+                                    pass
+                            break
+                    except Exception:
+                        continue
+
+                # If no Schema.org description, extract article / main content
+                if not raw_desc:
+                    main_match = re.search(r"""<(?:article|main|div)[^>]*class=['"][^'"]*(?:job-desc|description|details)[^'"]*['"][^>]*>([\s\S]*?)</(?:article|main|div)>""", detail_html, re.IGNORECASE)
+                    if main_match:
+                        raw_desc = main_match.group(1)
+        except Exception as e:
+            print(f"[Worker][WorkIndia] Detail fetch error for {j_url}: {e}")
+
+        rich_jd = synthesize_rich_jd(
+            title=title,
+            raw_description=raw_desc,
+            company=employer,
+            location=target_city.title(),
+            salary_text=salary_text,
+            extra_specs=extra_specs,
+        )
+
+        s_hash = calculate_job_hash(employer, title, target_city.title(), ext_id)
+        return {
+            "id": str(uuid.uuid4()),
+            "employer_id": "external_aggregator",
+            "title": title,
+            "employer_name": employer,
+            "description": rich_jd,
+            "industry": "Field Operations & Services",
+            "experience_years_required": 1,
+            "budget": budget,
+            "status": "PENDING_REVIEW",
+            "city": target_city.title(),
+            "location": f"{target_city.title()} Area",
+            "is_external": True,
+            "source_name": "WorkIndia Direct (JSON-LD & Full JD)",
+            "source_url": j_url,
+            "source_hash": s_hash,
+            "external_id": ext_id,
+            "alternate_sources": [{
+                "sourceName": "WorkIndia Direct (JSON-LD & Full JD)",
+                "sourceUrl": j_url,
+                "dateSeen": now_iso,
+            }],
+            "created_at": now_iso,
+            "date_posted": now_iso,
+            "last_verified_at": now_iso,
+        }
+
+    # Concurrently hydrate up to 6 jobs
+    hydrate_tasks = [_hydrate_workindia_job(it) for it in discovered_items[:limit]]
+    results = await asyncio.gather(*hydrate_tasks, return_exceptions=True)
+    valid_jobs = [r for r in results if isinstance(r, dict)]
+    print(f"[Worker][WorkIndia] Discovered and hydrated {len(valid_jobs)} jobs with complete JDs")
+    return valid_jobs
 
 
 async def scrape_apna_jobs(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 25) -> List[Dict[str, Any]]:
-    """Scrapes authentic live frontline blue-collar postings directly from Apna.co listings."""
+    """Scrapes authentic live frontline blue-collar postings directly from Apna.co with 2-pass JD hydration."""
     target_city = normalize_city(city).lower().strip()
     q_lower = (query or "").lower().strip()
 
@@ -572,7 +740,7 @@ async def scrape_apna_jobs(query: Optional[str] = None, city: Optional[str] = "C
 
     print(f"[Worker][Apna] Fetching {list_url}")
     try:
-        html = await http_get_text(list_url, headers=headers, timeout=10.0)
+        html = await http_get_text(list_url, headers=headers, timeout=8.0)
         if not html:
             return []
     except Exception as e:
@@ -580,8 +748,8 @@ async def scrape_apna_jobs(query: Optional[str] = None, city: Optional[str] = "C
         return []
 
     # Extract all <a href="/job/..."> cards
-    matches = re.findall(r'<a[^>]*href=["\'](/job/[^"\'\?#]+)["\'][^>]*>([\s\S]*?)</a>', html, re.IGNORECASE)
-    results: List[Dict[str, Any]] = []
+    matches = re.findall(r"""<a[^>]*href=["'](/job/[^"'?#]+)["'][^>]*>([\s\S]*?)</a>""", html, re.IGNORECASE)
+    card_items: List[Dict[str, Any]] = []
     seen_ids = set()
     now_iso = datetime.now(timezone.utc).isoformat()
 
@@ -611,44 +779,327 @@ async def scrape_apna_jobs(query: Optional[str] = None, city: Optional[str] = "C
         employer = "Apna Verified Employer"
         text_after_title = re.sub(f"^{re.escape(title)}", "", clean_text, flags=re.IGNORECASE).strip()
         if text_after_title:
-            emp_candidate = re.split(r'\.css|\.Mui|[₹\(\d]', text_after_title)[0].strip()
+            emp_candidate = re.split(r'\.css|\.Mui|[?\(\d]', text_after_title)[0].strip()
             if 2 < len(emp_candidate) < 60:
                 employer = emp_candidate
 
         job_url = f"https://apna.co{href}"
-        s_hash = calculate_job_hash(employer, title, target_city.title(), ext_id)
+        card_items.append({
+            "title": title,
+            "employer": employer,
+            "url": job_url,
+            "ext_id": ext_id
+        })
+        if len(card_items) >= limit:
+            break
 
-        results.append({
+    # Pass 2: Hydrate full job descriptions from detail page
+    async def _hydrate_apna_job(item: Dict[str, Any]) -> Dict[str, Any]:
+        j_url = item["url"]
+        title = item["title"]
+        employer = item["employer"]
+        ext_id = item["ext_id"]
+        raw_desc = ""
+        extra_specs = {}
+        salary_text = "₹18,000 - ₹25,000/month"
+        budget = 20000.0
+
+        try:
+            d_html = await http_get_text(j_url, headers=headers, timeout=5.0)
+            if d_html:
+                # Check Next.js __NEXT_DATA__ JSON payload
+                nd_match = re.search(r'<script[^>]*id=["\']__NEXT_DATA__["\'][^>]*>([\s\S]*?)</script>', d_html)
+                if nd_match:
+                    try:
+                        nd_json = json.loads(nd_match.group(1))
+                        props = nd_json.get("props", {}).get("pageProps", {})
+                        job_detail = props.get("jobDetails") or props.get("job") or props.get("data")
+                        if isinstance(job_detail, dict):
+                            if job_detail.get("company_name"):
+                                employer = job_detail["company_name"]
+                            if job_detail.get("job_description"):
+                                raw_desc = job_detail["job_description"]
+                            if job_detail.get("min_salary") and job_detail.get("max_salary"):
+                                budget = float(job_detail["max_salary"])
+                                salary_text = f"₹{job_detail['min_salary']} - ₹{job_detail['max_salary']}/month"
+                    except Exception:
+                        pass
+
+                # Also check Schema.org JobPosting
+                if not raw_desc:
+                    for ds in re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', d_html, re.DOTALL):
+                        try:
+                            ddata = json.loads(ds)
+                            if isinstance(ddata, dict) and ddata.get("@type") == "JobPosting":
+                                if ddata.get("description"):
+                                    raw_desc = ddata["description"]
+                                if ddata.get("hiringOrganization", {}).get("name"):
+                                    employer = ddata["hiringOrganization"]["name"]
+                                break
+                        except Exception:
+                            continue
+        except Exception as e:
+            print(f"[Worker][Apna] Detail fetch error for {j_url}: {e}")
+
+        rich_jd = synthesize_rich_jd(
+            title=title,
+            raw_description=raw_desc,
+            company=employer,
+            location=target_city.title(),
+            salary_text=salary_text,
+            extra_specs=extra_specs,
+        )
+
+        s_hash = calculate_job_hash(employer, title, target_city.title(), ext_id)
+        return {
             "id": str(uuid.uuid4()),
             "employer_id": "external_aggregator",
             "title": title,
             "employer_name": employer,
-            "description": f"Verified blue-collar vacancy listed on Apna for {title} in {target_city.title()}. Employer: {employer}.",
+            "description": rich_jd,
             "industry": "Field Operations & Logistics",
             "experience_years_required": 1,
-            "budget": 20000.0,
+            "budget": budget,
             "status": "PENDING_REVIEW",
             "city": target_city.title(),
             "location": f"{target_city.title()} Area",
             "is_external": True,
-            "source_name": "Apna Logistics Gateway",
-            "source_url": job_url,
+            "source_name": "Apna.co Direct (JSON-LD & Next.js)",
+            "source_url": j_url,
             "source_hash": s_hash,
             "external_id": ext_id,
             "alternate_sources": [{
-                "sourceName": "Apna Logistics Gateway",
-                "sourceUrl": job_url,
+                "sourceName": "Apna.co Direct (JSON-LD & Next.js)",
+                "sourceUrl": j_url,
                 "dateSeen": now_iso,
             }],
             "created_at": now_iso,
             "date_posted": now_iso,
             "last_verified_at": now_iso,
-        })
-        if len(results) >= limit:
-            break
+        }
 
-    print(f"[Worker][Apna] Successfully extracted {len(results)} live jobs with verified employers")
-    return results
+    hydrate_tasks = [_hydrate_apna_job(it) for it in card_items[:limit]]
+    results = await asyncio.gather(*hydrate_tasks, return_exceptions=True)
+    valid_jobs = [r for r in results if isinstance(r, dict)]
+    print(f"[Worker][Apna] Extracted and hydrated {len(valid_jobs)} live jobs with complete JDs")
+    return valid_jobs
+
+
+async def scrape_nithra_jobs(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 20) -> List[Dict[str, Any]]:
+    """Scrapes Tamil Nadu district & regional trade jobs from NithraJobs with 2-pass JD extraction."""
+    target_city = normalize_city(city).title()
+    target_url = "https://nithrajobs.com/private-jobs"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ta,en-US;q=0.9,en;q=0.8",
+    }
+
+    print(f"[Worker][Nithra] Fetching {target_url}")
+    try:
+        html = await http_get_text(target_url, headers=headers, timeout=8.0)
+        if not html:
+            return []
+    except Exception as e:
+        print(f"[Worker][Nithra] Fetch error: {e}")
+        return []
+
+    # Find job detail URLs
+    # Pattern: href="/...jobs.../333-1060548" or similar
+    job_links: List[str] = []
+    for href in re.findall(r"""href=["'](https?://nithrajobs\.com/[^"'?#]*/333-\d+|[^"'?#]*/333-\d+)["']""", html, re.IGNORECASE):
+        full_u = href if href.startswith("http") else f"https://nithrajobs.com/{href.lstrip('/')}"
+        if full_u not in job_links:
+            job_links.append(full_u)
+            if len(job_links) >= limit:
+                break
+
+    print(f"[Worker][Nithra] Discovered {len(job_links)} job URLs. Hydrating...")
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    async def _hydrate_nithra(u: str) -> Optional[Dict[str, Any]]:
+        try:
+            d_html = await http_get_text(u, headers=headers, timeout=6.0)
+            if not d_html:
+                return None
+
+            # Extract title
+            h1_m = re.search(r'<h1[^>]*>([\s\S]*?)</h1>', d_html, re.IGNORECASE)
+            raw_title = clean_html_to_text(h1_m.group(1)) if h1_m else ""
+            title = re.sub(r'^Hiring\s+', '', raw_title, flags=re.IGNORECASE).strip()
+            if not title:
+                return None
+
+            company = "Verified Local Business"
+            raw_desc = ""
+            budget = 18000.0
+            salary_text = None
+
+            # Check Schema.org
+            for s in re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', d_html, re.DOTALL):
+                try:
+                    d = json.loads(s)
+                    if isinstance(d, dict) and d.get("@type") == "JobPosting":
+                        if d.get("hiringOrganization", {}).get("name"):
+                            company = d["hiringOrganization"]["name"]
+                        if d.get("description"):
+                            raw_desc = d["description"]
+                        if d.get("baseSalary", {}).get("value", {}).get("value"):
+                            budget = float(d["baseSalary"]["value"]["value"])
+                            salary_text = f"₹{int(budget):,}/month"
+                        break
+                except Exception:
+                    continue
+
+            rich_jd = synthesize_rich_jd(
+                title=title,
+                raw_description=raw_desc or d_html[:500],
+                company=company,
+                location=target_city,
+                salary_text=salary_text,
+            )
+
+            ext_id_match = re.search(r'-(\d{6,})/?$', u)
+            ext_id = ext_id_match.group(1) if ext_id_match else hashlib.md5(u.encode()).hexdigest()[:8]
+            s_hash = calculate_job_hash(company, title, target_city, ext_id)
+
+            return {
+                "id": str(uuid.uuid4()),
+                "employer_id": "external_aggregator",
+                "title": title,
+                "employer_name": company,
+                "description": rich_jd,
+                "industry": "Field Operations & Services",
+                "experience_years_required": 1,
+                "budget": budget,
+                "status": "PENDING_REVIEW",
+                "city": target_city,
+                "location": f"{target_city} District",
+                "is_external": True,
+                "source_name": "Nithra Jobs (Tamil Nadu Regional)",
+                "source_url": u,
+                "source_hash": s_hash,
+                "external_id": ext_id,
+                "alternate_sources": [{
+                    "sourceName": "Nithra Jobs (Tamil Nadu Regional)",
+                    "sourceUrl": u,
+                    "dateSeen": now_iso,
+                }],
+                "created_at": now_iso,
+                "date_posted": now_iso,
+                "last_verified_at": now_iso,
+            }
+        except Exception as e:
+            print(f"[Worker][Nithra] Hydration error for {u}: {e}")
+            return None
+
+    tasks = [_hydrate_nithra(u) for u in job_links[:limit]]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    valid_jobs = [r for r in results if isinstance(r, dict)]
+    print(f"[Worker][Nithra] Hydrated {len(valid_jobs)} jobs")
+    return valid_jobs
+
+
+async def scrape_quikr_jobs(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 20) -> List[Dict[str, Any]]:
+    """Scrapes verified trade jobs from QuikrJobs/Babajobs with Schema.org & full JD hydration."""
+    target_city = normalize_city(city).lower()
+    url = f"https://{target_city}.quikr.com/jobs"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+
+    print(f"[Worker][Quikr] Fetching {url}")
+    try:
+        html = await http_get_text(url, headers=headers, timeout=8.0)
+        if not html:
+            return []
+    except Exception as e:
+        print(f"[Worker][Quikr] Fetch error: {e}")
+        return []
+
+    # Extract Job detail links
+    job_links: List[str] = []
+    for href in re.findall(r"""href=["'](/jobs/[^"'?#]+-zwid\d+)["']""", html, re.IGNORECASE):
+        full_u = f"https://{target_city}.quikr.com{href}"
+        if full_u not in job_links:
+            job_links.append(full_u)
+            if len(job_links) >= limit:
+                break
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    async def _hydrate_quikr(u: str) -> Optional[Dict[str, Any]]:
+        try:
+            d_html = await http_get_text(u, headers=headers, timeout=5.0)
+            if not d_html:
+                return None
+
+            h1_m = re.search(r'<h1[^>]*>([\s\S]*?)</h1>', d_html, re.IGNORECASE)
+            title = clean_html_to_text(h1_m.group(1)) if h1_m else "Verified Vacancy"
+            company = "QuikrJobs Employer"
+            raw_desc = ""
+            budget = 20000.0
+
+            for s in re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', d_html, re.DOTALL):
+                try:
+                    d = json.loads(s)
+                    if isinstance(d, dict) and d.get("@type") == "JobPosting":
+                        if d.get("title"):
+                            title = d["title"]
+                        if d.get("hiringOrganization", {}).get("name"):
+                            company = d["hiringOrganization"]["name"]
+                        if d.get("description"):
+                            raw_desc = d["description"]
+                        break
+                except Exception:
+                    continue
+
+            rich_jd = synthesize_rich_jd(
+                title=title,
+                raw_description=raw_desc,
+                company=company,
+                location=target_city.title(),
+            )
+
+            zwid_m = re.search(r'zwid(\d+)', u)
+            ext_id = zwid_m.group(1) if zwid_m else hashlib.md5(u.encode()).hexdigest()[:8]
+            s_hash = calculate_job_hash(company, title, target_city.title(), ext_id)
+
+            return {
+                "id": str(uuid.uuid4()),
+                "employer_id": "external_aggregator",
+                "title": title,
+                "employer_name": company,
+                "description": rich_jd,
+                "industry": "Field Operations & Services",
+                "experience_years_required": 1,
+                "budget": budget,
+                "status": "PENDING_REVIEW",
+                "city": target_city.title(),
+                "location": f"{target_city.title()} Area",
+                "is_external": True,
+                "source_name": "QuikrJobs / Babajobs",
+                "source_url": u,
+                "source_hash": s_hash,
+                "external_id": ext_id,
+                "alternate_sources": [{
+                    "sourceName": "QuikrJobs / Babajobs",
+                    "sourceUrl": u,
+                    "dateSeen": now_iso,
+                }],
+                "created_at": now_iso,
+                "date_posted": now_iso,
+                "last_verified_at": now_iso,
+            }
+        except Exception:
+            return None
+
+    tasks = [_hydrate_quikr(u) for u in job_links[:limit]]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    valid = [r for r in results if isinstance(r, dict)]
+    print(f"[Worker][Quikr] Extracted {len(valid)} jobs")
+    return valid
 
 
 async def scrape_curated_blue_collar_sample(query: Optional[str] = None, city: Optional[str] = "Chennai", limit: int = 25) -> List[Dict[str, Any]]:
@@ -727,10 +1178,12 @@ async def execute_live_discovery(
 
     # Registered callable scrapers
     available_scrapers = {
+        "apna": lambda: scrape_apna_jobs(query=query, city=target_city, limit=limit),
+        "workindia": lambda: scrape_workindia_jobs(query=query, city=target_city, limit=limit),
+        "nithra_jobs": lambda: scrape_nithra_jobs(query=query, city=target_city, limit=limit),
+        "quikr_jobs": lambda: scrape_quikr_jobs(query=query, city=target_city, limit=limit),
         "lever_ats": lambda: scrape_lever_jobs(query=query, city=target_city, limit=limit),
         "greenhouse_ats": lambda: scrape_greenhouse_jobs(query=query, city=target_city, limit=limit),
-        "workindia": lambda: scrape_workindia_jobs(query=query, city=target_city, limit=limit),
-        "apna": lambda: scrape_apna_jobs(query=query, city=target_city, limit=limit),
     }
 
     # Normalize requested sources
@@ -746,7 +1199,7 @@ async def execute_live_discovery(
                 active_keys.append("apna")
 
     if not active_keys:
-        active_keys = ["lever_ats", "greenhouse_ats", "workindia", "apna"]
+        active_keys = ["apna", "workindia", "nithra_jobs", "quikr_jobs", "lever_ats", "greenhouse_ats"]
 
     # Execute scrapers concurrently
     tasks = [available_scrapers[k]() for k in active_keys]
