@@ -307,7 +307,7 @@ export default function LandingPage() {
   const trustSectionRef = useRef<HTMLElement | null>(null);
 
   const isEmployer = user?.role === "EMPLOYER";
-  const isAdmin = user?.role === "ADMIN";
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN" || user?.email?.toLowerCase() === "admin@trusthyre.com";
   const isCandidate = user?.role === "WORKER";
 
   // --------------------------------------------------------------------------

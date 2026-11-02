@@ -19,7 +19,8 @@ export function LandingNavbar() {
   const { isSignedIn, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const targetDashboard = user?.role === 'ADMIN' ? '/admin/dashboard' : user?.role === 'EMPLOYER' ? '/find-workers' : '/search';
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';
+  const targetDashboard = isAdmin ? '/admin/dashboard' : user?.role === 'EMPLOYER' ? '/find-workers' : '/search';
 
   return (
     <nav className="fixed top-0 w-full h-[72px] z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-[0_2px_12px_rgba(10,25,49,0.04)] transition-all duration-300 font-sans">
@@ -67,7 +68,7 @@ export function LandingNavbar() {
         {/* Right Action Switcher */}
         <div className="flex items-center gap-2.5">
           {isSignedIn ? (
-            user?.role === 'ADMIN' ? (
+            isAdmin ? (
               <Link
                 to="/admin/dashboard"
                 className="bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/80 font-extrabold px-4.5 py-2.5 rounded-xl uppercase text-xs tracking-wider shadow-xs active:scale-95 transition-all flex items-center gap-2"
@@ -171,7 +172,7 @@ export function LandingNavbar() {
             </Link>
           </div>
 
-          {isSignedIn && user?.role === 'ADMIN' && (
+          {isSignedIn && isAdmin && (
             <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
               <Link
                 to="/admin/dashboard"

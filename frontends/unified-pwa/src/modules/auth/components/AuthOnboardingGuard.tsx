@@ -86,7 +86,8 @@ export const AuthOnboardingGuard = ({ children }: { children: React.ReactNode })
 
   // If user is already onboarded, prevent access to /onboarding unless edit mode is active
   if (isOnboarded === true && isOnboardingPath && !isEditMode) {
-    const target = user?.role === 'ADMIN' ? '/admin/dashboard' : user?.role === 'EMPLOYER' ? '/find-workers' : '/search';
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';
+    const target = isAdmin ? '/admin/dashboard' : user?.role === 'EMPLOYER' ? '/find-workers' : '/search';
     return <Navigate to={target} replace />;
   }
 

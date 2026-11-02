@@ -60,7 +60,8 @@ export const SignUpPage = () => {
     // Auto redirect when user becomes signed in
     useEffect(() => {
         if (isSignedIn && user) {
-            const target = user.role === 'ADMIN' ? '/admin/dashboard' : user.role === 'EMPLOYER' ? '/find-workers' : '/onboarding';
+            const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' || user.email?.toLowerCase() === 'admin@trusthyre.com';
+            const target = isAdmin ? '/admin/dashboard' : user.role === 'EMPLOYER' ? '/find-workers' : '/onboarding';
             navigate(target, { replace: true });
         }
     }, [isSignedIn, user, navigate]);
@@ -233,7 +234,8 @@ export const SignUpPage = () => {
 
             if (token && userData) {
                 login(token, userData);
-                navigate(userData.role === 'ADMIN' ? '/admin/dashboard' : userData.role === 'WORKER' ? '/onboarding' : '/find-workers', { replace: true });
+                const isAdminUser = userData.role === 'ADMIN' || userData.role === 'SUPER_ADMIN' || userData.email?.toLowerCase() === 'admin@trusthyre.com';
+                navigate(isAdminUser ? '/admin/dashboard' : userData.role === 'WORKER' ? '/onboarding' : '/find-workers', { replace: true });
             } else {
                 throw new Error("Registration succeeded but no authorization token was returned.");
             }
