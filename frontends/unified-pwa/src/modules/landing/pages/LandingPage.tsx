@@ -28,6 +28,7 @@ import trustHyreLightLogo from "../../../assets/TrustHyre Logo with Skills Tagli
 import { SeoHead } from "../../../components/common/SeoHead";
 import { BlogService } from "../../../services/blog.service";
 import { LandingJobSearchBar } from "../components/LandingJobSearchBar";
+import { AppLoader } from "../../../components/common/AppLoader";
 
 // Trust Carousel Slide Data (Sourced from LANDING_IMAGES.specialists)
 const TRUST_SLIDES = LANDING_IMAGES.specialists;
@@ -478,27 +479,7 @@ export default function LandingPage() {
       {/* 0. INTRO CURTAIN LOADER */}
       {/* ===================================================================== */}
       {!loaderExited && (
-        <div 
-          className={`fixed inset-0 z-[200] bg-[#0f2f63] text-white flex flex-col items-center justify-center transition-transform duration-[850ms] ease-[cubic-bezier(0.65,0,0.35,1)] ${
-            ready ? "-translate-y-[105%] pointer-events-none" : "translate-y-0"
-          }`}
-        >          {/* Official TrustHyre White Logo on Deep-Navy Curtain */}
-          <div className="mb-8 animate-[fadeRise_600ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
-            <img 
-              src={trustHyreLightLogo} 
-              alt="TrustHyre" 
-              className="h-14 sm:h-16 md:h-20 w-auto object-contain block select-none drop-shadow-2xl" 
-            />
-          </div>
-
-          {/* Progress Bar Track */}
-          <div className="w-40 h-[1.5px] rounded-full bg-white/20 overflow-hidden relative">
-            <div 
-              className="absolute inset-y-0 left-0 bg-white origin-left transition-transform duration-[1280ms] ease-[cubic-bezier(0.65,0,0.35,1)] delay-100"
-              style={{ transform: ready ? "scaleX(1)" : "scaleX(0.08)", width: "100%" }}
-            />
-          </div>
-        </div>
+        <AppLoader variant="curtain" ready={ready} />
       )}
 
       {/* ===================================================================== */}

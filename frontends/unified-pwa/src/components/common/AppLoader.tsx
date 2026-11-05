@@ -1,146 +1,136 @@
-import React from 'react';
-import { Loader2 } from 'lucide-react';
-import trustHyreLogo from '../../assets/TrustHyre Skills and Opportunities Logo.png';
+import React, { useEffect, useState } from 'react';
 
 export interface AppLoaderProps {
-  variant?: 'fullscreen' | 'page' | 'inline' | 'skeleton';
   message?: string;
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
+  variant?: 'fullscreen' | 'page' | 'inline' | 'skeleton' | 'curtain';
+  size?: 'sm' | 'md' | 'lg' | string;
+  ready?: boolean;
 }
 
 export const AppLoader: React.FC<AppLoaderProps> = ({
-  variant = 'page',
   message,
+  variant = 'fullscreen',
   size = 'md',
-  className = '',
+  ready = false,
 }) => {
-  // Inline Spinner for buttons and compact actions
-  if (variant === 'inline') {
-    const sizeClasses = {
-      sm: 'w-3.5 h-3.5',
-      md: 'w-4 h-4',
-      lg: 'w-5 h-5',
-    }[size];
+  // Internal animation state for self-contained curtain / full-screen transitions
+  const [internalReady, setInternalReady] = useState(false);
 
+  useEffect(() => {
+    // If the caller explicitly provides a ready boolean (like in LandingPage), we use that.
+    if (variant === 'curtain' && typeof ready === 'boolean') {
+      setInternalReady(ready);
+    }
+  }, [ready, variant]);
+
+  // Small button / input spinner
+  if (variant === 'inline') {
+    const spinnerSize = size === 'sm' ? 'h-3.5 w-3.5' : size === 'lg' ? 'h-5 w-5' : 'h-4 w-4';
     return (
-      <div className={`inline-flex items-center gap-2 font-sans ${className}`}>
-        <Loader2 className={`${sizeClasses} animate-spin text-current shrink-0`} />
-        {message && <span className="text-xs font-medium">{message}</span>}
+      <div className="inline-flex items-center gap-2">
+        <svg
+          className={`animate-spin ${spinnerSize} text-current`}
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          />
+        </svg>
+        {message && <span className="text-sm text-neutral-600 font-medium">{message}</span>}
       </div>
     );
   }
 
-  // Fullscreen Splash/Transition Loader with Clean Light Theme & Official Light Logo
-  if (variant === 'fullscreen') {
+  // Content skeleton placeholder
+  if (variant === 'skeleton') {
     return (
-      <div className={`fixed inset-0 z-[200] bg-[#F8FAFC] text-[#0A1931] flex flex-col items-center justify-center p-6 font-sans select-none ${className}`}>
-        <style>{`
-          @keyframes brandProgressSweepLight {
-            0% { transform: translateX(-100%); }
-            50% { transform: translateX(35%); }
-            100% { transform: translateX(250%); }
-          }
-        `}</style>
-
-        {/* Ambient subtle warm/blue radial backdrop */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-50/70 via-slate-50/50 to-[#F8FAFC] pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col items-center">
-          {/* Official TrustHyre Light Theme Logo */}
-          <div className="mb-6 animate-in fade-in duration-300">
-            <img 
-              src={trustHyreLogo} 
-              alt="TrustHyre" 
-              className="h-12 sm:h-14 md:h-16 w-auto object-contain block select-none mix-blend-multiply drop-shadow-xs" 
-            />
-          </div>
-
-          {/* Precision Brand Progress Track */}
-          <div className="w-52 h-[3px] rounded-full bg-slate-200/90 overflow-hidden relative shadow-inner">
-            <div 
-              className="h-full bg-gradient-to-r from-[#0066FF] to-[#38BDF8] rounded-full w-2/5 shadow-xs"
-              style={{ animation: 'brandProgressSweepLight 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite' }}
-            />
-          </div>
-
-          {message && (
-            <p className="text-xs text-[#64748B] font-medium tracking-wide mt-4 text-center max-w-xs animate-in fade-in duration-300">
-              {message}
-            </p>
-          )}
+      <div className="w-full space-y-4 animate-pulse p-4">
+        <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
+        <div className="space-y-2">
+          <div className="h-4 bg-neutral-200 rounded"></div>
+          <div className="h-4 bg-neutral-200 rounded w-5/6"></div>
         </div>
       </div>
     );
   }
 
-  // Skeleton variant for job/candidate feed loading
-  if (variant === 'skeleton') {
-    return (
-      <div className={`space-y-4 w-full font-sans ${className}`}>
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-xs animate-pulse space-y-4"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-slate-100 rounded-2xl shrink-0" />
-              <div className="space-y-2 flex-1 min-w-0">
-                <div className="h-4 bg-slate-100 rounded-md w-1/3" />
-                <div className="h-3 bg-slate-100 rounded-md w-1/4" />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-100">
-              <div className="h-3 bg-slate-100 rounded-md w-1/2" />
-              <div className="h-3 bg-slate-100 rounded-md w-1/2" />
-              <div className="h-3 bg-slate-100 rounded-md w-1/2" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  // Unified Full-Page / Page Transition / Curtain Loader
+  // Matches the premium Deep-Navy curtain loader with official white logo & glow
+  const isCurtainLifted = variant === 'curtain' ? ready || internalReady : false;
 
-  // Default Page / Route Content Loader: Clean Light Stage with Official Light Logo
   return (
-    <div className={`w-full min-h-[50vh] sm:min-h-[60vh] flex flex-col items-center justify-center bg-white border border-[#E2E8F0] text-[#0A1931] rounded-2xl sm:rounded-3xl p-8 relative overflow-hidden shadow-xs font-sans select-none ${className}`}>
+    <div
+      aria-hidden={isCurtainLifted}
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#0f2f63] text-white overflow-hidden transition-transform duration-[850ms] ease-[cubic-bezier(0.65,0,0.35,1)] ${
+        isCurtainLifted ? '-translate-y-[105%] pointer-events-none' : 'translate-y-0 pointer-events-auto'
+      }`}
+    >
       <style>{`
-        @keyframes brandProgressSweepLight {
-          0% { transform: translateX(-100%); }
-          50% { transform: translateX(35%); }
-          100% { transform: translateX(250%); }
+        @keyframes appLoaderFadeRise {
+          from {
+            opacity: 0;
+            transform: translateY(16px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes appLoaderGlow {
+          0%, 100% { opacity: 0.2; transform: scale(0.95); }
+          50% { opacity: 0.45; transform: scale(1.05); }
         }
       `}</style>
 
-      {/* Subtle ambient light gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-blue-50/30 via-white to-white pointer-events-none" />
+      {/* Ambient background glow */}
+      <div
+        className="absolute w-[420px] h-[420px] rounded-full bg-blue-500/20 blur-3xl pointer-events-none"
+        style={{ animation: 'appLoaderGlow 3s ease-in-out infinite' }}
+      />
 
-      <div className="relative z-10 flex flex-col items-center">
-        {/* Official TrustHyre Light Theme Logo */}
-        <div className="mb-6 animate-in fade-in duration-300">
-          <img 
-            src={trustHyreLogo} 
-            alt="TrustHyre" 
-            className="h-12 sm:h-14 md:h-16 w-auto object-contain block select-none mix-blend-multiply drop-shadow-xs" 
+      <div
+        className="relative z-10 flex flex-col items-center px-4"
+        style={{ animation: 'appLoaderFadeRise 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards' }}
+      >
+        {/* TrustHyre Official White Logo */}
+        <div className="relative mb-5 flex items-center justify-center">
+          <img
+            src="/assets/TrustHyre Logo with Skills Tagline.png"
+            alt="TrustHyre"
+            className="h-14 sm:h-16 md:h-20 w-auto object-contain drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
           />
         </div>
 
-        {/* Precision Brand Progress Track */}
-        <div className="w-52 h-[3px] rounded-full bg-slate-200/90 overflow-hidden relative shadow-inner">
-          <div 
-            className="h-full bg-gradient-to-r from-[#0066FF] to-[#38BDF8] rounded-full w-2/5 shadow-xs"
-            style={{ animation: 'brandProgressSweepLight 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite' }}
+        {/* Sleek animated progress line */}
+        <div className="w-44 sm:w-52 h-[2.5px] rounded-full bg-white/15 overflow-hidden relative shadow-inner">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-blue-300 via-white to-sky-300 animate-pulse"
+            style={{
+              width: '100%',
+              transform: isCurtainLifted ? 'scaleX(1)' : 'scaleX(0.7)',
+              transformOrigin: 'left center',
+              transition: 'transform 700ms cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
           />
         </div>
 
-        {message && (
-          <p className="text-xs text-[#64748B] font-medium tracking-wide mt-4 text-center max-w-xs animate-in fade-in duration-300">
-            {message}
-          </p>
-        )}
+        {/* Context message or default tagline */}
+        <p className="mt-4 text-[12px] sm:text-xs tracking-wider uppercase text-blue-200/80 font-medium">
+          {message || 'Verified Workforce & Jobs Network'}
+        </p>
       </div>
     </div>
   );
 };
-
-export default AppLoader;
