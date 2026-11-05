@@ -81,6 +81,13 @@ export const JobPostingPage = () => {
   const [showPresets, setShowPresets] = useState<boolean>(false);
   const [createdJobData, setCreatedJobData] = useState<any | null>(null);
 
+  // Blue-Collar Perks & Direct Calling State (WorkIndia & Apna Pattern)
+  const [selectedPerks, setSelectedPerks] = useState<string[]>([]);
+  const [allowDirectCall, setAllowDirectCall] = useState<boolean>(true);
+  const [allowDirectWhatsapp, setAllowDirectWhatsapp] = useState<boolean>(true);
+  const [contactPhone, setContactPhone] = useState<string>('');
+  const [isUrgentSpotHire, setIsUrgentSpotHire] = useState<boolean>(false);
+
   // Fetch existing job for edit mode
   const { data: existingJob, isLoading: isLoadingJob } = useQuery({
     queryKey: ['job', editJobId],
@@ -141,6 +148,23 @@ export const JobPostingPage = () => {
       if (addl.languages) setLanguages(addl.languages);
       if (addl.ageLimit) setAgeLimit(addl.ageLimit);
       if (addl.gender) setGender(addl.gender);
+
+      const existingPerks = Array.isArray((existingJob as any).perks) 
+        ? (existingJob as any).perks 
+        : (Array.isArray(addl.perks) ? addl.perks : []);
+      if (existingPerks.length > 0) setSelectedPerks(existingPerks);
+
+      if ((existingJob as any).allowDirectCall !== undefined) setAllowDirectCall(Boolean((existingJob as any).allowDirectCall));
+      else if (addl.allowDirectCall !== undefined) setAllowDirectCall(Boolean(addl.allowDirectCall));
+
+      if ((existingJob as any).allowDirectWhatsapp !== undefined) setAllowDirectWhatsapp(Boolean((existingJob as any).allowDirectWhatsapp));
+      else if (addl.allowDirectWhatsapp !== undefined) setAllowDirectWhatsapp(Boolean(addl.allowDirectWhatsapp));
+
+      const phone = (existingJob as any).contactPhone || (existingJob as any).contact_phone || addl.contactPhone || (existingJob as any).phoneNumber || '';
+      if (phone) setContactPhone(phone);
+
+      if ((existingJob as any).isUrgentSpotHire !== undefined) setIsUrgentSpotHire(Boolean((existingJob as any).isUrgentSpotHire));
+      else if (addl.isUrgentSpotHire !== undefined) setIsUrgentSpotHire(Boolean(addl.isUrgentSpotHire));
     }
   }, [existingJob]);
 
@@ -287,6 +311,15 @@ export const JobPostingPage = () => {
       expiresAt: expiresAtIso,
       coverImageUrl: effectiveCoverUrl || null,
       cover_image_url: effectiveCoverUrl || null,
+      perks: selectedPerks,
+      allowDirectCall,
+      allow_direct_call: allowDirectCall,
+      allowDirectWhatsapp,
+      allow_direct_whatsapp: allowDirectWhatsapp,
+      contactPhone: contactPhone.trim() || undefined,
+      contact_phone: contactPhone.trim() || undefined,
+      isUrgentSpotHire,
+      is_urgent_spot_hire: isUrgentSpotHire,
       additionalDetails: {
         department: (formData.get('department') as string) || undefined,
         roleCategory: (formData.get('roleCategory') as string) || undefined,
@@ -296,6 +329,11 @@ export const JobPostingPage = () => {
         languages: (formData.get('languages') as string) || undefined,
         ageLimit: (formData.get('ageLimit') as string) || undefined,
         gender: (formData.get('gender') as string) || undefined,
+        perks: selectedPerks,
+        allowDirectCall,
+        allowDirectWhatsapp,
+        contactPhone: contactPhone.trim() || undefined,
+        isUrgentSpotHire,
       }
     };
     mutation.mutate(jobData);
@@ -932,6 +970,114 @@ export const JobPostingPage = () => {
                     <option value="Female Only">Female Only</option>
                     <option value="Any gender">Any gender</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Step 6: Frontline Perks & Direct Contact (WorkIndia & Apna Viral Viewership Drivers) */}
+              <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] space-y-5">
+                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] pb-3">
+                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
+                    6
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold uppercase text-[#717784] tracking-wide">
+                      Frontline Perks & Direct Recruiter Contact
+                    </h3>
+                    <p className="text-[11px] text-[#717784]">Jobs with Free Food, Room, Overtime, and Direct Call HR get 5x more candidate applications.</p>
+                  </div>
+                </div>
+
+                {/* Perks Selector */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-[#0a0a0a] block">
+                    Select Perks & Facilities Provided (Optional)
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {[
+                      { id: 'Free Food', label: '🍛 Free Food / Meals' },
+                      { id: 'Room Provided', label: '🏠 Room / Lodging' },
+                      { id: 'Daily Pay', label: '💵 Daily / Weekly Payout' },
+                      { id: 'Overtime Pay', label: '⏱️ Overtime (OT) Pay' },
+                      { id: 'Travel Allowance', label: '⛽ Fuel / Travel Allowance' },
+                      { id: 'ESI PF Benefits', label: '🛡️ ESI / PF Benefits' },
+                    ].map(perk => {
+                      const isSelected = selectedPerks.includes(perk.id);
+                      return (
+                        <button
+                          key={perk.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedPerks(prev =>
+                              prev.includes(perk.id) ? prev.filter(p => p !== perk.id) : [...prev, perk.id]
+                            );
+                          }}
+                          className={`p-3 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer flex items-center justify-between ${
+                            isSelected
+                              ? 'bg-[#0f2f63] text-white border-[#0f2f63] shadow-xs'
+                              : 'bg-white text-[#0a0a0a] border-[#e6e8ec] hover:border-[#0f2f63]/40'
+                          }`}
+                        >
+                          <span>{perk.label}</span>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Direct Contact Toggle and Input */}
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e6e8ec] space-y-4">
+                  {/* Urgent Spot Hire / Walk-In Toggle (WorkIndia & Nithra Jobs pattern) */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e6e8ec] pb-3">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                        <h4 className="text-xs font-bold text-[#0a0a0a]">Urgent Spot Hire / Walk-In Available</h4>
+                      </div>
+                      <p className="text-[11px] text-[#717784]">Adds a prominent ⚡ Spot Hire badge to attract workers who can join immediately within 24-48 hours.</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isUrgentSpotHire}
+                        onChange={(e) => setIsUrgentSpotHire(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e6e8ec] pb-3">
+                    <div>
+                      <h4 className="text-xs font-bold text-[#0a0a0a]">Allow Candidates to Call HR Directly</h4>
+                      <p className="text-[11px] text-[#717784]">Shows a prominent "Call HR" button on your job card for instant phone screening.</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={allowDirectCall}
+                        onChange={(e) => setAllowDirectCall(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                  </div>
+
+                  {allowDirectCall && (
+                    <div className="space-y-1.5 animate-in fade-in">
+                      <label className="text-xs font-bold text-[#0a0a0a]">Direct Recruiter / Supervisor Phone Number</label>
+                      <input
+                        type="tel"
+                        value={contactPhone}
+                        onChange={(e) => setContactPhone(e.target.value)}
+                        placeholder="e.g. +91 98765 43210 (Defaults to registered mobile if blank)"
+                        className="w-full bg-[#fbfbfb] border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:bg-white focus:border-[#0f2f63] outline-none"
+                      />
+                      <p className="text-[10px] text-[#717784]">
+                        Workers can tap to call this number directly from the job card without middleman fees.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

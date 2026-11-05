@@ -38,9 +38,18 @@ import {
   Award,
   Plus,
   Edit,
-  Star
+  Star,
+  Phone,
+  MessageCircle,
+  Utensils,
+  Home,
+  Zap,
+  Fuel,
+  Clock3
 } from 'lucide-react';
 import { RatingModal } from '../../../components/common/RatingModal';
+import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
+import { parsePhoneNumber } from '../../../components/common/PhoneDisplay';
 import { useSavedStore } from '../../../hooks/useSavedStore';
 import { useTranslation } from '../../../providers/TranslationContext';
 import { 
@@ -145,6 +154,7 @@ export default function JobDetailPage() {
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
   const [coverImageFailed, setCoverImageFailed] = useState(false);
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const [isPamphletModalOpen, setIsPamphletModalOpen] = useState(false);
   const [searchParams] = useSearchParams();
   const { language } = useTranslation();
 
@@ -523,6 +533,16 @@ export default function JobDetailPage() {
           </button>
 
           <div className="flex items-center gap-2">
+            {/* WorkIndia-style Instant Hiring Flyer / Pamphlet Generator */}
+            <button
+              onClick={() => setIsPamphletModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+              title="Download & share high-contrast WhatsApp hiring flyer"
+            >
+              <Zap className="w-3.5 h-3.5 fill-white text-white" />
+              <span>Hiring Flyer</span>
+            </button>
+
             {/* WhatsApp Viral Referral Share Button */}
             <button
               onClick={handleWhatsAppShare}
@@ -878,6 +898,64 @@ export default function JobDetailPage() {
                 * Compensation figures are calculated using authentic live postings and employer audit standards across {job.city || 'regional'} industrial zones. Zero deductions for commissions.
               </p>
             </div>
+
+            {/* Blue-Collar Perks & Facilities Card (WorkIndia & Apna Viral Conversion Pattern) */}
+            {(() => {
+              const perksList: string[] = Array.isArray((job as any).perks) && (job as any).perks.length > 0
+                ? (job as any).perks
+                : (Array.isArray(additionalDetails.perks) ? additionalDetails.perks : []);
+
+              if (perksList.length === 0) return null;
+
+              return (
+                <div className="bg-[#f4f4f4] rounded-[1.75rem] p-6 sm:p-8 border border-[#e6e8ec] space-y-4">
+                  <div className="flex items-center gap-2 border-b border-[#e6e8ec] pb-3">
+                    <Sparkles className="w-4 h-4 text-[#0f2f63]" />
+                    <h3 className="text-xs font-bold uppercase text-[#717784]">
+                      Worksite Perks & Living Facilities
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {perksList.map((p, idx) => {
+                      const perkStr = String(p).toLowerCase();
+                      let label = p;
+                      let desc = "Included with position";
+                      let bg = "bg-white border-[#e6e8ec]";
+
+                      if (perkStr.includes('food') || perkStr.includes('meal')) {
+                        label = "Free Food / Meals";
+                        desc = "Daily lunch or canteen facility provided";
+                        bg = "bg-amber-50/50 border-amber-200/80";
+                      } else if (perkStr.includes('room') || perkStr.includes('accommodation') || perkStr.includes('lodging')) {
+                        label = "Room / Lodging Included";
+                        desc = "Free verified worker accommodation near worksite";
+                        bg = "bg-indigo-50/50 border-indigo-200/80";
+                      } else if (perkStr.includes('daily') || perkStr.includes('weekly')) {
+                        label = "Daily / Weekly Payout";
+                        desc = "Fast cash flow settlement directly after shifts";
+                        bg = "bg-emerald-50/50 border-emerald-200/80";
+                      } else if (perkStr.includes('ot') || perkStr.includes('overtime')) {
+                        label = "Overtime (OT) Pay Extra";
+                        desc = "Extra wages paid for hours exceeding standard shift";
+                        bg = "bg-blue-50/50 border-blue-200/80";
+                      } else if (perkStr.includes('travel') || perkStr.includes('petrol') || perkStr.includes('fuel')) {
+                        label = "Travel / Petrol Allowance";
+                        desc = "Fuel reimbursement or company pickup arranged";
+                        bg = "bg-purple-50/50 border-purple-200/80";
+                      }
+
+                      return (
+                        <div key={idx} className={`p-4 rounded-2xl border ${bg} space-y-1 shadow-2xs`}>
+                          <p className="text-xs font-bold text-[#0a0a0a]">{label}</p>
+                          <p className="text-[11px] text-[#717784] leading-relaxed">{desc}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Role & Eligibility Criteria Card */}
             {(additionalDetails.department || additionalDetails.roleCategory || additionalDetails.employmentType || additionalDetails.shift || additionalDetails.education || additionalDetails.languages || additionalDetails.ageLimit || additionalDetails.gender) && (
@@ -1304,6 +1382,63 @@ export default function JobDetailPage() {
               </div>
             )}
 
+            {/* 📞 Direct Recruiter Contact Card (WorkIndia & Apna Viral Direct Call Feature) */}
+            {(() => {
+              const allowDirectCall = (job as any).allowDirectCall ?? (job as any).allow_direct_call ?? additionalDetails.allowDirectCall ?? true;
+              const allowDirectWhatsapp = (job as any).allowDirectWhatsapp ?? (job as any).allow_direct_whatsapp ?? additionalDetails.allowDirectWhatsapp ?? true;
+              const contactPhone = (job as any).contactPhone || (job as any).contact_phone || additionalDetails.contactPhone || (employer as any)?.phoneNumber || (job as any).employerProfile?.phoneNumber;
+
+              if (!contactPhone || (!allowDirectCall && !allowDirectWhatsapp)) return null;
+
+              const parsed = parsePhoneNumber(contactPhone);
+              const formattedPhone = parsed 
+                ? `${parsed.countryCode} ${parsed.formattedNumber}` 
+                : contactPhone;
+
+              return (
+                <div className="bg-emerald-50/80 rounded-[1.75rem] p-5 sm:p-6 border border-emerald-200/80 space-y-3.5 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-950">
+                        Direct HR & Recruiter Contact
+                      </h3>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-200">
+                      Zero Middlemen
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-emerald-900 leading-relaxed">
+                    Have questions about the shift timing, daily pay, or worksite address? Connect directly with the verified employer:
+                  </p>
+
+                  <div className="flex flex-col gap-2 pt-1">
+                    {allowDirectCall && (
+                      <a
+                        href={`tel:${contactPhone}`}
+                        className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer no-underline"
+                      >
+                        <Phone className="w-4 h-4" />
+                        <span>Call HR Directly ({formattedPhone})</span>
+                      </a>
+                    )}
+
+                    {allowDirectWhatsapp && (
+                      <button
+                        type="button"
+                        onClick={handleWhatsAppApply}
+                        className="w-full py-2.5 px-4 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        <span>Chat with Employer on WhatsApp</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Direct Verified Employer Snapshot */}
             <div className="bg-[#f4f4f4] rounded-[1.75rem] p-6 border border-[#e6e8ec] space-y-3">
               <div className="flex items-center justify-between border-b border-[#e6e8ec] pb-2.5">
@@ -1388,6 +1523,27 @@ export default function JobDetailPage() {
           jobTitle={job.title}
           onSuccess={() => {
             queryClient.invalidateQueries({ queryKey: queryKeys.jobs.myApplications });
+          }}
+        />
+      )}
+
+      {/* HIRING PAMPHLET / POSTER MODAL (WorkIndia model) */}
+      {isPamphletModalOpen && job && (
+        <JobPamphletModal
+          isOpen={isPamphletModalOpen}
+          onClose={() => setIsPamphletModalOpen(false)}
+          job={{
+            id: job.id,
+            title: job.title,
+            companyName: (job as any)?.employerProfile?.companyName || (job as any)?.employerName || 'Verified Employer',
+            city: job.city,
+            location: job.location,
+            budget: job.budget,
+            perks: Array.isArray((job as any).perks) && (job as any).perks.length > 0
+              ? (job as any).perks
+              : (Array.isArray(additionalDetails.perks) ? additionalDetails.perks : []),
+            contactPhone: (job as any).contactPhone || (job as any).contact_phone || additionalDetails.contactPhone || (employer as any)?.phoneNumber || (job as any).employerProfile?.phoneNumber,
+            isUrgentSpotHire: Boolean((job as any).isUrgentSpotHire || additionalDetails.isUrgentSpotHire)
           }}
         />
       )}
