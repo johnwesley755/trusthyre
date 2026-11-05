@@ -922,7 +922,7 @@ export default function JobSearchPage() {
       <WhatsAppBulletinModal
         isOpen={isBulletinOpen}
         onClose={() => setIsBulletinOpen(false)}
-        jobs={data?.jobs || []}
+        jobs={(jobs as any) || []}
         city={city || 'Pan India'}
         industry={trade || 'All Trades'}
       />

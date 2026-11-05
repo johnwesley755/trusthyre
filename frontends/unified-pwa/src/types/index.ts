@@ -110,6 +110,8 @@ export interface Job {
     landmark?: string;
   } | null;
   equipmentRequired?: string[];
+  additionalDetails?: Record<string, any>;
+  additional_details?: Record<string, any>;
   employerProfile?: {
     id?: string;
     companyName: string;

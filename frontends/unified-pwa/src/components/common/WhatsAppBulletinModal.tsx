@@ -182,3 +182,4 @@ export const WhatsAppBulletinModal: React.FC<WhatsAppBulletinModalProps> = ({
     </AnimatePresence>
   );
 };
+

@@ -49,6 +49,8 @@ export interface JobCardData {
   contact_whatsapp?: string | null;
   additionalDetails?: any;
   isUrgentSpotHire?: boolean;
+  isWalkInInterview?: boolean;
+  walkInDetails?: any;
 }
 
 interface JobSearchResultCardProps {
