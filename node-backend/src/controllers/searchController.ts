@@ -160,6 +160,26 @@ export const searchJobs = async (c: Context) => {
           (effectiveExpiry && effectiveExpiry.getTime() <= Date.now())
         );
 
+        const additionalDetails = (j.alternate_sources && typeof j.alternate_sources === 'object')
+          ? ((j.alternate_sources as any).additional_details || j.alternate_sources)
+          : {};
+
+        const perks = Array.isArray(additionalDetails.perks)
+          ? additionalDetails.perks
+          : (Array.isArray((j as any).perks) ? (j as any).perks : []);
+
+        const allowDirectCall = additionalDetails.allowDirectCall !== undefined 
+          ? Boolean(additionalDetails.allowDirectCall) 
+          : true;
+
+        const allowDirectWhatsapp = additionalDetails.allowDirectWhatsapp !== undefined
+          ? Boolean(additionalDetails.allowDirectWhatsapp)
+          : true;
+
+        const contactPhone = additionalDetails.contactPhone || additionalDetails.contact_phone || (j as any).contact_phone || null;
+        const contactWhatsapp = additionalDetails.contactWhatsapp || additionalDetails.contact_whatsapp || (j as any).contact_whatsapp || null;
+        const isUrgentSpotHire = Boolean(additionalDetails.isUrgentSpotHire || additionalDetails.is_urgent_spot_hire);
+
         return {
           id: j.id,
           title: j.title,
@@ -178,6 +198,19 @@ export const searchJobs = async (c: Context) => {
           sourceName: j.source_name || (j.is_external ? 'Verified Partner' : 'TrustHyre Direct'),
           sourceUrl: j.source_url || null,
           alternateSources: Array.isArray(j.alternate_sources) ? j.alternate_sources : [],
+          additionalDetails,
+          additional_details: additionalDetails,
+          perks,
+          allowDirectCall,
+          allow_direct_call: allowDirectCall,
+          allowDirectWhatsapp,
+          allow_direct_whatsapp: allowDirectWhatsapp,
+          contactPhone,
+          contact_phone: contactPhone,
+          contactWhatsapp,
+          contact_whatsapp: contactWhatsapp,
+          isUrgentSpotHire,
+          is_urgent_spot_hire: isUrgentSpotHire,
           datePosted: j.date_posted || j.created_at,
           createdAt: j.created_at,
           updatedAt: j.updated_at,

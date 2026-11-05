@@ -85,6 +85,8 @@ export default function JobSearchPage() {
     });
   }, [user, userAlerts, city, trade]);
 
+  const [selectedPerkFilter, setSelectedPerkFilter] = useState<string>('all');
+
   const handleOpenAlertModal = () => {
     if (!user) {
       alert("Please sign in or create an account to save job search alerts.");
@@ -315,17 +317,40 @@ export default function JobSearchPage() {
         cover_image_url: (j.cover_image_url || j.coverImageUrl || null),
         hasApplied: appliedJobIdsMap.has(j.id),
         applicationStatus: appliedJobIdsMap.get(j.id),
+        perks: j.perks || (j.additionalDetails?.perks || []),
+        allowDirectCall: j.allowDirectCall ?? j.allow_direct_call ?? true,
+        allowDirectWhatsapp: j.allowDirectWhatsapp ?? j.allow_direct_whatsapp ?? true,
+        contactPhone: j.contactPhone || j.contact_phone || (j as any).phoneNumber || null,
+        contactWhatsapp: j.contactWhatsapp || j.contact_whatsapp || null,
+        additionalDetails: j.additionalDetails || j.additional_details,
+        isUrgentSpotHire: Boolean(j.isUrgentSpotHire || j.is_urgent_spot_hire || (j.additionalDetails && j.additionalDetails.isUrgentSpotHire)),
       };
     });
   }, [jobs, appliedJobIdsMap]);
 
-  // Filter based on hideExpired
+  // Filter based on hideExpired and selectedPerkFilter
   const displayJobs = useMemo(() => {
-    if (hideExpired) {
-      return formattedJobs.filter(j => !j.isExpired);
-    }
-    return formattedJobs;
-  }, [formattedJobs, hideExpired]);
+    return formattedJobs.filter(j => {
+      if (hideExpired && j.isExpired) return false;
+      if (selectedPerkFilter !== 'all') {
+        if (selectedPerkFilter === 'spot') {
+          return Boolean(j.isUrgentSpotHire);
+        }
+        const jobPerks: string[] = Array.isArray(j.perks) ? j.perks : [];
+        const hasPerk = jobPerks.some((p: string) => {
+          const lower = p.toLowerCase();
+          if (selectedPerkFilter === 'food') return lower.includes('food') || lower.includes('meal');
+          if (selectedPerkFilter === 'room') return lower.includes('room') || lower.includes('accommodation') || lower.includes('lodging');
+          if (selectedPerkFilter === 'daily') return lower.includes('daily') || lower.includes('weekly');
+          if (selectedPerkFilter === 'ot') return lower.includes('overtime') || lower.includes('ot');
+          if (selectedPerkFilter === 'travel') return lower.includes('travel') || lower.includes('fuel') || lower.includes('petrol');
+          return false;
+        });
+        if (!hasPerk) return false;
+      }
+      return true;
+    });
+  }, [formattedJobs, hideExpired, selectedPerkFilter]);
 
   // Reset pagination on filter or search changes
   useEffect(() => {
@@ -544,6 +569,32 @@ export default function JobSearchPage() {
                   <ChevronDown className="w-3.5 h-3.5 text-[#717784] pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
+            </div>
+
+            {/* Blue-Collar Quick Perks Filter Chips (WorkIndia / Apna style) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 no-scrollbar text-xs">
+              {[
+                { id: 'all', label: 'All Openings' },
+                { id: 'spot', label: '⚡ Urgent Spot Hire' },
+                { id: 'food', label: '🍛 Free Food' },
+                { id: 'room', label: '🏠 With Room' },
+                { id: 'daily', label: '💵 Daily Pay' },
+                { id: 'ot', label: '⏱️ Overtime OT' },
+                { id: 'travel', label: '⛽ Fuel Allowance' },
+              ].map((perk) => (
+                <button
+                  key={perk.id}
+                  type="button"
+                  onClick={() => setSelectedPerkFilter(perk.id)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                    selectedPerkFilter === perk.id
+                      ? 'bg-[#0f2f63] text-white shadow-xs'
+                      : 'bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#475467] border border-[#e6e8ec]'
+                  }`}
+                >
+                  {perk.label}
+                </button>
+              ))}
             </div>
 
             {/* Job List Feed */}

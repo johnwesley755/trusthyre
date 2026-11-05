@@ -39,10 +39,37 @@ const formatJob = (job: any) => {
     ? ((job.alternate_sources as any).additional_details || job.alternate_sources)
     : {};
 
+  const perks = Array.isArray(additionalDetails.perks)
+    ? additionalDetails.perks
+    : (Array.isArray((job as any).perks) ? (job as any).perks : []);
+
+  const allowDirectCall = additionalDetails.allowDirectCall !== undefined 
+    ? Boolean(additionalDetails.allowDirectCall) 
+    : (additionalDetails.allow_direct_call !== undefined ? Boolean(additionalDetails.allow_direct_call) : true);
+
+  const allowDirectWhatsapp = additionalDetails.allowDirectWhatsapp !== undefined
+    ? Boolean(additionalDetails.allowDirectWhatsapp)
+    : (additionalDetails.allow_direct_whatsapp !== undefined ? Boolean(additionalDetails.allow_direct_whatsapp) : true);
+
+  const contactPhone = additionalDetails.contactPhone || additionalDetails.contact_phone || (job as any).contact_phone || null;
+  const contactWhatsapp = additionalDetails.contactWhatsapp || additionalDetails.contact_whatsapp || (job as any).contact_whatsapp || null;
+  const isUrgentSpotHire = Boolean(additionalDetails.isUrgentSpotHire || additionalDetails.is_urgent_spot_hire);
+
   return {
     ...job,
     additionalDetails: additionalDetails || {},
     additional_details: additionalDetails || {},
+    perks,
+    allowDirectCall,
+    allow_direct_call: allowDirectCall,
+    allowDirectWhatsapp,
+    allow_direct_whatsapp: allowDirectWhatsapp,
+    contactPhone,
+    contact_phone: contactPhone,
+    contactWhatsapp,
+    contact_whatsapp: contactWhatsapp,
+    isUrgentSpotHire,
+    is_urgent_spot_hire: isUrgentSpotHire,
     description: sanitizeHtmlDescription(job.description),
     coverImageUrl: job.cover_image_url || job.coverImageUrl || null,
     cover_image_url: job.cover_image_url || job.coverImageUrl || null,
@@ -93,6 +120,16 @@ export const createJob = async (c: Context) => {
       }
     }
 
+    const mergedAdditionalDetails = {
+      ...(data.additionalDetails || data.additional_details || {}),
+      perks: Array.isArray(data.perks) ? data.perks : (data.additionalDetails?.perks || []),
+      allowDirectCall: data.allowDirectCall !== undefined ? Boolean(data.allowDirectCall) : true,
+      allowDirectWhatsapp: data.allowDirectWhatsapp !== undefined ? Boolean(data.allowDirectWhatsapp) : true,
+      contactPhone: data.contactPhone || data.contact_phone || userMeta?.phone_number || null,
+      contactWhatsapp: data.contactWhatsapp || data.contact_whatsapp || userMeta?.phone_number || null,
+      isUrgentSpotHire: Boolean(data.isUrgentSpotHire || data.is_urgent_spot_hire || data.additionalDetails?.isUrgentSpotHire)
+    };
+
     const job = await prisma.jobs.create({
       data: {
         id: uuidv4(),
@@ -115,7 +152,7 @@ export const createJob = async (c: Context) => {
         cover_image_url: data.coverImageUrl || data.cover_image_url || null,
         status: 'OPEN',
         expires_at: expiresAt,
-        alternate_sources: data.additionalDetails || data.additional_details ? { additional_details: data.additionalDetails || data.additional_details } : undefined,
+        alternate_sources: { additional_details: mergedAdditionalDetails },
         created_at: new Date(),
         updated_at: new Date()
       } as any
@@ -512,9 +549,23 @@ export const updateJob = async (c: Context) => {
       }
     }
 
-    if (data.additionalDetails !== undefined || data.additional_details !== undefined) {
-      const details = data.additionalDetails || data.additional_details;
-      updatePayload.alternate_sources = details ? { additional_details: details } : null;
+    if (data.additionalDetails !== undefined || data.additional_details !== undefined || data.perks !== undefined || data.allowDirectCall !== undefined || data.contactPhone !== undefined) {
+      const existingJobData = await prisma.jobs.findUnique({ where: { id }, select: { alternate_sources: true } });
+      const currentDetails = (existingJobData?.alternate_sources && typeof existingJobData.alternate_sources === 'object')
+        ? ((existingJobData.alternate_sources as any).additional_details || existingJobData.alternate_sources)
+        : {};
+
+      const details = {
+        ...currentDetails,
+        ...(data.additionalDetails || data.additional_details || {}),
+        ...(data.perks !== undefined ? { perks: data.perks } : {}),
+        ...(data.allowDirectCall !== undefined ? { allowDirectCall: Boolean(data.allowDirectCall) } : {}),
+        ...(data.allowDirectWhatsapp !== undefined ? { allowDirectWhatsapp: Boolean(data.allowDirectWhatsapp) } : {}),
+        ...(data.contactPhone !== undefined ? { contactPhone: data.contactPhone } : {}),
+        ...(data.contactWhatsapp !== undefined ? { contactWhatsapp: data.contactWhatsapp } : {}),
+        ...(data.isUrgentSpotHire !== undefined ? { isUrgentSpotHire: Boolean(data.isUrgentSpotHire) } : {})
+      };
+      updatePayload.alternate_sources = { additional_details: details };
     }
     if (data.status !== undefined) updatePayload.status = data.status;
     if (data.coverImageUrl !== undefined || data.cover_image_url !== undefined) {

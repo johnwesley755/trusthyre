@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe } from 'lucide-react';
+import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe, Phone, Utensils, Home, Zap, Clock3, Fuel, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { useSavedStore } from '../../../hooks/useSavedStore';
@@ -7,6 +7,7 @@ import { useTranslation } from '../../../providers/TranslationContext';
 import { buildJobWhatsAppMessage, openWhatsAppShare } from '../../../utils/whatsappTemplate.utils';
 import { TranslateText } from '../../../components/common/TranslateText';
 import { getEffectiveCoverUrl } from '../../../utils/coverImage.utils';
+import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
 
 export interface JobCardData {
   id: string;
@@ -37,6 +38,17 @@ export interface JobCardData {
   } | null;
   hasApplied?: boolean;
   applicationStatus?: string;
+  perks?: string[];
+  allowDirectCall?: boolean;
+  allow_direct_call?: boolean;
+  allowDirectWhatsapp?: boolean;
+  allow_direct_whatsapp?: boolean;
+  contactPhone?: string | null;
+  contact_phone?: string | null;
+  contactWhatsapp?: string | null;
+  contact_whatsapp?: string | null;
+  additionalDetails?: any;
+  isUrgentSpotHire?: boolean;
 }
 
 interface JobSearchResultCardProps {
@@ -54,6 +66,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
   const { isJobSaved, toggleSaveJob } = useSavedStore();
   const isSaved = isJobSaved(job.id);
   const [imageError, setImageError] = useState(false);
+  const [isPamphletOpen, setIsPamphletOpen] = useState(false);
   const effectiveCoverUrl = !imageError ? getEffectiveCoverUrl(job) : null;
 
   const effectiveExpiry = job.expiresAt
@@ -330,6 +343,58 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           </div>
         </div>
 
+        {/* Blue-Collar Perks & Benefits Highlights (WorkIndia & Apna viral features) */}
+        {(() => {
+          const perksList: string[] = Array.isArray(job.perks) && job.perks.length > 0 
+            ? job.perks 
+            : (Array.isArray(job.additionalDetails?.perks) ? job.additionalDetails.perks : []);
+          
+          if (perksList.length === 0) return null;
+
+          return (
+            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+              {perksList.map((p, idx) => {
+                const perk = String(p).toLowerCase();
+                let icon = <Gift className="w-3 h-3 text-emerald-600" />;
+                let label = p;
+                let bg = "bg-emerald-50 text-emerald-800 border-emerald-200";
+
+                if (perk.includes('food') || perk.includes('meal')) {
+                  icon = <Utensils className="w-3 h-3 text-amber-600" />;
+                  label = "Free Food / Meals";
+                  bg = "bg-amber-50 text-amber-900 border-amber-200";
+                } else if (perk.includes('room') || perk.includes('accommodation') || perk.includes('lodging')) {
+                  icon = <Home className="w-3 h-3 text-indigo-600" />;
+                  label = "Room / Stay Provided";
+                  bg = "bg-indigo-50 text-indigo-900 border-indigo-200";
+                } else if (perk.includes('daily') || perk.includes('weekly')) {
+                  icon = <Zap className="w-3 h-3 text-emerald-600" />;
+                  label = "Daily / Weekly Pay";
+                  bg = "bg-emerald-50 text-emerald-900 border-emerald-200";
+                } else if (perk.includes('ot') || perk.includes('overtime')) {
+                  icon = <Clock3 className="w-3 h-3 text-blue-600" />;
+                  label = "Overtime (OT) Pay";
+                  bg = "bg-blue-50 text-blue-900 border-blue-200";
+                } else if (perk.includes('travel') || perk.includes('petrol') || perk.includes('fuel')) {
+                  icon = <Fuel className="w-3 h-3 text-purple-600" />;
+                  label = "Travel Allowance";
+                  bg = "bg-purple-50 text-purple-900 border-purple-200";
+                }
+
+                return (
+                  <span
+                    key={idx}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs ${bg}`}
+                  >
+                    {icon}
+                    <span>{label}</span>
+                  </span>
+                );
+              })}
+            </div>
+          );
+        })()}
+
         {/* Footer Line: Posted Time & Date & Apply / Status */}
         <div className="flex items-center justify-between pt-3 border-t border-[#e6e8ec] text-xs flex-wrap gap-2">
           <div className="flex items-center gap-1.5 flex-wrap text-xs text-[#717784]">
@@ -356,6 +421,32 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* 📱 1-Tap Hiring Flyer / Pamphlet Generator (WorkIndia Viral Feature) */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsPamphletOpen(true);
+              }}
+              className="p-2 rounded-full bg-[#f4f4f4] hover:bg-amber-100 text-amber-700 hover:text-amber-800 border border-[#e6e8ec] transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
+              title="Share as visual WhatsApp hiring poster"
+            >
+              <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+            </button>
+
+            {/* 📞 One-Tap Direct Call HR (WorkIndia & Apna Viral Conversion Feature) */}
+            {!isExpired && (job.allowDirectCall ?? true) && (job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber) && (
+              <a
+                href={`tel:${job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber}`}
+                onClick={(e) => e.stopPropagation()}
+                className="rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer no-underline shrink-0"
+                title="Call Recruiter Directly"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Call HR</span>
+              </a>
+            )}
+
             {job.hasApplied ? (
               <span className="px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-xs border border-emerald-100 flex items-center gap-1.5 shadow-2xs">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -405,6 +496,25 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
         </div>
 
       </div>
+
+      {/* HIRING PAMPHLET MODAL */}
+      {isPamphletOpen && (
+        <JobPamphletModal
+          isOpen={isPamphletOpen}
+          onClose={() => setIsPamphletOpen(false)}
+          job={{
+            id: job.id,
+            title: job.title,
+            companyName: companyName,
+            city: job.city,
+            location: job.location,
+            budget: job.budget,
+            perks: Array.isArray(job.perks) ? job.perks : (Array.isArray(job.additionalDetails?.perks) ? job.additionalDetails.perks : []),
+            contactPhone: job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber,
+            isUrgentSpotHire: Boolean(job.isUrgentSpotHire || job.additionalDetails?.isUrgentSpotHire)
+          }}
+        />
+      )}
     </div>
   );
 };
