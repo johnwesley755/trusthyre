@@ -4,7 +4,7 @@
   "private": true,
   "description": "Cloudflare Python Worker for TrustHyre Blue-Collar Scraping Microservice",
   "scripts": {
-    "build": "pip install workers-py workers-runtime-sdk && python -m pywrangler sync",
+    "build": "pip install --upgrade uv workers-py workers-runtime-sdk && python -m pywrangler sync",
     "deploy": "npx wrangler deploy"
   }
 }
