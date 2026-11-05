@@ -901,10 +901,6 @@ export default function WorkerProfileDetailsPage() {
                         </div>
                       );
                     })
-                            </div>
-                          </div>
-                      </div>
-                    ))
                   )}
                 </div>
               </div>
