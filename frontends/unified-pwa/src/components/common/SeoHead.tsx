@@ -223,6 +223,23 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     setMetaTag('meta[name="description"]', 'name', 'description', description);
     setCanonicalLink(fullUrl);
 
+    // 3.1 Google Hreflang Tags for Multi-lingual Indexing (en, ta, hi, x-default)
+    const setHreflangTag = (lang: string, href: string) => {
+      let tag = document.querySelector(`link[rel="alternate"][hreflang="${lang}"]`);
+      if (!tag) {
+        tag = document.createElement('link');
+        tag.setAttribute('rel', 'alternate');
+        tag.setAttribute('hreflang', lang);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('href', href);
+    };
+
+    setHreflangTag('en', `${fullUrl}?lang=en`);
+    setHreflangTag('ta', `${fullUrl}?lang=ta`);
+    setHreflangTag('hi', `${fullUrl}?lang=hi`);
+    setHreflangTag('x-default', fullUrl);
+
     // Robots noindex directive handling
     if (noIndex) {
       setMetaTag('meta[name="robots"]', 'name', 'robots', 'noindex, nofollow');

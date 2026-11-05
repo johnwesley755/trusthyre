@@ -369,7 +369,10 @@ export const getProfilesByUserIds = async (c: Context) => {
 
     const [userMetaList, verifications] = await Promise.all([
       prisma.user_metadata.findMany({
-        where: { id: { in: targetUserIds } }
+        where: { 
+          id: { in: targetUserIds },
+          role: { notIn: ['ADMIN', 'SUPER_ADMIN'] }
+        }
       }),
       prisma.verification_records.findMany({
         where: { user_id: { in: targetUserIds } }
@@ -408,8 +411,10 @@ export const getProfilesByUserIds = async (c: Context) => {
       }
     }
 
-    const formatted = profiles.map((p) => {
-      const meta = userMetaById.get(p.user_id) || userMetaById.get(p.id);
+    const formatted = profiles
+      .filter(p => userMetaById.has(p.user_id) || userMetaById.has(p.id))
+      .map((p) => {
+        const meta = userMetaById.get(p.user_id) || userMetaById.get(p.id);
       const vRecord = verificationByUser.get(p.user_id) || verificationByUser.get(p.id);
       const isVerified = vRecord?.status === 'VERIFIED' || vRecord?.status === 'APPROVED' || Boolean(meta?.email_verified);
       const isOfferSent = employerOffers.has(p.user_id) || employerOffers.has(p.id);
@@ -506,13 +511,19 @@ export const getWorkerById = async (c: Context) => {
           last_name: true,
           profile_image_url: true,
           phone_number: true,
-          email_verified: true
+          email_verified: true,
+          role: true
         }
       }),
       prisma.verification_records.findFirst({
         where: { user_id: profile.user_id }
       })
     ]);
+
+    // Safety Gate: Block non-admins from viewing ADMIN / SUPER_ADMIN profiles disguised as workers
+    if (!isAdmin && userMeta?.role && (userMeta.role === 'ADMIN' || userMeta.role === 'SUPER_ADMIN')) {
+      return c.json(ApiResponse.error("Worker profile not found"), 404 as any);
+    }
 
     const isVerified = verification?.status === 'VERIFIED' || verification?.status === 'APPROVED' || Boolean(userMeta?.email_verified);
     // Privacy Gate: Mask contact details unless requester is profile owner, admin, or related employer

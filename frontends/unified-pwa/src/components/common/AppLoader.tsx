@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import trustHyreLightLogo from '../../assets/TrustHyre Logo with Skills Tagline.png';
 
 export interface AppLoaderProps {
   message?: string;
@@ -107,9 +108,9 @@ export const AppLoader: React.FC<AppLoaderProps> = ({
         {/* TrustHyre Official White Logo */}
         <div className="relative mb-5 flex items-center justify-center">
           <img
-            src="/assets/TrustHyre Logo with Skills Tagline.png"
+            src={trustHyreLightLogo}
             alt="TrustHyre"
-            className="h-14 sm:h-16 md:h-20 w-auto object-contain drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
+            className="h-14 sm:h-16 md:h-20 w-auto object-contain drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)] block select-none"
           />
         </div>
 

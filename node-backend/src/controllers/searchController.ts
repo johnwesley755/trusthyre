@@ -310,7 +310,10 @@ export const searchWorkers = async (c: Context) => {
 
     const [userMetaList, verifications] = await Promise.all([
       prisma.user_metadata.findMany({
-        where: { id: { in: userIds } },
+        where: { 
+          id: { in: userIds },
+          role: { notIn: ['ADMIN', 'SUPER_ADMIN'] }
+        },
         select: {
           id: true,
           email: true,
@@ -318,7 +321,8 @@ export const searchWorkers = async (c: Context) => {
           last_name: true,
           profile_image_url: true,
           phone_number: true,
-          email_verified: true
+          email_verified: true,
+          role: true
         }
       }),
       prisma.verification_records.findMany({
@@ -374,8 +378,10 @@ export const searchWorkers = async (c: Context) => {
       }
     }
 
-    const formatted = workers.map(w => {
-      const meta = userMetaById.get(w.user_id);
+    const formatted = workers
+      .filter(w => userMetaById.has(w.user_id))
+      .map(w => {
+        const meta = userMetaById.get(w.user_id);
       const vRecord = verificationByUser.get(w.user_id);
       const isVerified = vRecord?.status === 'VERIFIED' || vRecord?.status === 'APPROVED' || Boolean(meta?.email_verified);
       const offerStatus = employerOffersMap.get(w.id) || (w.user_id ? employerOffersMap.get(w.user_id) : null) || null;

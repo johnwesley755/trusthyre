@@ -156,7 +156,10 @@ export const getSavedWorkers = async (c: Context) => {
     });
 
     const userMetadataList = await prisma.user_metadata.findMany({
-      where: { id: { in: workerIds } }
+      where: { 
+        id: { in: workerIds },
+        role: { notIn: ['ADMIN', 'SUPER_ADMIN'] }
+      }
     });
 
     const workerProfileList = await prisma.worker_profiles.findMany({
@@ -167,8 +170,10 @@ export const getSavedWorkers = async (c: Context) => {
     const metaMap = new Map(userMetadataList.map((m: any) => [m.id, m]));
     const profileMap = new Map(workerProfileList.map((p: any) => [p.user_id, p]));
 
-    const formattedWorkers = savedRecords.map((r: any) => {
-      const wid = r.worker_id;
+    const formattedWorkers = savedRecords
+      .filter((r: any) => metaMap.has(r.worker_id))
+      .map((r: any) => {
+        const wid = r.worker_id;
       const idx = indexMap.get(wid);
       const meta = metaMap.get(wid);
       const prof = profileMap.get(wid);

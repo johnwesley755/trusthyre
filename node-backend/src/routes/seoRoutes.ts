@@ -303,6 +303,68 @@ ${JSON.stringify(itemListJsonLd, null, 2)}
     });
   }
 
+  // 1.45 Programmatic Employer Hiring Hubs: /hire-:trade-in-:city or /hire-workers-in-:city
+  if (cleanPath.startsWith('/hire-')) {
+    const hubParts = cleanPath.replace(/^\/hire-/, '').split('-in-');
+    const tradeSlug = (hubParts[0] || 'workers').toLowerCase().trim();
+    const citySlug = (hubParts[1] || 'chennai').toLowerCase().trim();
+    const normCity = citySlug.charAt(0).toUpperCase() + citySlug.slice(1);
+    const normTrade = tradeSlug.charAt(0).toUpperCase() + tradeSlug.slice(1);
+
+    const pageTitle = `Hire Verified ${normTrade} in ${normCity} | Zero Brokerage - TrustHyre`;
+    const pageDesc = `Looking to hire verified ${normTrade.toLowerCase()} in ${normCity}? Connect directly with skill-tested candidates and verified work records with zero agency commissions on TrustHyre.`;
+    const canonical = `${BASE_DOMAIN}${cleanPath}`;
+
+    const serviceJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: `Hire ${normTrade} in ${normCity}`,
+      provider: {
+        '@type': 'Organization',
+        name: 'TrustHyre',
+        url: BASE_DOMAIN,
+      },
+      areaServed: {
+        '@type': 'City',
+        name: normCity,
+      },
+      description: pageDesc,
+    };
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(pageTitle)}</title>
+  <meta name="description" content="${escapeHtml(pageDesc)}">
+  <link rel="canonical" href="${canonical}">
+  <meta property="og:title" content="${escapeHtml(pageTitle)}">
+  <meta property="og:description" content="${escapeHtml(pageDesc)}">
+  <meta property="og:url" content="${canonical}">
+  <meta property="og:type" content="website">
+  <script type="application/ld+json">
+${JSON.stringify(serviceJsonLd, null, 2)}
+  </script>
+</head>
+<body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 24px; color: #111;">
+  <header style="margin-bottom: 24px; border-bottom: 1px solid #eee; padding-bottom: 16px;">
+    <h1 style="font-size: 2rem; color: #0f2f63; margin-bottom: 8px;">${escapeHtml(pageTitle)}</h1>
+    <p style="color: #555; font-size: 1rem;">${escapeHtml(pageDesc)}</p>
+  </header>
+  <section style="background: #f8f9fa; border: 1px solid #e2e4e9; border-radius: 12px; padding: 24px; text-align: center;">
+    <h2 style="color: #0f2f63; margin-top: 0;">Direct Employer Candidate Gateway</h2>
+    <p style="color: #666; max-width: 600px; margin: 0 auto 16px auto;">Connect with verified, skill-evaluated ${escapeHtml(normTrade.toLowerCase())} in ${escapeHtml(normCity)} without paying middle-men recruiter commissions.</p>
+    <a href="${BASE_DOMAIN}/post-job" style="display: inline-block; background: #0f2f63; color: white; padding: 10px 24px; border-radius: 9999px; text-decoration: none; font-size: 0.95rem; font-weight: bold;">Post Job &amp; Hire Talent</a>
+  </section>
+</body>
+</html>`;
+
+    return c.html(html, 200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=1800, s-maxage=3600',
+    });
+  }
+
   // 1.5 Job Post Details: /job/:slug-or-id or /jobs/:slug-or-id
   if (cleanPath.startsWith('/job/') || cleanPath.startsWith('/jobs/')) {
     const rawSlugOrId = cleanPath.replace(/^\/jobs?\//, '').trim();

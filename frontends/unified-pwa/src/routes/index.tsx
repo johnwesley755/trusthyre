@@ -1,4 +1,5 @@
 import ProgrammaticJobHubPage from '../modules/jobs/pages/ProgrammaticJobHubPage';
+import ProgrammaticHireHubPage from '../modules/search/pages/ProgrammaticHireHubPage';
 import { AdminAcceptInvitePage } from '../modules/admin/pages/AdminAcceptInvitePage';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import LandingPage from '../modules/landing/pages/LandingPage';
@@ -117,6 +118,14 @@ export const router = createBrowserRouter([
             element: <ProgrammaticJobHubPage />,
           },
           {
+            path: '/hire-workers-in-:city',
+            element: <ProgrammaticHireHubPage />,
+          },
+          {
+            path: '/hire-:trade-in-:city',
+            element: <ProgrammaticHireHubPage />,
+          },
+          {
             path: '/job/:id',
             element: <JobDetailPage />,
           },
@@ -175,6 +184,14 @@ export const router = createBrowserRouter([
               },
               {
                 path: '/post-job',
+                element: <JobPostingPage />,
+              },
+              {
+                path: '/post-job/:jobId',
+                element: <JobPostingPage />,
+              },
+              {
+                path: '/jobs/:jobId/edit',
                 element: <JobPostingPage />,
               },
               {

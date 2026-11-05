@@ -1,8 +1,8 @@
-import { useState, useMemo, useRef } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { jobService } from '../../../services/job.service';
 import { mediaService } from '../../../services/media.service';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams, useSearchParams } from 'react-router-dom';
 import { 
   Briefcase, 
   Plus, 
@@ -26,6 +26,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { LocationPicker } from '../components/LocationPicker';
+import { PostJobSuccessModal } from '../components/PostJobSuccessModal';
 import { toast } from 'sonner';
 import { TRADE_COVER_PRESETS, resolveTradeCover } from '../../../utils/coverImage.utils';
 
@@ -33,12 +34,33 @@ export const JobPostingPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { jobId: routeJobId } = useParams<{ jobId?: string }>();
+  const [searchParams] = useSearchParams();
+  const editJobId = routeJobId || searchParams.get('jobId') || null;
+  const isEditMode = Boolean(editJobId);
 
+  // Form input states
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [industry, setIndustry] = useState('ELECTRICAL');
+  const [budget, setBudget] = useState('28000');
+  const [experienceYears, setExperienceYears] = useState('2');
+  const [expiresAt, setExpiresAt] = useState('');
   const [skills, setSkills] = useState<string[]>(['Safety Protocol', 'Punctual']);
   const [skillInput, setSkillInput] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [coords, setCoords] = useState<{lat: number, lon: number} | null>(null);
+
+  // Additional details state
+  const [department, setDepartment] = useState('');
+  const [roleCategory, setRoleCategory] = useState('');
+  const [employmentType, setEmploymentType] = useState('');
+  const [shift, setShift] = useState('');
+  const [education, setEducation] = useState('');
+  const [languages, setLanguages] = useState('');
+  const [ageLimit, setAgeLimit] = useState('');
+  const [gender, setGender] = useState('');
 
   // Live preview reactive states
   const [previewTitle, setPreviewTitle] = useState('Master Electrical Specialist');
@@ -57,6 +79,70 @@ export const JobPostingPage = () => {
   // Optional stock preset fallback
   const [selectedPresetUrl, setSelectedPresetUrl] = useState<string | null>(null);
   const [showPresets, setShowPresets] = useState<boolean>(false);
+  const [createdJobData, setCreatedJobData] = useState<any | null>(null);
+
+  // Fetch existing job for edit mode
+  const { data: existingJob, isLoading: isLoadingJob } = useQuery({
+    queryKey: ['job', editJobId],
+    queryFn: () => jobService.getJobById(editJobId!),
+    enabled: isEditMode,
+  });
+
+  // Pre-fill fields when existingJob is loaded
+  useEffect(() => {
+    if (existingJob) {
+      setTitle(existingJob.title || '');
+      setPreviewTitle(existingJob.title || '');
+      setDescription(existingJob.description || '');
+      const ind = (existingJob as any).industry || 'ELECTRICAL';
+      setIndustry(ind);
+      setPreviewIndustry(ind);
+      const bgt = String(existingJob.budget || '');
+      setBudget(bgt);
+      setPreviewBudget(bgt);
+      const exp = String((existingJob as any).experienceYearsRequired ?? (existingJob as any).experience_years_required ?? '0');
+      setExperienceYears(exp);
+      setPreviewExp(exp);
+
+      if (existingJob.expiresAt) {
+        try {
+          const expDate = new Date(existingJob.expiresAt);
+          const pad = (n: number) => n < 10 ? '0' + n : n;
+          const formatted = `${expDate.getFullYear()}-${pad(expDate.getMonth() + 1)}-${pad(expDate.getDate())}T${pad(expDate.getHours())}:${pad(expDate.getMinutes())}`;
+          setExpiresAt(formatted);
+          setPreviewExpiresAt(formatted);
+        } catch {
+          // ignore date parse error
+        }
+      }
+
+      const rawSkills = (existingJob as any).skills || (existingJob as any).requiredSkills || (existingJob as any).required_skills;
+      if (Array.isArray(rawSkills) && rawSkills.length > 0) {
+        setSkills(rawSkills.map((s: any) => typeof s === 'string' ? s : s.name || String(s)));
+      }
+
+      setAddress((existingJob as any).address || existingJob.location || '');
+      setCity((existingJob as any).city || '');
+      if (existingJob.latitude && existingJob.longitude) {
+        setCoords({ lat: Number(existingJob.latitude), lon: Number(existingJob.longitude) });
+      }
+
+      const cover = (existingJob as any).coverImageUrl || (existingJob as any).cover_image_url;
+      if (cover) {
+        setUploadedImageUrl(cover);
+      }
+
+      const addl = (existingJob as any).additionalDetails || {};
+      if (addl.department) setDepartment(addl.department);
+      if (addl.roleCategory) setRoleCategory(addl.roleCategory);
+      if (addl.employmentType) setEmploymentType(addl.employmentType);
+      if (addl.shift) setShift(addl.shift);
+      if (addl.education) setEducation(addl.education);
+      if (addl.languages) setLanguages(addl.languages);
+      if (addl.ageLimit) setAgeLimit(addl.ageLimit);
+      if (addl.gender) setGender(addl.gender);
+    }
+  }, [existingJob]);
 
   const effectiveCoverUrl = useMemo(() => {
     return uploadedImageUrl || selectedPresetUrl || null;
@@ -69,25 +155,43 @@ export const JobPostingPage = () => {
   }, []);
 
   const mutation = useMutation({
-    mutationFn: (job: any) => jobService.createJob(job),
-    onSuccess: (newJob) => {
-      if (newJob) {
-        queryClient.setQueryData(['employerJobs'], (old: any) => {
-          if (!old) return [newJob];
-          return Array.isArray(old) ? [newJob, ...old] : old;
-        });
-        queryClient.setQueryData(['jobs'], (old: any) => {
-          if (!old) return [newJob];
-          return Array.isArray(old) ? [newJob, ...old] : old;
-        });
+    mutationFn: (job: any) => {
+      if (isEditMode && editJobId) {
+        return jobService.updateJob(editJobId, job);
       }
+      return jobService.createJob(job);
+    },
+    onSuccess: (savedJob) => {
       queryClient.invalidateQueries({ queryKey: ['employerJobs'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      toast.success('Job published successfully! Candidates are being notified.');
-      navigate('/jobs');
+      if (editJobId) {
+        queryClient.invalidateQueries({ queryKey: ['job', editJobId] });
+      }
+
+      if (isEditMode) {
+        toast.success('Job requisition updated successfully!');
+        navigate('/jobs');
+      } else {
+        if (savedJob) {
+          queryClient.setQueryData(['employerJobs'], (old: any) => {
+            if (!old) return [savedJob];
+            return Array.isArray(old) ? [savedJob, ...old] : old;
+          });
+          queryClient.setQueryData(['jobs'], (old: any) => {
+            if (!old) return [savedJob];
+            return Array.isArray(old) ? [savedJob, ...old] : old;
+          });
+        }
+        toast.success('Job published successfully! Broadcast to WhatsApp to receive candidates.');
+        if (savedJob?.id) {
+          setCreatedJobData(savedJob);
+        } else {
+          navigate('/jobs');
+        }
+      }
     },
     onError: (err: any) => {
-      toast.error(err?.message || 'Failed to post job. Please verify all fields.');
+      toast.error(err?.message || `Failed to ${isEditMode ? 'update' : 'post'} job. Please verify all fields.`);
     }
   });
 
@@ -224,14 +328,16 @@ export const JobPostingPage = () => {
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] animate-pulse" />
                 <span className="text-[10px] font-semibold uppercase text-[#0f2f63]">
-                  Job & Shift Posting
+                  {isEditMode ? 'Edit Requisition' : 'Job & Shift Posting'}
                 </span>
               </div>
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0a0a0a]">
-                Post a New Job Opening
+                {isEditMode ? 'Update Job Opening' : 'Post a New Job Opening'}
               </h1>
               <p className="text-xs text-[#717784] font-medium leading-relaxed max-w-xl">
-                Quickly find verified workers nearby with authenticated profiles and zero agency middle-men fees.
+                {isEditMode 
+                  ? 'Update the details, compensation, requirements, or worksite location for this job requisition.'
+                  : 'Quickly find verified workers nearby with authenticated profiles and zero agency middle-men fees.'}
               </p>
             </div>
 
@@ -269,8 +375,11 @@ export const JobPostingPage = () => {
                     <input 
                       name="title"
                       required
-                      defaultValue={previewTitle}
-                      onChange={(e) => setPreviewTitle(e.target.value)}
+                      value={title}
+                      onChange={(e) => {
+                        setTitle(e.target.value);
+                        setPreviewTitle(e.target.value);
+                      }}
                       placeholder="e.g. Master Industrial Electrician"
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all"
                     />
@@ -280,9 +389,10 @@ export const JobPostingPage = () => {
                     <label className="text-xs font-bold text-[#0a0a0a]">Industry Category *</label>
                     <select 
                       name="industry"
-                      defaultValue={previewIndustry}
+                      value={industry}
                       onChange={(e) => {
                         const nextInd = e.target.value;
+                        setIndustry(nextInd);
                         setPreviewIndustry(nextInd);
                       }}
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all cursor-pointer"
@@ -306,6 +416,8 @@ export const JobPostingPage = () => {
                   <textarea 
                     name="description"
                     required
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe daily tasks, working hours, tools provided, break times, and specific site regulations..."
                     rows={4}
                     className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all resize-none leading-relaxed"
@@ -576,8 +688,11 @@ export const JobPostingPage = () => {
                         name="budget"
                         type="number"
                         required
-                        defaultValue={previewBudget}
-                        onChange={(e) => setPreviewBudget(e.target.value)}
+                        value={budget}
+                        onChange={(e) => {
+                          setBudget(e.target.value);
+                          setPreviewBudget(e.target.value);
+                        }}
                         placeholder="28000"
                         className="w-full bg-white border border-[#e6e8ec] rounded-xl pl-9 pr-3 py-3 text-xs font-bold text-[#0a0a0a] tabular-nums focus:border-[#0f2f63] outline-none transition-all"
                       />
@@ -590,8 +705,11 @@ export const JobPostingPage = () => {
                       name="experienceYearsRequired"
                       type="text"
                       min={0}
-                      defaultValue={previewExp}
-                      onChange={(e) => setPreviewExp(e.target.value)}
+                      value={experienceYears}
+                      onChange={(e) => {
+                        setExperienceYears(e.target.value);
+                        setPreviewExp(e.target.value);
+                      }}
                       placeholder="2"
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all"
                     />
@@ -600,10 +718,13 @@ export const JobPostingPage = () => {
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-[#0a0a0a]">Auto-Expiry Date & Time (Optional)</label>
-                      {previewExpiresAt ? (
+                      {expiresAt ? (
                         <button
                           type="button"
-                          onClick={() => setPreviewExpiresAt('')}
+                          onClick={() => {
+                            setExpiresAt('');
+                            setPreviewExpiresAt('');
+                          }}
                           className="text-[10px] text-rose-600 hover:text-rose-800 font-semibold cursor-pointer underline"
                         >
                           Remove Expiry
@@ -616,8 +737,11 @@ export const JobPostingPage = () => {
                       name="expiresAt"
                       type="datetime-local"
                       min={minExpiryDateTime}
-                      value={previewExpiresAt}
-                      onChange={(e) => setPreviewExpiresAt(e.target.value)}
+                      value={expiresAt}
+                      onChange={(e) => {
+                        setExpiresAt(e.target.value);
+                        setPreviewExpiresAt(e.target.value);
+                      }}
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all cursor-pointer"
                     />
                     <p className="text-[10px] text-[#717784]">
@@ -700,6 +824,8 @@ export const JobPostingPage = () => {
                     <label className="text-xs font-bold text-[#0a0a0a]">Department</label>
                     <input 
                       name="department"
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
                       placeholder="e.g. Restaurant / Hospitality / Tourism"
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
                     />
@@ -709,6 +835,8 @@ export const JobPostingPage = () => {
                     <label className="text-xs font-bold text-[#0a0a0a]">Role / Category</label>
                     <input 
                       name="roleCategory"
+                      value={roleCategory}
+                      onChange={(e) => setRoleCategory(e.target.value)}
                       placeholder="e.g. Cook / Chef / Kitchen Help"
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
                     />
@@ -720,6 +848,8 @@ export const JobPostingPage = () => {
                     <label className="text-xs font-bold text-[#0a0a0a]">Employment Type</label>
                     <select 
                       name="employmentType"
+                      value={employmentType}
+                      onChange={(e) => setEmploymentType(e.target.value)}
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
                     >
                       <option value="">Not specified</option>
@@ -734,6 +864,8 @@ export const JobPostingPage = () => {
                     <label className="text-xs font-bold text-[#0a0a0a]">Shift</label>
                     <select 
                       name="shift"
+                      value={shift}
+                      onChange={(e) => setShift(e.target.value)}
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
                     >
                       <option value="">Not specified</option>
@@ -750,6 +882,8 @@ export const JobPostingPage = () => {
                     <label className="text-xs font-bold text-[#0a0a0a]">Education</label>
                     <select 
                       name="education"
+                      value={education}
+                      onChange={(e) => setEducation(e.target.value)}
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
                     >
                       <option value="">Not specified</option>
@@ -766,6 +900,8 @@ export const JobPostingPage = () => {
                     <label className="text-xs font-bold text-[#0a0a0a]">Languages Required</label>
                     <input 
                       name="languages"
+                      value={languages}
+                      onChange={(e) => setLanguages(e.target.value)}
                       placeholder="e.g. English, Tamil, Hindi"
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
                     />
@@ -775,6 +911,8 @@ export const JobPostingPage = () => {
                     <label className="text-xs font-bold text-[#0a0a0a]">Age Limit</label>
                     <input 
                       name="ageLimit"
+                      value={ageLimit}
+                      onChange={(e) => setAgeLimit(e.target.value)}
                       placeholder="e.g. 18 - 35 years"
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
                     />
@@ -785,6 +923,8 @@ export const JobPostingPage = () => {
                   <label className="text-xs font-bold text-[#0a0a0a]">Gender Preference</label>
                   <select 
                     name="gender"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
                     className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
                   >
                     <option value="">Any gender</option>
@@ -804,15 +944,15 @@ export const JobPostingPage = () => {
 
                 <button
                   type="submit"
-                  disabled={mutation.isPending || isUploading}
+                  disabled={mutation.isPending || isUploading || (isEditMode && isLoadingJob)}
                   className="w-full sm:w-auto px-8 py-3 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full font-medium text-xs uppercase shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {mutation.isPending || isUploading ? (
+                  {mutation.isPending || isUploading || (isEditMode && isLoadingJob) ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Send className="w-3.5 h-3.5" />
                   )}
-                  <span>Publish Role & Deploy Shift</span>
+                  <span>{isEditMode ? 'Save & Update Opening' : 'Publish Role & Deploy Shift'}</span>
                 </button>
               </div>
 
@@ -942,6 +1082,26 @@ export const JobPostingPage = () => {
         </div>
 
       </main>
+
+      {/* Post-Publish WhatsApp Broadcast Modal */}
+      {createdJobData && (
+        <PostJobSuccessModal
+          isOpen={!!createdJobData}
+          onClose={() => {
+            setCreatedJobData(null);
+            navigate('/jobs');
+          }}
+          job={{
+            id: createdJobData.id,
+            title: createdJobData.title || previewTitle,
+            companyName: createdJobData.employerProfile?.companyName || createdJobData.employerName,
+            city: createdJobData.city || city,
+            location: createdJobData.location || address,
+            budget: Number(createdJobData.budget || previewBudget),
+            coverImageUrl: effectiveCoverUrl || createdJobData.cover_image_url || createdJobData.coverImageUrl || null,
+          }}
+        />
+      )}
     </div>
   );
 };

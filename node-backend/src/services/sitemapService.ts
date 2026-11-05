@@ -87,7 +87,7 @@ export class SitemapService {
   </url>`);
     }
 
-    // 1.8 Programmatic City & Trade Hub URLs (High-Priority Landing Hubs)
+    // 1.8 Programmatic City & Trade Hub URLs (High-Priority Landing Hubs for Job Seekers)
     const featuredCities = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
     const featuredTrades = ['electrician', 'driver', 'cook', 'plumber', 'welder', 'security', 'warehouse'];
 
@@ -105,6 +105,26 @@ export class SitemapService {
     <lastmod>${today}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
+  </url>`);
+      }
+    }
+
+    // 1.9 Programmatic Employer Hiring Hubs (High-Intent B2B / Employer Funnel)
+    const employerTrades = ['electricians', 'drivers', 'cooks', 'plumbers', 'welders', 'warehouse', 'workers'];
+    for (const city of featuredCities) {
+      urlEntries.push(`  <url>
+    <loc>${this.BASE_URL}/hire-workers-in-${city}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>`);
+
+      for (const trade of employerTrades) {
+        urlEntries.push(`  <url>
+    <loc>${this.BASE_URL}/hire-${trade}-in-${city}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.88</priority>
   </url>`);
       }
     }

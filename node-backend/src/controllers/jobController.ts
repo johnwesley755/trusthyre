@@ -493,6 +493,28 @@ export const updateJob = async (c: Context) => {
     if (data.requiredSkills !== undefined || data.required_skills !== undefined || data.skills !== undefined) {
       const rawSkills = data.requiredSkills ?? data.required_skills ?? data.skills;
       const skillsStr = Array.isArray(rawSkills) ? rawSkills.join(', ') : (typeof rawSkills === 'string' ? rawSkills : '');
+      
+      // Update individual skill rows in job_required_skills
+      await prisma.$executeRaw`
+        DELETE FROM job_required_skills WHERE job_id = ${id}::uuid
+      `.catch(() => {});
+
+      const skillsArr = Array.isArray(rawSkills) 
+        ? rawSkills 
+        : (typeof rawSkills === 'string' ? rawSkills.split(',').map((s: string) => s.trim()) : []);
+      for (const skill of skillsArr) {
+        if (skill && String(skill).trim()) {
+          await prisma.$executeRaw`
+            INSERT INTO job_required_skills (job_id, skill)
+            VALUES (${id}::uuid, ${String(skill).trim()})
+          `.catch(() => {});
+        }
+      }
+    }
+
+    if (data.additionalDetails !== undefined || data.additional_details !== undefined) {
+      const details = data.additionalDetails || data.additional_details;
+      updatePayload.alternate_sources = details ? { additional_details: details } : null;
     }
     if (data.status !== undefined) updatePayload.status = data.status;
     if (data.coverImageUrl !== undefined || data.cover_image_url !== undefined) {
@@ -511,6 +533,43 @@ export const updateJob = async (c: Context) => {
 
     if (job.count === 0) return c.json(ApiResponse.error("Job not found or not owned by employer"), 404 as any);
     const updatedJob = await prisma.jobs.findUnique({ where: { id } });
+
+    // Synchronize search index
+    if (updatedJob) {
+      await prisma.job_search_index.upsert({
+        where: { job_id: updatedJob.id },
+        update: {
+          title: updatedJob.title,
+          description: updatedJob.description,
+          category: updatedJob.industry,
+          location: updatedJob.location,
+          city: updatedJob.city,
+          address: updatedJob.address,
+          latitude: updatedJob.latitude,
+          longitude: updatedJob.longitude,
+          budget: updatedJob.budget ? Number(updatedJob.budget) : null,
+          status: updatedJob.status,
+          last_updated_at: new Date()
+        },
+        create: {
+          job_id: updatedJob.id,
+          title: updatedJob.title,
+          description: updatedJob.description,
+          category: updatedJob.industry,
+          location: updatedJob.location,
+          city: updatedJob.city,
+          address: updatedJob.address,
+          latitude: updatedJob.latitude,
+          longitude: updatedJob.longitude,
+          budget: updatedJob.budget ? Number(updatedJob.budget) : null,
+          status: updatedJob.status,
+          employer_name: updatedJob.employer_name,
+          indexed_at: new Date(),
+          last_updated_at: new Date()
+        }
+      }).catch(() => {});
+    }
+
     return c.json(ApiResponse.ok("Job updated", formatJob(updatedJob)));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
