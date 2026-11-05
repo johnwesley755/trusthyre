@@ -258,12 +258,28 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                     <Clock className="w-3 h-3 text-rose-600" />
                     <span>Expired</span>
                   </span>
-                ) : isVerified ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-medium border border-emerald-100">
-                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                    <span>Verified</span>
-                  </span>
-                ) : null}
+                ) : (
+                  <>
+                    {(job.isWalkInInterview || (job.additionalDetails as any)?.isWalkInInterview) && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 text-[10px] font-extrabold border border-amber-300 shadow-2xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                        <span>Walk-in Open</span>
+                      </span>
+                    )}
+                    {job.isUrgentSpotHire && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-800 text-[10px] font-extrabold border border-rose-300 shadow-2xs">
+                        <Zap className="w-3 h-3 text-rose-600 fill-rose-600" />
+                        <span>Urgent Spot Hire</span>
+                      </span>
+                    )}
+                    {isVerified && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-medium border border-emerald-100">
+                        <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                        <span>Verified</span>
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="flex items-center gap-1.5 text-xs text-[#717784] font-medium truncate flex-wrap">

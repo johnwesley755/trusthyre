@@ -54,6 +54,11 @@ export const formatJob = (job: any) => {
   const contactPhone = additionalDetails.contactPhone || additionalDetails.contact_phone || (job as any).contact_phone || null;
   const contactWhatsapp = additionalDetails.contactWhatsapp || additionalDetails.contact_whatsapp || (job as any).contact_whatsapp || null;
   const isUrgentSpotHire = Boolean(additionalDetails.isUrgentSpotHire || additionalDetails.is_urgent_spot_hire);
+  const isWalkInInterview = Boolean(additionalDetails.isWalkInInterview || additionalDetails.is_walk_in_interview || additionalDetails.isWalkIn);
+  const walkInDetails = additionalDetails.walkInDetails || additionalDetails.walk_in_details || null;
+  const equipmentRequired = Array.isArray(additionalDetails.equipmentRequired)
+    ? additionalDetails.equipmentRequired
+    : (Array.isArray(additionalDetails.equipment_required) ? additionalDetails.equipment_required : []);
 
   return {
     ...job,
@@ -70,6 +75,12 @@ export const formatJob = (job: any) => {
     contact_whatsapp: contactWhatsapp,
     isUrgentSpotHire,
     is_urgent_spot_hire: isUrgentSpotHire,
+    isWalkInInterview,
+    is_walk_in_interview: isWalkInInterview,
+    walkInDetails,
+    walk_in_details: walkInDetails,
+    equipmentRequired,
+    equipment_required: equipmentRequired,
     description: sanitizeHtmlDescription(job.description),
     coverImageUrl: job.cover_image_url || job.coverImageUrl || null,
     cover_image_url: job.cover_image_url || job.coverImageUrl || null,
@@ -120,6 +131,16 @@ export const createJob = async (c: Context) => {
       }
     }
 
+    const isWalkInInterview = Boolean(
+      data.isWalkInInterview || data.is_walk_in_interview || data.additionalDetails?.isWalkInInterview
+    );
+    const walkInDetails = data.walkInDetails || data.walk_in_details || data.additionalDetails?.walkInDetails || null;
+    const equipmentRequired = Array.isArray(data.equipmentRequired)
+      ? data.equipmentRequired
+      : (Array.isArray(data.equipment_required)
+          ? data.equipment_required
+          : (Array.isArray(data.additionalDetails?.equipmentRequired) ? data.additionalDetails?.equipmentRequired : []));
+
     const mergedAdditionalDetails = {
       ...(data.additionalDetails || data.additional_details || {}),
       perks: Array.isArray(data.perks) ? data.perks : (data.additionalDetails?.perks || []),
@@ -127,7 +148,10 @@ export const createJob = async (c: Context) => {
       allowDirectWhatsapp: data.allowDirectWhatsapp !== undefined ? Boolean(data.allowDirectWhatsapp) : true,
       contactPhone: data.contactPhone || data.contact_phone || userMeta?.phone_number || null,
       contactWhatsapp: data.contactWhatsapp || data.contact_whatsapp || userMeta?.phone_number || null,
-      isUrgentSpotHire: Boolean(data.isUrgentSpotHire || data.is_urgent_spot_hire || data.additionalDetails?.isUrgentSpotHire)
+      isUrgentSpotHire: Boolean(data.isUrgentSpotHire || data.is_urgent_spot_hire || data.additionalDetails?.isUrgentSpotHire),
+      isWalkInInterview,
+      walkInDetails: isWalkInInterview ? walkInDetails : null,
+      equipmentRequired
     };
 
     const job = await prisma.jobs.create({
@@ -549,7 +573,16 @@ export const updateJob = async (c: Context) => {
       }
     }
 
-    if (data.additionalDetails !== undefined || data.additional_details !== undefined || data.perks !== undefined || data.allowDirectCall !== undefined || data.contactPhone !== undefined) {
+    if (
+      data.additionalDetails !== undefined ||
+      data.additional_details !== undefined ||
+      data.perks !== undefined ||
+      data.allowDirectCall !== undefined ||
+      data.contactPhone !== undefined ||
+      data.isWalkInInterview !== undefined ||
+      data.walkInDetails !== undefined ||
+      data.equipmentRequired !== undefined
+    ) {
       const existingJobData = await prisma.jobs.findUnique({ where: { id }, select: { alternate_sources: true } });
       const currentDetails = (existingJobData?.alternate_sources && typeof existingJobData.alternate_sources === 'object')
         ? ((existingJobData.alternate_sources as any).additional_details || existingJobData.alternate_sources)
@@ -563,7 +596,10 @@ export const updateJob = async (c: Context) => {
         ...(data.allowDirectWhatsapp !== undefined ? { allowDirectWhatsapp: Boolean(data.allowDirectWhatsapp) } : {}),
         ...(data.contactPhone !== undefined ? { contactPhone: data.contactPhone } : {}),
         ...(data.contactWhatsapp !== undefined ? { contactWhatsapp: data.contactWhatsapp } : {}),
-        ...(data.isUrgentSpotHire !== undefined ? { isUrgentSpotHire: Boolean(data.isUrgentSpotHire) } : {})
+        ...(data.isUrgentSpotHire !== undefined ? { isUrgentSpotHire: Boolean(data.isUrgentSpotHire) } : {}),
+        ...(data.isWalkInInterview !== undefined ? { isWalkInInterview: Boolean(data.isWalkInInterview) } : {}),
+        ...(data.walkInDetails !== undefined ? { walkInDetails: data.walkInDetails } : {}),
+        ...(data.equipmentRequired !== undefined ? { equipmentRequired: data.equipmentRequired } : {})
       };
       updatePayload.alternate_sources = { additional_details: details };
     }

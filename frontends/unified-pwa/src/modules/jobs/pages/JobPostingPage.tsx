@@ -88,6 +88,13 @@ export const JobPostingPage = () => {
   const [contactPhone, setContactPhone] = useState<string>('');
   const [isUrgentSpotHire, setIsUrgentSpotHire] = useState<boolean>(false);
 
+  // Walk-in Interview states
+  const [isWalkInInterview, setIsWalkInInterview] = useState<boolean>(false);
+  const [walkInDates, setWalkInDates] = useState<string>('');
+  const [walkInTiming, setWalkInTiming] = useState<string>('');
+  const [walkInVenue, setWalkInVenue] = useState<string>('');
+  const [walkInContactPerson, setWalkInContactPerson] = useState<string>('');
+
   // Fetch existing job for edit mode
   const { data: existingJob, isLoading: isLoadingJob } = useQuery({
     queryKey: ['job', editJobId],
@@ -165,6 +172,16 @@ export const JobPostingPage = () => {
 
       if ((existingJob as any).isUrgentSpotHire !== undefined) setIsUrgentSpotHire(Boolean((existingJob as any).isUrgentSpotHire));
       else if (addl.isUrgentSpotHire !== undefined) setIsUrgentSpotHire(Boolean(addl.isUrgentSpotHire));
+
+      const walkIn = (existingJob as any).walkInDetails || addl.walkInDetails;
+      const isWalkIn = Boolean((existingJob as any).isWalkInInterview || addl.isWalkInInterview || walkIn?.isWalkIn);
+      setIsWalkInInterview(isWalkIn);
+      if (walkIn) {
+        if (walkIn.dates) setWalkInDates(walkIn.dates);
+        if (walkIn.timing) setWalkInTiming(walkIn.timing);
+        if (walkIn.venueAddress) setWalkInVenue(walkIn.venueAddress);
+        if (walkIn.contactPerson) setWalkInContactPerson(walkIn.contactPerson);
+      }
     }
   }, [existingJob]);
 
@@ -320,6 +337,15 @@ export const JobPostingPage = () => {
       contact_phone: contactPhone.trim() || undefined,
       isUrgentSpotHire,
       is_urgent_spot_hire: isUrgentSpotHire,
+      isWalkInInterview,
+      is_walk_in_interview: isWalkInInterview,
+      walkInDetails: isWalkInInterview ? {
+        isWalkIn: true,
+        dates: walkInDates.trim() || undefined,
+        timing: walkInTiming.trim() || undefined,
+        venueAddress: walkInVenue.trim() || address || undefined,
+        contactPerson: walkInContactPerson.trim() || undefined
+      } : null,
       additionalDetails: {
         department: (formData.get('department') as string) || undefined,
         roleCategory: (formData.get('roleCategory') as string) || undefined,
@@ -334,6 +360,14 @@ export const JobPostingPage = () => {
         allowDirectWhatsapp,
         contactPhone: contactPhone.trim() || undefined,
         isUrgentSpotHire,
+        isWalkInInterview,
+        walkInDetails: isWalkInInterview ? {
+          isWalkIn: true,
+          dates: walkInDates.trim() || undefined,
+          timing: walkInTiming.trim() || undefined,
+          venueAddress: walkInVenue.trim() || address || undefined,
+          contactPerson: walkInContactPerson.trim() || undefined
+        } : null,
       }
     };
     mutation.mutate(jobData);
@@ -1027,25 +1061,74 @@ export const JobPostingPage = () => {
 
                 {/* Direct Contact Toggle and Input */}
                 <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e6e8ec] space-y-4">
-                  {/* Urgent Spot Hire / Walk-In Toggle (WorkIndia & Nithra Jobs pattern) */}
+                  {/* Walk-in Interview FastTrack Toggle (WorkIndia & Apna Pattern) */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e6e8ec] pb-3">
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                        <h4 className="text-xs font-bold text-[#0a0a0a]">Urgent Spot Hire / Walk-In Available</h4>
+                        <span className="w-2 h-2 rounded-full bg-amber-500" />
+                        <h4 className="text-xs font-bold text-[#0a0a0a]">Walk-in Interview FastTrack</h4>
                       </div>
-                      <p className="text-[11px] text-[#717784]">Adds a prominent ⚡ Spot Hire badge to attract workers who can join immediately within 24-48 hours.</p>
+                      <p className="text-[11px] text-[#717784]">Post specific interview dates and timing slots so candidates can directly walk in without application waiting periods.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={isUrgentSpotHire}
-                        onChange={(e) => setIsUrgentSpotHire(e.target.checked)}
+                        checked={isWalkInInterview}
+                        onChange={(e) => setIsWalkInInterview(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                     </label>
                   </div>
+
+                  {isWalkInInterview && (
+                    <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-200/60 space-y-3 animate-in fade-in">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-[#0a0a0a]">Walk-in Dates</label>
+                          <input
+                            type="text"
+                            value={walkInDates}
+                            onChange={(e) => setWalkInDates(e.target.value)}
+                            placeholder="e.g. 06 Nov - 09 Nov (Mon to Fri)"
+                            className="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-[#0a0a0a]">Interview Timing Slot</label>
+                          <input
+                            type="text"
+                            value={walkInTiming}
+                            onChange={(e) => setWalkInTiming(e.target.value)}
+                            placeholder="e.g. 10:00 AM - 04:00 PM"
+                            className="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-[#0a0a0a]">Interview Venue / Landmark</label>
+                          <input
+                            type="text"
+                            value={walkInVenue}
+                            onChange={(e) => setWalkInVenue(e.target.value)}
+                            placeholder="e.g. Near Guindy Metro Station, Opp. Police Station"
+                            className="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-[#0a0a0a]">Contact Person / HR Name</label>
+                          <input
+                            type="text"
+                            value={walkInContactPerson}
+                            onChange={(e) => setWalkInContactPerson(e.target.value)}
+                            placeholder="e.g. Mr. Ramesh (HR Manager)"
+                            className="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e6e8ec] pb-3">
                     <div>

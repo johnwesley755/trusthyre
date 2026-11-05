@@ -94,6 +94,22 @@ export interface Job {
   jobType?: string;
   coverImageUrl?: string | null;
   cover_image_url?: string | null;
+  perks?: string[];
+  allowDirectCall?: boolean;
+  allowDirectWhatsapp?: boolean;
+  contactPhone?: string | null;
+  contactWhatsapp?: string | null;
+  isUrgentSpotHire?: boolean;
+  isWalkInInterview?: boolean;
+  walkInDetails?: {
+    isWalkIn?: boolean;
+    dates?: string;
+    timing?: string;
+    venueAddress?: string;
+    contactPerson?: string;
+    landmark?: string;
+  } | null;
+  equipmentRequired?: string[];
   employerProfile?: {
     id?: string;
     companyName: string;

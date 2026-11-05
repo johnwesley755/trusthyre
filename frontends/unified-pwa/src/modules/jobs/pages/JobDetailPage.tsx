@@ -1382,6 +1382,70 @@ export default function JobDetailPage() {
               </div>
             )}
 
+            {/* ⚡ DIRECT WALK-IN INTERVIEW FASTTRACK CARD (WorkIndia & Apna Pattern) */}
+            {(() => {
+              const isWalkIn = Boolean((job as any)?.isWalkInInterview || (job as any)?.additionalDetails?.isWalkInInterview);
+              const walkIn = (job as any)?.walkInDetails || (job as any)?.additionalDetails?.walkInDetails;
+              if (!isWalkIn) return null;
+
+              const dates = walkIn?.dates || 'Ongoing this week';
+              const timing = walkIn?.timing || '10:00 AM - 04:00 PM';
+              const venue = walkIn?.venueAddress || job?.location || job?.address || 'Company Worksite';
+              const contactPerson = walkIn?.contactPerson || employerName;
+              const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${venue}, ${job?.city || ''}`)}`;
+
+              return (
+                <div className="bg-amber-50/90 rounded-[1.75rem] p-5 sm:p-6 border border-amber-300 shadow-sm space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                      <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-950">
+                        ⚡ Direct Walk-in Interview Open
+                      </h3>
+                    </div>
+                    <span className="text-[10px] font-extrabold text-amber-900 bg-amber-200/80 px-2.5 py-0.5 rounded-full border border-amber-300">
+                      FastTrack Hiring
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-amber-900 leading-relaxed font-medium">
+                    No online waiting! Candidates who meet basic trade requirements can directly attend the physical interview drive:
+                  </p>
+
+                  <div className="bg-white/90 rounded-2xl p-3.5 border border-amber-200 space-y-2 text-xs">
+                    <div className="flex items-center justify-between text-[11px] pb-1.5 border-b border-amber-100">
+                      <span className="text-slate-500 font-semibold">Walk-in Dates:</span>
+                      <span className="font-bold text-[#0a0a0a]">{dates}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] pb-1.5 border-b border-amber-100">
+                      <span className="text-slate-500 font-semibold">Timing Window:</span>
+                      <span className="font-bold text-[#0a0a0a]">{timing}</span>
+                    </div>
+                    <div className="text-[11px] space-y-1 pt-0.5">
+                      <span className="text-slate-500 font-semibold block">Interview Venue / Landmark:</span>
+                      <p className="font-bold text-[#0a0a0a] leading-snug">{venue}</p>
+                    </div>
+                    {contactPerson && (
+                      <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-amber-100">
+                        <span className="text-slate-500 font-semibold">HR / Contact:</span>
+                        <span className="font-bold text-[#0f2f63]">{contactPerson}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 active:scale-98 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 shadow-xs transition-all no-underline"
+                  >
+                    <MapPin className="w-4 h-4 text-slate-950" />
+                    <span>View Venue on Google Maps</span>
+                  </a>
+                </div>
+              );
+            })()}
+
             {/* 📞 Direct Recruiter Contact Card (WorkIndia & Apna Viral Direct Call Feature) */}
             {(() => {
               const allowDirectCall = (job as any).allowDirectCall ?? (job as any).allow_direct_call ?? additionalDetails.allowDirectCall ?? true;
