@@ -38,13 +38,16 @@ import {
 import { format } from "date-fns";
 import { EditEmployerProfileModal } from "../components/EditEmployerProfileModal";
 import { PhoneDisplay } from "../../../components/common/PhoneDisplay";
+import { ratingService } from "../../../services/rating.service";
+import { ReviewsList } from "../../../components/common/ReviewsList";
+import { Star } from "lucide-react";
 
 export default function EmployerProfileDetailsPage() {
   const { user } = useUser();
   const { updateUser } = useAuth();
   const queryClient = useQueryClient();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'openings' | 'overview' | 'compliance'>('openings');
+  const [activeTab, setActiveTab] = useState<'openings' | 'overview' | 'reviews' | 'compliance'>('openings');
   
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -71,6 +74,13 @@ export default function EmployerProfileDetailsPage() {
     queryKey: queryKeys.jobs.allEmployerApplications(jobIds),
     queryFn: () => applicationService.getApplicationsForEmployerJobs(jobIds),
     enabled: jobIds.length > 0,
+  });
+
+  const employerUserId = profile?.userId || user?.id || '';
+  const { data: employerReviews = [], isLoading: isReviewsLoading } = useQuery({
+    queryKey: ['ratings', 'user', employerUserId],
+    queryFn: () => ratingService.getRatingsForRatee(employerUserId),
+    enabled: Boolean(employerUserId)
   });
 
   const getJobApplicationCount = (job: Job) => {
@@ -377,6 +387,18 @@ export default function EmployerProfileDetailsPage() {
               <Building2 className="w-3.5 h-3.5" />
               <span>Company Overview</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`py-2 px-5 sm:px-6 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === 'reviews'
+                  ? 'bg-white text-[#0A1931] shadow-xs'
+                  : 'text-slate-500 hover:text-[#0A1931]'
+              }`}
+            >
+              <Star className="w-3.5 h-3.5" />
+              <span>Verified Reviews ({employerReviews.length})</span>
+            </button>
           </div>
         </div>
 
@@ -625,6 +647,31 @@ export default function EmployerProfileDetailsPage() {
                   </div>
                 </div>
 
+              </div>
+            )}
+
+            {/* TAB CONTENT: Verified Reviews */}
+            {activeTab === 'reviews' && (
+              <div className="space-y-4 animate-in fade-in duration-150">
+                <div className="bg-white rounded-[1.75rem] p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-[#0A1931]">Worker Reviews & Workplace Ratings</h3>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Authentic feedback from verified workers who have worked on your posted jobs and shifts.
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold text-[#0066FF] bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200">
+                      {employerReviews.length} Verified Reviews
+                    </span>
+                  </div>
+                  <ReviewsList
+                    ratings={employerReviews}
+                    isLoading={isReviewsLoading}
+                    emptyTitle="No worker ratings yet"
+                    emptySubtitle="Feedback from candidates who accept job offers and complete assignments will appear here."
+                  />
+                </div>
               </div>
             )}
 

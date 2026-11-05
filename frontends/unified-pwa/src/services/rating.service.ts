@@ -11,15 +11,25 @@ export const ratingService = {
     return res.data;
   },
   getRatingsForRatee: async (rateeId: string): Promise<Rating[]> => {
-    const res = await apiClient.get<Rating[]>(`/api/ratings/ratee/${rateeId}`);
-    return res.data;
+    const res = await apiClient.get<any>(`/api/ratings/user/${rateeId}`);
+    return res.data?.data || res.data || [];
+  },
+  checkEligibility: async (jobId: string, rateeId: string): Promise<{
+    eligible: boolean;
+    alreadyRated: boolean;
+    rating?: Rating;
+  }> => {
+    const res = await apiClient.get<any>('/api/ratings/eligibility', {
+      params: { jobId, rateeId }
+    });
+    return res.data?.data || res.data;
   },
   getRatingsForJob: async (jobId: string): Promise<Rating[]> => {
-    const res = await apiClient.get<Rating[]>(`/api/ratings/job/${jobId}`);
-    return res.data;
+    const res = await apiClient.get<any>(`/api/ratings/job/${jobId}`);
+    return res.data?.data || res.data || [];
   },
-  getRatingSummary: async (userId: string): Promise<any> => {
-    const res = await apiClient.get(`/api/ratings/summary/${userId}`);
-    return res.data;
+  getRatingSummary: async (userId: string): Promise<{ average: number }> => {
+    const res = await apiClient.get<any>(`/api/ratings/user/${userId}/average`);
+    return { average: res.data?.data || res.data || 0 };
   },
 };

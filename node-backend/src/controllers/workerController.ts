@@ -108,8 +108,13 @@ export const getMyProfile = async (c: Context) => {
     const userId = c.get('user')?.sub;
     if (!userId) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
 
-    let profile = await prisma.worker_profiles.findUnique({ where: { user_id: userId } });
     const userMeta = await prisma.user_metadata.findUnique({ where: { id: userId } });
+    const roleUpper = (userMeta?.role || '').toUpperCase();
+    if (roleUpper === 'ADMIN' || roleUpper === 'SUPER_ADMIN') {
+      return c.json(ApiResponse.error("Admin accounts do not have worker profiles"), 403 as any);
+    }
+
+    let profile = await prisma.worker_profiles.findUnique({ where: { user_id: userId } });
 
     if (!profile) {
       profile = await prisma.worker_profiles.create({
@@ -134,7 +139,11 @@ export const updateProfile = async (c: Context) => {
     const authUser = c.get('user');
     const userId = authUser?.sub;
     if (!userId) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
-    const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'admin';
+    const userRole = (authUser?.role || '').toUpperCase();
+    if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') {
+      return c.json(ApiResponse.error("Admin accounts cannot modify or create worker profiles"), 403 as any);
+    }
+    const isAdmin = false;
 
     const data = (await c.req.json());
 
@@ -353,11 +362,33 @@ export const getProfilesByUserIds = async (c: Context) => {
     const validUserIds = (userIds || []).filter(Boolean);
     if (validUserIds.length === 0) return c.json(ApiResponse.ok([]));
     
-    const profiles = await prisma.worker_profiles.findMany({
+    // Proactively query admin user IDs to ensure they are excluded completely
+    const adminUsers = await prisma.user_metadata.findMany({
       where: {
         OR: [
-          { user_id: { in: validUserIds } },
-          { id: { in: validUserIds } }
+          { role: { in: ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'] } },
+          { email: { contains: 'admin', mode: 'insensitive' } }
+        ]
+      },
+      select: { id: true }
+    });
+    const adminIdSet = new Set(adminUsers.map(a => a.id));
+
+    const profiles = await prisma.worker_profiles.findMany({
+      where: {
+        AND: [
+          {
+            OR: [
+              { user_id: { in: validUserIds } },
+              { id: { in: validUserIds } }
+            ]
+          },
+          ...(adminUsers.length > 0
+            ? [{
+                user_id: { notIn: Array.from(adminIdSet) },
+                full_name: { notIn: ['Super Admin', 'Admin', 'super admin', 'admin'] }
+              }]
+            : [])
         ]
       }
     });
@@ -365,13 +396,13 @@ export const getProfilesByUserIds = async (c: Context) => {
     const targetUserIds = Array.from(new Set([
       ...validUserIds,
       ...profiles.map(p => p.user_id).filter(Boolean)
-    ]));
+    ])).filter(id => !adminIdSet.has(id));
 
     const [userMetaList, verifications] = await Promise.all([
       prisma.user_metadata.findMany({
         where: { 
           id: { in: targetUserIds },
-          role: { notIn: ['ADMIN', 'SUPER_ADMIN'] }
+          role: { notIn: ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'] }
         }
       }),
       prisma.verification_records.findMany({
@@ -521,7 +552,8 @@ export const getWorkerById = async (c: Context) => {
     ]);
 
     // Safety Gate: Block non-admins from viewing ADMIN / SUPER_ADMIN profiles disguised as workers
-    if (!isAdmin && userMeta?.role && (userMeta.role === 'ADMIN' || userMeta.role === 'SUPER_ADMIN')) {
+    const roleUpper = (userMeta?.role || '').toUpperCase();
+    if (roleUpper === 'ADMIN' || roleUpper === 'SUPER_ADMIN' || (userMeta?.email && userMeta.email.toLowerCase().includes('admin'))) {
       return c.json(ApiResponse.error("Worker profile not found"), 404 as any);
     }
 

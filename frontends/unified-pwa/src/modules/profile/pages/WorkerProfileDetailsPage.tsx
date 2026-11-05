@@ -41,6 +41,8 @@ import { EditWorkerProfileModal } from "../components/EditWorkerProfileModal";
 import { CandidateResumeModal } from "../components/resume/CandidateResumeModal";
 import type { ResumeData } from "../components/resume/CandidateResumeView";
 import { normalizeSkills } from "../../../utils/skills";
+import { ratingService } from "../../../services/rating.service";
+import { ReviewsList } from "../../../components/common/ReviewsList";
 
 export default function WorkerProfileDetailsPage() {
   const { user } = useUser();
@@ -50,7 +52,7 @@ export default function WorkerProfileDetailsPage() {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [locationStatus, setLocationStatus] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'academics' | 'skills' | 'applications' | 'about'>('academics');
+  const [activeTab, setActiveTab] = useState<'academics' | 'skills' | 'applications' | 'reviews' | 'about'>('academics');
   
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -164,6 +166,13 @@ export default function WorkerProfileDetailsPage() {
     queryFn: applicationService.getMyApplications,
   });
 
+  const workerUserId = profile?.userId || user?.id || '';
+  const { data: verifiedReviews = [], isLoading: isReviewsLoading } = useQuery({
+    queryKey: ['ratings', 'user', workerUserId],
+    queryFn: () => ratingService.getRatingsForRatee(workerUserId),
+    enabled: Boolean(workerUserId)
+  });
+
   const handleUpdateGPSLocation = () => {
     if (!navigator.geolocation) {
       setLocationStatus("Geolocation is not supported by your browser.");
@@ -240,7 +249,14 @@ export default function WorkerProfileDetailsPage() {
 
   const isVerified = Boolean(user?.identityVerified || (user as any)?.isVerified || (profile as any)?.is_verified || (profile as any)?.isVerified);
   const completedJobsCount = (profile as any)?.completed_jobs || (profile as any)?.completedJobs || myApplications.filter((a: any) => a.status === 'ACCEPTED' || a.status === 'COMPLETED').length;
-  const ratingDisplay = (profile as any)?.rating ? Number((profile as any).rating).toFixed(1) : (profile?.trustScore ? `${(profile.trustScore / 200).toFixed(1)}` : 'New');
+  const calculatedAvgRating = verifiedReviews.length > 0
+    ? (verifiedReviews.reduce((sum, r) => sum + (r.score || 0), 0) / verifiedReviews.length).toFixed(1)
+    : null;
+  const ratingDisplay = calculatedAvgRating
+    ? calculatedAvgRating
+    : (profile as any)?.rating
+    ? Number((profile as any).rating).toFixed(1)
+    : (profile?.trustScore ? `${(profile.trustScore / 200).toFixed(1)}` : 'New');
 
   const formattedPhone = profile?.phoneNumber || user?.phoneNumber || 'Not provided';
   const displayEmail = profile?.email || user?.email || 'Not provided';
@@ -576,6 +592,7 @@ export default function WorkerProfileDetailsPage() {
               {[
                 { id: 'academics', label: 'Academic & Education', icon: GraduationCap },
                 { id: 'skills', label: 'Skills & Trade Certs', icon: Award },
+                { id: 'reviews', label: `Verified Reviews (${verifiedReviews.length})`, icon: Star },
                 { id: 'applications', label: 'Application History', icon: History },
                 { id: 'about', label: 'Bio & Background', icon: FileText },
               ].map((tab) => {
@@ -732,6 +749,29 @@ export default function WorkerProfileDetailsPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* TAB CONTENT: Verified Reviews */}
+            {activeTab === 'reviews' && (
+              <div className="bg-white rounded-[1.75rem] p-6 sm:p-7 border border-slate-200/80 shadow-xs space-y-6 animate-in fade-in duration-150">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                    <h3 className="text-sm font-bold text-[#0A1931]">
+                      Verified Employer Reviews & Performance Feedback
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-500">
+                    {verifiedReviews.length} Verified Shifts
+                  </span>
+                </div>
+                <ReviewsList
+                  ratings={verifiedReviews}
+                  isLoading={isReviewsLoading}
+                  emptyTitle="No employer reviews recorded yet"
+                  emptySubtitle="Once you complete verified job shifts on TrustHyre, authentic feedback and ratings from hiring managers will appear here."
+                />
               </div>
             )}
 

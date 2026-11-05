@@ -17,14 +17,22 @@ import {
   FileText,
   Filter,
   Activity,
-  ArrowRight
+  ArrowRight,
+  Star
 } from 'lucide-react';
 import apiClient from '../../../api/apiClient';
+import { RatingModal } from '../../../components/common/RatingModal';
 
 export default function TrackerPage() {
   const navigate = useNavigate();
   const { user } = useUser();
   const [filterType, setFilterType] = useState<'all' | 'applications' | 'shifts' | 'milestones'>('all');
+  const [ratingTarget, setRatingTarget] = useState<{
+    jobId: string;
+    rateeId: string;
+    rateeName: string;
+    jobTitle: string;
+  } | null>(null);
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.workers.detail('me'),
@@ -68,7 +76,8 @@ export default function TrackerPage() {
         date: app.appliedAt || app.createdAt,
         status: app.status,
         wage: app.job?.budget ? `₹${Number(app.job.budget).toLocaleString('en-IN')}` : undefined,
-        jobId: app.jobId
+        jobId: app.jobId,
+        employerId: app.job?.employerId || app.job?.employerProfile?.userId || app.job?.employer_id
       });
     });
 
@@ -317,6 +326,25 @@ export default function TrackerPage() {
                         </p>
                       </div>
 
+                      {isAccepted && item.employerId && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRatingTarget({
+                              jobId: item.jobId,
+                              rateeId: item.employerId,
+                              rateeName: item.company,
+                              jobTitle: item.title
+                            });
+                          }}
+                          className="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-xs font-bold transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                          <span>Rate Employer</span>
+                        </button>
+                      )}
+
                       {item.jobId && (
                         <span className="text-xs font-semibold text-[#0f2f63] flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
                           <span>Details</span>
@@ -332,6 +360,18 @@ export default function TrackerPage() {
         </div>
 
       </main>
+
+      {ratingTarget && (
+        <RatingModal
+          isOpen={Boolean(ratingTarget)}
+          onClose={() => setRatingTarget(null)}
+          jobId={ratingTarget.jobId}
+          rateeId={ratingTarget.rateeId}
+          rateeName={ratingTarget.rateeName}
+          rateeRole="employer"
+          jobTitle={ratingTarget.jobTitle}
+        />
+      )}
     </div>
   );
 }

@@ -37,8 +37,10 @@ import {
   ArrowRight,
   Award,
   Plus,
-  Edit
+  Edit,
+  Star
 } from 'lucide-react';
+import { RatingModal } from '../../../components/common/RatingModal';
 import { useSavedStore } from '../../../hooks/useSavedStore';
 import { useTranslation } from '../../../providers/TranslationContext';
 import { 
@@ -142,6 +144,7 @@ export default function JobDetailPage() {
   const [coverLetter, setCoverLetter] = useState('');
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
   const [coverImageFailed, setCoverImageFailed] = useState(false);
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [searchParams] = useSearchParams();
   const { language } = useTranslation();
 
@@ -1220,11 +1223,21 @@ export default function JobDetailPage() {
                     )}
 
                     {isApproved && (
-                      <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-xs text-emerald-900 space-y-1">
-                        <p className="font-bold">✓ Job Confirmed!</p>
-                        <p className="text-[11px] text-emerald-800 leading-relaxed">
-                          Please arrive at the worksite with your TrustHyre check-in barcode ready.
-                        </p>
+                      <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-xs text-emerald-900 space-y-2">
+                        <div>
+                          <p className="font-bold">✓ Job Confirmed!</p>
+                          <p className="text-[11px] text-emerald-800 leading-relaxed">
+                            Please arrive at the worksite with your TrustHyre check-in barcode ready.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsRatingModalOpen(true)}
+                          className="w-full py-2 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-full uppercase tracking-wider transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-white text-white" />
+                          <span>Rate Employer</span>
+                        </button>
                       </div>
                     )}
 
@@ -1363,6 +1376,21 @@ export default function JobDetailPage() {
         </div>
 
       </main>
+
+      {isRatingModalOpen && job && (
+        <RatingModal
+          isOpen={isRatingModalOpen}
+          onClose={() => setIsRatingModalOpen(false)}
+          jobId={job.id}
+          rateeId={job.employerId || (job as any).employer_id || (job as any)?.employerProfile?.userId}
+          rateeName={(job as any)?.employerProfile?.companyName || (job as any)?.employerName || 'Employer'}
+          rateeRole="employer"
+          jobTitle={job.title}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.jobs.myApplications });
+          }}
+        />
+      )}
     </div>
   );
 }

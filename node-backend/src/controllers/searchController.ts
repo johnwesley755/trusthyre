@@ -301,6 +301,27 @@ export const searchWorkers = async (c: Context) => {
       whereClause.experience_years = expFilter;
     }
 
+    // 1. Proactively query and exclude all Admin and Super Admin accounts at query level
+    const adminUsers = await prisma.user_metadata.findMany({
+      where: {
+        OR: [
+          { role: { in: ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'] } },
+          { email: { contains: 'admin', mode: 'insensitive' } }
+        ]
+      },
+      select: { id: true, email: true }
+    });
+    const adminUserIds = adminUsers.map(u => u.id).filter(Boolean);
+
+    // Apply strict exclusion to database whereClause
+    if (adminUserIds.length > 0) {
+      whereClause.user_id = { notIn: adminUserIds };
+    }
+    // Also forbid profiles with Admin names
+    whereClause.full_name = {
+      notIn: ['Super Admin', 'Admin', 'super admin', 'admin']
+    };
+
     const workers = await prisma.worker_profiles.findMany({ 
       where: whereClause,
       orderBy: { updated_at: 'desc' }
@@ -312,7 +333,7 @@ export const searchWorkers = async (c: Context) => {
       prisma.user_metadata.findMany({
         where: { 
           id: { in: userIds },
-          role: { notIn: ['ADMIN', 'SUPER_ADMIN'] }
+          role: { notIn: ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'] }
         },
         select: {
           id: true,
@@ -330,7 +351,15 @@ export const searchWorkers = async (c: Context) => {
       })
     ]);
 
-    const userMetaById = new Map(userMetaList.map(u => [u.id, u]));
+    // Build lookup set of valid non-admin user IDs
+    const adminSet = new Set(adminUserIds);
+    const validNonAdminMeta = userMetaList.filter(u => {
+      const r = (u.role || '').toUpperCase();
+      const isAdm = r === 'ADMIN' || r === 'SUPER_ADMIN' || (u.email && u.email.toLowerCase().includes('admin'));
+      return !isAdm && !adminSet.has(u.id);
+    });
+
+    const userMetaById = new Map(validNonAdminMeta.map(u => [u.id, u]));
     const verificationByUser = new Map(verifications.map(v => [v.user_id, v]));
 
     let employerOffersMap = new Map<string, string>();
@@ -379,7 +408,13 @@ export const searchWorkers = async (c: Context) => {
     }
 
     const formatted = workers
-      .filter(w => userMetaById.has(w.user_id))
+      .filter(w => {
+        if (!w.user_id || adminSet.has(w.user_id)) return false;
+        if (!userMetaById.has(w.user_id)) return false;
+        const name = (w.full_name || '').toLowerCase();
+        if (name.includes('admin') || name === 'super admin') return false;
+        return true;
+      })
       .map(w => {
         const meta = userMetaById.get(w.user_id);
       const vRecord = verificationByUser.get(w.user_id);
