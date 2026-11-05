@@ -158,7 +158,11 @@ export const getSavedWorkers = async (c: Context) => {
     const userMetadataList = await prisma.user_metadata.findMany({
       where: { 
         id: { in: workerIds },
-        role: { notIn: ['ADMIN', 'SUPER_ADMIN'] }
+        role: { notIn: ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'] },
+        NOT: [
+          { email: { contains: 'admin' } },
+          { email: { contains: 'ADMIN' } }
+        ]
       }
     });
 

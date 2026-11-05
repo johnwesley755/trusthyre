@@ -176,6 +176,9 @@ export interface Rating {
   score: number;
   comment?: string;
   createdAt: string;
+  reviewerName?: string;
+  reviewerAvatar?: string;
+  jobTitle?: string;
 }
 
 export interface UserSettings {

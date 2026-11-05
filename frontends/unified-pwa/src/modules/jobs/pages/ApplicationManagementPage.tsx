@@ -40,6 +40,8 @@ import {
   TableCell 
 } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { RatingModal } from '@/components/common/RatingModal';
+import { Star } from 'lucide-react';
 
 export default function ApplicationManagementPage() {
   const navigate = useNavigate();
@@ -58,6 +60,12 @@ export default function ApplicationManagementPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [jobCurrentPage, setJobCurrentPage] = useState(1);
+  const [ratingTarget, setRatingTarget] = useState<{
+    jobId: string;
+    rateeId: string;
+    rateeName: string;
+    jobTitle: string;
+  } | null>(null);
   const [jobPageSize, setJobPageSize] = useState(8);
   const [jobSearchQuery, setJobSearchQuery] = useState('');
 
@@ -724,10 +732,25 @@ export default function ApplicationManagementPage() {
                         )}
 
                         {isApproved && (
-                          <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Confirmed for Shift</span>
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Confirmed for Shift</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setRatingTarget({
+                                jobId: app.jobId,
+                                rateeId: app.workerId,
+                                rateeName: candidateName,
+                                jobTitle: selectedJob?.title || 'Verified Job Shift'
+                              })}
+                              className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+                            >
+                              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                              <span>Rate Worker</span>
+                            </button>
+                          </div>
                         )}
 
                         {isDeclined && (
@@ -748,6 +771,21 @@ export default function ApplicationManagementPage() {
     )}
 
       </main>
+
+      {ratingTarget && (
+        <RatingModal
+          isOpen={Boolean(ratingTarget)}
+          onClose={() => setRatingTarget(null)}
+          jobId={ratingTarget.jobId}
+          rateeId={ratingTarget.rateeId}
+          rateeName={ratingTarget.rateeName}
+          rateeRole="worker"
+          jobTitle={ratingTarget.jobTitle}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.workers.all });
+          }}
+        />
+      )}
     </div>
   );
 }
