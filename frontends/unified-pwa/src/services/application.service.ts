@@ -9,6 +9,9 @@ const mapApp = (app: any): JobApplication => ({
   workerId: app.worker_id || app.workerId,
   appliedAt: app.applied_at || app.appliedAt,
   coverLetter: app.cover_letter || app.coverLetter,
+  job: app.job || app.jobs,
+  jobs: app.jobs || app.job,
+  jobTitle: app.job?.title || app.jobs?.title || app.jobTitle,
 });
 
 export const applicationService = {
