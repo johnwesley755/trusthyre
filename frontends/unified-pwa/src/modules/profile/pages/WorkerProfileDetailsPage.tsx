@@ -1,9 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useAuth, useUser } from "../../../providers/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { profileService, type WorkerProfile } from "../../../services/profile.service";
 import { applicationService } from "../../../services/application.service";
+import { jobService } from "../../../services/job.service";
 import { queryKeys } from "../../../lib/queryKeys";
 import { UserAvatar } from "../../../components/common/UserAvatar";
 import { AppLoader } from "../../../components/common/AppLoader";
@@ -174,6 +175,25 @@ export default function WorkerProfileDetailsPage() {
     queryKey: queryKeys.jobs.myApplications,
     queryFn: applicationService.getMyApplications,
   });
+
+  // Collect any missing jobIds to fetch fresh full job details if nested job object is not populated
+  const missingJobIds = useMemo(() => {
+    return Array.from(new Set(
+      myApplications
+        .filter((app: any) => !app.job && !app.jobs && (app.jobId || app.job_id))
+        .map((app: any) => app.jobId || app.job_id)
+    ));
+  }, [myApplications]);
+
+  const { data: fallbackJobs = [] } = useQuery({
+    queryKey: ['workerProfileFallbackJobs', missingJobIds],
+    queryFn: () => jobService.getJobsByIds(missingJobIds),
+    enabled: missingJobIds.length > 0,
+  });
+
+  const fallbackJobsById = useMemo(() => {
+    return new Map(fallbackJobs.filter((j: any) => j.id).map((j: any) => [j.id, j]));
+  }, [fallbackJobs]);
 
   const workerUserId = profile?.userId || user?.id || '';
   const { data: verifiedReviews = [], isLoading: isReviewsLoading } = useQuery({
@@ -818,36 +838,49 @@ export default function WorkerProfileDetailsPage() {
                       </Link>
                     </div>
                   ) : (
-                    myApplications.slice(0, 5).map((app: any) => (
-                      <div key={app.id} className="p-4 sm:p-5 bg-white hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                        <div className="flex gap-3.5 items-center">
-                          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center font-bold text-[#0f2f63] shrink-0">
-                            <Zap className="w-5 h-5" />
+                    myApplications.slice(0, 5).map((app: any) => {
+                      const linkedJob = app.job || app.jobs || fallbackJobsById.get(app.jobId || app.job_id);
+                      const displayTitle = linkedJob?.title || app.jobTitle || app.title || 'Verified Role';
+                      const displayLocation = linkedJob?.location || linkedJob?.city || app.jobLocation || 'Local area';
+                      const rawBudget = linkedJob?.budget ?? app.jobBudget ?? app.budget;
+                      const hasBudget = rawBudget !== undefined && rawBudget !== null && !isNaN(Number(rawBudget)) && Number(rawBudget) > 0;
+                      const displayBudget = hasBudget
+                        ? `₹${Number(rawBudget).toLocaleString('en-IN')}`
+                        : 'Negotiated / Market Standard';
+
+                      const employerId = linkedJob?.employerId || linkedJob?.employer_id || linkedJob?.employerProfile?.userId;
+                      const employerName = linkedJob?.employerProfile?.companyName || linkedJob?.employerName || app.employerName || 'Employer';
+
+                      return (
+                        <div key={app.id} className="p-4 sm:p-5 bg-white hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                          <div className="flex gap-3.5 items-center">
+                            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center font-bold text-[#0f2f63] shrink-0">
+                              <Zap className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-xs sm:text-sm text-[#0A1931]">
+                                {displayTitle}
+                              </h4>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                {displayLocation}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-bold text-xs sm:text-sm text-[#0A1931]">
-                              {app.job?.title || app.jobTitle || 'Job Role'}
-                            </h4>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              {app.job?.location || app.job?.city || 'Local area'}
-                            </p>
-                          </div>
-                        </div>
                           <div className="text-right w-full sm:w-auto flex flex-row sm:flex-col justify-between sm:justify-end items-center sm:items-end gap-1.5">
                             <span className="font-bold text-emerald-700 text-xs">
-                              ₹{app.job?.budget?.toLocaleString() || 'Negotiated'}
+                              {displayBudget}
                             </span>
                             <div className="flex items-center gap-1.5">
-                              {(app.status === 'ACCEPTED' || app.status === 'COMPLETED' || app.status === 'APPROVED') && (app.job?.employerId || app.job?.employer_id || app.job?.employerProfile?.userId) && (
+                              {(app.status === 'ACCEPTED' || app.status === 'COMPLETED' || app.status === 'APPROVED') && employerId && (
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setRatingTarget({
-                                      jobId: app.jobId || app.job?.id,
-                                      rateeId: app.job?.employerId || app.job?.employer_id || app.job?.employerProfile?.userId,
-                                      rateeName: app.job?.employerProfile?.companyName || app.job?.employerName || 'Employer',
-                                      jobTitle: app.job?.title || app.jobTitle
+                                      jobId: app.jobId || app.job_id || linkedJob?.id,
+                                      rateeId: employerId,
+                                      rateeName: employerName,
+                                      jobTitle: displayTitle
                                     });
                                   }}
                                   className="px-2.5 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-2xs"
@@ -863,6 +896,11 @@ export default function WorkerProfileDetailsPage() {
                               }`}>
                                 {app.status}
                               </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
                             </div>
                           </div>
                       </div>

@@ -3,15 +3,24 @@ import prisma from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationDispatcher } from '../services/notificationDispatcher';
+import { formatJob } from './jobController';
 
 const formatApplication = (app: any) => {
   if (!app) return app;
+  const rawJob = app.jobs || app.job;
+  const formattedJob = rawJob ? formatJob(rawJob) : undefined;
+
   return {
     ...app,
-    jobId: app.job_id,
-    workerId: app.worker_id,
-    appliedAt: app.applied_at,
-    coverLetter: app.cover_letter,
+    jobId: app.job_id || app.jobId,
+    workerId: app.worker_id || app.workerId,
+    appliedAt: app.applied_at || app.appliedAt,
+    coverLetter: app.cover_letter || app.coverLetter,
+    job: formattedJob || app.job,
+    jobs: formattedJob || app.jobs,
+    jobTitle: formattedJob?.title || app.jobTitle || rawJob?.title,
+    jobBudget: formattedJob?.budget ?? rawJob?.budget,
+    jobLocation: formattedJob?.location || rawJob?.location || formattedJob?.city || rawJob?.city,
   };
 };
 

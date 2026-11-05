@@ -8,7 +8,7 @@ import { SearchAlertService } from '../services/searchAlertService';
 
 const ALLOWED_JOB_STATUSES = ['OPEN', 'ACTIVE', 'IN_PROGRESS', 'COMPLETED', 'EXPIRED', 'CANCELLED', 'CLOSED'];
 
-const formatJob = (job: any) => {
+export const formatJob = (job: any) => {
   if (!job) return job;
   const effectiveExpiry = job.expires_at 
     ? new Date(job.expires_at) 
