@@ -315,6 +315,70 @@ export default function AppliedJobsPage() {
                       </span>
                     </div>
 
+                    {/* 🚦 Live 3-Step Hiring Pipeline Stepper (JobToday & WorkIndia Pattern) */}
+                    <div className="bg-[#f8f9fa] rounded-xl p-3 border border-[#e6e8ec] space-y-2">
+                      <div className="flex items-center justify-between text-[11px] font-bold">
+                        <span className="text-[#0a0a0a]">Application Progress</span>
+                        <span className="text-[10px] text-slate-500 font-normal">
+                          {isHired 
+                            ? 'Confirmed Hired' 
+                            : isOffer 
+                            ? 'Action Required: Offer Ready' 
+                            : isDeclined 
+                            ? 'Application Closed' 
+                            : 'Recruiter evaluating'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-1.5 pt-1">
+                        {/* Step 1: Applied */}
+                        <div className="flex flex-col items-center gap-1 text-center">
+                          <div className="w-full h-1.5 rounded-full bg-emerald-500" />
+                          <span className="text-[10px] font-bold text-emerald-800">1. Applied</span>
+                        </div>
+
+                        {/* Step 2: Under Review / Profile Opened */}
+                        <div className="flex flex-col items-center gap-1 text-center">
+                          <div className={`w-full h-1.5 rounded-full ${
+                            isDeclined 
+                              ? 'bg-slate-300' 
+                              : isHired || isOffer 
+                              ? 'bg-emerald-500' 
+                              : 'bg-blue-600 animate-pulse'
+                          }`} />
+                          <span className={`text-[10px] font-bold ${
+                            isHired || isOffer ? 'text-emerald-800' : isDeclined ? 'text-slate-400' : 'text-blue-700'
+                          }`}>
+                            2. HR Review
+                          </span>
+                        </div>
+
+                        {/* Step 3: Offer / Walk-In / Interview */}
+                        <div className="flex flex-col items-center gap-1 text-center">
+                          <div className={`w-full h-1.5 rounded-full ${
+                            isHired 
+                              ? 'bg-emerald-500' 
+                              : isOffer 
+                              ? 'bg-amber-500 animate-pulse' 
+                              : isDeclined 
+                              ? 'bg-rose-400' 
+                              : 'bg-slate-200'
+                          }`} />
+                          <span className={`text-[10px] font-bold ${
+                            isHired 
+                              ? 'text-emerald-800' 
+                              : isOffer 
+                              ? 'text-amber-800' 
+                              : isDeclined 
+                              ? 'text-rose-700' 
+                              : 'text-slate-400'
+                          }`}>
+                            {isHired ? '3. Hired' : isOffer ? '3. Offer Sent' : isDeclined ? '3. Declined' : '3. Interview'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Offer Sent Alert Box if present */}
                     {isOffer && (
                       <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-2">

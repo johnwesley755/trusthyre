@@ -9,6 +9,7 @@ import { buildJobWhatsAppMessage, openWhatsAppShare } from '../../../utils/whats
 import { TranslateText } from '../../../components/common/TranslateText';
 import { getEffectiveCoverUrl } from '../../../utils/coverImage.utils';
 import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
+import { WalkInPassModal } from '../../../components/common/WalkInPassModal';
 
 export interface JobCardData {
   id: string;
@@ -73,6 +74,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
   const isEmployer = Boolean(user && user.role === 'EMPLOYER');
   const [imageError, setImageError] = useState(false);
   const [isPamphletOpen, setIsPamphletOpen] = useState(false);
+  const [isWalkInPassOpen, setIsWalkInPassOpen] = useState(false);
   const effectiveCoverUrl = !imageError ? getEffectiveCoverUrl(job) : null;
 
   const effectiveExpiry = job.expiresAt
@@ -465,6 +467,22 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
               </button>
             )}
 
+            {/* 🎟️ 1-Tap Walk-In Admit Pass Button (When Walk-In is active) */}
+            {!isExpired && (job.isWalkInInterview || (job.additionalDetails as any)?.isWalkInInterview) && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsWalkInPassOpen(true);
+                }}
+                className="rounded-full bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
+                title="Get 1-Tap Walk-In Interview Pass"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-slate-950" />
+                <span>Walk-In Pass</span>
+              </button>
+            )}
+
             {/* 📞 One-Tap Direct Call HR (WorkIndia & Apna Viral Conversion Feature) */}
             {!isExpired && (job.allowDirectCall ?? true) && (job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber) && (
               <a
@@ -543,6 +561,30 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
             perks: Array.isArray(job.perks) ? job.perks : (Array.isArray(job.additionalDetails?.perks) ? job.additionalDetails.perks : []),
             contactPhone: job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber,
             isUrgentSpotHire: Boolean(job.isUrgentSpotHire || job.additionalDetails?.isUrgentSpotHire)
+          }}
+        />
+      )}
+
+      {/* 🎟️ 1-TAP WALKIN PASS MODAL */}
+      {isWalkInPassOpen && (
+        <WalkInPassModal
+          isOpen={isWalkInPassOpen}
+          onClose={() => setIsWalkInPassOpen(false)}
+          job={{
+            id: job.id,
+            title: job.title,
+            companyName: companyName,
+            city: job.city,
+            location: locationText,
+            walkInDetails: job.walkInDetails || (job.additionalDetails as any)?.walkInDetails,
+            contactPhone: job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber
+          }}
+          candidate={{
+            fullName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.name || 'Verified Candidate',
+            trade: job.industry || 'Specialist',
+            phone: user?.phoneNumber || user?.phone || 'Contact via TrustHyre',
+            experienceYears: 1,
+            profileId: user?.id
           }}
         />
       )}
