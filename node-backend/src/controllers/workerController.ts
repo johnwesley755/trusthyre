@@ -662,19 +662,40 @@ export const getStandbyPoolWorkers = async (c: Context) => {
     const maxWage = query.maxWage ? parseFloat(query.maxWage) : undefined;
     const taluk = query.taluk;
 
-    // Use prisma.$queryRaw so it works directly against PostgreSQL without requiring prisma generate restart
+    // Build SQL query safely using parameterized conditions
     let poolRows: any[] = [];
     try {
-      poolRows = await prisma.$queryRaw<any[]>`
+      const conditions: string[] = ['is_ready_now = true'];
+      const values: any[] = [];
+
+      if (city) {
+        values.push(city.toLowerCase());
+        conditions.push(`LOWER(city) = $${values.length}`);
+      }
+
+      if (trade && trade !== 'All') {
+        values.push(`%${trade.toLowerCase()}%`);
+        conditions.push(`LOWER(trade) LIKE $${values.length}`);
+      }
+
+      if (taluk && taluk !== 'All') {
+        values.push(taluk.toLowerCase());
+        conditions.push(`LOWER(taluk) = $${values.length}`);
+      }
+
+      if (maxWage) {
+        values.push(maxWage);
+        conditions.push(`expected_daily_wage <= $${values.length}`);
+      }
+
+      const sqlQuery = `
         SELECT * FROM worker_standby_pool
-        WHERE LOWER(city) = LOWER(${city})
-          AND is_ready_now = true
-          ${trade && trade !== 'All' ? prisma.$queryRaw`AND LOWER(trade) LIKE ${`%${trade.toLowerCase()}%`}` : prisma.$queryRaw``}
-          ${taluk && taluk !== 'All' ? prisma.$queryRaw`AND LOWER(taluk) = LOWER(${taluk})` : prisma.$queryRaw``}
-          ${maxWage ? prisma.$queryRaw`AND expected_daily_wage <= ${maxWage}` : prisma.$queryRaw``}
+        WHERE ${conditions.join(' AND ')}
         ORDER BY created_at DESC
         LIMIT 50
       `;
+
+      poolRows = await prisma.$queryRawUnsafe<any[]>(sqlQuery, ...values);
     } catch (dbErr: any) {
       console.warn('[DigitalLabourChowk] Standby pool query note:', dbErr.message);
       // Fallback: If table has no rows or is initializing

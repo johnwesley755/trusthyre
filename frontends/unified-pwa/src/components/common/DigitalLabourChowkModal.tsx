@@ -60,7 +60,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<'hire_standby' | 'join_standby'>(
-    initialMode === 'worker' ? 'join_standby' : 'hire_standby'
+    isEmployerRole ? 'hire_standby' : 'join_standby'
   );
   const [selectedTrade, setSelectedTrade] = useState<string>('All');
   const [maxBudget, setMaxBudget] = useState<number>(1500);
@@ -185,33 +185,28 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
         </div>
       }
     >
-      {/* Mode Navigation Tabs */}
-      <div className="flex border-b border-[#e6e8ec] bg-[#F8FAFC]">
-        <button
-          type="button"
-          onClick={() => setActiveTab('hire_standby')}
-          className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-all cursor-pointer ${
-            activeTab === 'hire_standby'
-              ? 'border-[#0066ff] text-[#0066ff] bg-white'
-              : 'border-transparent text-[#717784] hover:text-[#0A1931]'
-          }`}
-        >
-          <Building2 className="w-4 h-4" />
-          <span>Hire Standby Worker (Today)</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('join_standby')}
-          className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-all cursor-pointer ${
-            activeTab === 'join_standby'
-              ? 'border-[#0066ff] text-[#0066ff] bg-white'
-              : 'border-transparent text-[#717784] hover:text-[#0A1931]'
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          <span>Worker: Available for Spot Work</span>
-        </button>
-      </div>
+      {/* Mode Navigation Tabs: Only show tab toggle if user is BOTH or explicitly testing; default to employer-only for hiring */}
+      {isEmployerRole ? (
+        <div className="px-5 py-3 border-b border-[#e6e8ec] bg-[#F8FAFC] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-[#0066ff]" />
+            <span className="text-xs font-bold text-[#0A1931]">Standby Worker Spot-Hiring Radar</span>
+          </div>
+          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+            🟢 Ready Today
+          </span>
+        </div>
+      ) : (
+        <div className="px-5 py-3 border-b border-[#e6e8ec] bg-[#F8FAFC] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-[#0066ff]" />
+            <span className="text-xs font-bold text-[#0A1931]">Worker Daily Standby Broadcast</span>
+          </div>
+          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+            PostgreSQL Live
+          </span>
+        </div>
+      )}
 
       <div className="p-4 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
         {activeTab === 'hire_standby' ? (
@@ -339,7 +334,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                       <button
                         type="button"
                         onClick={() => handleBookWorker(w)}
-                        className="flex-1 py-2 px-3 rounded-full bg-[#0066ff] hover:bg-[#0052cc] active:bg-[#003d99] text-white text-xs font-bold uppercase transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                        className="flex-1 py-2.5 px-3 rounded-full bg-[#0f2f63] hover:bg-[#0066ff] active:bg-[#003d99] text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-2xs hover:shadow-xs cursor-pointer active:scale-95"
                       >
                         <MessageSquare className="w-3.5 h-3.5 fill-white" />
                         <span>Instant Spot Hire</span>
@@ -472,7 +467,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                 <button
                   type="submit"
                   disabled={joinMutation.isPending}
-                  className="w-full py-3 rounded-full bg-[#0066ff] hover:bg-[#0052cc] active:bg-[#003d99] disabled:opacity-50 text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 mt-2"
+                  className="w-full py-3 rounded-full bg-[#0f2f63] hover:bg-[#0066ff] active:bg-[#003d99] disabled:opacity-50 text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 mt-2 active:scale-95"
                 >
                   {joinMutation.isPending ? (
                     <>
