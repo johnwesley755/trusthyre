@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -28,8 +29,8 @@ const MAX_WIDTH_CLASSES = {
 
 /**
  * Standard Unified Modal Component for TrustHyre.
- * Aligned with index.css brand theme, typography (Plus Jakarta Sans / Onest),
- * rounded-2xl / rounded-3xl borders, and fluid backdrop physics.
+ * Rendered directly through React createPortal into document.body to prevent
+ * CSS transform/containment clipping from parent cards.
  */
 export const BaseModal: React.FC<BaseModalProps> = ({
   isOpen,
@@ -53,18 +54,20 @@ export const BaseModal: React.FC<BaseModalProps> = ({
       }
     };
     if (isOpen) {
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       <div
         className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/65 backdrop-blur-xs font-['Plus_Jakarta_Sans',sans-serif]"
@@ -80,7 +83,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
           exit={{ opacity: 0, scale: 0.96, y: 8 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
           onClick={(e) => e.stopPropagation()}
-          className={`bg-white rounded-2xl sm:rounded-3xl border border-[#e6e8ec] shadow-2xl w-full ${MAX_WIDTH_CLASSES[maxWidth]} max-h-[92vh] flex flex-col overflow-hidden my-auto ${className}`}
+          className={`bg-white rounded-2xl sm:rounded-3xl border border-[#e6e8ec] shadow-2xl w-full ${MAX_WIDTH_CLASSES[maxWidth]} max-h-[90vh] flex flex-col overflow-hidden my-auto ${className}`}
         >
           {/* Header */}
           {(title || icon || showCloseButton) && (
@@ -138,5 +141,6 @@ export const BaseModal: React.FC<BaseModalProps> = ({
       </div>
     </AnimatePresence>
   );
-};
 
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
+};

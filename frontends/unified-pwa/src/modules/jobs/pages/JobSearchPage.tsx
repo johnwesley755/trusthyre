@@ -16,7 +16,7 @@ import {
   ShieldCheck,
   Utensils,
   Home,
-  Bike
+  ArrowRight
 } from 'lucide-react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { JobSearchHero } from '../components/JobSearchHero';
@@ -33,8 +33,9 @@ import { JobAlertModal } from '../components/JobAlertModal';
 import { ManageAlertsModal } from '../../dashboard/features/alerts/ManageAlertsModal';
 import { WhatsAppBulletinModal } from '../../../components/common/WhatsAppBulletinModal';
 import { SeoHead } from '../../../components/common/SeoHead';
-import { REGIONAL_DISTRICTS_TALUKS, getTaluksForCity } from '../../../constants/regionalTaluks';
+import { getTaluksForCity } from '../../../constants/regionalTaluks';
 import { WageBenchmarkModal } from '../../../components/common/WageBenchmarkModal';
+import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
 
 export default function JobSearchPage() {
   const queryClient = useQueryClient();
@@ -61,6 +62,7 @@ export default function JobSearchPage() {
   const [isManageAlertsOpen, setIsManageAlertsOpen] = useState(false);
   const [isBulletinOpen, setIsBulletinOpen] = useState(false);
   const [isWageModalOpenMobile, setIsWageModalOpenMobile] = useState(false);
+  const [isChowkModalOpen, setIsChowkModalOpen] = useState(false);
 
   const { user } = useAuth();
 
@@ -544,6 +546,38 @@ export default function JobSearchPage() {
                   <span>Room / Accommodation</span>
                 </button>
               </div>
+            </div>
+
+            {/* ⚡ Breakthrough Feature: Digital Labour Chowk Banner (Nithra & Shramik Model) */}
+            <div className="bg-white border border-[#e6e8ec] rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs hover:border-slate-300 transition-all">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shrink-0">
+                  <Zap className="w-5 h-5 fill-amber-500 text-amber-500" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200 uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Live Standby Radar
+                    </span>
+                    <h4 className="text-sm font-bold text-[#0A1931] tracking-tight">
+                      Digital Labour Chowk: Verified Workers Ready Today
+                    </h4>
+                  </div>
+                  <p className="text-xs text-[#717784] mt-1 line-clamp-1">
+                    Emergency replacements & daily wage workers ready to report in {city || 'your area'} within 45 mins.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsChowkModalOpen(true)}
+                className="px-5 py-2.5 bg-[#0f2f63] hover:bg-[#0066ff] active:bg-[#003d99] text-white rounded-full font-bold text-xs uppercase tracking-wider shrink-0 transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-auto active:scale-95"
+              >
+                <span>Open Labour Chowk</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             {/* Reassurance Anti-Scam Shield Ribbon */}
@@ -1107,6 +1141,16 @@ export default function JobSearchPage() {
             setTrade('All');
             updateUrlParams({ q: bTrade, trade: 'All' });
           }}
+        />
+      )}
+
+      {/* 9. ⚡ Breakthrough: Digital Labour Chowk Modal */}
+      {isChowkModalOpen && (
+        <DigitalLabourChowkModal
+          isOpen={isChowkModalOpen}
+          onClose={() => setIsChowkModalOpen(false)}
+          currentCity={city || 'Chennai'}
+          isEmployerRole={user?.role === 'EMPLOYER'}
         />
       )}
 

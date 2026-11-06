@@ -13,6 +13,12 @@ router.post('/profiles/by-user-ids', optionalAuth, workerController.getProfilesB
 router.post('/profile/:userId/view', workerController.incrementProfileView);
 router.get('/trust-score/:userId', workerController.getTrustScore);
 router.get('/stats', workerController.getGlobalStats);
+
+// ⚡ Digital Labour Chowk Standby Pool endpoints
+router.get('/standby-pool', optionalAuth, workerController.getStandbyPoolWorkers);
+router.post('/standby-pool', authenticateJWT, workerController.joinStandbyPool);
+router.delete('/standby-pool/me', authenticateJWT, workerController.leaveStandbyPool);
+
 router.get('/:id', optionalAuth, workerController.getWorkerById);
 
 export default router;
