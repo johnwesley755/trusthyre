@@ -1,5 +1,6 @@
 import React from 'react';
-import { SlidersHorizontal, RotateCcw, Check } from 'lucide-react';
+import { SlidersHorizontal, RotateCcw, Check, MapPin } from 'lucide-react';
+import { getTaluksForCity } from '../../../constants/regionalTaluks';
 
 export interface FilterCounts {
   jobTypes: Record<string, number>;
@@ -26,6 +27,9 @@ interface JobFilterSidebarProps {
 
   selectedSource?: string;
   onSelectSource?: (source: string) => void;
+
+  selectedTaluk?: string;
+  onSelectTaluk?: (taluk: string) => void;
 
   counts?: FilterCounts;
   onClearAll: () => void;
@@ -89,10 +93,13 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
   onSelectExperience,
   selectedSource = 'all',
   onSelectSource,
+  selectedTaluk = '',
+  onSelectTaluk,
   counts,
   onClearAll,
   hasActiveFilters,
 }) => {
+  const dynamicTaluks = getTaluksForCity(selectedLocation);
   return (
     <aside className="w-full space-y-6 font-['Onest',system-ui,sans-serif]">
       
@@ -247,6 +254,56 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
           })}
         </div>
       </div>
+
+      {/* 2B. DYNAMIC TALUKS / SUB-AREAS SECTION (Shown only when city has mapped taluks) */}
+      {selectedLocation && dynamicTaluks.length > 0 && onSelectTaluk && (
+        <div className="space-y-2 pt-4 border-t border-[#e6e8ec]">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase text-[#0f2f63] flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-blue-600" />
+              <span>Taluks in {selectedLocation}</span>
+            </span>
+            {selectedTaluk && (
+              <button
+                onClick={() => onSelectTaluk('')}
+                className="text-[10px] font-medium text-[#2563c9] hover:underline cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+          <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+            <button
+              onClick={() => onSelectTaluk('')}
+              className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
+                !selectedTaluk
+                  ? 'bg-[#0f2f63] text-white shadow-xs'
+                  : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80'
+              }`}
+            >
+              <span>All {selectedLocation} Areas</span>
+              {!selectedTaluk && <Check className="w-3.5 h-3.5 text-white" />}
+            </button>
+            {dynamicTaluks.map((tName) => {
+              const isSelected = selectedTaluk.toLowerCase() === tName.toLowerCase();
+              return (
+                <button
+                  key={tName}
+                  onClick={() => onSelectTaluk(tName)}
+                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#0f2f63] text-white shadow-xs'
+                      : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80 hover:border-[#0f2f63]/30'
+                  }`}
+                >
+                  <span>{tName}</span>
+                  {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 3. EXPERIENCE SECTION */}
       <div className="space-y-2 pt-4 border-t border-[#e6e8ec]">

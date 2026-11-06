@@ -33,7 +33,7 @@ import { JobAlertModal } from '../components/JobAlertModal';
 import { ManageAlertsModal } from '../../dashboard/features/alerts/ManageAlertsModal';
 import { WhatsAppBulletinModal } from '../../../components/common/WhatsAppBulletinModal';
 import { SeoHead } from '../../../components/common/SeoHead';
-import { REGIONAL_DISTRICTS_TALUKS } from '../../../constants/regionalTaluks';
+import { REGIONAL_DISTRICTS_TALUKS, getTaluksForCity } from '../../../constants/regionalTaluks';
 
 export default function JobSearchPage() {
   const queryClient = useQueryClient();
@@ -435,7 +435,13 @@ export default function JobSearchPage() {
               selectedLocation={city}
               onSelectLocation={(l) => {
                 setCity(l);
-                updateUrlParams({ city: l });
+                setQuery('');
+                updateUrlParams({ city: l, q: '' });
+              }}
+              selectedTaluk={query}
+              onSelectTaluk={(t) => {
+                setQuery(t);
+                updateUrlParams({ q: t });
               }}
               selectedBudget={budgetRange}
               onSelectBudget={(b) => {
@@ -467,7 +473,7 @@ export default function JobSearchPage() {
           <div className="col-span-1 lg:col-span-6 space-y-5">
             
             {/* ⚡ 24H SPOT-HIRE & WALK-IN RADAR STRIP (Nithra & JobToday Model) */}
-            <div className="bg-gradient-to-r from-amber-50 via-rose-50 to-amber-50 border border-amber-200/80 rounded-[1.5rem] p-3.5 sm:p-4 shadow-2xs space-y-3">
+            <div className="bg-gradient-to-r from-amber-50 via-rose-50 to-amber-50 border border-amber-200/80 rounded-[1.5rem] p-3.5 sm:p-4 shadow-2xs space-y-2.5">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
@@ -477,54 +483,25 @@ export default function JobSearchPage() {
                   </span>
                 </div>
                 <span className="text-[11px] font-bold text-amber-900 bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-300">
-                  Direct Company Entry
+                  {city ? `Active in ${city}` : 'Direct Company Entry'}
                 </span>
-              </div>
-
-              {/* Regional District & Taluk Selector Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-                <span className="text-[11px] font-bold text-slate-700 shrink-0 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Taluk:</span>
-                </span>
-                {['All Taluks', 'Guindy', 'Ambattur', 'Sriperumbudur', 'Tambaram', 'Avadi', 'Pollachi', 'Sulur'].map((tName) => {
-                  const isSelected = (tName === 'All Taluks' && !query) || query.toLowerCase() === tName.toLowerCase();
-                  return (
-                    <button
-                      key={tName}
-                      type="button"
-                      onClick={() => {
-                        const val = tName === 'All Taluks' ? '' : tName;
-                        setQuery(val);
-                        updateUrlParams({ q: val });
-                      }}
-                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#0f2f63] text-white shadow-xs'
-                          : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-                      }`}
-                    >
-                      {tName}
-                    </button>
-                  );
-                })}
               </div>
 
               {/* Quick Perks & Immediate Category Filters */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pt-1 no-scrollbar border-t border-amber-200/50">
+              <div className="flex items-center gap-1.5 overflow-x-auto pt-1 no-scrollbar">
                 <button
                   type="button"
                   onClick={() => {
                     const next = selectedPerkFilter === 'walkin' ? 'all' : 'walkin';
                     setSelectedPerkFilter(next);
                   }}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
                     selectedPerkFilter === 'walkin'
                       ? 'bg-amber-600 text-white shadow-xs'
                       : 'bg-white text-amber-900 border border-amber-200 hover:bg-amber-100/50'
                   }`}
                 >
-                  <Zap className="w-3 h-3 fill-current" />
+                  <Zap className="w-3.5 h-3.5 fill-current" />
                   <span>Walk-in Today</span>
                 </button>
 
@@ -534,14 +511,14 @@ export default function JobSearchPage() {
                     const next = selectedPerkFilter === 'food' ? 'all' : 'food';
                     setSelectedPerkFilter(next);
                   }}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
                     selectedPerkFilter === 'food'
                       ? 'bg-emerald-600 text-white shadow-xs'
                       : 'bg-white text-emerald-900 border border-emerald-200 hover:bg-emerald-50'
                   }`}
                 >
-                  <Utensils className="w-3 h-3 text-emerald-600" />
-                  <span>Food Provided</span>
+                  <Utensils className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Free Food Provided</span>
                 </button>
 
                 <button
@@ -550,14 +527,14 @@ export default function JobSearchPage() {
                     const next = selectedPerkFilter === 'room' ? 'all' : 'room';
                     setSelectedPerkFilter(next);
                   }}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
                     selectedPerkFilter === 'room'
                       ? 'bg-indigo-600 text-white shadow-xs'
                       : 'bg-white text-indigo-900 border border-indigo-200 hover:bg-indigo-50'
                   }`}
                 >
-                  <Home className="w-3 h-3 text-indigo-600" />
-                  <span>Room / Stay</span>
+                  <Home className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Room / Accommodation</span>
                 </button>
               </div>
             </div>
@@ -838,6 +815,52 @@ export default function JobSearchPage() {
             {/* Modal Body: Scrollable Filters */}
             <div className="px-6 py-5 overflow-y-auto space-y-6">
               
+              {/* Dynamic Taluks for Current Selected Location */}
+              {city && (
+                <div className="space-y-2.5">
+                  <label className="text-[11px] font-bold uppercase text-[#0f2f63] flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Taluks & Areas in {city}</span>
+                  </label>
+                  <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuery('');
+                        updateUrlParams({ q: '' });
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                        !query
+                          ? 'bg-[#0f2f63] text-white shadow-xs'
+                          : 'bg-[#f4f4f4] hover:bg-[#e6e8ec] border border-[#e6e8ec] text-[#0a0a0a]'
+                      }`}
+                    >
+                      All {city} Areas
+                    </button>
+                    {getTaluksForCity(city).map((tName) => {
+                      const isSelected = query.toLowerCase() === tName.toLowerCase();
+                      return (
+                        <button
+                          key={tName}
+                          type="button"
+                          onClick={() => {
+                            setQuery(tName);
+                            updateUrlParams({ q: tName });
+                          }}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#0f2f63] text-white shadow-xs'
+                              : 'bg-[#f4f4f4] hover:bg-[#e6e8ec] border border-[#e6e8ec] text-[#0a0a0a]'
+                          }`}
+                        >
+                          {tName}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Hiring Channel Source Filter */}
               <div className="space-y-2.5">
                 <label className="text-[11px] font-bold uppercase text-[#717784]">
