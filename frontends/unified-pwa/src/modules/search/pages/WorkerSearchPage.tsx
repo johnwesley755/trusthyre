@@ -32,8 +32,9 @@ import { TalentAlertModal } from '../components/TalentAlertModal';
 import { normalizeSkills } from '../../../utils/skills';
 import { SeoHead } from '../../../components/common/SeoHead';
 import { CandidateOutreachModal, type CandidateOutreachCandidate } from '../../../components/common/CandidateOutreachModal';
+import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
 import { jobService } from '../../../services/job.service';
-import { Phone, MessageSquare, Sparkles as SparklesIcon } from 'lucide-react';
+import { Phone, MessageSquare, Sparkles as SparklesIcon, Zap } from 'lucide-react';
 
 const JOB_CATEGORIES = [
   "All",
@@ -82,6 +83,7 @@ export const WorkerSearchPage = () => {
 
   const [outreachCandidate, setOutreachCandidate] = useState<CandidateOutreachCandidate | null>(null);
   const [isOutreachModalOpen, setIsOutreachModalOpen] = useState(false);
+  const [isChowkModalOpen, setIsChowkModalOpen] = useState(false);
 
   // Fetch employer's active candidate alerts to reflect live subscription state
   const { data: userAlerts = [] } = useQuery<SearchAlert[]>({
@@ -302,6 +304,33 @@ export const WorkerSearchPage = () => {
           {/* CANDIDATES FEED: Shows FIRST on mobile and in Center on desktop */}
           <div className="lg:col-span-6 space-y-5">
             
+            {/* Digital Labour Chowk Standby Radar Banner */}
+            <div className="bg-gradient-to-r from-[#0A1931] via-[#0f2f63] to-[#0066FF] rounded-2xl p-4 text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-blue-400/20">
+              <div className="space-y-1 relative z-10">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1">
+                    <Zap className="w-3.5 h-3.5 text-amber-300" />
+                    {t("Live Digital Labour Chowk", "Live Digital Labour Chowk")}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white backdrop-blur-xs">
+                    {t("Instant Standby", "Instant Standby")}
+                  </span>
+                </div>
+                <p className="text-xs text-blue-100/90 font-medium">
+                  {t("Sudden worker absenteeism? Hire pre-verified standby workers ready to report within 60 mins.", "Sudden worker absenteeism? Hire pre-verified standby workers ready to report within 60 mins.")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsChowkModalOpen(true)}
+                className="relative z-10 shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white shadow-sm transition-all cursor-pointer"
+              >
+                <span>{t("Browse Standby Pool", "Browse Standby Pool")}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
             {/* Header Result Count */}
             <div className="flex items-center justify-between px-1 gap-2 flex-wrap">
               <div className="flex items-center gap-3">
@@ -757,6 +786,14 @@ export const WorkerSearchPage = () => {
           activeJobs={employerJobs}
         />
       )}
+
+      {/* ⚡ Digital Labour Chowk Modal */}
+      <DigitalLabourChowkModal
+        isOpen={isChowkModalOpen}
+        onClose={() => setIsChowkModalOpen(false)}
+        initialMode="employer"
+        currentTaluk={city || 'Guindy'}
+      />
     </div>
   );
 };

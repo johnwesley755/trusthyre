@@ -650,3 +650,179 @@ export const getGlobalStats = async (c: Context) => {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
 };
+
+/**
+ * ⚡ Digital Labour Chowk: Get real live standby workers from PostgreSQL
+ */
+export const getStandbyPoolWorkers = async (c: Context) => {
+  try {
+    const query = c.req.query();
+    const city = query.city || 'Chennai';
+    const trade = query.trade;
+    const maxWage = query.maxWage ? parseFloat(query.maxWage) : undefined;
+    const taluk = query.taluk;
+
+    // Use raw query or prisma delegate to query worker_standby_pool with profile joins
+    // Target today's active pool
+    const poolRows = await (prisma as any).worker_standby_pool.findMany({
+      where: {
+        city: { equals: city, mode: 'insensitive' },
+        is_ready_now: true,
+        ...(trade && trade !== 'All' ? { trade: { contains: trade, mode: 'insensitive' } } : {}),
+        ...(taluk && taluk !== 'All' ? { taluk: { equals: taluk, mode: 'insensitive' } } : {}),
+        ...(maxWage ? { expected_daily_wage: { lte: maxWage } } : {})
+      },
+      orderBy: { created_at: 'desc' },
+      take: 50
+    });
+
+    if (!poolRows || poolRows.length === 0) {
+      return c.json(ApiResponse.ok([]));
+    }
+
+    const userIds = poolRows.map((r: any) => r.user_id);
+
+    // Fetch related profile, metadata, and verification
+    const [profiles, userMetas, verifications] = await Promise.all([
+      prisma.worker_profiles.findMany({
+        where: { user_id: { in: userIds } }
+      }),
+      prisma.user_metadata.findMany({
+        where: { id: { in: userIds } }
+      }).catch(() => []),
+      prisma.verification_records.findMany({
+        where: { user_id: { in: userIds }, status: 'VERIFIED' }
+      }).catch(() => [])
+    ]);
+
+    const profileMap = new Map(profiles.map(p => [p.user_id, p]));
+    const metaMap = new Map(userMetas.map(m => [m.id, m]));
+    const verifiedUserSet = new Set(verifications.map(v => v.user_id));
+
+    const standbyWorkers = poolRows.map((row: any) => {
+      const profile = profileMap.get(row.user_id);
+      const meta = metaMap.get(row.user_id);
+      const isVerified = verifiedUserSet.has(row.user_id) || Boolean(profile?.skill_score && profile.skill_score >= 50);
+
+      const rawPhone = meta?.phone_number || profile?.phone_number || '';
+      const maskedPhone = rawPhone.length > 5 ? rawPhone.slice(0, 4) + ' ' + '****' + rawPhone.slice(-2) : 'Contact Available';
+
+      return {
+        id: row.id,
+        userId: row.user_id,
+        name: profile?.full_name || `${meta?.first_name || ''} ${meta?.last_name || ''}`.trim() || 'Verified Worker',
+        trade: row.trade,
+        taluk: row.taluk || profile?.taluk || profile?.area || city,
+        city: row.city,
+        expectedDailyWage: Number(row.expected_daily_wage),
+        availabilityWindow: row.notes || 'Ready Now (within 45 mins)',
+        shiftPreference: row.shift_preference || 'DAY_SHIFT',
+        experienceYears: profile?.experience_years || 2,
+        trustScore: profile?.trust_score || 85,
+        phone: rawPhone,
+        maskedPhone,
+        isBiometricVerified: isVerified,
+        createdAt: row.created_at
+      };
+    });
+
+    return c.json(ApiResponse.ok(standbyWorkers));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * ⚡ Worker joins/updates Standby Pool for today
+ */
+export const joinStandbyPool = async (c: Context) => {
+  try {
+    const user = c.get('user');
+    if (!user || !user.id) {
+      return c.json(ApiResponse.error('Unauthorized. Please log in as a worker.'), 401 as any);
+    }
+
+    const body = await c.req.json();
+    const { trade, expectedDailyWage, taluk, city = 'Chennai', shiftPreference = 'DAY_SHIFT', notes } = body;
+
+    if (!trade || !expectedDailyWage) {
+      return c.json(ApiResponse.error('Trade and expected daily wage are required.'), 400 as any);
+    }
+
+    const parsedWage = parseFloat(expectedDailyWage);
+    if (isNaN(parsedWage) || parsedWage <= 0) {
+      return c.json(ApiResponse.error('Invalid daily wage value.'), 400 as any);
+    }
+
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+
+    const record = await (prisma as any).worker_standby_pool.upsert({
+      where: {
+        uq_worker_standby_daily: {
+          user_id: user.id,
+          available_date: todayDate
+        }
+      },
+      update: {
+        trade,
+        expected_daily_wage: parsedWage,
+        taluk: taluk || 'Guindy',
+        city,
+        shift_preference: shiftPreference,
+        is_ready_now: true,
+        notes: notes || 'Ready for spot shift',
+        updated_at: new Date()
+      },
+      create: {
+        user_id: user.id,
+        trade,
+        expected_daily_wage: parsedWage,
+        taluk: taluk || 'Guindy',
+        city,
+        shift_preference: shiftPreference,
+        is_ready_now: true,
+        notes: notes || 'Ready for spot shift',
+        available_date: todayDate
+      }
+    });
+
+    return c.json(ApiResponse.ok({
+      message: 'Successfully broadcasted availability on Digital Labour Chowk!',
+      record
+    }));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * ⚡ Worker removes themselves from Standby Pool
+ */
+export const leaveStandbyPool = async (c: Context) => {
+  try {
+    const user = c.get('user');
+    if (!user || !user.id) {
+      return c.json(ApiResponse.error('Unauthorized.'), 401 as any);
+    }
+
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+
+    await (prisma as any).worker_standby_pool.updateMany({
+      where: {
+        user_id: user.id,
+        available_date: todayDate
+      },
+      data: {
+        is_ready_now: false,
+        updated_at: new Date()
+      }
+    });
+
+    return c.json(ApiResponse.ok({ message: 'Removed from today\'s standby radar.' }));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+

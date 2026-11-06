@@ -16,7 +16,7 @@ import {
   ShieldCheck,
   Utensils,
   Home,
-  Bike
+  ArrowRight
 } from 'lucide-react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { JobSearchHero } from '../components/JobSearchHero';
@@ -33,8 +33,9 @@ import { JobAlertModal } from '../components/JobAlertModal';
 import { ManageAlertsModal } from '../../dashboard/features/alerts/ManageAlertsModal';
 import { WhatsAppBulletinModal } from '../../../components/common/WhatsAppBulletinModal';
 import { SeoHead } from '../../../components/common/SeoHead';
-import { REGIONAL_DISTRICTS_TALUKS, getTaluksForCity } from '../../../constants/regionalTaluks';
+import { getTaluksForCity } from '../../../constants/regionalTaluks';
 import { WageBenchmarkModal } from '../../../components/common/WageBenchmarkModal';
+import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
 
 export default function JobSearchPage() {
   const queryClient = useQueryClient();
@@ -61,6 +62,7 @@ export default function JobSearchPage() {
   const [isManageAlertsOpen, setIsManageAlertsOpen] = useState(false);
   const [isBulletinOpen, setIsBulletinOpen] = useState(false);
   const [isWageModalOpenMobile, setIsWageModalOpenMobile] = useState(false);
+  const [isChowkModalOpen, setIsChowkModalOpen] = useState(false);
 
   const { user } = useAuth();
 
@@ -544,6 +546,37 @@ export default function JobSearchPage() {
                   <span>Room / Accommodation</span>
                 </button>
               </div>
+            </div>
+
+            {/* ⚡ Breakthrough Feature: Digital Labour Chowk Banner (Nithra & Shramik Model) */}
+            <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300 rounded-[1.5rem] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center shrink-0 shadow-xs font-black">
+                  <Zap className="w-5 h-5 fill-slate-950 text-slate-950" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                      Live Standby Radar
+                    </span>
+                    <h4 className="text-xs sm:text-sm font-bold text-[#0A1931]">
+                      Digital Labour Chowk: Verified Workers Ready Today
+                    </h4>
+                  </div>
+                  <p className="text-xs text-[#717784] mt-0.5 line-clamp-1">
+                    Emergency replacements & daily wage workers ready to report in {city || 'your area'} within 45 mins.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsChowkModalOpen(true)}
+                className="px-4 py-2 bg-[#0066ff] hover:bg-[#0052cc] active:bg-[#003d99] text-white rounded-full font-bold text-xs uppercase tracking-wider shrink-0 transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-auto"
+              >
+                <span>Open Labour Chowk</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             {/* Reassurance Anti-Scam Shield Ribbon */}
@@ -1107,6 +1140,16 @@ export default function JobSearchPage() {
             setTrade('All');
             updateUrlParams({ q: bTrade, trade: 'All' });
           }}
+        />
+      )}
+
+      {/* 9. ⚡ Breakthrough: Digital Labour Chowk Modal */}
+      {isChowkModalOpen && (
+        <DigitalLabourChowkModal
+          isOpen={isChowkModalOpen}
+          onClose={() => setIsChowkModalOpen(false)}
+          currentCity={city || 'Chennai'}
+          isEmployerRole={user?.role === 'EMPLOYER'}
         />
       )}
 

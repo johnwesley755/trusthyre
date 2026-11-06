@@ -250,5 +250,33 @@ export const workerService = {
   getScoring: (id: string) => apiClient.get(`/api/worker/scoring/${id}`),
   getLevel: (id: string) => apiClient.get(`/api/worker/level/${id}`),
   completeOnboarding: (data: any) => apiClient.post('/api/worker/complete-onboarding', data),
+
+  // ⚡ Digital Labour Chowk Standby Pool API
+  getStandbyPoolWorkers: async (params?: {
+    city?: string;
+    trade?: string;
+    taluk?: string;
+    maxWage?: number;
+  }): Promise<any[]> => {
+    const response = await apiClient.get<any>('/api/worker/standby-pool', { params });
+    return response.data || [];
+  },
+
+  joinStandbyPool: async (payload: {
+    trade: string;
+    expectedDailyWage: number;
+    taluk: string;
+    city?: string;
+    shiftPreference?: string;
+    notes?: string;
+  }): Promise<any> => {
+    const response = await apiClient.post<any>('/api/worker/standby-pool', payload);
+    return response.data;
+  },
+
+  leaveStandbyPool: async (): Promise<any> => {
+    const response = await apiClient.delete<any>('/api/worker/standby-pool/me');
+    return response.data;
+  },
 };
 

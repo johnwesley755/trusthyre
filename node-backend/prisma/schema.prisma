@@ -612,6 +612,28 @@ model blog_posts {
   @@index([target_trade], map: "idx_blog_posts_target_trade")
 }
 
+model worker_standby_pool {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id             String    @db.VarChar(255)
+  trade               String    @db.VarChar(100)
+  expected_daily_wage Decimal   @db.Decimal(10, 2)
+  taluk               String    @db.VarChar(100)
+  city                String    @default("Chennai") @db.VarChar(100)
+  latitude            Float?
+  longitude           Float?
+  is_ready_now        Boolean?  @default(true)
+  available_date      DateTime  @default(now()) @db.Date
+  shift_preference    String?   @default("DAY_SHIFT") @db.VarChar(50)
+  notes               String?   @db.VarChar(255)
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@unique([user_id, available_date], map: "uq_worker_standby_daily")
+  @@index([city, available_date, is_ready_now, trade], map: "idx_standby_pool_search")
+  @@index([user_id], map: "idx_standby_pool_user")
+}
+
+
 
 
 
