@@ -62,6 +62,15 @@ const POPULAR_SKILLS = [
   "Machine Operation"
 ];
 
+const READINESS_EQUIPMENT_BADGES = [
+  { id: "Own 2-Wheeler / Bike 🛵", label: "Own Bike 🛵" },
+  { id: "Valid Driving License (DL) 🪪", label: "Valid DL 🪪" },
+  { id: "Own Tool Kit 🧰", label: "Own Tool Kit 🧰" },
+  { id: "Immediate Joiner (Available Today) ⚡", label: "Available Today ⚡" },
+  { id: "Night Shift Willing 🌙", label: "Night Shift 🌙" },
+  { id: "Smart Phone Ready 📱", label: "Smart Phone 📱" }
+];
+
 const POPULAR_ROLES = [
   "Electrician",
   "Plumber",
@@ -666,6 +675,33 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                           }`}
                         >
                           {sk} {isAdded ? "✓" : "+"}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 10-Second Readiness & Equipment Chips (WorkIndia / Apna Pattern) */}
+                <div className="space-y-1.5 pt-2 border-t border-slate-200/60">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <p className="text-[11px] font-bold text-[#0a0a0a]">Readiness & Trade Equipment (1-Tap):</p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {READINESS_EQUIPMENT_BADGES.map((b) => {
+                      const isAdded = skillsList.includes(b.id);
+                      return (
+                        <button
+                          key={b.id}
+                          type="button"
+                          onClick={() => isAdded ? handleRemoveSkill(b.id) : handleAddSkill(b.id)}
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer border shadow-2xs ${
+                            isAdded
+                              ? "bg-emerald-700 text-white border-emerald-800"
+                              : "bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100"
+                          }`}
+                        >
+                          {b.label} {isAdded ? "✓" : "+"}
                         </button>
                       );
                     })}

@@ -94,6 +94,7 @@ export const formatJob = (job: any) => {
     requiredSkills: parsedSkills,
     required_skills: typeof rawSkillsVal === 'string' ? rawSkillsVal : parsedSkills.join(', '),
     budget: job.budget != null ? Number(job.budget) : 0,
+    dailyRate: job.budget != null && Number(job.budget) > 0 ? Math.round(Number(job.budget) / 26) : null,
     createdAt: job.created_at,
     updatedAt: job.updated_at,
     expiresAt: (job.expires_at || effectiveExpiry)?.toISOString(),

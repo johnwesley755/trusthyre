@@ -3,6 +3,7 @@ import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calenda
 import { useNavigate } from 'react-router-dom';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { useSavedStore } from '../../../hooks/useSavedStore';
+import { useAuth } from '../../../providers/AuthContext';
 import { useTranslation } from '../../../providers/TranslationContext';
 import { buildJobWhatsAppMessage, openWhatsAppShare } from '../../../utils/whatsappTemplate.utils';
 import { TranslateText } from '../../../components/common/TranslateText';
@@ -18,6 +19,7 @@ export interface JobCardData {
   location?: string;
   city?: string;
   budget?: number;
+  dailyRate?: number | null;
   experienceYearsRequired?: number;
   status?: string;
   createdAt?: string;
@@ -67,6 +69,8 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
   const navigate = useNavigate();
   const { isJobSaved, toggleSaveJob } = useSavedStore();
   const isSaved = isJobSaved(job.id);
+  const { user } = useAuth();
+  const isEmployer = Boolean(user && user.role === 'EMPLOYER');
   const [imageError, setImageError] = useState(false);
   const [isPamphletOpen, setIsPamphletOpen] = useState(false);
   const effectiveCoverUrl = !imageError ? getEffectiveCoverUrl(job) : null;
@@ -355,9 +359,16 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           </div>
           <div>
             <span className="block text-[10px] font-medium uppercase tracking-wider text-[#717784]">Pay / Salary</span>
-            <span className={`text-xs sm:text-sm font-bold ${isExpired ? 'text-slate-500 line-through' : 'text-emerald-700'}`}>
-              {salaryText}
-            </span>
+            <div className="flex flex-col">
+              <span className={`text-xs sm:text-sm font-bold ${isExpired ? 'text-slate-500 line-through' : 'text-emerald-700'}`}>
+                {salaryText}
+              </span>
+              {job.budget && Number(job.budget) > 0 && !isExpired && (
+                <span className="text-[10px] font-semibold text-emerald-800">
+                  ≈ ₹{Math.round(Number(job.budget) / 26).toLocaleString('en-IN')}/day
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -439,18 +450,20 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* 📱 1-Tap Hiring Flyer / Pamphlet Generator (WorkIndia Viral Feature) */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsPamphletOpen(true);
-              }}
-              className="p-2 rounded-full bg-[#f4f4f4] hover:bg-amber-100 text-amber-700 hover:text-amber-800 border border-[#e6e8ec] transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
-              title="Share as visual WhatsApp hiring poster"
-            >
-              <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-            </button>
+            {/* 📱 1-Tap Hiring Flyer / Visiting Card Generator (Available for Employers) */}
+            {isEmployer && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsPamphletOpen(true);
+                }}
+                className="p-2 rounded-full bg-[#f4f4f4] hover:bg-amber-100 text-amber-700 hover:text-amber-800 border border-[#e6e8ec] transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
+                title="Share as visual WhatsApp hiring flyer"
+              >
+                <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+              </button>
+            )}
 
             {/* 📞 One-Tap Direct Call HR (WorkIndia & Apna Viral Conversion Feature) */}
             {!isExpired && (job.allowDirectCall ?? true) && (job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber) && (

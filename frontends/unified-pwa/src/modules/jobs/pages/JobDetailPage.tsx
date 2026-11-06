@@ -49,6 +49,7 @@ import {
 } from 'lucide-react';
 import { RatingModal } from '../../../components/common/RatingModal';
 import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
+import { WalkInPassModal } from '../../../components/common/WalkInPassModal';
 import { parsePhoneNumber } from '../../../components/common/PhoneDisplay';
 import { useSavedStore } from '../../../hooks/useSavedStore';
 import { useTranslation } from '../../../providers/TranslationContext';
@@ -155,6 +156,7 @@ export default function JobDetailPage() {
   const [coverImageFailed, setCoverImageFailed] = useState(false);
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [isPamphletModalOpen, setIsPamphletModalOpen] = useState(false);
+  const [isWalkInPassOpen, setIsWalkInPassOpen] = useState(false);
   const [searchParams] = useSearchParams();
   const { language } = useTranslation();
 
@@ -533,15 +535,17 @@ export default function JobDetailPage() {
           </button>
 
           <div className="flex items-center gap-2">
-            {/* WorkIndia-style Instant Hiring Flyer / Pamphlet Generator */}
-            <button
-              onClick={() => setIsPamphletModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
-              title="Download & share high-contrast WhatsApp hiring flyer"
-            >
-              <Zap className="w-3.5 h-3.5 fill-white text-white" />
-              <span>Hiring Flyer</span>
-            </button>
+            {/* Instant Hiring Flyer / Visiting Card Generator (Available for Employers & Job Owners) */}
+            {isEmployer && (
+              <button
+                onClick={() => setIsPamphletModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                title="Download & share high-contrast WhatsApp hiring flyer"
+              >
+                <Zap className="w-3.5 h-3.5 fill-white text-white" />
+                <span>Hiring Flyer</span>
+              </button>
+            )}
 
             {/* WhatsApp Viral Referral Share Button */}
             <button
@@ -1433,15 +1437,25 @@ export default function JobDetailPage() {
                     )}
                   </div>
 
-                  <a
-                    href={mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 active:scale-98 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 shadow-xs transition-all no-underline"
-                  >
-                    <MapPin className="w-4 h-4 text-slate-950" />
-                    <span>View Venue on Google Maps</span>
-                  </a>
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsWalkInPassOpen(true)}
+                      className="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-white" />
+                      <span>Get 1-Tap Walk-In Pass</span>
+                    </button>
+                    <a
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2.5 px-4 bg-amber-500 hover:bg-amber-600 active:scale-98 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-1.5 shadow-xs transition-all no-underline shrink-0"
+                    >
+                      <MapPin className="w-3.5 h-3.5 text-slate-950" />
+                      <span>Directions</span>
+                    </a>
+                  </div>
                 </div>
               );
             })()}
@@ -1609,6 +1623,30 @@ export default function JobDetailPage() {
             contactPhone: (job as any).contactPhone || (job as any).contact_phone || additionalDetails.contactPhone || (employer as any)?.phoneNumber || (job as any).employerProfile?.phoneNumber,
             isUrgentSpotHire: Boolean((job as any).isUrgentSpotHire || additionalDetails.isUrgentSpotHire)
           }}
+        />
+      )}
+
+      {/* 🎟️ 1-TAP WALKIN PASS MODAL */}
+      {isWalkInPassOpen && job && (
+        <WalkInPassModal
+          isOpen={isWalkInPassOpen}
+          onClose={() => setIsWalkInPassOpen(false)}
+          job={{
+            id: job.id,
+            title: job.title,
+            companyName: (job as any)?.employerProfile?.companyName || (job as any)?.employerName || 'Verified Employer',
+            city: job.city,
+            location: job.location,
+            walkInDetails: (job as any)?.walkInDetails || additionalDetails.walkInDetails,
+            contactPhone: (job as any).contactPhone || (job as any).contact_phone || additionalDetails.contactPhone || (employer as any)?.phoneNumber || (job as any).employerProfile?.phoneNumber
+          }}
+          candidate={{
+            fullName: profile?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.name || 'Verified Candidate',
+            trade: (profile as any)?.primaryTrade || (profile as any)?.trade || (job as any)?.industry || 'Specialist',
+            phone: profile?.phoneNumber || user?.phoneNumber || user?.phone || 'Contact via TrustHyre',
+            experienceYears: profile?.experienceYears || 1,
+            profileId: (profile as any)?.id || user?.id
+          }}  
         />
       )}
     </div>

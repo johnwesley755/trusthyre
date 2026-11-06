@@ -6,6 +6,8 @@ export interface User {
   role: UserRole;
   onboarded: boolean;
   identityVerified: boolean;
+  name?: string;
+  phone?: string;
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
@@ -74,6 +76,7 @@ export interface Job {
   requiredSkills: string[];
   experienceYearsRequired: number;
   budget: number;
+  dailyRate?: number | null;
   location: string;
   latitude?: number;
   longitude?: number;
