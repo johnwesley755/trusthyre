@@ -470,8 +470,8 @@ export default function LandingPage() {
   return (
     <div className="baseline-root bg-white text-[#0a0a0a] min-h-screen selection:bg-[#2563c9] selection:text-white font-['Onest',system-ui,sans-serif]">
       <SeoHead
-        title="India's #1 Verified Workforce & Employer Network"
-        description="Connect verified blue-collar and skilled workers with top employers through verified skill passports, transparent attendance, and direct hiring on TrustHyre."
+        title="Verified Job Vacancies & Walk-In Openings in India 2026"
+        description="Explore active verified job openings in India for November 2026. Direct hiring for Electricians, Chefs, Drivers, Warehouse Logistics & Technicians with verified pay and zero consultant fees."
         canonicalPath="/"
       />
       

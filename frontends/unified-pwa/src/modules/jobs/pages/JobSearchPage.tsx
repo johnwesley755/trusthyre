@@ -391,8 +391,8 @@ export default function JobSearchPage() {
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
       <SeoHead
-        title="Browse Verified Job Openings"
-        description="Find top verified trade, technician, and skilled blue-collar job openings with direct employer hiring on TrustHyre."
+        title="Search Verified Job Vacancies in India 2026"
+        description="Apply for verified trade and blue-collar jobs in India on TrustHyre. Filter by preferred salary, daily wage, trade, experience, and location. Call employers directly with zero consultant commission."
         canonicalPath="/search"
       />
       <div className="max-w-7xl mx-auto space-y-6">

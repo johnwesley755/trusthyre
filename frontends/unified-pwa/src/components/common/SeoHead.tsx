@@ -240,14 +240,11 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     setHreflangTag('hi', `${fullUrl}?lang=hi`);
     setHreflangTag('x-default', fullUrl);
 
-    // Robots noindex directive handling
+    // Robots index / noindex directive handling
     if (noIndex) {
       setMetaTag('meta[name="robots"]', 'name', 'robots', 'noindex, nofollow');
     } else {
-      const robotsTag = document.querySelector('meta[name="robots"]');
-      if (robotsTag && robotsTag.parentNode) {
-        robotsTag.parentNode.removeChild(robotsTag);
-      }
+      setMetaTag('meta[name="robots"]', 'name', 'robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
     }
 
     // Update Open Graph

@@ -523,7 +523,77 @@ ${JSON.stringify(jobPostingJsonLd, null, 2)}
     });
   }
 
-  // 3. Fallback generic crawl shell
+  // 3. Crawler pre-render for /search or /jobs (Solves Googlebot "No referring sitemaps/pages detected" on CSR SPAs)
+  if (cleanPath === '/search' || cleanPath === '/jobs' || cleanPath === '/find-jobs') {
+    const activeJobs = await (prisma as any).jobs.findMany({
+      where: {
+        OR: [
+          { status: 'ACTIVE' },
+          { status: 'OPEN' }
+        ]
+      },
+      select: {
+        id: true,
+        title: true,
+        company_name: true,
+        city: true,
+        salary_min: true,
+        salary_max: true,
+        salary_type: true,
+        job_type: true,
+        created_at: true,
+      },
+      orderBy: { created_at: 'desc' },
+      take: 50,
+    }).catch(() => []);
+
+    const jobListItems = activeJobs.map((j: any) => `
+      <article style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 16px; background: #fff;">
+        <h2 style="font-size: 1.15rem; margin: 0 0 6px 0;">
+          <a href="${BASE_DOMAIN}/job/${j.id}" style="color: #0f2f63; text-decoration: underline;">${escapeHtml(j.title || 'Verified Job Opening')}</a>
+        </h2>
+        <p style="color: #475569; font-size: 0.9rem; margin: 0 0 6px 0;">
+          <strong>${escapeHtml(j.company_name || 'Verified Direct Employer')}</strong> • ${escapeHtml(j.city || 'India')} • <span>${escapeHtml(j.job_type || 'Full Time')}</span>
+        </p>
+        <p style="color: #16a34a; font-weight: bold; font-size: 0.95rem; margin: 0;">
+          ${j.salary_min && j.salary_max ? `₹${Number(j.salary_min).toLocaleString('en-IN')} - ₹${Number(j.salary_max).toLocaleString('en-IN')} / ${j.salary_type || 'month'}` : 'Attractive Verified Wage'}
+        </p>
+      </article>
+    `).join('\n');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Verified Job Vacancies in India 2026 | Search Jobs in India | TrustHyre</title>
+  <meta name="description" content="Apply for verified jobs in India on TrustHyre. Filter by salary, daily wage, trade, experience, and location. Call employers directly with zero consultant commission.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <link rel="canonical" href="${BASE_DOMAIN}/search">
+  <meta property="og:title" content="Verified Job Vacancies in India 2026 | Search Jobs in India | TrustHyre">
+  <meta property="og:description" content="Apply for verified jobs in India on TrustHyre. Filter by salary, daily wage, trade & city. Call employers directly with zero consultant commission.">
+  <meta property="og:url" content="${BASE_DOMAIN}/search">
+</head>
+<body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 24px; color: #0a0a0a; background: #f8fafc;">
+  <header style="margin-bottom: 24px; border-bottom: 2px solid #0f2f63; padding-bottom: 16px;">
+    <h1 style="color: #0f2f63; margin: 0; font-size: 1.75rem;">Verified Job Vacancies in India 2026</h1>
+    <p style="color: #64748b; margin-top: 6px;">Browse verified job openings with direct employer hiring and zero agency commission on TrustHyre.</p>
+  </header>
+  <main>
+    ${jobListItems}
+  </main>
+  <footer style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #cbd5e1; color: #64748b; font-size: 0.85rem;">
+    <a href="${BASE_DOMAIN}/">Home</a> • <a href="${BASE_DOMAIN}/search">Search Jobs</a> • <a href="${BASE_DOMAIN}/find-workers">Find Workers</a> • <a href="${BASE_DOMAIN}/blog">Blog</a>
+  </footer>
+</body>
+</html>`;
+
+    return c.html(html, 200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=1800, s-maxage=3600',
+    });
+  }
+
+  // 4. Fallback generic crawl shell
   return c.text('TrustHyre SEO Crawl Endpoint', 200);
 });
 

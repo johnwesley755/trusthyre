@@ -15,6 +15,7 @@ Allow: /feed.xml
 Disallow: /admin/
 Disallow: /admin/*
 Disallow: /dashboard
+Disallow: /dashboard/*
 Disallow: /tracker
 Disallow: /settings
 Disallow: /verify-identity
@@ -23,4 +24,3 @@ Disallow: /api/
 
 # Sitemaps
 Sitemap: https://trusthyre.com/sitemap.xml
-Sitemap: https://api.trusthyre.com/sitemap.xml
