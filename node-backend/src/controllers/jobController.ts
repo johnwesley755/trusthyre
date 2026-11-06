@@ -60,6 +60,19 @@ export const formatJob = (job: any) => {
     ? additionalDetails.equipmentRequired
     : (Array.isArray(additionalDetails.equipment_required) ? additionalDetails.equipment_required : []);
 
+  const requiredDocuments = Array.isArray((job as any).required_documents)
+    ? (job as any).required_documents
+    : (Array.isArray(additionalDetails.requiredDocuments)
+        ? additionalDetails.requiredDocuments
+        : (Array.isArray(additionalDetails.required_documents)
+            ? additionalDetails.required_documents
+            : ['aadhaar', 'bank_passbook']));
+
+  const payoutFrequency = (job as any).payout_frequency || additionalDetails.payoutFrequency || additionalDetails.payout_frequency || 'MONTHLY';
+  const payoutGuaranteeBadge = (job as any).payout_guarantee_badge !== undefined
+    ? Boolean((job as any).payout_guarantee_badge)
+    : (additionalDetails.payoutGuaranteeBadge !== undefined ? Boolean(additionalDetails.payoutGuaranteeBadge) : true);
+
   return {
     ...job,
     additionalDetails: additionalDetails || {},
@@ -81,6 +94,12 @@ export const formatJob = (job: any) => {
     walk_in_details: walkInDetails,
     equipmentRequired,
     equipment_required: equipmentRequired,
+    requiredDocuments,
+    required_documents: requiredDocuments,
+    payoutFrequency,
+    payout_frequency: payoutFrequency,
+    payoutGuaranteeBadge,
+    payout_guarantee_badge: payoutGuaranteeBadge,
     description: sanitizeHtmlDescription(job.description),
     coverImageUrl: job.cover_image_url || job.coverImageUrl || null,
     cover_image_url: job.cover_image_url || job.coverImageUrl || null,
@@ -142,6 +161,19 @@ export const createJob = async (c: Context) => {
           ? data.equipment_required
           : (Array.isArray(data.additionalDetails?.equipmentRequired) ? data.additionalDetails?.equipmentRequired : []));
 
+    const parsedRequiredDocuments = Array.isArray(data.requiredDocuments)
+      ? data.requiredDocuments
+      : (Array.isArray(data.required_documents)
+          ? data.required_documents
+          : (Array.isArray(data.additionalDetails?.requiredDocuments) ? data.additionalDetails?.requiredDocuments : ['aadhaar', 'bank_passbook']));
+
+    const parsedPayoutFrequency = data.payoutFrequency || data.payout_frequency || data.additionalDetails?.payoutFrequency || 'MONTHLY';
+    const parsedPayoutGuarantee = data.payoutGuaranteeBadge !== undefined
+      ? Boolean(data.payoutGuaranteeBadge)
+      : (data.payout_guarantee_badge !== undefined
+          ? Boolean(data.payout_guarantee_badge)
+          : (data.additionalDetails?.payoutGuaranteeBadge !== undefined ? Boolean(data.additionalDetails?.payoutGuaranteeBadge) : true));
+
     const mergedAdditionalDetails = {
       ...(data.additionalDetails || data.additional_details || {}),
       perks: Array.isArray(data.perks) ? data.perks : (data.additionalDetails?.perks || []),
@@ -152,7 +184,10 @@ export const createJob = async (c: Context) => {
       isUrgentSpotHire: Boolean(data.isUrgentSpotHire || data.is_urgent_spot_hire || data.additionalDetails?.isUrgentSpotHire),
       isWalkInInterview,
       walkInDetails: isWalkInInterview ? walkInDetails : null,
-      equipmentRequired
+      equipmentRequired,
+      requiredDocuments: parsedRequiredDocuments,
+      payoutFrequency: parsedPayoutFrequency,
+      payoutGuaranteeBadge: parsedPayoutGuarantee
     };
 
     const job = await prisma.jobs.create({
@@ -175,6 +210,9 @@ export const createJob = async (c: Context) => {
               ? Number(data.experience_years_required)
               : (data.experience !== undefined && data.experience !== null && data.experience !== '' ? Number(data.experience) : 0)),
         cover_image_url: data.coverImageUrl || data.cover_image_url || null,
+        required_documents: parsedRequiredDocuments,
+        payout_frequency: parsedPayoutFrequency,
+        payout_guarantee_badge: parsedPayoutGuarantee,
         status: 'OPEN',
         expires_at: expiresAt,
         alternate_sources: { additional_details: mergedAdditionalDetails },

@@ -411,6 +411,114 @@ export const TRADE_INTERVIEW_GUIDES: Record<string, TradeInterviewGuide> = {
   }
 };
 
+export const DOCUMENT_CATALOG: Record<string, DocumentItem> = {
+  aadhaar: {
+    id: 'aadhaar',
+    name: 'Aadhaar Card (Original + 2 Photocopies)',
+    description: 'Mandatory government photo ID for gate pass & PF/ESI compliance.',
+    isMandatory: true,
+    category: 'id'
+  },
+  bank_passbook: {
+    id: 'bank_passbook',
+    name: 'Bank Passbook / Cancelled Cheque',
+    description: 'Required for salary bank account linking (Name must match Aadhaar).',
+    isMandatory: true,
+    category: 'financial'
+  },
+  passport_photos: {
+    id: 'passport_photos',
+    name: 'Passport Size Photos (4 copies)',
+    description: 'For physical company ID card and gate pass enrollment.',
+    isMandatory: true,
+    category: 'general'
+  },
+  driving_license: {
+    id: 'driving_license',
+    name: 'Valid Driving License (LMV / Commercial / 2-Wheeler)',
+    description: 'Original physical plastic card or mParivahan digital verified copy.',
+    isMandatory: true,
+    category: 'skill'
+  },
+  pan: {
+    id: 'pan',
+    name: 'PAN Card (Original)',
+    description: 'Compulsory for tax compliance and official payroll disbursement.',
+    isMandatory: true,
+    category: 'id'
+  },
+  vehicle_rc: {
+    id: 'vehicle_rc',
+    name: 'Vehicle RC + Active Insurance',
+    description: 'Valid registration certificate and active third-party insurance.',
+    isMandatory: false,
+    category: 'skill'
+  },
+  police_verification: {
+    id: 'police_verification',
+    name: 'Police Verification Certificate / PCC',
+    description: 'Mandatory background verification for security, delivery, and residential duty.',
+    isMandatory: true,
+    category: 'skill'
+  },
+  iti_certificate: {
+    id: 'iti_certificate',
+    name: 'ITI Certificate / Trade Diploma',
+    description: 'NCVT/SCVT recognized certification or certified apprenticeship proof.',
+    isMandatory: true,
+    category: 'skill'
+  },
+  experience_letter: {
+    id: 'experience_letter',
+    name: 'Previous Employer Relieving / Experience Letter',
+    description: 'Service proof showing past work duration and designation.',
+    isMandatory: false,
+    category: 'skill'
+  },
+  medical_fitness: {
+    id: 'medical_fitness',
+    name: 'Medical Fitness & Blood Test Certificate',
+    description: 'Basic health clearance certifying physical stamina for active duty.',
+    isMandatory: false,
+    category: 'general'
+  }
+};
+
+/**
+ * Resolves an array of document items for a job.
+ * If specific document keys are provided from the database, it returns only those documents.
+ * Otherwise, falls back to the trade's default document list.
+ */
+export function getJobSpecificDocuments(
+  jobRequiredDocs?: string[],
+  fallbackGuideDocs?: DocumentItem[]
+): DocumentItem[] {
+  if (Array.isArray(jobRequiredDocs) && jobRequiredDocs.length > 0) {
+    const resolved: DocumentItem[] = [];
+    jobRequiredDocs.forEach((docKey) => {
+      const cleanKey = String(docKey).toLowerCase().trim().replace(/[-\s]/g, '_');
+      if (DOCUMENT_CATALOG[cleanKey]) {
+        resolved.push(DOCUMENT_CATALOG[cleanKey]);
+      } else if (cleanKey === 'dl' && DOCUMENT_CATALOG.driving_license) {
+        resolved.push(DOCUMENT_CATALOG.driving_license);
+      } else if (cleanKey === 'photos' && DOCUMENT_CATALOG.passport_photos) {
+        resolved.push(DOCUMENT_CATALOG.passport_photos);
+      } else {
+        // Generic fallback item for any custom document string added by employer
+        resolved.push({
+          id: cleanKey,
+          name: docKey.charAt(0).toUpperCase() + docKey.slice(1).replace(/_/g, ' '),
+          description: 'Document requested specifically by this employer for joining.',
+          isMandatory: true,
+          category: 'skill'
+        });
+      }
+    });
+    if (resolved.length > 0) return resolved;
+  }
+  return fallbackGuideDocs && fallbackGuideDocs.length > 0 ? fallbackGuideDocs : BASE_MANDATORY_DOCUMENTS;
+}
+
 /**
  * Resolves the closest trade interview guide based on job title or category.
  */

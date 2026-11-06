@@ -479,25 +479,23 @@ export default function JobSearchPage() {
           </div>
 
           {/* CENTER COLUMN: Feed (Full width on mobile, 6 cols on desktop) */}
-          <div className="col-span-1 lg:col-span-6 space-y-5">
+          <div className="col-span-1 lg:col-span-6 space-y-4">
             
-            {/* ⚡ 24H SPOT-HIRE & WALK-IN RADAR STRIP (Nithra & JobToday Model) */}
-            <div className="bg-gradient-to-r from-amber-50 via-rose-50 to-amber-50 border border-amber-200/80 rounded-[1.5rem] p-3.5 sm:p-4 shadow-2xs space-y-2.5">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-                  <span className="text-xs font-black uppercase tracking-wider text-rose-900 flex items-center gap-1">
-                    <Zap className="w-3.5 h-3.5 fill-rose-600 text-rose-600" />
-                    <span>24h Spot-Hire & Walk-In Radar</span>
-                  </span>
-                </div>
-                <span className="text-[11px] font-bold text-amber-900 bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-300">
-                  {city ? `Active in ${city}` : 'Direct Company Entry'}
-                </span>
-              </div>
+            {/* ⚡ High-Conversion Frontline Quick Action & Filter Bar */}
+            <div className="bg-white border border-[#e6e8ec] rounded-2xl p-3 sm:p-3.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                {/* 1-Tap Labour Chowk Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsChowkModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-all cursor-pointer shrink-0 active:scale-95 shadow-2xs"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                  <span>Labour Chowk</span>
+                </button>
 
-              {/* Quick Perks & Immediate Category Filters */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pt-1 no-scrollbar">
+                {/* Quick Perk Pills */}
                 <button
                   type="button"
                   onClick={() => {
@@ -507,11 +505,11 @@ export default function JobSearchPage() {
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
                     selectedPerkFilter === 'walkin'
                       ? 'bg-amber-600 text-white shadow-xs'
-                      : 'bg-white text-amber-900 border border-amber-200 hover:bg-amber-100/50'
+                      : 'bg-[#F8FAFC] text-amber-900 border border-amber-200 hover:bg-amber-100/50'
                   }`}
                 >
                   <Zap className="w-3.5 h-3.5 fill-current" />
-                  <span>Walk-in Today</span>
+                  <span>Walk-in</span>
                 </button>
 
                 <button
@@ -523,11 +521,11 @@ export default function JobSearchPage() {
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
                     selectedPerkFilter === 'food'
                       ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'bg-white text-emerald-900 border border-emerald-200 hover:bg-emerald-50'
+                      : 'bg-[#F8FAFC] text-emerald-900 border border-emerald-200 hover:bg-emerald-50'
                   }`}
                 >
                   <Utensils className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Free Food Provided</span>
+                  <span>Free Food</span>
                 </button>
 
                 <button
@@ -539,112 +537,26 @@ export default function JobSearchPage() {
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
                     selectedPerkFilter === 'room'
                       ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'bg-white text-indigo-900 border border-indigo-200 hover:bg-indigo-50'
+                      : 'bg-[#F8FAFC] text-indigo-900 border border-indigo-200 hover:bg-indigo-50'
                   }`}
                 >
                   <Home className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Room / Accommodation</span>
+                  <span>With Room</span>
                 </button>
               </div>
-            </div>
 
-            {/* ⚡ Breakthrough Feature: Digital Labour Chowk Banner (Nithra & Shramik Model) */}
-            <div className="bg-white border border-[#e6e8ec] rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs hover:border-slate-300 transition-all">
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shrink-0">
-                  <Zap className="w-5 h-5 fill-amber-500 text-amber-500" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200 uppercase tracking-wider">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Live Standby Radar
-                    </span>
-                    <h4 className="text-sm font-bold text-[#0A1931] tracking-tight">
-                      Digital Labour Chowk: Verified Workers Ready Today
-                    </h4>
-                  </div>
-                  <p className="text-xs text-[#717784] mt-1 line-clamp-1">
-                    Emergency replacements & daily wage workers ready to report in {city || 'your area'} within 45 mins.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsChowkModalOpen(true)}
-                className="px-5 py-2.5 bg-[#0f2f63] hover:bg-[#0066ff] active:bg-[#003d99] text-white rounded-full font-bold text-xs uppercase tracking-wider shrink-0 transition-all shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-auto active:scale-95"
-              >
-                <span>Open Labour Chowk</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Reassurance Anti-Scam Shield Ribbon */}
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-3.5 py-2 flex items-center justify-between text-xs text-emerald-950 shadow-2xs">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span className="font-semibold text-[11px]">
-                  <strong>100% Free Job Guarantee:</strong> Never pay consultants or registration fees. All jobs verified by TrustHyre.
-                </span>
+              {/* 100% Free Guarantee Pill */}
+              <div className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200 shrink-0">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>100% Free • No Consultant</span>
               </div>
             </div>
-
-            {/* Contextual Top Banner: Tailored for Employer vs Jobseeker */}
-            {user?.role === 'EMPLOYER' ? (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-[1.5rem] p-4 sm:p-5 flex items-center justify-between gap-4 shadow-2xs">
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-white text-[#0f2f63] flex items-center justify-center shrink-0 border border-blue-200 shadow-2xs">
-                    <Briefcase className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#0f2f63] text-white uppercase tracking-wider">Employer Mode</span>
-                      <h4 className="text-sm font-bold text-[#0a0a0a]">
-                        Looking to hire verified trade specialists?
-                      </h4>
-                    </div>
-                    <p className="text-xs text-[#475467] font-medium truncate mt-0.5">
-                      Browse and contact ready-to-work electricians, plumbers, welders and more.
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  to="/find-workers"
-                  className="px-4 py-2 bg-[#0f2f63] hover:bg-[#1a4487] text-white rounded-full font-semibold text-xs shrink-0 transition-all shadow-xs cursor-pointer active:scale-95"
-                >
-                  Find Workers
-                </Link>
-              </div>
-            ) : (
-              <div className="bg-[#f4f4f4] rounded-[1.5rem] p-4 sm:p-5 border border-[#e6e8ec] flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-white text-[#0f2f63] flex items-center justify-center shrink-0 border border-[#e6e8ec] shadow-2xs">
-                    <UploadCloud className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-sm font-bold text-[#0a0a0a]">
-                      Upload your resume
-                    </h4>
-                    <p className="text-xs text-[#717784] font-medium truncate">
-                      AI-powered smart matching with verified local employers.
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  to="/profile"
-                  className="px-4 py-2 bg-[#0f2f63] hover:bg-[#1a4487] text-white rounded-full font-medium text-xs shrink-0 transition-all shadow-xs cursor-pointer active:scale-95 uppercase"
-                >
-                  Upload
-                </Link>
-              </div>
-            )}
 
             {/* Results Count & Sort Row */}
             <div className="flex items-center justify-between px-1 flex-wrap gap-2.5">
-              <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-medium text-[#717784]">
-                  Showing <strong className="text-[#0a0a0a] font-bold">{totalItems === 0 ? 0 : `${(safeCurrentPage - 1) * pageSize + 1}-${Math.min(safeCurrentPage * pageSize, totalItems)}`}</strong> of <strong className="text-[#0a0a0a] font-bold">{totalItems}</strong> verified job postings
+                  Showing <strong className="text-[#0a0a0a] font-bold">{totalItems === 0 ? 0 : `${(safeCurrentPage - 1) * pageSize + 1}-${Math.min(safeCurrentPage * pageSize, totalItems)}`}</strong> of <strong className="text-[#0a0a0a] font-bold">{totalItems}</strong> verified jobs
                 </span>
 
                 {/* Hide / Show Expired Toggle */}
@@ -665,19 +577,19 @@ export default function JobSearchPage() {
                 <button
                   type="button"
                   onClick={() => setIsBulletinOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border border-[#25D366]/40 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] shadow-2xs transition-all cursor-pointer active:scale-95"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border border-[#25D366]/40 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] shadow-2xs transition-all cursor-pointer active:scale-95"
                   title="Generate shareable WhatsApp bulletin of today's verified jobs"
                 >
                   <svg className="w-3.5 h-3.5 fill-current text-[#25D366]" viewBox="0 0 24 24">
                     <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
                   </svg>
-                  <span>WhatsApp Job Bulletin</span>
+                  <span>Bulletin</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleOpenAlertModal}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border transition-all cursor-pointer ${
                     isMatchingAlertActive
                       ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs hover:bg-emerald-100'
                       : 'bg-white hover:bg-[#0f2f63] text-[#0f2f63] hover:text-white border-[#0f2f63]/30 shadow-2xs'
@@ -686,13 +598,13 @@ export default function JobSearchPage() {
                 >
                   {isMatchingAlertActive ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Job Alert Active</span>
+                      <Check className="w-3 h-3 text-emerald-600" />
+                      <span>Alert Active</span>
                     </>
                   ) : (
                     <>
-                      <Bell className="w-3.5 h-3.5 text-[#2563c9]" />
-                      <span>Alert Me on New Jobs</span>
+                      <Bell className="w-3 h-3 text-[#2563c9]" />
+                      <span>Alert Me</span>
                     </>
                   )}
                 </button>
@@ -700,7 +612,7 @@ export default function JobSearchPage() {
 
               {/* Sort Dropdown */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#717784] font-medium">Sort by:</span>
+                <span className="text-xs text-[#717784] font-medium">Sort:</span>
                 <div className="relative inline-block">
                   <select
                     value={sortBy}

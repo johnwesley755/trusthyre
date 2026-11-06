@@ -17,7 +17,9 @@ import { toast } from 'sonner';
 import { BaseModal } from './BaseModal';
 import {
   getTradeInterviewGuide,
-  type TradeInterviewGuide
+  getJobSpecificDocuments,
+  type TradeInterviewGuide,
+  type DocumentItem
 } from '../../constants/tradeInterviewGuides';
 
 interface InterviewPrepKitModalProps {
@@ -28,6 +30,9 @@ interface InterviewPrepKitModalProps {
   companyName: string;
   locationCity?: string;
   contactPhone?: string;
+  requiredDocuments?: string[];
+  payoutFrequency?: string;
+  payoutGuaranteeBadge?: boolean;
 }
 
 export const InterviewPrepKitModal: React.FC<InterviewPrepKitModalProps> = ({
@@ -37,9 +42,13 @@ export const InterviewPrepKitModal: React.FC<InterviewPrepKitModalProps> = ({
   jobTitle,
   companyName,
   locationCity = 'Local Worksite',
-  contactPhone
+  contactPhone,
+  requiredDocuments,
+  payoutFrequency,
+  payoutGuaranteeBadge = true
 }) => {
   const guide: TradeInterviewGuide = getTradeInterviewGuide(trade || jobTitle);
+  const documents: DocumentItem[] = getJobSpecificDocuments(requiredDocuments, guide.documents);
   const [activeTab, setActiveTab] = useState<'docs' | 'questions'>('docs');
   const [checkedDocs, setCheckedDocs] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState(false);
@@ -53,8 +62,8 @@ export const InterviewPrepKitModal: React.FC<InterviewPrepKitModalProps> = ({
     }));
   };
 
-  const mandatoryCount = guide.documents.filter((d) => d.isMandatory).length;
-  const packedMandatoryCount = guide.documents.filter(
+  const mandatoryCount = documents.filter((d) => d.isMandatory).length;
+  const packedMandatoryCount = documents.filter(
     (d) => d.isMandatory && checkedDocs[d.id]
   ).length;
   const isReady = packedMandatoryCount >= mandatoryCount;
@@ -65,7 +74,7 @@ export const InterviewPrepKitModal: React.FC<InterviewPrepKitModalProps> = ({
     text += `Trade Track: ${guide.tradeTitle}\n\n`;
 
     text += `📁 *MANDATORY DOCUMENTS TO CARRY:*\n`;
-    guide.documents.forEach((d) => {
+    documents.forEach((d) => {
       text += `• ${d.name} ${d.isMandatory ? '*(Required)*' : ''}\n  ${d.description}\n`;
     });
 
@@ -83,7 +92,7 @@ export const InterviewPrepKitModal: React.FC<InterviewPrepKitModalProps> = ({
   const handleCopy = () => {
     let raw = `INTERVIEW PREPARATION KIT: ${jobTitle} (${companyName})\n\n`;
     raw += `DOCUMENTS TO CARRY:\n`;
-    guide.documents.forEach((d) => {
+    documents.forEach((d) => {
       raw += `- ${d.name} (${d.isMandatory ? 'Mandatory' : 'Bonus'}): ${d.description}\n`;
     });
     raw += `\nTRIAL QUESTIONS:\n`;
@@ -153,6 +162,11 @@ export const InterviewPrepKitModal: React.FC<InterviewPrepKitModalProps> = ({
           >
             {packedMandatoryCount}/{mandatoryCount} Required Ready
           </span>
+          {payoutFrequency && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#eff6ff] text-[#0066ff] border border-[#dbeafe]">
+              {payoutFrequency} Pay
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-1.5 text-[#717784] font-medium text-[11px]">
@@ -172,7 +186,7 @@ export const InterviewPrepKitModal: React.FC<InterviewPrepKitModalProps> = ({
           }`}
         >
           <FileText className="w-4 h-4" />
-          <span>Documents to Carry ({guide.documents.length})</span>
+          <span>Documents to Carry ({documents.length})</span>
         </button>
         <button
           onClick={() => setActiveTab('questions')}
@@ -198,7 +212,7 @@ export const InterviewPrepKitModal: React.FC<InterviewPrepKitModalProps> = ({
               </span>
             </div>
 
-            {guide.documents.map((doc) => {
+            {documents.map((doc) => {
               const isChecked = !!checkedDocs[doc.id];
               return (
                 <div
