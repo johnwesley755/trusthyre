@@ -50,6 +50,9 @@ export default function JobSearchPage() {
   const [trade, setTrade] = useState(searchParams.get('trade') || 'All');
   const [source, setSource] = useState(searchParams.get('source') || 'all');
   const [sortBy, setSortBy] = useState<'date_desc' | 'salary_desc' | 'salary_asc'>('date_desc');
+  const [wageViewMode, setWageViewMode] = useState<'monthly' | 'daily'>(
+    (searchParams.get('rate') as 'monthly' | 'daily') || 'monthly'
+  );
   const [isLocating, setIsLocating] = useState(false);
 
   // Pagination & Display State
@@ -316,6 +319,8 @@ export default function JobSearchPage() {
         location: j.location,
         city: j.city,
         budget: j.budget,
+        dailyRate: j.dailyRate || (j.budget && Number(j.budget) > 0 ? Math.round(Number(j.budget) / 26) : null),
+        wageViewMode,
         experienceYearsRequired: j.experienceYearsRequired ?? j.experience_years_required ?? 0,
         status: isExpired ? 'EXPIRED' : (j.status || 'OPEN'),
         createdAt: createdDate,
@@ -337,9 +342,12 @@ export default function JobSearchPage() {
         contactWhatsapp: j.contactWhatsapp || j.contact_whatsapp || null,
         additionalDetails: j.additionalDetails || j.additional_details,
         isUrgentSpotHire: Boolean(j.isUrgentSpotHire || j.is_urgent_spot_hire || (j.additionalDetails && j.additionalDetails.isUrgentSpotHire)),
+        requiredDocuments: j.requiredDocuments || j.required_documents || j.additionalDetails?.requiredDocuments,
+        payoutFrequency: j.payoutFrequency || j.payout_frequency || j.additionalDetails?.payoutFrequency,
+        payoutGuaranteeBadge: j.payoutGuaranteeBadge ?? j.payout_guarantee_badge ?? j.additionalDetails?.payoutGuaranteeBadge,
       };
     });
-  }, [jobs, appliedJobIdsMap]);
+  }, [jobs, appliedJobIdsMap, wageViewMode]);
 
   // Filter based on hideExpired and selectedPerkFilter
   const displayJobs = useMemo(() => {
@@ -479,12 +487,12 @@ export default function JobSearchPage() {
           </div>
 
           {/* CENTER COLUMN: Feed (Full width on mobile, 6 cols on desktop) */}
-          <div className="col-span-1 lg:col-span-6 space-y-4">
+          <div className="col-span-1 lg:col-span-6 space-y-3">
             
             {/* ⚡ High-Conversion Frontline Quick Action & Filter Bar */}
-            <div className="bg-white border border-[#e6e8ec] rounded-2xl p-3 sm:p-3.5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-                {/* 1-Tap Labour Chowk Button */}
+            <div className="bg-white border border-[#e6e8ec] rounded-2xl p-2.5 sm:p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                {/* 1-Tap Instant Spot Hire Button */}
                 <button
                   type="button"
                   onClick={() => setIsChowkModalOpen(true)}
@@ -492,57 +500,32 @@ export default function JobSearchPage() {
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                  <span>Labour Chowk</span>
+                  <span>Instant Spot Hire</span>
                 </button>
 
-                {/* Quick Perk Pills */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = selectedPerkFilter === 'walkin' ? 'all' : 'walkin';
-                    setSelectedPerkFilter(next);
-                  }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
-                    selectedPerkFilter === 'walkin'
-                      ? 'bg-amber-600 text-white shadow-xs'
-                      : 'bg-[#F8FAFC] text-amber-900 border border-amber-200 hover:bg-amber-100/50'
-                  }`}
-                >
-                  <Zap className="w-3.5 h-3.5 fill-current" />
-                  <span>Walk-in</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = selectedPerkFilter === 'food' ? 'all' : 'food';
-                    setSelectedPerkFilter(next);
-                  }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
-                    selectedPerkFilter === 'food'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'bg-[#F8FAFC] text-emerald-900 border border-emerald-200 hover:bg-emerald-50'
-                  }`}
-                >
-                  <Utensils className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Free Food</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = selectedPerkFilter === 'room' ? 'all' : 'room';
-                    setSelectedPerkFilter(next);
-                  }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
-                    selectedPerkFilter === 'room'
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'bg-[#F8FAFC] text-indigo-900 border border-indigo-200 hover:bg-indigo-50'
-                  }`}
-                >
-                  <Home className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>With Room</span>
-                </button>
+                {/* Unified Perks Filters */}
+                {[
+                  { id: 'all', label: 'All Openings' },
+                  { id: 'spot', label: '⚡ Urgent Spot Hire' },
+                  { id: 'food', label: '🍛 Free Food' },
+                  { id: 'room', label: '🏠 With Room' },
+                  { id: 'daily', label: '💵 Daily Pay' },
+                  { id: 'ot', label: '⏱️ Overtime OT' },
+                  { id: 'travel', label: '⛽ Fuel Allowance' },
+                ].map((perk) => (
+                  <button
+                    key={perk.id}
+                    type="button"
+                    onClick={() => setSelectedPerkFilter(perk.id)}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                      selectedPerkFilter === perk.id
+                        ? 'bg-[#0f2f63] text-white shadow-xs'
+                        : 'bg-[#F8FAFC] hover:bg-slate-100 text-[#475467] border border-[#e6e8ec]'
+                    }`}
+                  >
+                    {perk.label}
+                  </button>
+                ))}
               </div>
 
               {/* 100% Free Guarantee Pill */}
@@ -553,7 +536,7 @@ export default function JobSearchPage() {
             </div>
 
             {/* Results Count & Sort Row */}
-            <div className="flex items-center justify-between px-1 flex-wrap gap-2.5">
+            <div className="flex items-center justify-between px-1 flex-wrap gap-2 pt-0.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-medium text-[#717784]">
                   Showing <strong className="text-[#0a0a0a] font-bold">{totalItems === 0 ? 0 : `${(safeCurrentPage - 1) * pageSize + 1}-${Math.min(safeCurrentPage * pageSize, totalItems)}`}</strong> of <strong className="text-[#0a0a0a] font-bold">{totalItems}</strong> verified jobs
@@ -610,48 +593,52 @@ export default function JobSearchPage() {
                 </button>
               </div>
 
-              {/* Sort Dropdown */}
+              {/* Wage Display Toggle (Monthly vs Daily) & Sort Dropdown */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#717784] font-medium">Sort:</span>
+                <div className="inline-flex items-center bg-[#f4f4f4] border border-[#e6e8ec] rounded-full p-0.5 text-[11px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWageViewMode('monthly');
+                      updateUrlParams({ rate: 'monthly' });
+                    }}
+                    className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                      wageViewMode === 'monthly'
+                        ? 'bg-[#0f2f63] text-white shadow-2xs'
+                        : 'text-[#717784] hover:text-[#0a0a0a]'
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWageViewMode('daily');
+                      updateUrlParams({ rate: 'daily' });
+                    }}
+                    className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                      wageViewMode === 'daily'
+                        ? 'bg-[#0f2f63] text-white shadow-2xs'
+                        : 'text-[#717784] hover:text-[#0a0a0a]'
+                    }`}
+                  >
+                    Daily
+                  </button>
+                </div>
+
                 <div className="relative inline-block">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
-                    className="appearance-none bg-[#f4f4f4] hover:bg-[#e6e8ec] border border-[#e6e8ec] rounded-full pl-3.5 pr-8 py-1.5 text-xs font-medium text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63] cursor-pointer transition-colors"
+                    className="appearance-none bg-[#f4f4f4] hover:bg-[#e6e8ec] border border-[#e6e8ec] rounded-full pl-3 pr-7 py-1 text-xs font-medium text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63] cursor-pointer transition-colors"
                   >
                     <option value="date_desc">Newest First</option>
                     <option value="salary_desc">Highest Pay</option>
                     <option value="salary_asc">Lowest Pay</option>
                   </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#717784] pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[#717784] pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
-            </div>
-
-            {/* Blue-Collar Quick Perks Filter Chips (WorkIndia / Apna style) */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 no-scrollbar text-xs">
-              {[
-                { id: 'all', label: 'All Openings' },
-                { id: 'spot', label: '⚡ Urgent Spot Hire' },
-                { id: 'food', label: '🍛 Free Food' },
-                { id: 'room', label: '🏠 With Room' },
-                { id: 'daily', label: '💵 Daily Pay' },
-                { id: 'ot', label: '⏱️ Overtime OT' },
-                { id: 'travel', label: '⛽ Fuel Allowance' },
-              ].map((perk) => (
-                <button
-                  key={perk.id}
-                  type="button"
-                  onClick={() => setSelectedPerkFilter(perk.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                    selectedPerkFilter === perk.id
-                      ? 'bg-[#0f2f63] text-white shadow-xs'
-                      : 'bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#475467] border border-[#e6e8ec]'
-                  }`}
-                >
-                  {perk.label}
-                </button>
-              ))}
             </div>
 
             {/* Job List Feed */}

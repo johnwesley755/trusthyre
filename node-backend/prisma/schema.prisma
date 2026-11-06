@@ -636,6 +636,26 @@ model worker_standby_pool {
   @@index([user_id], map: "idx_standby_pool_user")
 }
 
+model worker_work_history {
+  id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  worker_id               String    @db.VarChar(255)
+  company_name            String    @db.VarChar(255)
+  role_title              String    @db.VarChar(255)
+  start_date              DateTime  @db.Date
+  end_date                DateTime? @db.Date
+  is_current              Boolean?  @default(false)
+  city                    String?   @db.VarChar(100)
+  job_type                String?   @default("Full Time") @db.VarChar(50)
+  verification_status     String?   @default("SELF_REPORTED") @db.VarChar(50)
+  verified_by_employer_id String?   @db.VarChar(255)
+  description             String?
+  created_at              DateTime? @default(now()) @db.Timestamp(6)
+  updated_at              DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([worker_id], map: "idx_worker_work_history_worker_id")
+  @@index([verification_status], map: "idx_worker_work_history_status")
+}
+
 
 
 

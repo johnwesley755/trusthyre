@@ -128,7 +128,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
   const handleBookWorker = (worker: StandbyWorker) => {
     const rawNumber = worker.phone ? worker.phone.replace(/\D/g, '') : '';
     const text = encodeURIComponent(
-      `⚡ *EMERGENCY SHIFT BOOKING — TRUSTHYRE LABOUR CHOWK*\n\n` +
+      `⚡ *EMERGENCY SHIFT BOOKING — TRUSTHYRE SPOT HIRE*\n\n` +
       `Hello ${worker.name},\n` +
       `We have an immediate spot shift requirement in ${worker.taluk} (${currentCity}):\n` +
       `• Role: ${worker.trade}\n` +
@@ -163,7 +163,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Digital Labour Chowk & Standby Pool"
+      title="Instant Spot Hire & Standby Pool"
       subtitle={`Live verified standby workers ready for immediate emergency duty in ${currentCity}`}
       icon={<Zap className="w-5 h-5 text-amber-500 fill-amber-500" />}
       iconBgColor="bg-amber-50 text-amber-700 border border-amber-200"
@@ -371,7 +371,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                 Get Dispatched for Immediate Daily Shifts
               </h4>
               <p className="leading-relaxed text-[#717784]">
-                Marking yourself available registers your profile in the live database <strong>Digital Labour Chowk Radar</strong> for {currentCity}. Nearby factories, warehouses, and shops looking for emergency replacements will contact you directly.
+                Marking yourself available registers your profile in the live database <strong>Instant Spot Hire Radar</strong> for {currentCity}. Nearby factories, warehouses, and shops looking for emergency replacements will contact you directly.
               </p>
             </div>
 
@@ -477,7 +477,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                   ) : (
                     <>
                       <Zap className="w-4 h-4 fill-white" />
-                      <span>Go Live on Labour Chowk (Save to DB)</span>
+                      <span>Go Live on Spot Hire Radar (Save to DB)</span>
                     </>
                   )}
                 </button>

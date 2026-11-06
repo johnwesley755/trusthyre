@@ -23,6 +23,7 @@ export interface JobCardData {
   city?: string;
   budget?: number;
   dailyRate?: number | null;
+  wageViewMode?: 'monthly' | 'daily';
   experienceYearsRequired?: number;
   status?: string;
   createdAt?: string;
@@ -119,10 +120,15 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
 
   // Format salary
   const budget = job.budget ?? 0;
+  const viewMode = job.wageViewMode || 'monthly';
+  const computedDailyRate = job.dailyRate || (budget > 0 ? Math.round(budget / 26) : null);
+
   const salaryText = budget > 0 
-    ? (budget > 10000 
-        ? `₹${(budget / 1000).toFixed(0)}k - ₹${((budget * 1.3) / 1000).toFixed(0)}k / mo` 
-        : `₹${budget.toLocaleString()} / day`)
+    ? (viewMode === 'daily' && computedDailyRate
+        ? `₹${computedDailyRate.toLocaleString('en-IN')} / day`
+        : (budget > 10000 
+            ? `₹${(budget / 1000).toFixed(0)}k - ₹${((budget * 1.3) / 1000).toFixed(0)}k / mo` 
+            : `₹${budget.toLocaleString('en-IN')} / day`))
     : 'Competitive Pay';
 
   // Format posted time and calendar date
@@ -443,16 +449,13 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
             </span>
           </div>
           <div>
-            <span className="block text-[10px] font-medium uppercase tracking-wider text-[#717784]">Pay / Salary</span>
+            <span className="block text-[10px] font-medium uppercase tracking-wider text-[#717784]">
+              {viewMode === 'daily' ? 'Daily Wage' : 'Monthly Salary'}
+            </span>
             <div className="flex flex-col">
               <span className={`text-xs sm:text-sm font-bold ${isExpired ? 'text-slate-500 line-through' : 'text-emerald-700'}`}>
                 {salaryText}
               </span>
-              {job.budget && Number(job.budget) > 0 && !isExpired && (
-                <span className="text-[10px] font-semibold text-emerald-800">
-                  ≈ ₹{Math.round(Number(job.budget) / 26).toLocaleString('en-IN')}/day
-                </span>
-              )}
             </div>
           </div>
         </div>

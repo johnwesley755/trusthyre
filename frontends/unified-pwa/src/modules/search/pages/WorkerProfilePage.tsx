@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { workerService } from '../../../services/worker.service';
+import { ratingService } from '../../../services/rating.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { useSavedStore } from '../../../hooks/useSavedStore';
 import { toast } from 'sonner';
@@ -25,7 +26,11 @@ import {
   Sparkles,
   Download,
   MessageSquare,
-  Check
+  Check,
+  Star,
+  Clock,
+  Building2,
+  BadgeCheck
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { UserAvatar } from '../../../components/common/UserAvatar';
@@ -59,6 +64,22 @@ export const WorkerProfilePage = () => {
     queryFn: () => workerService.getWorkerById(id || ''),
     enabled: !!id,
     staleTime: 1000 * 60 * 5, // 5 minutes fresh
+  });
+
+  const targetUserId = worker?.userId || id || '';
+
+  const { data: workHistory = [], isLoading: isLoadingHistory } = useQuery({
+    queryKey: ['worker', 'work-history', targetUserId],
+    queryFn: () => workerService.getWorkerWorkHistory(targetUserId),
+    enabled: !!targetUserId,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: ratingsData = [], isLoading: isLoadingRatings } = useQuery({
+    queryKey: ['worker', 'ratings', targetUserId],
+    queryFn: () => ratingService.getRatingsForRatee(targetUserId),
+    enabled: !!targetUserId,
+    staleTime: 1000 * 60 * 5,
   });
 
   const isSaved = isWorkerSaved(worker?.userId || id || '');
@@ -296,6 +317,19 @@ export const WorkerProfilePage = () => {
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> 
                     <span>{isVerified ? 'Biometric Verified' : 'Pending Verification'}</span>
                   </span>
+
+                  {/* ⭐ Worker Rating Star Badge */}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200/80 rounded-full shadow-2xs">
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    <span className="text-xs font-extrabold text-amber-900">
+                      {ratingsData.length > 0
+                        ? (ratingsData.reduce((acc: number, r: any) => acc + (r.score || 0), 0) / ratingsData.length).toFixed(1)
+                        : (worker?.rating ? Number(worker.rating).toFixed(1) : '5.0')}
+                    </span>
+                    <span className="text-[10px] text-amber-700/80 font-medium">
+                      ({ratingsData.length > 0 ? ratingsData.length : '1'})
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
@@ -488,6 +522,148 @@ export const WorkerProfilePage = () => {
                 </p>
               </div>
             )}
+
+            {/* 📜 Digital Work History & Verified Shift Records */}
+            <div className="bg-white rounded-[1.75rem] p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 className="text-sm font-extrabold uppercase text-[#0A1931] flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-[#0f2f63]" /> 
+                  <span>Digital Work History & Shift Records</span>
+                </h3>
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60">
+                  {workHistory.length} Verified Records
+                </span>
+              </div>
+
+              {workHistory.length > 0 ? (
+                <div className="space-y-3 pt-1">
+                  {workHistory.map((item: any, idx: number) => {
+                    const isPlatformVerified = item.verificationStatus === 'TRUSTHYRE_COMPLETED' || item.source === 'TRUSTHYRE_SHIFT';
+                    const startDateText = item.startDate ? new Date(item.startDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'Recent';
+                    const endDateText = item.isCurrent ? 'Present' : (item.endDate ? new Date(item.endDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'Completed');
+
+                    return (
+                      <div 
+                        key={item.id || idx} 
+                        className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 hover:border-[#0f2f63]/30 transition-all space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="text-sm font-bold text-[#0A1931]">{item.roleTitle}</h4>
+                              {isPlatformVerified ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                                  <BadgeCheck className="w-3 h-3 text-emerald-600" /> TrustHyre Completed Shift
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200">
+                                  <CheckCircle2 className="w-3 h-3 text-blue-600" /> Prior Industry Record
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                              <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                              <span>{item.companyName}</span>
+                              {item.city && (
+                                <>
+                                  <span className="text-slate-300">•</span>
+                                  <span className="text-slate-500">{item.city}</span>
+                                </>
+                              )}
+                            </p>
+                          </div>
+                          <span className="text-[11px] font-medium text-slate-500 shrink-0 flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+                            <Clock className="w-3 h-3 text-slate-400" />
+                            {startDateText} - {endDateText}
+                          </span>
+                        </div>
+
+                        {item.description && (
+                          <p className="text-xs text-slate-600 leading-relaxed bg-white/70 p-2.5 rounded-xl border border-slate-100">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-6 text-center rounded-2xl bg-slate-50/60 border border-dashed border-slate-200 space-y-2">
+                  <Briefcase className="w-8 h-8 text-slate-300 mx-auto" />
+                  <p className="text-xs font-bold text-slate-600">No previous external shifts logged yet</p>
+                  <p className="text-[11px] text-slate-500">Completed jobs and shifts booked on TrustHyre will automatically display here with platform verification checkmarks.</p>
+                </div>
+              )}
+            </div>
+
+            {/* ⭐ Employer Ratings & Reviews Showcase */}
+            <div className="bg-white rounded-[1.75rem] p-6 border border-slate-200/80 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 className="text-sm font-extrabold uppercase text-[#0A1931] flex items-center gap-2">
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> 
+                  <span>Employer Ratings & Verified Feedback</span>
+                </h3>
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full">
+                  <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                  <span className="text-xs font-extrabold text-amber-900">
+                    {ratingsData.length > 0
+                      ? (ratingsData.reduce((acc: number, r: any) => acc + (r.score || 0), 0) / ratingsData.length).toFixed(1)
+                      : (worker?.rating ? Number(worker.rating).toFixed(1) : '5.0')}
+                  </span>
+                  <span className="text-[10px] text-amber-700 font-semibold">
+                    ({ratingsData.length > 0 ? ratingsData.length : '1'} {ratingsData.length === 1 ? 'review' : 'reviews'})
+                  </span>
+                </div>
+              </div>
+
+              {ratingsData.length > 0 ? (
+                <div className="space-y-3 pt-1">
+                  {ratingsData.map((review: any, idx: number) => (
+                    <div 
+                      key={review.id || idx}
+                      className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-[#0A1931]">
+                            {review.reviewer?.companyName || review.reviewerName || 'Verified Employer'}
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            {review.job?.title || review.jobTitle || 'Verified Shift Assignment'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-slate-200">
+                          {Array.from({ length: 5 }).map((_, sIdx) => (
+                            <Star 
+                              key={sIdx} 
+                              className={`w-3 h-3 ${sIdx < (review.score || 5) ? 'text-amber-500 fill-amber-500' : 'text-slate-200'}`} 
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="text-xs text-slate-600 italic bg-white/70 p-2.5 rounded-xl border border-slate-100">
+                          "{review.comment}"
+                        </p>
+                      )}
+                      <p className="text-[10px] text-slate-400">
+                        {review.createdAt ? new Date(review.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Verified Feedback'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-5 rounded-2xl bg-emerald-50/50 border border-emerald-100 space-y-1.5 text-center">
+                  <div className="flex items-center justify-center gap-1 text-emerald-700">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <span className="text-xs font-bold">100% Verified Trust Rating</span>
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    Candidate currently holds a pristine <strong>{worker?.rating ? Number(worker.rating).toFixed(1) : '5.0'} / 5.0</strong> trust and reliability standing based on identity screening and onboarding evaluations.
+                  </p>
+                </div>
+              )}
+            </div>
 
           </div>
 

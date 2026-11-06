@@ -14,10 +14,15 @@ router.post('/profile/:userId/view', workerController.incrementProfileView);
 router.get('/trust-score/:userId', workerController.getTrustScore);
 router.get('/stats', workerController.getGlobalStats);
 
-// ⚡ Digital Labour Chowk Standby Pool endpoints
+// ⚡ Instant Spot Hire Standby Pool endpoints
 router.get('/standby-pool', optionalAuth, workerController.getStandbyPoolWorkers);
 router.post('/standby-pool', authenticateJWT, workerController.joinStandbyPool);
 router.delete('/standby-pool/me', authenticateJWT, workerController.leaveStandbyPool);
+
+// 📜 Digital Work History & Verified Shift Records
+router.get('/:id/work-history', optionalAuth, workerController.getWorkerWorkHistory);
+router.post('/work-history', authenticateJWT, workerController.addWorkerWorkHistory);
+router.delete('/work-history/:historyId', authenticateJWT, workerController.deleteWorkerWorkHistory);
 
 router.get('/:id', optionalAuth, workerController.getWorkerById);
 

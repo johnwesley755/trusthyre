@@ -697,7 +697,7 @@ export const getStandbyPoolWorkers = async (c: Context) => {
 
       poolRows = await prisma.$queryRawUnsafe<any[]>(sqlQuery, ...values);
     } catch (dbErr: any) {
-      console.warn('[DigitalLabourChowk] Standby pool query note:', dbErr.message);
+      console.warn('[InstantSpotHire] Standby pool query note:', dbErr.message);
       // Fallback: If table has no rows or is initializing
       return c.json(ApiResponse.ok([]));
     }
@@ -765,7 +765,8 @@ export const getStandbyPoolWorkers = async (c: Context) => {
 export const joinStandbyPool = async (c: Context) => {
   try {
     const user = c.get('user');
-    if (!user || !user.id) {
+    const userId = user?.id || user?.sub;
+    if (!userId) {
       return c.json(ApiResponse.error('Unauthorized. Please log in as a worker.'), 401 as any);
     }
 
@@ -790,7 +791,7 @@ export const joinStandbyPool = async (c: Context) => {
       INSERT INTO worker_standby_pool (
         user_id, trade, expected_daily_wage, taluk, city, shift_preference, is_ready_now, notes, available_date, updated_at
       ) VALUES (
-        ${user.id}, ${trade}, ${parsedWage}, ${safeTaluk}, ${city}, ${safeShift}, true, ${safeNotes}, CURRENT_DATE, NOW()
+        ${userId}, ${trade}, ${parsedWage}, ${safeTaluk}, ${city}, ${safeShift}, true, ${safeNotes}, CURRENT_DATE, NOW()
       )
       ON CONFLICT (user_id, available_date)
       DO UPDATE SET
@@ -805,7 +806,7 @@ export const joinStandbyPool = async (c: Context) => {
     `;
 
     return c.json(ApiResponse.ok({
-      message: 'Successfully broadcasted availability on Digital Labour Chowk!'
+      message: 'Successfully broadcasted availability on Instant Spot Hire!'
     }));
   } catch (err: any) {
     console.error('[joinStandbyPool] Error:', err);
@@ -819,19 +820,164 @@ export const joinStandbyPool = async (c: Context) => {
 export const leaveStandbyPool = async (c: Context) => {
   try {
     const user = c.get('user');
-    if (!user || !user.id) {
+    const userId = user?.id || user?.sub;
+    if (!userId) {
       return c.json(ApiResponse.error('Unauthorized.'), 401 as any);
     }
 
     await prisma.$executeRaw`
       UPDATE worker_standby_pool
       SET is_ready_now = false, updated_at = NOW()
-      WHERE user_id = ${user.id} AND available_date = CURRENT_DATE
+      WHERE user_id = ${userId} AND available_date = CURRENT_DATE
     `;
 
     return c.json(ApiResponse.ok({ message: 'Removed from today\'s standby radar.' }));
   } catch (err: any) {
     console.error('[leaveStandbyPool] Error:', err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * ⚡ Digital Work History: Combined verified platform shifts and work experience
+ */
+export const getWorkerWorkHistory = async (c: Context) => {
+  try {
+    const workerId = c.req.param('id') || c.req.param('workerId');
+    if (!workerId) {
+      return c.json(ApiResponse.error('Worker ID is required.'), 400 as any);
+    }
+
+    // 1. Fetch internal completed / accepted shifts from job_applications
+    const internalApplications = await prisma.job_applications.findMany({
+      where: {
+        worker_id: workerId,
+        status: { in: ['COMPLETED', 'ACCEPTED', 'HIRED'] }
+      },
+      include: {
+        jobs: {
+          select: {
+            id: true,
+            title: true,
+            employer_name: true,
+            city: true,
+            industry: true,
+            created_at: true
+          }
+        }
+      },
+      orderBy: { applied_at: 'desc' },
+      take: 20
+    }).catch(() => []);
+
+    const internalHistory = internalApplications.map((app) => ({
+      id: `trusthyre-${app.id}`,
+      companyName: app.jobs?.employer_name || 'Verified Employer',
+      roleTitle: app.jobs?.title || 'Frontline Specialist',
+      startDate: app.applied_at?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+      endDate: app.status === 'COMPLETED' ? app.applied_at?.toISOString().split('T')[0] : null,
+      isCurrent: app.status !== 'COMPLETED',
+      city: app.jobs?.city || 'Local Area',
+      jobType: app.jobs?.industry || 'Full Time',
+      verificationStatus: 'TRUSTHYRE_COMPLETED',
+      isTrustHyreVerified: true,
+      description: 'Shift verified and completed via TrustHyre digital dispatch.'
+    }));
+
+    // 2. Fetch logged records from worker_work_history table
+    let externalRows: any[] = [];
+    try {
+      externalRows = await prisma.$queryRawUnsafe<any[]>(
+        `SELECT * FROM worker_work_history WHERE worker_id = $1 ORDER BY start_date DESC`,
+        workerId
+      );
+    } catch (e: any) {
+      // Table may still be initializing
+      externalRows = [];
+    }
+
+    const externalHistory = externalRows.map((row: any) => ({
+      id: row.id,
+      companyName: row.company_name,
+      roleTitle: row.role_title,
+      startDate: row.start_date ? new Date(row.start_date).toISOString().split('T')[0] : '',
+      endDate: row.end_date ? new Date(row.end_date).toISOString().split('T')[0] : null,
+      isCurrent: Boolean(row.is_current),
+      city: row.city || 'Local Area',
+      jobType: row.job_type || 'Full Time',
+      verificationStatus: row.verification_status || 'SELF_REPORTED',
+      isTrustHyreVerified: row.verification_status === 'VERIFIED_BY_EMPLOYER' || row.verification_status === 'TRUSTHYRE_COMPLETED',
+      description: row.description || ''
+    }));
+
+    const combined = [...internalHistory, ...externalHistory];
+    return c.json(ApiResponse.ok(combined));
+  } catch (err: any) {
+    console.error('[getWorkerWorkHistory] Error:', err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * ⚡ Add an external work experience entry
+ */
+export const addWorkerWorkHistory = async (c: Context) => {
+  try {
+    const user = c.get('user');
+    const workerId = user?.id || user?.sub;
+    if (!workerId) {
+      return c.json(ApiResponse.error('Unauthorized.'), 401 as any);
+    }
+
+    const body = await c.req.json();
+    const { companyName, roleTitle, startDate, endDate, isCurrent, city, jobType, description } = body;
+
+    if (!companyName || !roleTitle || !startDate) {
+      return c.json(ApiResponse.error('Company name, role, and start date are required.'), 400 as any);
+    }
+
+    const parsedStart = new Date(startDate);
+    const parsedEnd = endDate ? new Date(endDate) : null;
+    const safeCity = city || '';
+    const safeJobType = jobType || 'Full Time';
+    const safeDesc = description || '';
+    const currentFlag = Boolean(isCurrent);
+
+    await prisma.$executeRaw`
+      INSERT INTO worker_work_history (
+        worker_id, company_name, role_title, start_date, end_date, is_current, city, job_type, verification_status, description, created_at, updated_at
+      ) VALUES (
+        ${workerId}, ${companyName}, ${roleTitle}, ${parsedStart}, ${parsedEnd}, ${currentFlag}, ${safeCity}, ${safeJobType}, 'SELF_REPORTED', ${safeDesc}, NOW(), NOW()
+      )
+    `;
+
+    return c.json(ApiResponse.ok({ message: 'Work history record added successfully.' }));
+  } catch (err: any) {
+    console.error('[addWorkerWorkHistory] Error:', err);
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * ⚡ Delete a work experience entry
+ */
+export const deleteWorkerWorkHistory = async (c: Context) => {
+  try {
+    const user = c.get('user');
+    const workerId = user?.id || user?.sub;
+    const historyId = c.req.param('historyId');
+    if (!workerId || !historyId) {
+      return c.json(ApiResponse.error('Unauthorized or missing history ID.'), 401 as any);
+    }
+
+    await prisma.$executeRaw`
+      DELETE FROM worker_work_history
+      WHERE id = ${historyId}::uuid AND worker_id = ${workerId}
+    `;
+
+    return c.json(ApiResponse.ok({ message: 'Work history record removed.' }));
+  } catch (err: any) {
+    console.error('[deleteWorkerWorkHistory] Error:', err);
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
 };

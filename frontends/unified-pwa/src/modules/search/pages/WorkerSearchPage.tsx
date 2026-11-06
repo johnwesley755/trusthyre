@@ -304,14 +304,14 @@ export const WorkerSearchPage = () => {
           {/* CANDIDATES FEED: Shows FIRST on mobile and in Center on desktop */}
           <div className="lg:col-span-6 space-y-5">
             
-            {/* Digital Labour Chowk Standby Radar Banner */}
+            {/* Instant Spot Hire Standby Radar Banner */}
             <div className="bg-gradient-to-r from-[#0A1931] via-[#0f2f63] to-[#0066FF] rounded-2xl p-4 text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-blue-400/20">
               <div className="space-y-1 relative z-10">
                 <div className="flex items-center gap-2">
                   <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
                   <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1">
                     <Zap className="w-3.5 h-3.5 text-amber-300" />
-                    {t("Live Digital Labour Chowk", "Live Digital Labour Chowk")}
+                    {t("Instant Spot Hire", "Instant Spot Hire")}
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white backdrop-blur-xs">
                     {t("Instant Standby", "Instant Standby")}

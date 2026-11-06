@@ -251,7 +251,7 @@ export const workerService = {
   getLevel: (id: string) => apiClient.get(`/api/worker/level/${id}`),
   completeOnboarding: (data: any) => apiClient.post('/api/worker/complete-onboarding', data),
 
-  // ⚡ Digital Labour Chowk Standby Pool API
+  // ⚡ Instant Spot Hire Standby Pool API
   getStandbyPoolWorkers: async (params?: {
     city?: string;
     trade?: string;
@@ -276,6 +276,31 @@ export const workerService = {
 
   leaveStandbyPool: async (): Promise<any> => {
     const response = await apiClient.delete<any>('/api/worker/standby-pool/me');
+    return response.data;
+  },
+
+  // 📜 Digital Work History & Verified Shift Records
+  getWorkerWorkHistory: async (userId: string): Promise<any[]> => {
+    const response = await apiClient.get<any>(`/api/worker/${userId}/work-history`);
+    return response.data || [];
+  },
+
+  addWorkerWorkHistory: async (payload: {
+    companyName: string;
+    roleTitle: string;
+    startDate: string;
+    endDate?: string;
+    isCurrent?: boolean;
+    city?: string;
+    jobType?: string;
+    description?: string;
+  }): Promise<any> => {
+    const response = await apiClient.post<any>('/api/worker/work-history', payload);
+    return response.data;
+  },
+
+  deleteWorkerWorkHistory: async (historyId: string): Promise<any> => {
+    const response = await apiClient.delete<any>(`/api/worker/work-history/${historyId}`);
     return response.data;
   },
 };

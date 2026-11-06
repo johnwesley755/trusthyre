@@ -149,9 +149,9 @@ const OPERATING_STANDARDS = [
   },
   { 
     number: "#02", 
-    title: "GPS & Photo Attendance", 
-    subtitle: "Verified Physical Arrival",
-    desc: "Workers check in on-site using GPS geofencing and live photo capture. Employers get verifiable proof of arrival, eliminating ghost workers." 
+    title: "Instant Spot Hire & Standby Radar", 
+    subtitle: "Live Standby Dispatch",
+    desc: "Workers broadcast same-day availability for urgent replacement shifts. Employers hire local technicians ready to report within 45 minutes with zero commissions." 
   },
   { 
     number: "#03", 
