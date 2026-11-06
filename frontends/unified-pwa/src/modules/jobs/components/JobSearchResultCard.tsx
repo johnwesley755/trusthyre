@@ -56,6 +56,12 @@ export interface JobCardData {
   isUrgentSpotHire?: boolean;
   isWalkInInterview?: boolean;
   walkInDetails?: any;
+  requiredDocuments?: string[];
+  required_documents?: string[];
+  payoutFrequency?: string;
+  payout_frequency?: string;
+  payoutGuaranteeBadge?: boolean;
+  payout_guarantee_badge?: boolean;
 }
 
 interface JobSearchResultCardProps {
@@ -457,10 +463,27 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
             ? job.perks 
             : (Array.isArray(job.additionalDetails?.perks) ? job.additionalDetails.perks : []);
           
-          if (perksList.length === 0) return null;
+          const payoutFreq = job.payoutFrequency || job.payout_frequency || job.additionalDetails?.payoutFrequency;
+          const hasGuarantee = job.payoutGuaranteeBadge ?? job.payout_guarantee_badge ?? job.additionalDetails?.payoutGuaranteeBadge;
+
+          if (perksList.length === 0 && !payoutFreq && !hasGuarantee) return null;
 
           return (
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+              {payoutFreq && payoutFreq !== 'MONTHLY' && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-emerald-50 text-emerald-900 border-emerald-200">
+                  <Zap className="w-3 h-3 text-emerald-600" />
+                  <span>{payoutFreq} Payout</span>
+                </span>
+              )}
+
+              {hasGuarantee && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-[#eff6ff] text-[#0066ff] border-[#dbeafe]">
+                  <ShieldCheck className="w-3 h-3 text-[#0066ff]" />
+                  <span>Joining Guarantee</span>
+                </span>
+              )}
+
               {perksList.map((p, idx) => {
                 const perk = String(p).toLowerCase();
                 let icon = <Gift className="w-3 h-3 text-emerald-600" />;
@@ -693,9 +716,13 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           isOpen={isPrepKitOpen}
           onClose={() => setIsPrepKitOpen(false)}
           jobTitle={job.title}
+          trade={job.industry}
           companyName={companyName}
           locationCity={locationText}
           contactPhone={job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber}
+          requiredDocuments={job.requiredDocuments || job.required_documents || job.additionalDetails?.requiredDocuments || job.additionalDetails?.required_documents}
+          payoutFrequency={job.payoutFrequency || job.payout_frequency || job.additionalDetails?.payoutFrequency}
+          payoutGuaranteeBadge={job.payoutGuaranteeBadge ?? job.payout_guarantee_badge ?? job.additionalDetails?.payoutGuaranteeBadge}
         />
       )}
     </div>
