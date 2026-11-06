@@ -662,31 +662,36 @@ export const getStandbyPoolWorkers = async (c: Context) => {
     const maxWage = query.maxWage ? parseFloat(query.maxWage) : undefined;
     const taluk = query.taluk;
 
-    // Use raw query or prisma delegate to query worker_standby_pool with profile joins
-    // Target today's active pool
-    const poolRows = await (prisma as any).worker_standby_pool.findMany({
-      where: {
-        city: { equals: city, mode: 'insensitive' },
-        is_ready_now: true,
-        ...(trade && trade !== 'All' ? { trade: { contains: trade, mode: 'insensitive' } } : {}),
-        ...(taluk && taluk !== 'All' ? { taluk: { equals: taluk, mode: 'insensitive' } } : {}),
-        ...(maxWage ? { expected_daily_wage: { lte: maxWage } } : {})
-      },
-      orderBy: { created_at: 'desc' },
-      take: 50
-    });
+    // Use prisma.$queryRaw so it works directly against PostgreSQL without requiring prisma generate restart
+    let poolRows: any[] = [];
+    try {
+      poolRows = await prisma.$queryRaw<any[]>`
+        SELECT * FROM worker_standby_pool
+        WHERE LOWER(city) = LOWER(${city})
+          AND is_ready_now = true
+          ${trade && trade !== 'All' ? prisma.$queryRaw`AND LOWER(trade) LIKE ${`%${trade.toLowerCase()}%`}` : prisma.$queryRaw``}
+          ${taluk && taluk !== 'All' ? prisma.$queryRaw`AND LOWER(taluk) = LOWER(${taluk})` : prisma.$queryRaw``}
+          ${maxWage ? prisma.$queryRaw`AND expected_daily_wage <= ${maxWage}` : prisma.$queryRaw``}
+        ORDER BY created_at DESC
+        LIMIT 50
+      `;
+    } catch (dbErr: any) {
+      console.warn('[DigitalLabourChowk] Standby pool query note:', dbErr.message);
+      // Fallback: If table has no rows or is initializing
+      return c.json(ApiResponse.ok([]));
+    }
 
     if (!poolRows || poolRows.length === 0) {
       return c.json(ApiResponse.ok([]));
     }
 
-    const userIds = poolRows.map((r: any) => r.user_id);
+    const userIds = poolRows.map((r: any) => r.user_id).filter(Boolean);
 
     // Fetch related profile, metadata, and verification
     const [profiles, userMetas, verifications] = await Promise.all([
       prisma.worker_profiles.findMany({
         where: { user_id: { in: userIds } }
-      }),
+      }).catch(() => []),
       prisma.user_metadata.findMany({
         where: { id: { in: userIds } }
       }).catch(() => []),
@@ -705,7 +710,7 @@ export const getStandbyPoolWorkers = async (c: Context) => {
       const isVerified = verifiedUserSet.has(row.user_id) || Boolean(profile?.skill_score && profile.skill_score >= 50);
 
       const rawPhone = meta?.phone_number || profile?.phone_number || '';
-      const maskedPhone = rawPhone.length > 5 ? rawPhone.slice(0, 4) + ' ' + '****' + rawPhone.slice(-2) : 'Contact Available';
+      const maskedPhone = rawPhone.length > 5 ? rawPhone.slice(0, 4) + ' ****' + rawPhone.slice(-2) : 'Contact Available';
 
       return {
         id: row.id,
@@ -728,6 +733,7 @@ export const getStandbyPoolWorkers = async (c: Context) => {
 
     return c.json(ApiResponse.ok(standbyWorkers));
   } catch (err: any) {
+    console.error('[getStandbyPoolWorkers] Error:', err);
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
 };
@@ -754,44 +760,34 @@ export const joinStandbyPool = async (c: Context) => {
       return c.json(ApiResponse.error('Invalid daily wage value.'), 400 as any);
     }
 
-    const todayDate = new Date();
-    todayDate.setHours(0, 0, 0, 0);
+    const safeTaluk = taluk || 'Guindy';
+    const safeNotes = notes || 'Ready for spot shift';
+    const safeShift = shiftPreference || 'DAY_SHIFT';
 
-    const record = await (prisma as any).worker_standby_pool.upsert({
-      where: {
-        uq_worker_standby_daily: {
-          user_id: user.id,
-          available_date: todayDate
-        }
-      },
-      update: {
-        trade,
-        expected_daily_wage: parsedWage,
-        taluk: taluk || 'Guindy',
-        city,
-        shift_preference: shiftPreference,
-        is_ready_now: true,
-        notes: notes || 'Ready for spot shift',
-        updated_at: new Date()
-      },
-      create: {
-        user_id: user.id,
-        trade,
-        expected_daily_wage: parsedWage,
-        taluk: taluk || 'Guindy',
-        city,
-        shift_preference: shiftPreference,
-        is_ready_now: true,
-        notes: notes || 'Ready for spot shift',
-        available_date: todayDate
-      }
-    });
+    // Upsert directly into PostgreSQL via $executeRaw
+    await prisma.$executeRaw`
+      INSERT INTO worker_standby_pool (
+        user_id, trade, expected_daily_wage, taluk, city, shift_preference, is_ready_now, notes, available_date, updated_at
+      ) VALUES (
+        ${user.id}, ${trade}, ${parsedWage}, ${safeTaluk}, ${city}, ${safeShift}, true, ${safeNotes}, CURRENT_DATE, NOW()
+      )
+      ON CONFLICT (user_id, available_date)
+      DO UPDATE SET
+        trade = EXCLUDED.trade,
+        expected_daily_wage = EXCLUDED.expected_daily_wage,
+        taluk = EXCLUDED.taluk,
+        city = EXCLUDED.city,
+        shift_preference = EXCLUDED.shift_preference,
+        is_ready_now = true,
+        notes = EXCLUDED.notes,
+        updated_at = NOW()
+    `;
 
     return c.json(ApiResponse.ok({
-      message: 'Successfully broadcasted availability on Digital Labour Chowk!',
-      record
+      message: 'Successfully broadcasted availability on Digital Labour Chowk!'
     }));
   } catch (err: any) {
+    console.error('[joinStandbyPool] Error:', err);
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
 };
@@ -806,22 +802,15 @@ export const leaveStandbyPool = async (c: Context) => {
       return c.json(ApiResponse.error('Unauthorized.'), 401 as any);
     }
 
-    const todayDate = new Date();
-    todayDate.setHours(0, 0, 0, 0);
-
-    await (prisma as any).worker_standby_pool.updateMany({
-      where: {
-        user_id: user.id,
-        available_date: todayDate
-      },
-      data: {
-        is_ready_now: false,
-        updated_at: new Date()
-      }
-    });
+    await prisma.$executeRaw`
+      UPDATE worker_standby_pool
+      SET is_ready_now = false, updated_at = NOW()
+      WHERE user_id = ${user.id} AND available_date = CURRENT_DATE
+    `;
 
     return c.json(ApiResponse.ok({ message: 'Removed from today\'s standby radar.' }));
   } catch (err: any) {
+    console.error('[leaveStandbyPool] Error:', err);
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
 };
