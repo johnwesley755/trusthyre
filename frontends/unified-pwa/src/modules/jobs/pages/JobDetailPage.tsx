@@ -45,11 +45,14 @@ import {
   Home,
   Zap,
   Fuel,
-  Clock3
+  Clock3,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { RatingModal } from '../../../components/common/RatingModal';
 import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
 import { WalkInPassModal } from '../../../components/common/WalkInPassModal';
+import { audioBriefing } from '../../../utils/audioBriefing.utils';
 import { parsePhoneNumber } from '../../../components/common/PhoneDisplay';
 import { useSavedStore } from '../../../hooks/useSavedStore';
 import { useTranslation } from '../../../providers/TranslationContext';
@@ -157,8 +160,16 @@ export default function JobDetailPage() {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [isPamphletModalOpen, setIsPamphletModalOpen] = useState(false);
   const [isWalkInPassOpen, setIsWalkInPassOpen] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [searchParams] = useSearchParams();
   const { language } = useTranslation();
+
+  useEffect(() => {
+    const unsub = audioBriefing.subscribe((speaking) => {
+      if (!speaking) setIsPlayingAudio(false);
+    });
+    return () => unsub();
+  }, []);
 
   // Auto-trigger application if redirected here after guest sign-in intent
   useEffect(() => {
@@ -535,6 +546,45 @@ export default function JobDetailPage() {
           </button>
 
           <div className="flex items-center gap-2">
+            {/* 🔊 1-Tap Audio Job Briefing (Zero cost speech synthesis) */}
+            <button
+              onClick={() => {
+                if (isPlayingAudio) {
+                  audioBriefing.stop();
+                  setIsPlayingAudio(false);
+                } else {
+                  setIsPlayingAudio(true);
+                  audioBriefing.playJobBriefing(
+                    {
+                      title: job.title,
+                      companyName: employerName,
+                      city: job.city,
+                      location: job.location,
+                      budget: job.budget,
+                      perks: Array.isArray((job as any).perks) && (job as any).perks.length > 0
+                        ? (job as any).perks
+                        : (Array.isArray(additionalDetails.perks) ? additionalDetails.perks : []),
+                      allowDirectCall: job.allowDirectCall
+                    },
+                    language
+                  );
+                }
+              }}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                isPlayingAudio
+                  ? 'bg-amber-500 border-amber-600 text-slate-950 animate-pulse ring-2 ring-amber-300'
+                  : 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100'
+              }`}
+              title={isPlayingAudio ? 'Stop Voice Briefing' : 'Listen to 15s Voice Briefing'}
+            >
+              {isPlayingAudio ? (
+                <VolumeX className="w-3.5 h-3.5 fill-current" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5" />
+              )}
+              <span>{isPlayingAudio ? 'Stop Audio' : 'Listen Job'}</span>
+            </button>
+
             {/* Instant Hiring Flyer / Visiting Card Generator (Available for Employers & Job Owners) */}
             {isEmployer && (
               <button

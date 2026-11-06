@@ -10,7 +10,13 @@ import {
   RotateCcw,
   ChevronDown,
   Bell,
-  Check
+  Check,
+  Zap,
+  MapPin,
+  ShieldCheck,
+  Utensils,
+  Home,
+  Bike
 } from 'lucide-react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { JobSearchHero } from '../components/JobSearchHero';
@@ -27,6 +33,7 @@ import { JobAlertModal } from '../components/JobAlertModal';
 import { ManageAlertsModal } from '../../dashboard/features/alerts/ManageAlertsModal';
 import { WhatsAppBulletinModal } from '../../../components/common/WhatsAppBulletinModal';
 import { SeoHead } from '../../../components/common/SeoHead';
+import { REGIONAL_DISTRICTS_TALUKS } from '../../../constants/regionalTaluks';
 
 export default function JobSearchPage() {
   const queryClient = useQueryClient();
@@ -459,6 +466,112 @@ export default function JobSearchPage() {
           {/* CENTER COLUMN: Feed (Full width on mobile, 6 cols on desktop) */}
           <div className="col-span-1 lg:col-span-6 space-y-5">
             
+            {/* ⚡ 24H SPOT-HIRE & WALK-IN RADAR STRIP (Nithra & JobToday Model) */}
+            <div className="bg-gradient-to-r from-amber-50 via-rose-50 to-amber-50 border border-amber-200/80 rounded-[1.5rem] p-3.5 sm:p-4 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+                  <span className="text-xs font-black uppercase tracking-wider text-rose-900 flex items-center gap-1">
+                    <Zap className="w-3.5 h-3.5 fill-rose-600 text-rose-600" />
+                    <span>24h Spot-Hire & Walk-In Radar</span>
+                  </span>
+                </div>
+                <span className="text-[11px] font-bold text-amber-900 bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-300">
+                  Direct Company Entry
+                </span>
+              </div>
+
+              {/* Regional District & Taluk Selector Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                <span className="text-[11px] font-bold text-slate-700 shrink-0 flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Taluk:</span>
+                </span>
+                {['All Taluks', 'Guindy', 'Ambattur', 'Sriperumbudur', 'Tambaram', 'Avadi', 'Pollachi', 'Sulur'].map((tName) => {
+                  const isSelected = (tName === 'All Taluks' && !query) || query.toLowerCase() === tName.toLowerCase();
+                  return (
+                    <button
+                      key={tName}
+                      type="button"
+                      onClick={() => {
+                        const val = tName === 'All Taluks' ? '' : tName;
+                        setQuery(val);
+                        updateUrlParams({ q: val });
+                      }}
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#0f2f63] text-white shadow-xs'
+                          : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                      }`}
+                    >
+                      {tName}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Quick Perks & Immediate Category Filters */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pt-1 no-scrollbar border-t border-amber-200/50">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = selectedPerkFilter === 'walkin' ? 'all' : 'walkin';
+                    setSelectedPerkFilter(next);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
+                    selectedPerkFilter === 'walkin'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'bg-white text-amber-900 border border-amber-200 hover:bg-amber-100/50'
+                  }`}
+                >
+                  <Zap className="w-3 h-3 fill-current" />
+                  <span>Walk-in Today</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = selectedPerkFilter === 'food' ? 'all' : 'food';
+                    setSelectedPerkFilter(next);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
+                    selectedPerkFilter === 'food'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'bg-white text-emerald-900 border border-emerald-200 hover:bg-emerald-50'
+                  }`}
+                >
+                  <Utensils className="w-3 h-3 text-emerald-600" />
+                  <span>Food Provided</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = selectedPerkFilter === 'room' ? 'all' : 'room';
+                    setSelectedPerkFilter(next);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 cursor-pointer ${
+                    selectedPerkFilter === 'room'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'bg-white text-indigo-900 border border-indigo-200 hover:bg-indigo-50'
+                  }`}
+                >
+                  <Home className="w-3 h-3 text-indigo-600" />
+                  <span>Room / Stay</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Reassurance Anti-Scam Shield Ribbon */}
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-3.5 py-2 flex items-center justify-between text-xs text-emerald-950 shadow-2xs">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-semibold text-[11px]">
+                  <strong>100% Free Job Guarantee:</strong> Never pay consultants or registration fees. All jobs verified by TrustHyre.
+                </span>
+              </div>
+            </div>
+
             {/* Contextual Top Banner: Tailored for Employer vs Jobseeker */}
             {user?.role === 'EMPLOYER' ? (
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-[1.5rem] p-4 sm:p-5 flex items-center justify-between gap-4 shadow-2xs">

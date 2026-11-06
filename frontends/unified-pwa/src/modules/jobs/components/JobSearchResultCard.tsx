@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe, Phone, Utensils, Home, Zap, Clock3, Fuel, Gift } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe, Phone, Utensils, Home, Zap, Clock3, Fuel, Gift, Volume2, VolumeX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { useSavedStore } from '../../../hooks/useSavedStore';
@@ -10,6 +10,7 @@ import { TranslateText } from '../../../components/common/TranslateText';
 import { getEffectiveCoverUrl } from '../../../utils/coverImage.utils';
 import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
 import { WalkInPassModal } from '../../../components/common/WalkInPassModal';
+import { audioBriefing } from '../../../utils/audioBriefing.utils';
 
 export interface JobCardData {
   id: string;
@@ -75,7 +76,15 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const [isPamphletOpen, setIsPamphletOpen] = useState(false);
   const [isWalkInPassOpen, setIsWalkInPassOpen] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const effectiveCoverUrl = !imageError ? getEffectiveCoverUrl(job) : null;
+
+  useEffect(() => {
+    const unsubscribe = audioBriefing.subscribe((speaking) => {
+      if (!speaking) setIsPlayingAudio(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const effectiveExpiry = job.expiresAt
     ? new Date(job.expiresAt)
@@ -159,6 +168,28 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
     openWhatsAppShare(msg);
   };
 
+  const handleVoiceBriefing = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isPlayingAudio) {
+      audioBriefing.stop();
+      setIsPlayingAudio(false);
+    } else {
+      setIsPlayingAudio(true);
+      audioBriefing.playJobBriefing(
+        {
+          title: job.title,
+          companyName,
+          city: job.city,
+          location: locationText,
+          budget: job.budget,
+          perks: Array.isArray(job.perks) ? job.perks : (Array.isArray(job.additionalDetails?.perks) ? job.additionalDetails.perks : []),
+          allowDirectCall: job.allowDirectCall
+        },
+        language
+      );
+    }
+  };
+
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleSaveJob({
@@ -214,6 +245,22 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
 
           {/* Top-Right Action Buttons on Mobile (when image is rendered on top) */}
           <div className="md:hidden absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleVoiceBriefing}
+              className={`p-2 rounded-full backdrop-blur-xs transition-all cursor-pointer shadow-xs ${
+                isPlayingAudio 
+                  ? 'bg-amber-500 text-slate-950 animate-pulse' 
+                  : 'bg-black/50 hover:bg-black/80 text-white hover:scale-105'
+              }`}
+              title={isPlayingAudio ? 'Stop audio briefing' : 'Listen to job briefing'}
+            >
+              {isPlayingAudio ? (
+                <VolumeX className="w-3.5 h-3.5 fill-current" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5" />
+              )}
+            </button>
             <button
               type="button"
               onClick={handleWhatsAppClick}
@@ -317,6 +364,24 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
 
           {/* Desktop/Default Action Buttons */}
           <div className={`${effectiveCoverUrl ? 'hidden md:flex' : 'flex'} items-center gap-1.5 shrink-0`}>
+            {/* 🔊 1-Tap Vernacular Audio Job Briefing (WorkIndia / Apna Accessibility Winner) */}
+            <button
+              type="button"
+              onClick={handleVoiceBriefing}
+              className={`p-2.5 rounded-full border transition-all cursor-pointer items-center justify-center flex shadow-2xs active:scale-95 ${
+                isPlayingAudio
+                  ? 'bg-amber-500 border-amber-600 text-slate-950 animate-pulse ring-2 ring-amber-300'
+                  : 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100'
+              }`}
+              title={isPlayingAudio ? 'Stop audio briefing' : 'Listen to 15s job briefing in your language'}
+            >
+              {isPlayingAudio ? (
+                <VolumeX className="w-4 h-4 fill-current" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
+            </button>
+
             {/* 1-Click WhatsApp Viral Share */}
             <button
               type="button"
