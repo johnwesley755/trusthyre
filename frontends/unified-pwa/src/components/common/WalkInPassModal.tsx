@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { 
-  X, 
-  Share2, 
+  Building2, 
   MapPin, 
   Calendar, 
   Clock, 
-  CheckCircle2, 
-  User, 
   Phone, 
-  Briefcase, 
   ShieldCheck, 
-  Check, 
-  ExternalLink 
+  CheckCircle2, 
+  Share2, 
+  Copy, 
+  Printer, 
+  Sparkles,
+  QrCode
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { BaseModal } from './BaseModal';
 
 interface WalkInPassModalProps {
   isOpen: boolean;
@@ -26,12 +26,13 @@ interface WalkInPassModalProps {
     city?: string;
     location?: string;
     walkInDetails?: {
+      venueAddress?: string;
       dates?: string;
       timing?: string;
-      venueAddress?: string;
       contactPerson?: string;
-      landmark?: string;
-    } | null;
+      requirements?: string[];
+      instructions?: string;
+    };
     contactPhone?: string | null;
   };
   candidate: {
@@ -92,152 +93,140 @@ export const WalkInPassModal: React.FC<WalkInPassModalProps> = ({
   };
 
   return (
-    <AnimatePresence>
-      <div 
-        className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-900/60 backdrop-blur-xs font-['Onest',system-ui,sans-serif]"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose();
-        }}
-        role="dialog"
-        aria-modal="true"
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 8 }}
-          transition={{ duration: 0.18, ease: "easeOut" }}
-          onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-2xl sm:rounded-3xl border border-[#e6e8ec] shadow-2xl w-full max-w-md max-h-[92vh] flex flex-col overflow-hidden my-auto"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#e6e8ec] bg-white shrink-0">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-sm sm:text-base font-bold text-[#0a0a0a] truncate tracking-tight">
-                  Official Walk-In Admit Pass
-                </h3>
-                <p className="text-[11px] text-[#717784] truncate">
-                  Direct entry verification for physical interview
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Pass Body / Boarding Pass Style Card */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-[#f8f9fa]">
-            
-            {/* The Ticket Pass */}
-            <div className="bg-white rounded-2xl border-2 border-dashed border-amber-300 p-5 shadow-sm space-y-4 relative overflow-hidden">
-              <div className="flex items-center justify-between border-b pb-3 border-amber-100">
-                <div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-800">
-                    TrustHyre FastTrack
-                  </span>
-                  <h4 className="font-extrabold text-[#0a0a0a] text-base leading-tight mt-0.5">
-                    {job.title}
-                  </h4>
-                  <p className="text-xs text-[#717784] font-medium">{job.companyName}</p>
-                </div>
-                <div className="px-2.5 py-1 bg-amber-100 text-amber-900 rounded-full text-[10px] font-bold border border-amber-300">
-                  Confirmed Pass
-                </div>
-              </div>
-
-              {/* Candidate credentials block */}
-              <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200/60 space-y-2 text-xs">
-                <div className="flex justify-between items-center text-[11px]">
-                  <span className="text-slate-600 font-semibold">Candidate:</span>
-                  <span className="font-bold text-[#0a0a0a]">{candidate.fullName}</span>
-                </div>
-                <div className="flex justify-between items-center text-[11px]">
-                  <span className="text-slate-600 font-semibold">Trade & Skill:</span>
-                  <span className="font-bold text-[#0f2f63]">{candidate.trade}</span>
-                </div>
-                <div className="flex justify-between items-center text-[11px]">
-                  <span className="text-slate-600 font-semibold">Mobile:</span>
-                  <span className="font-bold text-emerald-800">{candidate.phone}</span>
-                </div>
-              </div>
-
-              {/* Venue & Timing specs */}
-              <div className="space-y-2 text-xs text-slate-700">
-                <div className="flex items-start gap-2">
-                  <Calendar className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold text-[#0a0a0a] block">Dates: {dates}</span>
-                    <span className="text-[11px] text-slate-500">Timing: {timing}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="min-w-0">
-                    <span className="font-bold text-[#0a0a0a] block">Venue / Landmark:</span>
-                    <p className="text-[11px] text-slate-600 leading-snug">{venue}</p>
-                  </div>
-                </div>
-
-                {hrName && (
-                  <div className="flex items-center gap-2 pt-1">
-                    <User className="w-4 h-4 text-[#0f2f63] shrink-0" />
-                    <span className="text-[11px] text-slate-600">
-                      Report to: <strong className="font-bold text-[#0a0a0a]">{hrName}</strong>
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Google Maps link */}
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors no-underline"
-              >
-                <ExternalLink className="w-3.5 h-3.5 text-[#0f2f63]" />
-                <span>Open Walk-in Venue on Google Maps</span>
-              </a>
-            </div>
-
-            <p className="text-[11px] text-slate-500 text-center leading-relaxed">
-              💡 Sending this pass directly to the HR manager alerts them that you are traveling for the interview.
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="p-4 sm:p-5 border-t border-[#e6e8ec] bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shrink-0">
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Official Walk-In Admit Pass"
+      subtitle="Direct entry verification for physical interview"
+      icon={<ShieldCheck className="w-5 h-5 text-amber-600" />}
+      iconBgColor="bg-amber-50 text-amber-700 border border-amber-200"
+      maxWidth="md"
+      bodyClassName="p-4 sm:p-5 space-y-4 bg-[#F8FAFC]"
+      footer={
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleCopyPass}
-              className="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-slate-700 hover:text-[#0a0a0a] hover:bg-slate-100 rounded-xl sm:rounded-full transition-colors cursor-pointer border border-[#e6e8ec] flex items-center justify-center gap-1.5 order-2 sm:order-1"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold bg-white border border-[#e6e8ec] text-[#0A1931] hover:bg-slate-50 transition-colors cursor-pointer"
             >
-              {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : null}
-              <span>{isCopied ? 'Pass Copied' : 'Copy Pass Text'}</span>
+              <Copy className="w-3.5 h-3.5" />
+              <span>{isCopied ? 'Copied!' : 'Copy Pass'}</span>
             </button>
-
             <button
               type="button"
-              onClick={handleShareToWhatsApp}
-              className="w-full sm:w-auto px-5 py-2.5 text-xs font-semibold text-white bg-[#25D366] hover:bg-[#20ba59] rounded-xl sm:rounded-full transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 order-1 sm:order-2"
+              onClick={() => window.print()}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold bg-white border border-[#e6e8ec] text-[#0A1931] hover:bg-slate-50 transition-colors cursor-pointer"
             >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>Send Pass to HR on WhatsApp</span>
+              <Printer className="w-3.5 h-3.5" />
+              <span>Print</span>
             </button>
           </div>
-        </motion.div>
+
+          <button
+            type="button"
+            onClick={handleShareToWhatsApp}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs sm:text-sm bg-[#0066ff] hover:bg-[#0052cc] active:bg-[#003d99] text-white shadow-md transition-all cursor-pointer"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>Send to WhatsApp</span>
+          </button>
+        </div>
+      }
+    >
+      {/* The Ticket Pass */}
+      <div className="bg-white rounded-2xl border-2 border-dashed border-[#e6e8ec] p-4 sm:p-5 relative overflow-hidden shadow-xs space-y-4">
+        {/* Top Header of Ticket */}
+        <div className="flex items-start justify-between gap-3 border-b border-[#e6e8ec] pb-3">
+          <div>
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200 uppercase tracking-wider inline-block mb-1">
+              ✓ Verified Gate Pass
+            </span>
+            <h4 className="text-base font-bold text-[#0A1931] leading-tight">
+              {job.title}
+            </h4>
+            <p className="text-xs font-semibold text-[#717784] mt-0.5 flex items-center gap-1">
+              <Building2 className="w-3.5 h-3.5 text-[#0066ff]" />
+              <span>{job.companyName}</span>
+            </p>
+          </div>
+
+          <div className="w-14 h-14 bg-slate-900 rounded-xl flex items-center justify-center text-white shrink-0 p-1">
+            <QrCode className="w-full h-full text-white" />
+          </div>
+        </div>
+
+        {/* Candidate Credentials Box */}
+        <div className="bg-[#F8FAFC] rounded-xl p-3 border border-[#e6e8ec] grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <span className="text-[10px] font-bold uppercase text-[#717784] block">Candidate</span>
+            <span className="font-bold text-[#0A1931] truncate block mt-0.5">
+              {candidate.fullName}
+            </span>
+          </div>
+          <div>
+            <span className="text-[10px] font-bold uppercase text-[#717784] block">Verified Trade</span>
+            <span className="font-bold text-[#0066ff] truncate block mt-0.5">
+              {candidate.trade}
+            </span>
+          </div>
+          <div>
+            <span className="text-[10px] font-bold uppercase text-[#717784] block">Contact</span>
+            <span className="font-mono text-[#0A1931] block mt-0.5">
+              {candidate.phone}
+            </span>
+          </div>
+          <div>
+            <span className="text-[10px] font-bold uppercase text-[#717784] block">Experience</span>
+            <span className="font-bold text-[#0A1931] block mt-0.5">
+              {candidate.experienceYears || 1}+ Years
+            </span>
+          </div>
+        </div>
+
+        {/* Walk-in Timing & Address */}
+        <div className="space-y-2 text-xs">
+          <div className="flex items-center justify-between bg-amber-50/60 p-2.5 rounded-xl border border-amber-200/80">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-amber-700" />
+              <span className="font-bold text-amber-950">{dates}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[#717784]">
+              <Clock className="w-3.5 h-3.5" />
+              <span className="font-semibold text-[#0A1931]">{timing}</span>
+            </div>
+          </div>
+
+          <div className="p-3 bg-[#F8FAFC] rounded-xl border border-[#e6e8ec] space-y-1.5">
+            <div className="flex items-start gap-2">
+              <MapPin className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <span className="text-[10px] font-bold uppercase text-[#717784] block">Interview Worksite Venue:</span>
+                <p className="text-xs font-semibold text-[#0A1931] mt-0.5 leading-relaxed">
+                  {venue}
+                </p>
+              </div>
+            </div>
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0066ff] hover:underline pl-6"
+            >
+              <span>Open in Google Maps Directions</span>
+              <span>&rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Gate Instructions Alert */}
+        <div className="p-2.5 rounded-xl bg-blue-50 border border-blue-100 flex items-start gap-2 text-[11px] text-[#0f2f63]">
+          <ShieldCheck className="w-4 h-4 text-[#0066ff] shrink-0 mt-0.5" />
+          <p>
+            Show this digital screen pass at the company security gate. No registration charges or contractor cuts allowed.
+          </p>
+        </div>
       </div>
-    </AnimatePresence>
+    </BaseModal>
   );
 };
-

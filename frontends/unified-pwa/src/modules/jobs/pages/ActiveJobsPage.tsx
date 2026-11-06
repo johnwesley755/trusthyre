@@ -18,16 +18,20 @@ import {
     Sun,
     Package,
     Tag,
-    CalendarClock
+    CalendarClock,
+    Zap
 } from 'lucide-react';
+import { JobBoostModal } from '../../../components/common/JobBoostModal';
 
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { AppLoader } from '../../../components/common/AppLoader';
 
 export function ActiveJobsPage() {
     const navigate = useNavigate();
+    const [boostTargetJob, setBoostTargetJob] = useState<Job | null>(null);
+    const [boostedJobIds, setBoostedJobIds] = useState<Record<string, boolean>>({});
 
     // Fetch Jobs
     const { data: jobs = [], isLoading: isLoadingJobs } = useQuery<Job[]>({ 
@@ -208,7 +212,22 @@ export function ActiveJobsPage() {
                                         </div>
 
                                         {/* Right Side: Stats & Action */}
-                                        <div className="flex items-center gap-8 mt-6 md:mt-0 shrink-0 md:border-l md:border-slate-100 md:pl-8">
+                                        <div className="flex items-center gap-4 sm:gap-6 mt-6 md:mt-0 shrink-0 md:border-l md:border-slate-100 md:pl-6">
+                                            {/* ⚡ 1-Tap Job Boost Button (WorkIndia / Apna Recruiter Model) */}
+                                            <button
+                                                type="button"
+                                                onClick={() => setBoostTargetJob(job)}
+                                                className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 ${
+                                                    boostedJobIds[job.id!]
+                                                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+                                                        : 'bg-amber-400 hover:bg-amber-500 text-slate-950'
+                                                }`}
+                                                title="Amplify job visibility & broadcast notifications"
+                                            >
+                                                <Zap className={`w-3.5 h-3.5 ${boostedJobIds[job.id!] ? 'text-emerald-700' : 'fill-slate-950 text-slate-950'}`} />
+                                                <span>{boostedJobIds[job.id!] ? 'Boosted • Rank #1' : 'Boost Job'}</span>
+                                            </button>
+
                                             <div className="text-center md:text-right">
                                                 <span className="block text-[10px] uppercase font-black tracking-widest text-[#0A1931]/40 mb-1">
                                                     Applications
@@ -267,6 +286,25 @@ export function ActiveJobsPage() {
             {/* Background Decorative Organic Blobs */}
             <div className="fixed top-1/4 -right-40 w-[600px] h-[600px] bg-[#FACD15] opacity-[0.03] rounded-full blur-[120px] -z-10 pointer-events-none organic-blob"></div>
             <div className="fixed -bottom-40 -left-20 w-[800px] h-[800px] bg-[#0A1931] opacity-[0.02] rounded-full blur-[150px] -z-10 pointer-events-none organic-blob-alt"></div>
+
+            {/* ⚡ 1-Tap Job Boost & Broadcast Modal */}
+            {boostTargetJob && (
+                <JobBoostModal
+                    isOpen={Boolean(boostTargetJob)}
+                    onClose={() => setBoostTargetJob(null)}
+                    job={{
+                        id: boostTargetJob.id!,
+                        title: boostTargetJob.title,
+                        location: boostTargetJob.location,
+                        city: boostTargetJob.city,
+                        industry: boostTargetJob.industry,
+                        budget: boostTargetJob.budget
+                    }}
+                    onBoostSuccess={(jobId) => {
+                        setBoostedJobIds((prev) => ({ ...prev, [jobId]: true }));
+                    }}
+                />
+            )}
         </div>
     );
 }

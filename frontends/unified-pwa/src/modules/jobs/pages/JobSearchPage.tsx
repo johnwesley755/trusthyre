@@ -34,6 +34,7 @@ import { ManageAlertsModal } from '../../dashboard/features/alerts/ManageAlertsM
 import { WhatsAppBulletinModal } from '../../../components/common/WhatsAppBulletinModal';
 import { SeoHead } from '../../../components/common/SeoHead';
 import { REGIONAL_DISTRICTS_TALUKS, getTaluksForCity } from '../../../constants/regionalTaluks';
+import { WageBenchmarkModal } from '../../../components/common/WageBenchmarkModal';
 
 export default function JobSearchPage() {
   const queryClient = useQueryClient();
@@ -59,6 +60,7 @@ export default function JobSearchPage() {
   const [isJobAlertModalOpen, setIsJobAlertModalOpen] = useState(false);
   const [isManageAlertsOpen, setIsManageAlertsOpen] = useState(false);
   const [isBulletinOpen, setIsBulletinOpen] = useState(false);
+  const [isWageModalOpenMobile, setIsWageModalOpenMobile] = useState(false);
 
   const { user } = useAuth();
 
@@ -463,6 +465,11 @@ export default function JobSearchPage() {
                 setSource(s);
                 updateUrlParams({ source: s });
               }}
+              onSelectBenchmarkFilter={(bTrade, _minBudget) => {
+                setQuery(bTrade);
+                setTrade('All');
+                updateUrlParams({ q: bTrade, trade: 'All' });
+              }}
               counts={filterCounts}
               onClearAll={handleClearAll}
               hasActiveFilters={hasActiveFilters}
@@ -837,7 +844,7 @@ export default function JobSearchPage() {
                     >
                       All {city} Areas
                     </button>
-                    {getTaluksForCity(city).map((tName) => {
+                    {getTaluksForCity(city).map((tName: string) => {
                       const isSelected = query.toLowerCase() === tName.toLowerCase();
                       return (
                         <button
@@ -860,6 +867,31 @@ export default function JobSearchPage() {
                   </div>
                 </div>
               )}
+
+              {/* Market Wage Benchmark Calculator Callout for Mobile */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2 shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                    <span className="font-bold text-xs">₹</span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-emerald-950 leading-tight">
+                      Market Wage Calculator
+                    </h4>
+                    <p className="text-[10px] text-emerald-700">Check base pay, OT & allowances</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileFilterOpen(false);
+                    setIsWageModalOpenMobile(true);
+                  }}
+                  className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer uppercase tracking-wider"
+                >
+                  <span>Open Wage Calculator</span>
+                </button>
+              </div>
 
               {/* Hiring Channel Source Filter */}
               <div className="space-y-2.5">
@@ -1062,6 +1094,21 @@ export default function JobSearchPage() {
         city={city || 'Pan India'}
         industry={trade || 'All Trades'}
       />
+
+      {/* 8. Mobile Wage Benchmark Calculator Modal */}
+      {isWageModalOpenMobile && (
+        <WageBenchmarkModal
+          isOpen={isWageModalOpenMobile}
+          onClose={() => setIsWageModalOpenMobile(false)}
+          defaultTrade={trade !== 'All' ? trade : 'Electrician'}
+          currentCity={city || 'Chennai'}
+          onSelectBenchmarkFilter={(bTrade) => {
+            setQuery(bTrade);
+            setTrade('All');
+            updateUrlParams({ q: bTrade, trade: 'All' });
+          }}
+        />
+      )}
 
     </div>
   );

@@ -1,6 +1,7 @@
-import React from 'react';
-import { SlidersHorizontal, RotateCcw, Check, MapPin } from 'lucide-react';
+import React, { useState } from 'react';
+import { SlidersHorizontal, RotateCcw, Check, MapPin, IndianRupee, TrendingUp } from 'lucide-react';
 import { getTaluksForCity } from '../../../constants/regionalTaluks';
+import { WageBenchmarkModal } from '../../../components/common/WageBenchmarkModal';
 
 export interface FilterCounts {
   jobTypes: Record<string, number>;
@@ -30,6 +31,8 @@ interface JobFilterSidebarProps {
 
   selectedTaluk?: string;
   onSelectTaluk?: (taluk: string) => void;
+
+  onSelectBenchmarkFilter?: (trade: string, minBudget?: number) => void;
 
   counts?: FilterCounts;
   onClearAll: () => void;
@@ -95,10 +98,12 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
   onSelectSource,
   selectedTaluk = '',
   onSelectTaluk,
+  onSelectBenchmarkFilter,
   counts,
   onClearAll,
   hasActiveFilters,
 }) => {
+  const [isWageModalOpen, setIsWageModalOpen] = useState(false);
   const dynamicTaluks = getTaluksForCity(selectedLocation);
   return (
     <aside className="w-full space-y-6 font-['Onest',system-ui,sans-serif]">
@@ -412,6 +417,51 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
           })}
         </div>
       </div>
+
+      {/* 6. REAL-TIME WAGE BENCHMARK CALLOUT (Apna & Snagajob Viral Tool) */}
+      <div className="pt-4 border-t border-[#e6e8ec]">
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+              <IndianRupee className="w-4 h-4" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-emerald-950 leading-tight">
+                Market Wage Calculator
+              </h4>
+              <p className="text-[10px] text-emerald-700">Check real take-home rates</p>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-600 leading-snug">
+            Compare base salaries, overtime rates, and food allowances for your trade in {selectedLocation || 'your area'}.
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsWageModalOpen(true)}
+            className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer uppercase tracking-wider"
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>Check Market Wages</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Wage Benchmark Explorer Modal */}
+      {isWageModalOpen && (
+        <WageBenchmarkModal
+          isOpen={isWageModalOpen}
+          onClose={() => setIsWageModalOpen(false)}
+          defaultTrade={selectedTrade !== 'All' ? selectedTrade : 'Electrician'}
+          currentCity={selectedLocation || 'Chennai'}
+          onSelectBenchmarkFilter={(trade, minBudget) => {
+            if (onSelectBenchmarkFilter) {
+              onSelectBenchmarkFilter(trade, minBudget);
+            } else {
+              onSelectTrade(trade);
+            }
+          }}
+        />
+      )}
 
     </aside>
   );

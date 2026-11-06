@@ -10,6 +10,7 @@ import { TranslateText } from '../../../components/common/TranslateText';
 import { getEffectiveCoverUrl } from '../../../utils/coverImage.utils';
 import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
 import { WalkInPassModal } from '../../../components/common/WalkInPassModal';
+import { InterviewPrepKitModal } from '../../../components/common/InterviewPrepKitModal';
 import { audioBriefing } from '../../../utils/audioBriefing.utils';
 
 export interface JobCardData {
@@ -76,6 +77,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const [isPamphletOpen, setIsPamphletOpen] = useState(false);
   const [isWalkInPassOpen, setIsWalkInPassOpen] = useState(false);
+  const [isPrepKitOpen, setIsPrepKitOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const effectiveCoverUrl = !imageError ? getEffectiveCoverUrl(job) : null;
 
@@ -358,6 +360,16 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                   <MapPin className="w-3.5 h-3.5 text-[#2563c9]" />
                   <span className="truncate"><TranslateText text={locationText} /></span>
                 </span>
+                {/* ⚡ High-Trust Employer Response Speed Badge (JobToday Model) */}
+                {!isExpired && (
+                  <>
+                    <span className="text-[#e6e8ec]">•</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      <Zap className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600" />
+                      <span>Responds fast</span>
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -548,17 +560,38 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
               </button>
             )}
 
+            {/* 📋 1-Tap Interview Prep & Document Checklist Modal */}
+            {!isExpired && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsPrepKitOpen(true);
+                }}
+                className="rounded-full bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-800 border border-emerald-300 text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
+                title="View Required Documents & 5 Trial Interview Questions"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Prep Kit</span>
+              </button>
+            )}
+
             {/* 📞 One-Tap Direct Call HR (WorkIndia & Apna Viral Conversion Feature) */}
             {!isExpired && (job.allowDirectCall ?? true) && (job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber) && (
-              <a
-                href={`tel:${job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber}`}
-                onClick={(e) => e.stopPropagation()}
-                className="rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer no-underline shrink-0"
-                title="Call Recruiter Directly"
-              >
-                <Phone className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Call HR</span>
-              </a>
+              <div className="flex items-center gap-1">
+                <a
+                  href={`tel:${job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer no-underline shrink-0"
+                  title="Call Recruiter Directly (10 AM - 5 PM)"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Call HR</span>
+                </a>
+                <span className="hidden lg:inline-flex items-center px-2 py-1 rounded-md bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200" title="Active Recruiter Window">
+                  10am-5pm
+                </span>
+              </div>
             )}
 
             {job.hasApplied ? (
@@ -651,6 +684,18 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
             experienceYears: 1,
             profileId: user?.id
           }}
+        />
+      )}
+
+      {/* 📋 1-TAP INTERVIEW PREP & DOCUMENT CHECKLIST MODAL */}
+      {isPrepKitOpen && (
+        <InterviewPrepKitModal
+          isOpen={isPrepKitOpen}
+          onClose={() => setIsPrepKitOpen(false)}
+          jobTitle={job.title}
+          companyName={companyName}
+          locationCity={locationText}
+          contactPhone={job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber}
         />
       )}
     </div>

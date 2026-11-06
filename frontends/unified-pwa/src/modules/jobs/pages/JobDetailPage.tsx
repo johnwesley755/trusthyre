@@ -52,6 +52,7 @@ import {
 import { RatingModal } from '../../../components/common/RatingModal';
 import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
 import { WalkInPassModal } from '../../../components/common/WalkInPassModal';
+import { InterviewPrepKitModal } from '../../../components/common/InterviewPrepKitModal';
 import { audioBriefing } from '../../../utils/audioBriefing.utils';
 import { parsePhoneNumber } from '../../../components/common/PhoneDisplay';
 import { useSavedStore } from '../../../hooks/useSavedStore';
@@ -160,6 +161,7 @@ export default function JobDetailPage() {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [isPamphletModalOpen, setIsPamphletModalOpen] = useState(false);
   const [isWalkInPassOpen, setIsWalkInPassOpen] = useState(false);
+  const [isPrepKitOpen, setIsPrepKitOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [searchParams] = useSearchParams();
   const { language } = useTranslation();
@@ -583,6 +585,16 @@ export default function JobDetailPage() {
                 <Volume2 className="w-3.5 h-3.5" />
               )}
               <span>{isPlayingAudio ? 'Stop Audio' : 'Listen Job'}</span>
+            </button>
+
+            {/* 📋 1-Tap Interview Prep & Document Checklist */}
+            <button
+              onClick={() => setIsPrepKitOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
+              title="Interview Prep & Mandatory Document Checklist"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Prep Kit</span>
             </button>
 
             {/* Instant Hiring Flyer / Visiting Card Generator (Available for Employers & Job Owners) */}
@@ -1697,6 +1709,18 @@ export default function JobDetailPage() {
             experienceYears: profile?.experienceYears || 1,
             profileId: (profile as any)?.id || user?.id
           }}  
+        />
+      )}
+
+      {/* 📋 1-TAP INTERVIEW PREP & DOCUMENT CHECKLIST MODAL */}
+      {isPrepKitOpen && job && (
+        <InterviewPrepKitModal
+          isOpen={isPrepKitOpen}
+          onClose={() => setIsPrepKitOpen(false)}
+          jobTitle={job.title}
+          companyName={(job as any)?.employerProfile?.companyName || (job as any)?.employerName || 'Verified Employer'}
+          locationCity={job.city || job.location || 'Local Worksite'}
+          contactPhone={(job as any).contactPhone || (job as any).contact_phone || additionalDetails.contactPhone || (employer as any)?.phoneNumber || (job as any).employerProfile?.phoneNumber}
         />
       )}
     </div>
