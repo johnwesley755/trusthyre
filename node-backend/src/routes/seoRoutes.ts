@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { prisma } from '../config/prisma';
 import { SitemapService } from '../services/sitemapService';
-import { generateJobSeoSlug } from '../utils/seoSlug.util';
+import { generateJobSeoSlug, ALLOWED_CITIES, ALLOWED_TRADES, TRADE_KEYWORD_MAP } from '../utils/seoSlug.util';
 
 const CITY_STATE_PIN_MAP: Record<string, { state: string; postalCode: string }> = {
   chennai: { state: 'Tamil Nadu', postalCode: '600001' },
@@ -225,25 +225,11 @@ ${JSON.stringify(articleJsonLd, null, 2)}
     const citySlug = (hubParts[0] || 'chennai').toLowerCase().trim();
     const tradeSlug = (hubParts[1] || '').toLowerCase().trim();
 
-    const ALLOWED_CITIES = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
-    const ALLOWED_TRADES = ['electrician', 'driver', 'cook', 'plumber', 'welder', 'security', 'warehouse'];
-
     if (!ALLOWED_CITIES.includes(citySlug) || (tradeSlug && !ALLOWED_TRADES.includes(tradeSlug))) {
       return c.text('Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
     }
 
     const normCity = citySlug.charAt(0).toUpperCase() + citySlug.slice(1);
-
-    // Trade keyword mapping for database search
-    const TRADE_KEYWORD_MAP: Record<string, string[]> = {
-      electrician: ['electrician', 'wireman', 'electrical'],
-      driver: ['driver', 'delivery', 'chauffeur'],
-      cook: ['cook', 'chef', 'kitchen'],
-      plumber: ['plumber', 'plumbing', 'pipe'],
-      welder: ['welder', 'fabricator', 'welding'],
-      security: ['security', 'guard', 'watchman'],
-      warehouse: ['warehouse', 'packing', 'picker', 'loader', 'logistics'],
-    };
 
     const tradeKeywords = tradeSlug ? (TRADE_KEYWORD_MAP[tradeSlug] || [tradeSlug]) : [];
 
@@ -268,8 +254,7 @@ ${JSON.stringify(articleJsonLd, null, 2)}
         whereClause.AND.push({
           OR: [
             ...tradeKeywords.map(kw => ({ title: { contains: kw, mode: 'insensitive' } })),
-            ...tradeKeywords.map(kw => ({ industry: { contains: kw, mode: 'insensitive' } })),
-            ...tradeKeywords.map(kw => ({ description: { contains: kw, mode: 'insensitive' } }))
+            ...tradeKeywords.map(kw => ({ industry: { contains: kw, mode: 'insensitive' } }))
           ]
         });
       }
@@ -341,9 +326,7 @@ ${JSON.stringify(articleJsonLd, null, 2)}
             '@type': 'Place',
             address: {
               '@type': 'PostalAddress',
-              addressLocality: j.city || normCity,
-              addressRegion: 'Tamil Nadu',
-              addressCountry: 'IN',
+              ...resolveGeoAddress(j.city || normCity, j.location),
             },
           },
         },
@@ -529,10 +512,16 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
       return c.text('Job Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
     }
 
-    const isExpired = job.expires_at && new Date(job.expires_at) < new Date();
-    const isClosed = !['ACTIVE', 'OPEN'].includes((job.status || '').toUpperCase());
+    const jobStatus = (job.status || '').toUpperCase().trim();
+    const isDraftOrUnpublished = ['DRAFT', 'PENDING', 'PENDING_REVIEW', 'UNPUBLISHED'].includes(jobStatus);
+    if (isDraftOrUnpublished) {
+      return c.text('Job Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    }
 
-    if (isExpired || isClosed) {
+    const isExpired = job.expires_at && new Date(job.expires_at) < new Date();
+    const isClosedStatus = ['CLOSED', 'EXPIRED', 'FILLED', 'CANCELLED', 'ARCHIVED'].includes(jobStatus);
+
+    if (isExpired || isClosedStatus) {
       return c.html(`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -546,6 +535,10 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
   <a href="${BASE_DOMAIN}/search" style="display: inline-block; background: #0f2f63; color: white; padding: 10px 24px; border-radius: 9999px; text-decoration: none; font-weight: bold;">Browse Open Verified Jobs</a>
 </body>
 </html>`, 410, { 'Content-Type': 'text/html; charset=utf-8' });
+    }
+
+    if (!['ACTIVE', 'OPEN'].includes(jobStatus)) {
+      return c.text('Job Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
     }
 
     const pageTitle = `${job.title} | ${job.city || 'India'} | TrustHyre Verified Jobs`;

@@ -20,9 +20,6 @@ const CORE_ROUTES = [
   { path: '/privacy', priority: '0.4', changefreq: 'monthly', lastmod: '2026-10-22' },
 ];
 
-const FEATURED_CITIES = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
-const FEATURED_TRADES = ['electrician', 'driver', 'cook', 'plumber', 'welder', 'security', 'warehouse'];
-
 async function generateSitemap() {
   const urlEntries = [];
 
@@ -34,25 +31,6 @@ async function generateSitemap() {
     <changefreq>${route.changefreq}</changefreq>
     <priority>${route.priority}</priority>
   </url>`);
-  }
-
-  // Programmatic Hub Routes
-  for (const city of FEATURED_CITIES) {
-    urlEntries.push(`  <url>
-    <loc>${BASE_URL}/jobs-in-${city}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>`);
-
-    for (const trade of FEATURED_TRADES) {
-      urlEntries.push(`  <url>
-    <loc>${BASE_URL}/jobs-in-${city}/${trade}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>`);
-    }
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

@@ -79,3 +79,17 @@ export function extractJobIdFromSlug(slugOrId: string | undefined | null): strin
   return trimmed;
 }
 
+export const ALLOWED_CITIES = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
+export const ALLOWED_TRADES = ['electrician', 'driver', 'cook', 'plumber', 'welder', 'security', 'warehouse'];
+
+export const TRADE_KEYWORD_MAP: Record<string, string[]> = {
+  electrician: ['electrician', 'wireman', 'electrical'],
+  driver: ['driver', 'delivery', 'chauffeur'],
+  cook: ['cook', 'chef', 'kitchen'],
+  plumber: ['plumber', 'plumbing', 'pipe'],
+  welder: ['welder', 'fabricator', 'welding'],
+  security: ['security', 'guard', 'watchman'],
+  warehouse: ['warehouse', 'packing', 'picker', 'loader', 'logistics'],
+};
+
+

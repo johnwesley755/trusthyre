@@ -1,5 +1,5 @@
 import { prisma } from '../config/prisma';
-import { generateJobSeoSlug } from '../utils/seoSlug.util';
+import { generateJobSeoSlug, ALLOWED_CITIES, ALLOWED_TRADES, TRADE_KEYWORD_MAP } from '../utils/seoSlug.util';
 
 export class SitemapService {
   private static readonly BASE_URL = 'https://trusthyre.com';
@@ -77,6 +77,7 @@ export class SitemapService {
           select: {
             id: true,
             title: true,
+            industry: true,
             city: true,
             location: true,
             payout_frequency: true,
@@ -105,45 +106,46 @@ export class SitemapService {
   </url>`);
     }
 
-    // 1.8 Programmatic City & Trade Hub URLs (High-Priority Landing Hubs for Job Seekers)
-    const featuredCities = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
-    const featuredTrades = ['electrician', 'driver', 'cook', 'plumber', 'welder', 'security', 'warehouse'];
+    // 1.8 Programmatic City & Trade Hub URLs (Only emitted when containing active indexable job openings)
+    for (const city of ALLOWED_CITIES) {
+      const cityJobs = activeJobs.filter(j => j.city && j.city.toLowerCase().includes(city));
+      if (cityJobs.length > 0) {
+        const latestCityDate = cityJobs.reduce((acc, curr) => {
+          const d = curr.updated_at || curr.created_at;
+          return d && new Date(d) > acc ? new Date(d) : acc;
+        }, new Date(0));
+        const hubLastmod = latestCityDate.getTime() > 0 ? latestCityDate.toISOString().split('T')[0] : today;
 
-    for (const city of featuredCities) {
-      urlEntries.push(`  <url>
+        urlEntries.push(`  <url>
     <loc>${this.BASE_URL}/jobs-in-${city}</loc>
-    <lastmod>${today}</lastmod>
+    <lastmod>${hubLastmod}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>`);
 
-      for (const trade of featuredTrades) {
-        urlEntries.push(`  <url>
+        for (const trade of ALLOWED_TRADES) {
+          const tradeKeywords = TRADE_KEYWORD_MAP[trade] || [trade];
+          const tradeJobs = cityJobs.filter(j => {
+            const titleMatch = tradeKeywords.some(kw => (j.title || '').toLowerCase().includes(kw));
+            const indMatch = tradeKeywords.some(kw => (j.industry || '').toLowerCase().includes(kw));
+            return titleMatch || indMatch;
+          });
+
+          if (tradeJobs.length > 0) {
+            const latestTradeDate = tradeJobs.reduce((acc, curr) => {
+              const d = curr.updated_at || curr.created_at;
+              return d && new Date(d) > acc ? new Date(d) : acc;
+            }, new Date(0));
+            const tradeLastmod = latestTradeDate.getTime() > 0 ? latestTradeDate.toISOString().split('T')[0] : today;
+
+            urlEntries.push(`  <url>
     <loc>${this.BASE_URL}/jobs-in-${city}/${trade}</loc>
-    <lastmod>${today}</lastmod>
+    <lastmod>${tradeLastmod}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>`);
-      }
-    }
-
-    // 1.9 Programmatic Employer Hiring Hubs (High-Intent B2B / Employer Funnel)
-    const employerTrades = ['electricians', 'drivers', 'cooks', 'plumbers', 'welders', 'warehouse', 'workers'];
-    for (const city of featuredCities) {
-      urlEntries.push(`  <url>
-    <loc>${this.BASE_URL}/hire-workers-in-${city}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>`);
-
-      for (const trade of employerTrades) {
-        urlEntries.push(`  <url>
-    <loc>${this.BASE_URL}/hire-${trade}-in-${city}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.88</priority>
-  </url>`);
+          }
+        }
       }
     }
 
