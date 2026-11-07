@@ -145,15 +145,25 @@ export function buildJobPostingJsonLd(job: {
   city?: string;
   address?: string;
   salary?: number;
+  payoutFrequency?: string;
 }) {
-  const salaryObj = job.salary && job.salary > 0 ? {
+  const payFreq = (job.payoutFrequency || 'MONTHLY').toUpperCase();
+  const unitTextMap: Record<string, string> = {
+    MONTHLY: 'MONTH',
+    WEEKLY: 'WEEK',
+    DAILY: 'DAY',
+    HOURLY: 'HOUR',
+  };
+  const unitText = unitTextMap[payFreq];
+
+  const salaryObj = job.salary && job.salary > 0 && unitText ? {
     baseSalary: {
       '@type': 'MonetaryAmount',
       currency: 'INR',
       value: {
         '@type': 'QuantitativeValue',
         value: job.salary,
-        unitText: 'MONTH',
+        unitText: unitText,
       },
     },
   } : {};
@@ -164,7 +174,7 @@ export function buildJobPostingJsonLd(job: {
     title: job.title,
     description: job.description,
     datePosted: job.datePosted,
-    validThrough: job.validThrough || new Date(new Date(job.datePosted).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    ...(job.validThrough ? { validThrough: job.validThrough } : {}),
     employmentType: job.employmentType || 'FULL_TIME',
     hiringOrganization: {
       '@type': 'Organization',
@@ -222,23 +232,6 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     // Update standard meta
     setMetaTag('meta[name="description"]', 'name', 'description', description);
     setCanonicalLink(fullUrl);
-
-    // 3.1 Google Hreflang Tags for Multi-lingual Indexing (en, ta, hi, x-default)
-    const setHreflangTag = (lang: string, href: string) => {
-      let tag = document.querySelector(`link[rel="alternate"][hreflang="${lang}"]`);
-      if (!tag) {
-        tag = document.createElement('link');
-        tag.setAttribute('rel', 'alternate');
-        tag.setAttribute('hreflang', lang);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute('href', href);
-    };
-
-    setHreflangTag('en', `${fullUrl}?lang=en`);
-    setHreflangTag('ta', `${fullUrl}?lang=ta`);
-    setHreflangTag('hi', `${fullUrl}?lang=hi`);
-    setHreflangTag('x-default', fullUrl);
 
     // Robots index / noindex directive handling
     if (noIndex) {

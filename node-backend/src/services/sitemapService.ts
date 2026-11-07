@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma';
+import { generateJobSeoSlug, ALLOWED_CITIES, ALLOWED_TRADES, TRADE_KEYWORD_MAP } from '../utils/seoSlug.util';
 
 export class SitemapService {
   private static readonly BASE_URL = 'https://trusthyre.com';
@@ -6,74 +7,114 @@ export class SitemapService {
   /**
    * Generates a fully dynamic, standards-compliant XML sitemap.
    * Includes static pages, active job openings, blog categories, and all published articles with image tags.
+   * Returns { xml: string, dbError: boolean } for clear visibility on DB health.
    */
-  static async generateSitemapXml(): Promise<string> {
+  static async generateSitemapXml(): Promise<{ xml: string; dbError: boolean }> {
     const today = new Date().toISOString().split('T')[0];
     const staticRoutes = [
       { path: '/', priority: '1.0', changefreq: 'daily', lastmod: today },
-      { path: '/search', priority: '0.9', changefreq: 'daily', lastmod: today },
-      { path: '/find-workers', priority: '0.9', changefreq: 'daily', lastmod: today },
+      // Note: /search removed as listing/search-result pages should not be in sitemaps per Google JobPosting guidelines
+      // Note: /find-workers removed as it is protected behind RoleGuard for EMPLOYER
       { path: '/blog', priority: '0.9', changefreq: 'daily', lastmod: today },
       { path: '/terms', priority: '0.4', changefreq: 'monthly', lastmod: '2026-10-22' },
       { path: '/privacy', priority: '0.4', changefreq: 'monthly', lastmod: '2026-10-22' },
     ];
 
-    // Fetch published categories
-    const categories = await (prisma as any).blog_categories.findMany({
-      where: {
-        posts: {
-          some: { status: 'PUBLISHED' },
-        },
-      },
-      select: {
-        slug: true,
-        updated_at: true,
-      },
-    }).catch(() => []);
+    let categories: any[] = [];
+    let posts: any[] = [];
+    let activeJobs: any[] = [];
+    let dbError = false;
 
-    // Fetch all published articles that are not marked with no_index
-    const posts = await (prisma as any).blog_posts.findMany({
-      where: {
-        status: 'PUBLISHED',
-        no_index: false,
-        published_at: { not: null },
-      },
-      select: {
-        slug: true,
-        title: true,
-        cover_image_url: true,
-        updated_at: true,
-        published_at: true,
-      },
-      orderBy: { published_at: 'desc' },
-    }).catch(() => []);
+    try {
+      // Stream/batch load up to Google's standard 50,000 URL limit per sitemap
+      const MAX_SITEMAP_JOBS = 45000;
+      const CHUNK_SIZE = 5000;
+      let fetchedJobs: any[] = [];
+      let lastId: string | undefined = undefined;
 
-    // Fetch active open jobs
-    const activeJobs = await (prisma as any).jobs.findMany({
-      where: {
-        OR: [
-          { status: 'ACTIVE' },
-          { status: 'OPEN' }
-        ],
-        AND: [
-          {
-            OR: [
-              { expires_at: null },
-              { expires_at: { gt: new Date() } }
+      const [catResult, postResult] = await Promise.all([
+        (prisma as any).blog_categories.findMany({
+          where: {
+            posts: {
+              some: {
+                status: 'PUBLISHED',
+                no_index: false,
+                published_at: { not: null },
+              },
+            },
+          },
+          select: {
+            slug: true,
+            updated_at: true,
+          },
+        }),
+        (prisma as any).blog_posts.findMany({
+          where: {
+            status: 'PUBLISHED',
+            no_index: false,
+            published_at: { not: null },
+          },
+          select: {
+            slug: true,
+            title: true,
+            cover_image_url: true,
+            updated_at: true,
+            published_at: true,
+          },
+          orderBy: { published_at: 'desc' },
+        }),
+      ]);
+
+      categories = catResult;
+      posts = postResult;
+
+      // Cursor-based pagination to support tens of thousands of active jobs without memory exhaustion or silent omission
+      while (fetchedJobs.length < MAX_SITEMAP_JOBS) {
+        const batch: any[] = await (prisma as any).jobs.findMany({
+          where: {
+            AND: [
+              {
+                OR: [
+                  { status: 'ACTIVE' },
+                  { status: 'OPEN' }
+                ]
+              },
+              {
+                OR: [
+                  { expires_at: null },
+                  { expires_at: { gt: new Date() } }
+                ]
+              }
             ]
-          }
-        ]
-      },
-      select: {
-        id: true,
-        title: true,
-        updated_at: true,
-        created_at: true,
-        cover_image_url: true,
-      },
-      take: 5000,
-      orderBy: { created_at: 'desc' },
-    }).catch(() => []);
+          },
+          select: {
+            id: true,
+            title: true,
+            industry: true,
+            city: true,
+            location: true,
+            payout_frequency: true,
+            updated_at: true,
+            created_at: true,
+            cover_image_url: true,
+          },
+          take: CHUNK_SIZE,
+          skip: lastId ? 1 : 0,
+          cursor: lastId ? { id: lastId } : undefined,
+          orderBy: { id: 'asc' },
+        });
+
+        if (batch.length === 0) break;
+        fetchedJobs.push(...batch);
+        lastId = batch[batch.length - 1].id;
+        if (batch.length < CHUNK_SIZE) break;
+      }
+
+      activeJobs = fetchedJobs;
+    } catch (err) {
+      console.error('[SitemapService] DB query failed during sitemap generation:', err);
+      dbError = true;
+    }
 
     const urlEntries: string[] = [];
 
@@ -87,49 +128,50 @@ export class SitemapService {
   </url>`);
     }
 
-    // 1.8 Programmatic City & Trade Hub URLs (High-Priority Landing Hubs for Job Seekers)
-    const featuredCities = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
-    const featuredTrades = ['electrician', 'driver', 'cook', 'plumber', 'welder', 'security', 'warehouse'];
+    // 1.8 Programmatic City & Trade Hub URLs (Only emitted when containing active indexable job openings)
+    for (const city of ALLOWED_CITIES) {
+      const cityJobs = activeJobs.filter(j => j.city && j.city.toLowerCase().includes(city));
+      if (cityJobs.length > 0) {
+        const latestCityDate = cityJobs.reduce((acc, curr) => {
+          const d = curr.updated_at || curr.created_at;
+          return d && new Date(d) > acc ? new Date(d) : acc;
+        }, new Date(0));
+        const hubLastmod = latestCityDate.getTime() > 0 ? latestCityDate.toISOString().split('T')[0] : today;
 
-    for (const city of featuredCities) {
-      urlEntries.push(`  <url>
+        urlEntries.push(`  <url>
     <loc>${this.BASE_URL}/jobs-in-${city}</loc>
-    <lastmod>${today}</lastmod>
+    <lastmod>${hubLastmod}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>`);
 
-      for (const trade of featuredTrades) {
-        urlEntries.push(`  <url>
+        for (const trade of ALLOWED_TRADES) {
+          const tradeKeywords = TRADE_KEYWORD_MAP[trade] || [trade];
+          const tradeJobs = cityJobs.filter(j => {
+            const titleMatch = tradeKeywords.some(kw => (j.title || '').toLowerCase().includes(kw));
+            const indMatch = tradeKeywords.some(kw => (j.industry || '').toLowerCase().includes(kw));
+            return titleMatch || indMatch;
+          });
+
+          if (tradeJobs.length > 0) {
+            const latestTradeDate = tradeJobs.reduce((acc, curr) => {
+              const d = curr.updated_at || curr.created_at;
+              return d && new Date(d) > acc ? new Date(d) : acc;
+            }, new Date(0));
+            const tradeLastmod = latestTradeDate.getTime() > 0 ? latestTradeDate.toISOString().split('T')[0] : today;
+
+            urlEntries.push(`  <url>
     <loc>${this.BASE_URL}/jobs-in-${city}/${trade}</loc>
-    <lastmod>${today}</lastmod>
+    <lastmod>${tradeLastmod}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>`);
+          }
+        }
       }
     }
 
-    // 1.9 Programmatic Employer Hiring Hubs (High-Intent B2B / Employer Funnel)
-    const employerTrades = ['electricians', 'drivers', 'cooks', 'plumbers', 'welders', 'warehouse', 'workers'];
-    for (const city of featuredCities) {
-      urlEntries.push(`  <url>
-    <loc>${this.BASE_URL}/hire-workers-in-${city}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>`);
-
-      for (const trade of employerTrades) {
-        urlEntries.push(`  <url>
-    <loc>${this.BASE_URL}/hire-${trade}-in-${city}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.88</priority>
-  </url>`);
-      }
-    }
-
-    // 2. Category URLs
+    // 2. Category URLs (Only when categories successfully loaded and have indexable posts)
     for (const cat of categories) {
       const lastmodDate = cat.updated_at ? new Date(cat.updated_at).toISOString().split('T')[0] : today;
       urlEntries.push(`  <url>
@@ -155,25 +197,28 @@ export class SitemapService {
   </url>`);
     }
 
-    // 4. Active Job URLs
+    // 4. Active Job URLs (Formatted with unified SEO slug)
     for (const job of activeJobs) {
       const rawDate = job.updated_at || job.created_at || new Date();
       const lastmodDate = new Date(rawDate).toISOString().split('T')[0];
+      const seoSlug = generateJobSeoSlug(job);
       const imageTag = job.cover_image_url
         ? `\n    <image:image>\n      <image:loc>${this.escapeXml(job.cover_image_url)}</image:loc>\n      <image:title>${this.escapeXml(job.title)}</image:title>\n    </image:image>`
         : '';
       urlEntries.push(`  <url>
-    <loc>${this.BASE_URL}/job/${job.id}</loc>
+    <loc>${this.BASE_URL}/job/${seoSlug}</loc>
     <lastmod>${lastmodDate}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>${imageTag}
   </url>`);
     }
 
-    return `<?xml version="1.0" encoding="UTF-8"?>
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urlEntries.join('\n')}
 </urlset>`;
+
+    return { xml, dbError };
   }
 
   /**
@@ -184,6 +229,7 @@ ${urlEntries.join('\n')}
       where: {
         status: 'PUBLISHED',
         no_index: false,
+        published_at: { not: null },
       },
       include: {
         category: true,

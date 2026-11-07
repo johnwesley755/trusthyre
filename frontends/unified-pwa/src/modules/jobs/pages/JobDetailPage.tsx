@@ -233,16 +233,13 @@ export default function JobDetailPage() {
   const canManageJob = isEmployer || isAdmin;
   const rawExpiry = (job as any)?.expiresAt || (job as any)?.expires_at;
   const createdDate = (job as any)?.createdAt || (job as any)?.created_at;
-  const effectiveExpiry = rawExpiry
-    ? new Date(rawExpiry)
-    : (createdDate ? new Date(new Date(createdDate).getTime() + 30 * 24 * 60 * 60 * 1000) : null);
 
   const isExpired = Boolean(
     (job as any)?.isExpired || 
     (job as any)?.status === 'EXPIRED' || 
-    (effectiveExpiry && effectiveExpiry.getTime() <= Date.now())
+    (rawExpiry && new Date(rawExpiry).getTime() <= Date.now())
   );
-  const expiryDate = rawExpiry || effectiveExpiry?.toISOString();
+  const expiryDate = rawExpiry || undefined;
   const effectiveCoverUrl = !coverImageFailed 
     ? getEffectiveCoverUrl(job as any) 
     : resolveTradeCover((job as any)?.title, (job as any)?.industry);
@@ -507,13 +504,23 @@ export default function JobDetailPage() {
     : getCategoryDefaultSkills(job?.title, job?.industry);
   // legacy fallback handled above 
 
-
+  const payoutFrequency = ((job as any)?.payout_frequency || (job as any)?.payoutFrequency || 'MONTHLY').toUpperCase();
+  const payFreqSuffix = payoutFrequency === 'DAILY' ? '/day'
+    : payoutFrequency === 'WEEKLY' ? '/week'
+    : payoutFrequency === 'HOURLY' ? '/hr'
+    : payoutFrequency === 'ONE_TIME' ? ' total'
+    : '/mo';
+  const payFreqLabel = payoutFrequency === 'DAILY' ? 'Per Day'
+    : payoutFrequency === 'WEEKLY' ? 'Per Week'
+    : payoutFrequency === 'HOURLY' ? 'Per Hour'
+    : payoutFrequency === 'ONE_TIME' ? 'Total Project'
+    : 'Per Month';
 
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
       <SeoHead
         title={`${job.title} at ${employerName}`}
-        description={`Apply for verified opening: ${job.title} in ${job.location || job.city || 'India'}. Verified Employer: ${employerName}. Agreed Salary: ${job.budget ? '₹' + Number(job.budget).toLocaleString('en-IN') + '/mo' : 'Best in Industry'}.`}
+        description={`Apply for verified opening: ${job.title} in ${job.location || job.city || 'India'}. Verified Employer: ${employerName}. Agreed Salary: ${job.budget ? '₹' + Number(job.budget).toLocaleString('en-IN') + payFreqSuffix : 'Best in Industry'}.`}
         canonicalPath={`/job/${generateJobSeoSlug(job ? { id: (job as any).id, title: (job as any).title, city: (job as any).city, location: (job as any).location, created_at: (job as any).createdAt } : { id })}`}
         ogType="website"
         ogImage={effectiveCoverUrl || employer?.profileImageUrl || (job as any).logoUrl || undefined}
@@ -529,6 +536,7 @@ export default function JobDetailPage() {
             city: job.city || job.location,
             address: job.address || job.location,
             salary: job.budget ? Number(job.budget) : undefined,
+            payoutFrequency: (job as any).payout_frequency || (job as any).payoutFrequency || 'MONTHLY',
           })] : []),
           ...(job ? [buildBreadcrumbJsonLd([
             { name: 'Home', path: '/' },
@@ -736,7 +744,7 @@ export default function JobDetailPage() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] block leading-none">Salary</span>
                   <p className="text-2xl lg:text-3xl font-black text-emerald-600 tracking-tight leading-none mt-1">
                     {job.budget ? `₹${Number(job.budget).toLocaleString('en-IN')}` : 'Best in Industry'}
-                    {job.budget && <span className="text-xs font-normal text-[#717784] ml-1">/mo</span>}
+                    {job.budget && <span className="text-xs font-normal text-[#717784] ml-1">{payFreqSuffix}</span>}
                   </p>
                 </div>
 
@@ -950,7 +958,7 @@ export default function JobDetailPage() {
                   <span className="text-base font-bold text-[#0a0a0a]">
                     {job.budget && Number(job.budget) > 0 ? `₹${Math.round(Number(job.budget) * 0.85).toLocaleString('en-IN')}` : '₹18,000'}
                   </span>
-                  <span className="text-[10px] text-[#868c98] block">Per Month</span>
+                  <span className="text-[10px] text-[#868c98] block">{payFreqLabel}</span>
                 </div>
 
                 <div className="bg-white p-4 rounded-xl border-2 border-[#0f2f63] text-center space-y-1 relative shadow-xs">
@@ -969,7 +977,7 @@ export default function JobDetailPage() {
                   <span className="text-base font-bold text-[#0a0a0a]">
                     {job.budget && Number(job.budget) > 0 ? `₹${Math.round(Number(job.budget) * 1.25).toLocaleString('en-IN')}` : '₹32,000+'}
                   </span>
-                  <span className="text-[10px] text-[#868c98] block">Per Month</span>
+                  <span className="text-[10px] text-[#868c98] block">{payFreqLabel}</span>
                 </div>
               </div>
 

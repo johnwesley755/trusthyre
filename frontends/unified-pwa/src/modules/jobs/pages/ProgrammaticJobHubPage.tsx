@@ -5,6 +5,7 @@ import { searchService } from '../../../services/search.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { JobSearchResultCard } from '../components/JobSearchResultCard';
 import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
+import { generateJobSeoSlug } from '../../../utils/seoSlug.utils';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { 
   MapPin, 
@@ -140,11 +141,32 @@ export const ProgrammaticJobHubPage: React.FC = () => {
   });
 
   const pageTitle = tradeMeta 
-    ? `${tradeMeta.title} Jobs in ${cityMeta.name} | Verified Openings 2026 - TrustHyre`
+    ? `${tradeMeta.title} Jobs in ${cityMeta.name} | Verified Openings - TrustHyre`
     : `Verified Skilled & Blue Collar Jobs in ${cityMeta.name} (${cityMeta.state}) - TrustHyre`;
 
+  // Compute live average salary from active listings if available, otherwise display estimated range
+  const salaryStats = useMemo(() => {
+    const validSalaries = jobs
+      .map((j: any) => Number(j.budget))
+      .filter((s: number) => !isNaN(s) && s > 0);
+    
+    if (validSalaries.length > 0) {
+      const avg = Math.round(validSalaries.reduce((a: number, b: number) => a + b, 0) / validSalaries.length);
+      const min = Math.min(...validSalaries);
+      const max = Math.max(...validSalaries);
+      return {
+        label: min === max ? `₹${min.toLocaleString('en-IN')}` : `₹${min.toLocaleString('en-IN')} - ₹${max.toLocaleString('en-IN')}`,
+        isLive: true,
+      };
+    }
+    return {
+      label: tradeMeta ? tradeMeta.avgSalary.split('/')[0].trim() : 'Market Rate',
+      isLive: false,
+    };
+  }, [jobs, tradeMeta]);
+
   const metaDesc = tradeMeta
-    ? `Apply to verified ${tradeMeta.title} vacancies in ${cityMeta.name}. Transparent monthly pay (${tradeMeta.avgSalary}), direct employer contact, and real worksite photos on TrustHyre.`
+    ? `Apply to verified ${tradeMeta.title} vacancies in ${cityMeta.name}. ${salaryStats.isLive ? `Live pay range: ${salaryStats.label}.` : `Estimated pay: ${salaryStats.label}.`} Direct employer contact and verified worksite details on TrustHyre.`
     : `Browse verified trade, technician, and frontline job openings across ${cityMeta.name}, ${cityMeta.state}. Direct contact, verified pay rates, and instant application on TrustHyre.`;
 
   const canonicalPath = tradeMeta 
@@ -163,7 +185,7 @@ export const ProgrammaticJobHubPage: React.FC = () => {
         '@type': 'ListItem',
         position: index + 1,
         name: job.title,
-        url: `https://trusthyre.com/job/${job.id}`,
+        url: `https://trusthyre.com/job/${generateJobSeoSlug(job)}`,
         item: {
           '@type': 'JobPosting',
           title: job.title,
@@ -223,7 +245,7 @@ export const ProgrammaticJobHubPage: React.FC = () => {
           <div className="max-w-3xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              100% Verified Worksite Guarantee
+              Verified Worksite Directory
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
               {tradeMeta ? (
@@ -233,7 +255,7 @@ export const ProgrammaticJobHubPage: React.FC = () => {
               )}
             </h1>
             <p className="text-sm sm:text-base text-blue-100/90 leading-relaxed">
-              {tradeMeta ? tradeMeta.description : `Discover vetted opportunities with direct employers across ${cityMeta.name}. Verified worksites, no agency middlemen, and guaranteed wage transparency.`}
+              {tradeMeta ? tradeMeta.description : `Discover vetted opportunities with direct employers across ${cityMeta.name}. Verified worksites, no agency middlemen, and transparent wage listings.`}
             </p>
           </div>
 
@@ -244,16 +266,16 @@ export const ProgrammaticJobHubPage: React.FC = () => {
               <span className="text-lg font-bold text-white">{jobs.length} Active</span>
             </div>
             <div className="bg-white/5 backdrop-blur-xs p-3 rounded-xl border border-white/10">
-              <span className="text-blue-200 block">Market Average Pay</span>
-              <span className="text-lg font-bold text-white">{tradeMeta ? tradeMeta.avgSalary.split('/')[0] : '₹20,000+'}</span>
+              <span className="text-blue-200 block">{salaryStats.isLive ? 'Current Pay Range' : 'Estimated Pay Range'}</span>
+              <span className="text-lg font-bold text-white">{salaryStats.label}</span>
             </div>
             <div className="bg-white/5 backdrop-blur-xs p-3 rounded-xl border border-white/10">
               <span className="text-blue-200 block">Locality Hubs</span>
               <span className="text-lg font-bold text-white">{cityMeta.popularLocalities.length} Areas</span>
             </div>
             <div className="bg-white/5 backdrop-blur-xs p-3 rounded-xl border border-white/10">
-              <span className="text-blue-200 block">Verification Standard</span>
-              <span className="text-lg font-bold text-emerald-400">Photo &amp; Geo-Check</span>
+              <span className="text-blue-200 block">Worksite Audit</span>
+              <span className="text-lg font-bold text-emerald-400">Location Verified</span>
             </div>
           </div>
         </div>
