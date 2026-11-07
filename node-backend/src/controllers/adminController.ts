@@ -1,6 +1,68 @@
 
+export const detectJobIndustry = (title?: string, rawIndustry?: string): string => {
+  const norm = (rawIndustry || '').trim();
+  const text = `${title || ''} ${rawIndustry || ''}`.toLowerCase();
+
+  if (text.includes('counsel') || text.includes('admission') || text.includes('teacher') || text.includes('tutor') || text.includes('faculty') || text.includes('academic') || text.includes('school') || text.includes('college')) {
+    return 'Education & Training';
+  }
+  if (text.includes('nurse') || text.includes('clinic') || text.includes('hospital') || text.includes('pharma') || text.includes('patient') || text.includes('medical') || text.includes('doctor')) {
+    return 'Healthcare & Medical';
+  }
+  if (text.includes('cashier') || text.includes('retail') || text.includes('counter sales') || text.includes('store keeper') || text.includes('sales executive') || text.includes('showroom')) {
+    return 'Retail & Counter Sales';
+  }
+  if (text.includes('receptionist') || text.includes('front desk') || text.includes('telecaller') || text.includes('bpo') || text.includes('data entry') || text.includes('office assistant') || text.includes('clerk')) {
+    return 'Office & Support';
+  }
+  if (text.includes('electr') || text.includes('wireman') || text.includes('power grid')) {
+    return 'Electrical & Power';
+  }
+  if (text.includes('plumb') || text.includes('pipe') || text.includes('drain')) {
+    return 'Plumbing & Pipefitting';
+  }
+  if (text.includes('cook') || text.includes('chef') || text.includes('kitchen') || text.includes('baker') || text.includes('cater') || text.includes('restaurant')) {
+    return 'Hospitality & Cooking';
+  }
+  if (text.includes('construct') || text.includes('mason') || text.includes('carpenter') || text.includes('painter') || text.includes('welder') || text.includes('civil')) {
+    return 'Construction & Masonry';
+  }
+  if (text.includes('technician') || text.includes('repair') || text.includes('maintain') || text.includes('mechanic') || text.includes('ac repair') || text.includes('hvac')) {
+    return 'Maintenance & Repair';
+  }
+  if (text.includes('secur') || text.includes('guard') || text.includes('watchman') || text.includes('patrol')) {
+    return 'Security Services';
+  }
+  if (text.includes('driv') || text.includes('deliver') || text.includes('rider') || text.includes('courier') || text.includes('logist') || text.includes('cargo') || text.includes('warehouse') || text.includes('packer') || text.includes('loader')) {
+    return 'Logistics & Delivery';
+  }
+  if (text.includes('clean') || text.includes('maid') || text.includes('housekeep') || text.includes('sweeper')) {
+    return 'Housekeeping & Cleaning';
+  }
+  if (text.includes('manufactur') || text.includes('factory') || text.includes('machin') || text.includes('assembly') || text.includes('operator')) {
+    return 'Manufacturing & Fabrication';
+  }
+
+  if (norm && norm !== 'Field Operations & Logistics' && norm !== 'Field Operations & Services' && norm !== 'General') {
+    return norm;
+  }
+  return 'Skilled Services & Operations';
+};
+
 export const resolveTradeCoverImage = (title?: string, industry?: string): string => {
   const text = `${title || ''} ${industry || ''}`.toLowerCase();
+  if (text.includes('counsel') || text.includes('admission') || text.includes('teacher') || text.includes('academic') || text.includes('school')) {
+    return 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80';
+  }
+  if (text.includes('nurse') || text.includes('clinic') || text.includes('medical') || text.includes('pharma') || text.includes('hospital')) {
+    return 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80';
+  }
+  if (text.includes('retail') || text.includes('cashier') || text.includes('sales') || text.includes('store')) {
+    return 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80';
+  }
+  if (text.includes('office') || text.includes('receptionist') || text.includes('telecaller') || text.includes('desk') || text.includes('clerk')) {
+    return 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80';
+  }
   if (text.includes('electr')) return 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80';
   if (text.includes('driv') || text.includes('deliver') || text.includes('logist')) return 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
   if (text.includes('construct') || text.includes('mason') || text.includes('carpenter')) return 'https://images.unsplash.com/photo-1541888946425-d0fbb18615f8?auto=format&fit=crop&w=1200&q=80';
@@ -8,7 +70,7 @@ export const resolveTradeCoverImage = (title?: string, industry?: string): strin
   if (text.includes('plumb') || text.includes('technician') || text.includes('ac') || text.includes('repair')) return 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80';
   if (text.includes('secur') || text.includes('guard')) return 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=1200&q=80';
   if (text.includes('wareh') || text.includes('pack')) return 'https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1200&q=80';
-  return 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80';
+  return 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80';
 };
 import { Context } from 'hono';
 import prisma from '../config/prisma';
@@ -451,7 +513,7 @@ export const syncExternalJobs = async (c: Context) => {
               title: item.title,
               employer_name: item.employer_name || 'Verified Employer',
               description: item.description || '',
-              industry: item.industry || 'Field Operations & Logistics',
+              industry: detectJobIndustry(item.title, item.industry),
               experience_years_required: item.experience_years_required || 0,
               budget: item.budget ? Number(item.budget) : null,
               status: 'PENDING_REVIEW',
@@ -513,7 +575,7 @@ export const getScanStatus = async (c: Context) => {
               title: item.title,
               employer_name: item.employer_name || 'Verified Employer',
               description: item.description || '',
-              industry: item.industry || 'Field Operations & Logistics',
+              industry: detectJobIndustry(item.title, item.industry),
               experience_years_required: item.experience_years_required || 0,
               budget: item.budget ? Number(item.budget) : null,
               status: 'PENDING_REVIEW',
@@ -567,7 +629,38 @@ export const moderateJobByAdmin = async (c: Context) => {
   try {
     const id = c.req.param('id') as string;
     const body = await c.req.json().catch(() => ({}));
-    const { action, reason, title, description, coverImageUrl, cover_image_url, budget, city, location, additionalDetails, additional_details } = body;
+    const { 
+      action, 
+      reason, 
+      title, 
+      description, 
+      coverImageUrl, 
+      cover_image_url, 
+      budget, 
+      city, 
+      location, 
+      address,
+      industry,
+      experienceYearsRequired,
+      experience_years_required,
+      jobType,
+      job_type,
+      perks,
+      allowDirectCall,
+      allow_direct_call,
+      allowDirectWhatsapp,
+      allow_direct_whatsapp,
+      contactPhone,
+      contact_phone,
+      isUrgentSpotHire,
+      is_urgent_spot_hire,
+      isWalkInInterview,
+      is_walk_in_interview,
+      walkInDetails,
+      walk_in_details,
+      additionalDetails, 
+      additional_details 
+    } = body;
     if (!['approve', 'reject', 'expire', 'update'].includes(action)) {
       return c.json(ApiResponse.error("Invalid action. Must be 'approve', 'reject', 'expire', or 'update'."), 400 as any);
     }
@@ -586,9 +679,40 @@ export const moderateJobByAdmin = async (c: Context) => {
     if (budget !== undefined) updateData.budget = budget ? Number(budget) : null;
     if (city !== undefined) updateData.city = String(city).trim();
     if (location !== undefined) updateData.location = String(location).trim();
-    const details = additionalDetails || additional_details;
+    if (address !== undefined) updateData.address = String(address).trim();
+    if (industry !== undefined) updateData.industry = String(industry).trim();
+    
+    const exp = experienceYearsRequired !== undefined ? experienceYearsRequired : experience_years_required;
+    if (exp !== undefined) updateData.experience_years_required = Number(exp) || 0;
+
+    const jType = jobType || job_type;
+    if (jType !== undefined) updateData.job_type = String(jType);
+
+    const callAllowed = allowDirectCall !== undefined ? allowDirectCall : allow_direct_call;
+    if (callAllowed !== undefined) updateData.allow_direct_call = Boolean(callAllowed);
+
+    const waAllowed = allowDirectWhatsapp !== undefined ? allowDirectWhatsapp : allow_direct_whatsapp;
+    if (waAllowed !== undefined) updateData.allow_direct_whatsapp = Boolean(waAllowed);
+
+    const phone = contactPhone !== undefined ? contactPhone : contact_phone;
+    if (phone !== undefined) updateData.contact_phone = phone ? String(phone).trim() : null;
+
+    const spot = isUrgentSpotHire !== undefined ? isUrgentSpotHire : is_urgent_spot_hire;
+    if (spot !== undefined) updateData.is_urgent_spot_hire = Boolean(spot);
+
+    const walkIn = isWalkInInterview !== undefined ? isWalkInInterview : is_walk_in_interview;
+    if (walkIn !== undefined) updateData.is_walk_in_interview = Boolean(walkIn);
+
+    if (perks !== undefined && Array.isArray(perks)) {
+      updateData.perks = perks;
+    }
+
+    const details = additionalDetails || additional_details || walkInDetails || walk_in_details;
     if (details !== undefined) {
-      updateData.alternate_sources = { additional_details: details };
+      updateData.alternate_sources = { 
+        additional_details: details,
+        walk_in_details: walkInDetails || walk_in_details || undefined
+      };
     }
 
     const updated = await prisma.jobs.update({

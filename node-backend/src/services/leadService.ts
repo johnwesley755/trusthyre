@@ -479,6 +479,24 @@ export class LeadService {
   }
 
   /**
+   * Fetches a single employer lead with full requirements and outreach logs.
+   */
+  static async getLeadById(leadId: string) {
+    const lead = await prisma.employer_leads.findUnique({
+      where: { id: leadId },
+      include: {
+        requirements: {
+          orderBy: { discovered_at: 'desc' }
+        },
+        outreach_logs: {
+          orderBy: { contacted_at: 'desc' }
+        }
+      }
+    });
+    return lead;
+  }
+
+  /**
    * Converts a verified lead into a live TrustHire Employer profile.
    */
   static async convertLeadToEmployer(leadId: string) {

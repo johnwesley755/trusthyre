@@ -7,7 +7,7 @@ import { useAuth } from '../../../providers/AuthContext';
 import { useTranslation } from '../../../providers/TranslationContext';
 import { buildJobWhatsAppMessage, openWhatsAppShare } from '../../../utils/whatsappTemplate.utils';
 import { TranslateText } from '../../../components/common/TranslateText';
-import { getEffectiveCoverUrl } from '../../../utils/coverImage.utils';
+import { getEffectiveCoverUrl, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
 import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
 import { WalkInPassModal } from '../../../components/common/WalkInPassModal';
 import { InterviewPrepKitModal } from '../../../components/common/InterviewPrepKitModal';
@@ -247,7 +247,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           {/* Badges on Cover Image Panel */}
           <div className="absolute bottom-3 left-3 flex flex-col items-start gap-1.5 z-10">
             <span className="px-2.5 py-1 rounded-md bg-black/75 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider">
-              {job.industry || 'Verified Opening'}
+              {resolveJobCategoryLabel(job.title, job.industry)}
             </span>
             {isVerified && (
               <span className="px-2 py-0.5 rounded-md bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">

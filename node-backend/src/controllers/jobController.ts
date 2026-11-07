@@ -648,7 +648,7 @@ export const updateJob = async (c: Context) => {
     }
 
     const whereClause: any = { id };
-    if (authUser.role !== 'ADMIN') {
+    if (authUser.role !== 'ADMIN' && authUser.role !== 'SUPER_ADMIN') {
       whereClause.employer_id = employerId;
     }
 
@@ -710,7 +710,7 @@ export const deleteJob = async (c: Context) => {
     if (!employerId) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
 
     const whereClause: any = { id };
-    if (authUser.role !== 'ADMIN') {
+    if (authUser.role !== 'ADMIN' && authUser.role !== 'SUPER_ADMIN') {
       whereClause.employer_id = employerId;
     }
 

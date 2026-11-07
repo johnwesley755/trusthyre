@@ -466,9 +466,20 @@ export const JobPostingPage = () => {
                         const nextInd = e.target.value;
                         setIndustry(nextInd);
                         setPreviewIndustry(nextInd);
+                        if (!uploadedImageUrl) {
+                          const matchedPreset = TRADE_COVER_PRESETS.find(p => p.industry === nextInd);
+                          if (matchedPreset) {
+                            setSelectedPresetUrl(matchedPreset.url);
+                          }
+                        }
                       }}
                       className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all cursor-pointer"
                     >
+                      <option value="EDUCATION">Education, Teaching & Counseling</option>
+                      <option value="HEALTHCARE">Healthcare & Medical Staff</option>
+                      <option value="RETAIL">Retail & Counter Sales</option>
+                      <option value="OFFICE_ADMIN">Office & Customer Support</option>
+                      <option value="AUTOMOTIVE">Driver & Mobility Fleet</option>
                       <option value="ELECTRICAL">Electrical Work</option>
                       <option value="PLUMBING">Plumbing</option>
                       <option value="CONSTRUCTION">Construction & Masonry</option>

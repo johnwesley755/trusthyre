@@ -35,6 +35,7 @@ import { AdminVerificationsPage } from '../modules/admin/pages/AdminVerification
 import { AdminUsersPage } from '../modules/admin/pages/AdminUsersPage';
 import { AdminJobsPage } from '../modules/admin/pages/AdminJobsPage';
 import { AdminLeadsPage } from '../modules/admin/pages/AdminLeadsPage';
+import { AdminLeadDetailPage } from '../modules/admin/pages/AdminLeadDetailPage';
 import { AdminBlogPage } from '../modules/admin/pages/AdminBlogPage';
 import { AdminBlogEditorPage } from '../modules/admin/pages/AdminBlogEditorPage';
 import { AdminAnalyticsPage } from '../modules/admin/pages/AdminAnalyticsPage';
@@ -174,14 +175,10 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          /* Employer Specific Routes (Protected by RoleGuard) */
+          /* Employer & Admin Job Creation/Editing (Protected by RoleGuard) */
           {
-            element: <RoleGuard allowedRoles={['EMPLOYER']} />,
+            element: <RoleGuard allowedRoles={['EMPLOYER', 'ADMIN']} />,
             children: [
-              {
-                path: '/dashboard',
-                element: <DashboardPage />,
-              },
               {
                 path: '/post-job',
                 element: <JobPostingPage />,
@@ -193,6 +190,16 @@ export const router = createBrowserRouter([
               {
                 path: '/jobs/:jobId/edit',
                 element: <JobPostingPage />,
+              },
+            ]
+          },
+          /* Employer Specific Routes (Protected by RoleGuard) */
+          {
+            element: <RoleGuard allowedRoles={['EMPLOYER']} />,
+            children: [
+              {
+                path: '/dashboard',
+                element: <DashboardPage />,
               },
               {
                 path: '/jobs',
@@ -306,6 +313,10 @@ export const router = createBrowserRouter([
               {
                 path: 'leads',
                 element: <AdminLeadsPage />,
+              },
+              {
+                path: 'leads/:leadId',
+                element: <AdminLeadDetailPage />,
               },
               {
                 path: 'verifications',
