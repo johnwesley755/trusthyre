@@ -368,17 +368,33 @@ export class LeadController {
       const { sanitizeHtmlDescription } = await import('../utils/textSanitizer');
 
       const updateData: any = {};
-      if (title !== undefined) updateData.title = String(title).trim();
-      if (description !== undefined) updateData.description = sanitizeHtmlDescription(description);
-      if (salaryRange !== undefined) updateData.salary_range = String(salaryRange).trim();
-      if (workersNeeded !== undefined) updateData.workers_needed = Number(workersNeeded);
-      if (category !== undefined) updateData.category = String(category).trim();
-      if (city !== undefined) updateData.city = String(city).trim();
-      if (location !== undefined) updateData.location = String(location).trim();
+      if (title !== undefined) {
+        updateData.title = String(title).trim().slice(0, 255);
+      }
+      if (description !== undefined) {
+        updateData.description = sanitizeHtmlDescription(description);
+      }
+      if (salaryRange !== undefined) {
+        updateData.salary_range = String(salaryRange).trim().slice(0, 100);
+      }
+      if (workersNeeded !== undefined) {
+        updateData.workers_needed = Number(workersNeeded);
+      }
+      if (category !== undefined) {
+        updateData.category = String(category).trim().slice(0, 100);
+      }
+      if (city !== undefined) {
+        updateData.city = String(city).trim().slice(0, 100);
+      }
+      if (location !== undefined) {
+        updateData.location = String(location).trim().slice(0, 255);
+      }
 
       const details = additionalDetails || additional_details;
       if (details !== undefined) {
         updateData.normalized_title = JSON.stringify(details);
+      } else if (title !== undefined && !updateData.normalized_title) {
+        updateData.normalized_title = String(title).toLowerCase().trim();
       }
 
       const updated = await prisma.employer_lead_requirements.update({

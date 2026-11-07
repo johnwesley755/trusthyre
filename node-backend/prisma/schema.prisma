@@ -450,7 +450,7 @@ model employer_lead_requirements {
   id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   lead_id          String         @db.Uuid
   title            String         @db.VarChar(255)
-  normalized_title String         @db.VarChar(255)
+  normalized_title String         @db.Text
   category         String?        @db.VarChar(100)
   description      String?
   city             String?        @db.VarChar(100)

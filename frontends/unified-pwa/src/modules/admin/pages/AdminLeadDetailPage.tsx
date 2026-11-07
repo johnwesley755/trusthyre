@@ -935,7 +935,7 @@ export const AdminLeadDetailPage: React.FC = () => {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#0f2f63] border border-blue-200">
-                          {resolveJobCategoryLabel(req.title, req.category || lead.industry)}
+                          {resolveJobCategoryLabel(req.title, req.category || lead.industry || undefined)}
                         </span>
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                           {req.workers_needed || 1} Worker(s) Needed
