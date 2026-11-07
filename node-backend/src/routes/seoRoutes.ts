@@ -224,33 +224,97 @@ ${JSON.stringify(articleJsonLd, null, 2)}
     const hubParts = cleanPath.replace(/^\/jobs-in-/, '').split('/');
     const citySlug = (hubParts[0] || 'chennai').toLowerCase().trim();
     const tradeSlug = (hubParts[1] || '').toLowerCase().trim();
+
+    const ALLOWED_CITIES = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
+    const ALLOWED_TRADES = ['electrician', 'driver', 'cook', 'plumber', 'welder', 'security', 'warehouse'];
+
+    if (!ALLOWED_CITIES.includes(citySlug) || (tradeSlug && !ALLOWED_TRADES.includes(tradeSlug))) {
+      return c.text('Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    }
+
     const normCity = citySlug.charAt(0).toUpperCase() + citySlug.slice(1);
 
-    // Fetch up to 20 active jobs in this city
-    const hubJobs = await (prisma as any).jobs.findMany({
-      where: {
+    // Trade keyword mapping for database search
+    const TRADE_KEYWORD_MAP: Record<string, string[]> = {
+      electrician: ['electrician', 'wireman', 'electrical'],
+      driver: ['driver', 'delivery', 'chauffeur'],
+      cook: ['cook', 'chef', 'kitchen'],
+      plumber: ['plumber', 'plumbing', 'pipe'],
+      welder: ['welder', 'fabricator', 'welding'],
+      security: ['security', 'guard', 'watchman'],
+      warehouse: ['warehouse', 'packing', 'picker', 'loader', 'logistics'],
+    };
+
+    const tradeKeywords = tradeSlug ? (TRADE_KEYWORD_MAP[tradeSlug] || [tradeSlug]) : [];
+
+    let hubJobs: any[] = [];
+    let hubDbFailed = false;
+
+    try {
+      const whereClause: any = {
         city: { contains: normCity, mode: 'insensitive' },
         OR: [{ status: 'ACTIVE' }, { status: 'OPEN' }],
-      },
-      select: {
-        id: true,
-        title: true,
-        city: true,
-        employer_name: true,
-        budget: true,
-        description: true,
-        created_at: true,
-      },
-      take: 20,
-      orderBy: { created_at: 'desc' },
-    }).catch(() => []);
+        AND: [
+          {
+            OR: [
+              { expires_at: null },
+              { expires_at: { gt: new Date() } }
+            ]
+          }
+        ]
+      };
+
+      if (tradeKeywords.length > 0) {
+        whereClause.AND.push({
+          OR: [
+            ...tradeKeywords.map(kw => ({ title: { contains: kw, mode: 'insensitive' } })),
+            ...tradeKeywords.map(kw => ({ industry: { contains: kw, mode: 'insensitive' } })),
+            ...tradeKeywords.map(kw => ({ description: { contains: kw, mode: 'insensitive' } }))
+          ]
+        });
+      }
+
+      hubJobs = await (prisma as any).jobs.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          title: true,
+          city: true,
+          location: true,
+          employer_name: true,
+          budget: true,
+          payout_frequency: true,
+          description: true,
+          created_at: true,
+        },
+        take: 20,
+        orderBy: { created_at: 'desc' },
+      });
+    } catch (err) {
+      console.error('[prerender /jobs-in-*] DB query failed:', err);
+      hubDbFailed = true;
+    }
+
+    if (hubDbFailed) {
+      return c.text('Service temporarily unavailable', 503, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Retry-After': '300',
+      });
+    }
+
+    // Guard against thin empty pages triggering soft-404
+    if (hubJobs.length === 0) {
+      return c.text(`No active ${tradeSlug || 'trade'} job openings found in ${normCity}`, 404, {
+        'Content-Type': 'text/plain; charset=utf-8',
+      });
+    }
 
     const pageTitle = tradeSlug
       ? `${tradeSlug.charAt(0).toUpperCase() + tradeSlug.slice(1)} Jobs in ${normCity} | Verified Openings 2026 - TrustHyre`
       : `Verified Skilled & Blue Collar Jobs in ${normCity} - TrustHyre`;
 
     const pageDesc = tradeSlug
-      ? `Apply to verified ${tradeSlug} vacancies in ${normCity}. Transparent monthly pay, direct employer hiring, and zero middleman commissions on TrustHyre.`
+      ? `Apply to verified ${tradeSlug} vacancies in ${normCity}. Transparent wage pay, direct employer hiring, and zero middleman commissions on TrustHyre.`
       : `Explore verified frontline and skilled trade jobs across ${normCity}. Instant direct application with photo-verified worksite inspections.`;
 
     const canonical = `${BASE_DOMAIN}${cleanPath}`;
@@ -264,7 +328,7 @@ ${JSON.stringify(articleJsonLd, null, 2)}
       itemListElement: hubJobs.map((j: any, idx: number) => ({
         '@type': 'ListItem',
         position: idx + 1,
-        url: `${BASE_DOMAIN}/job/${j.id}`,
+        url: `${BASE_DOMAIN}/job/${generateJobSeoSlug(j)}`,
         name: j.title,
         item: {
           '@type': 'JobPosting',
@@ -309,18 +373,29 @@ ${JSON.stringify(itemListJsonLd, null, 2)}
   <section>
     <h2 style="font-size: 1.3rem; margin-bottom: 16px;">Active Verified Openings in ${escapeHtml(normCity)} (${hubJobs.length})</h2>
     <div style="display: grid; gap: 16px;">
-      ${hubJobs.map((j: any) => `
+      ${hubJobs.map((j: any) => {
+        const payFreq = (j.payout_frequency || 'MONTHLY').toUpperCase();
+        const payLabelMap: Record<string, string> = {
+          MONTHLY: 'month',
+          WEEKLY: 'week',
+          DAILY: 'day',
+          HOURLY: 'hour',
+        };
+        const payLabel = payLabelMap[payFreq] || 'month';
+        const seoSlug = generateJobSeoSlug(j);
+
+        return `
         <article style="border: 1px solid #e2e4e9; border-radius: 12px; padding: 16px; background: #fff;">
           <h3 style="margin: 0 0 8px 0; font-size: 1.15rem;">
-            <a href="${BASE_DOMAIN}/job/${j.id}" style="color: #0f2f63; text-decoration: none; font-weight: bold;">${escapeHtml(j.title)}</a>
+            <a href="${BASE_DOMAIN}/job/${seoSlug}" style="color: #0f2f63; text-decoration: none; font-weight: bold;">${escapeHtml(j.title)}</a>
           </h3>
           <p style="margin: 0 0 8px 0; color: #666; font-size: 0.9rem;">
-            Employer: <strong>${escapeHtml(j.employer_name || 'TrustHyre Verified Employer')}</strong>  Location: <strong>${escapeHtml(j.city || normCity)}</strong>
-            ${j.budget ? `  Salary: <strong>₹${Number(j.budget).toLocaleString('en-IN')}/mo</strong>` : ''}
+            Employer: <strong>${escapeHtml(j.employer_name || 'TrustHyre Verified Employer')}</strong> • Location: <strong>${escapeHtml(j.city || normCity)}</strong>
+            ${j.budget ? ` • Salary: <strong>₹${Number(j.budget).toLocaleString('en-IN')}/${payLabel}</strong>` : ''}
           </p>
-          <a href="${BASE_DOMAIN}/job/${j.id}" style="display: inline-block; background: #0f2f63; color: white; padding: 6px 14px; border-radius: 9999px; text-decoration: none; font-size: 0.85rem; font-weight: bold;">View Details &amp; Apply</a>
-        </article>
-      `).join('')}
+          <a href="${BASE_DOMAIN}/job/${seoSlug}" style="display: inline-block; background: #0f2f63; color: white; padding: 6px 14px; border-radius: 9999px; text-decoration: none; font-size: 0.85rem; font-weight: bold;">View Details &amp; Apply</a>
+        </article>`;
+      }).join('')}
     </div>
   </section>
 </body>
@@ -337,6 +412,14 @@ ${JSON.stringify(itemListJsonLd, null, 2)}
     const hubParts = cleanPath.replace(/^\/hire-/, '').split('-in-');
     const tradeSlug = (hubParts[0] || 'workers').toLowerCase().trim();
     const citySlug = (hubParts[1] || 'chennai').toLowerCase().trim();
+
+    const ALLOWED_CITIES = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
+    const ALLOWED_TRADES = ['electricians', 'drivers', 'cooks', 'plumbers', 'welders', 'warehouse', 'workers'];
+
+    if (!ALLOWED_CITIES.includes(citySlug) || !ALLOWED_TRADES.includes(tradeSlug)) {
+      return c.text('Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    }
+
     const normCity = citySlug.charAt(0).toUpperCase() + citySlug.slice(1);
     const normTrade = tradeSlug.charAt(0).toUpperCase() + tradeSlug.slice(1);
 
@@ -397,9 +480,15 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
   // 1.5 Job Post Details: /job/:slug-or-id or /jobs/:slug-or-id
   if (cleanPath.startsWith('/job/') || cleanPath.startsWith('/jobs/')) {
     const rawSlugOrId = cleanPath.replace(/^\/jobs?\//, '').trim();
-    // Extract UUID (either exact match or trailing 36-char UUID from SEO slug)
-    const uuidMatch = rawSlugOrId.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/);
-    const jobId = uuidMatch ? uuidMatch[0] : rawSlugOrId;
+    // Two-stage UUID extraction: extract trailing 36-char UUID or exact UUID
+    const uuidRegex = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    const uuidMatch = rawSlugOrId.match(uuidRegex);
+    const jobId = uuidMatch ? uuidMatch[0] : (rawSlugOrId.match(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/) ? rawSlugOrId : null);
+    
+    // Malformed ID check before calling database
+    if (!jobId) {
+      return c.text('Job Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    }
     
     let job: any = null;
     let jobDbFailed = false;
@@ -466,7 +555,7 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
     const canonical = `${BASE_DOMAIN}/job/${generateJobSeoSlug(job)}`;
     const imageUrl = job.cover_image_url || `${BASE_DOMAIN}/logo.png`;
     const pubDate = job.created_at ? new Date(job.created_at).toISOString() : new Date().toISOString();
-    const validThrough = job.expires_at ? new Date(job.expires_at).toISOString() : new Date(Date.now() + 30 * 86400000).toISOString();
+    const validThrough = job.expires_at ? new Date(job.expires_at).toISOString() : undefined;
 
     const payFreq = (job.payout_frequency || 'MONTHLY').toUpperCase();
     const unitTextMap: Record<string, string> = {
@@ -490,7 +579,7 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
       title: job.title,
       description: job.description || pageDesc,
       datePosted: pubDate,
-      validThrough: validThrough,
+      ...(validThrough ? { validThrough } : {}),
       employmentType: 'FULL_TIME',
       hiringOrganization: {
         '@type': 'Organization',
@@ -576,12 +665,21 @@ ${JSON.stringify(jobPostingJsonLd, null, 2)}
 
   // 2. Blog Listing Index: /blog
   if (cleanPath === '/blog') {
-    const posts = await (prisma as any).blog_posts.findMany({
-      where: { status: 'PUBLISHED', no_index: false },
-      include: { category: true },
-      orderBy: { published_at: 'desc' },
-      take: 20,
-    }).catch(() => []);
+    let posts: any[] = [];
+    try {
+      posts = await (prisma as any).blog_posts.findMany({
+        where: { status: 'PUBLISHED', no_index: false },
+        include: { category: true },
+        orderBy: { published_at: 'desc' },
+        take: 20,
+      });
+    } catch (err) {
+      console.error('[prerender /blog] DB query failed:', err);
+      return c.text('Service temporarily unavailable', 503, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Retry-After': '300',
+      });
+    }
 
     const postItems = posts.map((p: any) => `
       <article style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0;">
@@ -649,7 +747,6 @@ ${JSON.stringify(jobPostingJsonLd, null, 2)}
     }
 
     let catPosts: any[] = [];
-    let postsDbFailed = false;
 
     try {
       catPosts = await (prisma as any).blog_posts.findMany({
@@ -671,7 +768,10 @@ ${JSON.stringify(jobPostingJsonLd, null, 2)}
       });
     } catch (err) {
       console.error('[prerender /blog/category] Posts query failed:', err);
-      postsDbFailed = true;
+      return c.text('Service temporarily unavailable', 503, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Retry-After': '300',
+      });
     }
 
     const canonical = `${BASE_DOMAIN}/blog/category/${categorySlug}`;
@@ -728,9 +828,7 @@ ${JSON.stringify(breadcrumbJsonLd, null, 2)}
     <p style="color: #64748b; margin: 0;">${escapeHtml(pageDesc)}</p>
   </header>
   <main>
-    ${postsDbFailed 
-      ? '<p style="color: #94a3b8;">Articles temporarily unavailable. Please try again shortly.</p>' 
-      : (catPosts.length > 0 ? postListHtml : '<p style="color: #64748b;">No articles published yet in this category.</p>')}
+    ${catPosts.length > 0 ? postListHtml : '<p style="color: #64748b;">No articles published yet in this category.</p>'}
   </main>
   <footer style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #cbd5e1; color: #64748b; font-size: 0.85rem;">
     <a href="${BASE_DOMAIN}/">Home</a> • <a href="${BASE_DOMAIN}/blog">Blog</a> • <a href="${BASE_DOMAIN}/search">Search Jobs</a>

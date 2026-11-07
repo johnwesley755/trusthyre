@@ -529,6 +529,7 @@ export default function JobDetailPage() {
             city: job.city || job.location,
             address: job.address || job.location,
             salary: job.budget ? Number(job.budget) : undefined,
+            payoutFrequency: (job as any).payout_frequency || (job as any).payoutFrequency || 'MONTHLY',
           })] : []),
           ...(job ? [buildBreadcrumbJsonLd([
             { name: 'Home', path: '/' },

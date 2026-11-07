@@ -13,7 +13,7 @@ export class SitemapService {
     const today = new Date().toISOString().split('T')[0];
     const staticRoutes = [
       { path: '/', priority: '1.0', changefreq: 'daily', lastmod: today },
-      { path: '/search', priority: '0.9', changefreq: 'daily', lastmod: today },
+      // Note: /search removed as listing/search-result pages should not be in sitemaps per Google JobPosting guidelines
       // Note: /find-workers removed as it is protected behind RoleGuard for EMPLOYER
       { path: '/blog', priority: '0.9', changefreq: 'daily', lastmod: today },
       { path: '/terms', priority: '0.4', changefreq: 'monthly', lastmod: '2026-10-22' },

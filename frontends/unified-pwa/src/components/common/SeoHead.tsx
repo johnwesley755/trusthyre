@@ -174,7 +174,7 @@ export function buildJobPostingJsonLd(job: {
     title: job.title,
     description: job.description,
     datePosted: job.datePosted,
-    validThrough: job.validThrough || new Date(new Date(job.datePosted).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    ...(job.validThrough ? { validThrough: job.validThrough } : {}),
     employmentType: job.employmentType || 'FULL_TIME',
     hiringOrganization: {
       '@type': 'Organization',
