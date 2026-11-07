@@ -295,7 +295,7 @@ ${JSON.stringify(articleJsonLd, null, 2)}
     }
 
     const pageTitle = tradeSlug
-      ? `${tradeSlug.charAt(0).toUpperCase() + tradeSlug.slice(1)} Jobs in ${normCity} | Verified Openings 2026 - TrustHyre`
+      ? `${tradeSlug.charAt(0).toUpperCase() + tradeSlug.slice(1)} Jobs in ${normCity} | Verified Openings - TrustHyre`
       : `Verified Skilled & Blue Collar Jobs in ${normCity} - TrustHyre`;
 
     const pageDesc = tradeSlug
@@ -432,6 +432,7 @@ ${JSON.stringify(itemListJsonLd, null, 2)}
   <meta charset="utf-8">
   <title>${escapeHtml(pageTitle)}</title>
   <meta name="description" content="${escapeHtml(pageDesc)}">
+  <meta name="robots" content="noindex, follow">
   <link rel="canonical" href="${canonical}">
   <meta property="og:title" content="${escapeHtml(pageTitle)}">
   <meta property="og:description" content="${escapeHtml(pageDesc)}">
@@ -922,17 +923,17 @@ ${JSON.stringify(breadcrumbJsonLd, null, 2)}
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Verified Job Vacancies in India 2026 | Search Jobs in India | TrustHyre</title>
+  <title>Search Verified Jobs in India | Direct Employer Hiring | TrustHyre</title>
   <meta name="description" content="Apply for verified jobs in India on TrustHyre. Filter by salary, daily wage, trade, experience, and location. Call employers directly with zero consultant commission.">
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="robots" content="noindex, follow">
   <link rel="canonical" href="${BASE_DOMAIN}/search">
-  <meta property="og:title" content="Verified Job Vacancies in India 2026 | Search Jobs in India | TrustHyre">
+  <meta property="og:title" content="Search Verified Jobs in India | Direct Employer Hiring | TrustHyre">
   <meta property="og:description" content="Apply for verified jobs in India on TrustHyre. Filter by salary, daily wage, trade & city. Call employers directly with zero consultant commission.">
   <meta property="og:url" content="${BASE_DOMAIN}/search">
 </head>
 <body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 24px; color: #0a0a0a; background: #f8fafc;">
   <header style="margin-bottom: 24px; border-bottom: 2px solid #0f2f63; padding-bottom: 16px;">
-    <h1 style="color: #0f2f63; margin: 0; font-size: 1.75rem;">Verified Job Vacancies in India 2026</h1>
+    <h1 style="color: #0f2f63; margin: 0; font-size: 1.75rem;">Verified Job Vacancies in India</h1>
     <p style="color: #64748b; margin-top: 6px;">Browse verified job openings with direct employer hiring and zero agency commission on TrustHyre.</p>
   </header>
   <main>
