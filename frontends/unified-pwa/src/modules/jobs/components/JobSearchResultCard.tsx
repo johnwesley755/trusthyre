@@ -8,6 +8,7 @@ import { useTranslation } from '../../../providers/TranslationContext';
 import { buildJobWhatsAppMessage, openWhatsAppShare } from '../../../utils/whatsappTemplate.utils';
 import { TranslateText } from '../../../components/common/TranslateText';
 import { getEffectiveCoverUrl, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
+import { generateJobSeoSlug } from '../../../utils/seoSlug.utils';
 import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
 import { WalkInPassModal } from '../../../components/common/WalkInPassModal';
 import { InterviewPrepKitModal } from '../../../components/common/InterviewPrepKitModal';
@@ -224,9 +225,17 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
     });
   };
 
+  const jobDetailUrl = `/job/${generateJobSeoSlug({
+    id: job.id,
+    title: job.title,
+    city: job.city,
+    location: job.location,
+    created_at: job.createdAt,
+  })}`;
+
   return (
     <div 
-      onClick={() => navigate(`/job/${job.id}`)}
+      onClick={() => navigate(jobDetailUrl)}
       className={`bg-white rounded-[2rem] border transition-all duration-300 group cursor-pointer shadow-xs relative overflow-hidden font-['Onest',system-ui,sans-serif] flex flex-col md:flex-row items-stretch ${
         isExpired 
           ? 'border-rose-200/80 bg-slate-50/50 hover:border-rose-300' 
@@ -649,7 +658,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                   if (onApply) {
                     onApply(job.id);
                   } else {
-                    navigate(`/job/${job.id}`);
+                    navigate(jobDetailUrl);
                   }
                 }}
                 disabled={isApplying}

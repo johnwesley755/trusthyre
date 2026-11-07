@@ -154,9 +154,9 @@ export function buildJobPostingJsonLd(job: {
     DAILY: 'DAY',
     HOURLY: 'HOUR',
   };
-  const unitText = unitTextMap[payFreq] || 'MONTH';
+  const unitText = unitTextMap[payFreq];
 
-  const salaryObj = job.salary && job.salary > 0 ? {
+  const salaryObj = job.salary && job.salary > 0 && unitText ? {
     baseSalary: {
       '@type': 'MonetaryAmount',
       currency: 'INR',

@@ -541,6 +541,14 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
       return c.text('Job Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
     }
 
+    const canonicalSlug = generateJobSeoSlug(job);
+    const expectedCanonicalPath = `/job/${canonicalSlug}`;
+
+    // Server-side 301 Permanent Redirect for crawlers hitting legacy /job/:uuid or /jobs/:uuid
+    if (cleanPath !== expectedCanonicalPath) {
+      return c.redirect(`${BASE_DOMAIN}${expectedCanonicalPath}`, 301);
+    }
+
     const pageTitle = `${job.title} | ${job.city || 'India'} | TrustHyre Verified Jobs`;
     const pageDesc = job.description
       ? (job.description.length > 160 ? job.description.slice(0, 157) + '...' : job.description)
@@ -557,14 +565,15 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
       DAILY: 'DAY',
       HOURLY: 'HOUR',
     };
-    const unitText = unitTextMap[payFreq] || 'MONTH';
+    const unitText = unitTextMap[payFreq];
     const payLabelMap: Record<string, string> = {
       MONTHLY: 'month',
       WEEKLY: 'week',
       DAILY: 'day',
       HOURLY: 'hour',
+      ONE_TIME: 'project',
     };
-    const payLabel = payLabelMap[payFreq] || 'month';
+    const payLabel = payLabelMap[payFreq] || 'project';
 
     const jobPostingJsonLd = {
       '@context': 'https://schema.org',
@@ -587,7 +596,7 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
           ...resolveGeoAddress(job.city, job.address || job.location),
         },
       },
-      ...(job.budget && Number(job.budget) > 0 ? {
+      ...(job.budget && Number(job.budget) > 0 && unitText ? {
         baseSalary: {
           '@type': 'MonetaryAmount',
           currency: 'INR',

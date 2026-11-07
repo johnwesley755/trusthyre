@@ -233,16 +233,13 @@ export default function JobDetailPage() {
   const canManageJob = isEmployer || isAdmin;
   const rawExpiry = (job as any)?.expiresAt || (job as any)?.expires_at;
   const createdDate = (job as any)?.createdAt || (job as any)?.created_at;
-  const effectiveExpiry = rawExpiry
-    ? new Date(rawExpiry)
-    : (createdDate ? new Date(new Date(createdDate).getTime() + 30 * 24 * 60 * 60 * 1000) : null);
 
   const isExpired = Boolean(
     (job as any)?.isExpired || 
     (job as any)?.status === 'EXPIRED' || 
-    (effectiveExpiry && effectiveExpiry.getTime() <= Date.now())
+    (rawExpiry && new Date(rawExpiry).getTime() <= Date.now())
   );
-  const expiryDate = rawExpiry || effectiveExpiry?.toISOString();
+  const expiryDate = rawExpiry || undefined;
   const effectiveCoverUrl = !coverImageFailed 
     ? getEffectiveCoverUrl(job as any) 
     : resolveTradeCover((job as any)?.title, (job as any)?.industry);

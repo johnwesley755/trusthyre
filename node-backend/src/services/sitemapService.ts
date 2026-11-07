@@ -26,7 +26,13 @@ export class SitemapService {
     let dbError = false;
 
     try {
-      [categories, posts, activeJobs] = await Promise.all([
+      // Stream/batch load up to Google's standard 50,000 URL limit per sitemap
+      const MAX_SITEMAP_JOBS = 45000;
+      const CHUNK_SIZE = 5000;
+      let fetchedJobs: any[] = [];
+      let lastId: string | undefined = undefined;
+
+      const [catResult, postResult] = await Promise.all([
         (prisma as any).blog_categories.findMany({
           where: {
             posts: {
@@ -57,7 +63,14 @@ export class SitemapService {
           },
           orderBy: { published_at: 'desc' },
         }),
-        (prisma as any).jobs.findMany({
+      ]);
+
+      categories = catResult;
+      posts = postResult;
+
+      // Cursor-based pagination to support tens of thousands of active jobs without memory exhaustion or silent omission
+      while (fetchedJobs.length < MAX_SITEMAP_JOBS) {
+        const batch: any[] = await (prisma as any).jobs.findMany({
           where: {
             AND: [
               {
@@ -85,10 +98,19 @@ export class SitemapService {
             created_at: true,
             cover_image_url: true,
           },
-          take: 5000,
-          orderBy: { created_at: 'desc' },
-        })
-      ]);
+          take: CHUNK_SIZE,
+          skip: lastId ? 1 : 0,
+          cursor: lastId ? { id: lastId } : undefined,
+          orderBy: { id: 'asc' },
+        });
+
+        if (batch.length === 0) break;
+        fetchedJobs.push(...batch);
+        lastId = batch[batch.length - 1].id;
+        if (batch.length < CHUNK_SIZE) break;
+      }
+
+      activeJobs = fetchedJobs;
     } catch (err) {
       console.error('[SitemapService] DB query failed during sitemap generation:', err);
       dbError = true;
