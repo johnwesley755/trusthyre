@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma';
+import { generateJobSeoSlug } from '../utils/seoSlug.util';
 
 export class SitemapService {
   private static readonly BASE_URL = 'https://trusthyre.com';
@@ -6,74 +7,91 @@ export class SitemapService {
   /**
    * Generates a fully dynamic, standards-compliant XML sitemap.
    * Includes static pages, active job openings, blog categories, and all published articles with image tags.
+   * Returns { xml: string, dbError: boolean } for clear visibility on DB health.
    */
-  static async generateSitemapXml(): Promise<string> {
+  static async generateSitemapXml(): Promise<{ xml: string; dbError: boolean }> {
     const today = new Date().toISOString().split('T')[0];
     const staticRoutes = [
       { path: '/', priority: '1.0', changefreq: 'daily', lastmod: today },
       { path: '/search', priority: '0.9', changefreq: 'daily', lastmod: today },
-      { path: '/find-workers', priority: '0.9', changefreq: 'daily', lastmod: today },
+      // Note: /find-workers removed as it is protected behind RoleGuard for EMPLOYER
       { path: '/blog', priority: '0.9', changefreq: 'daily', lastmod: today },
       { path: '/terms', priority: '0.4', changefreq: 'monthly', lastmod: '2026-10-22' },
       { path: '/privacy', priority: '0.4', changefreq: 'monthly', lastmod: '2026-10-22' },
     ];
 
-    // Fetch published categories
-    const categories = await (prisma as any).blog_categories.findMany({
-      where: {
-        posts: {
-          some: { status: 'PUBLISHED' },
-        },
-      },
-      select: {
-        slug: true,
-        updated_at: true,
-      },
-    }).catch(() => []);
+    let categories: any[] = [];
+    let posts: any[] = [];
+    let activeJobs: any[] = [];
+    let dbError = false;
 
-    // Fetch all published articles that are not marked with no_index
-    const posts = await (prisma as any).blog_posts.findMany({
-      where: {
-        status: 'PUBLISHED',
-        no_index: false,
-        published_at: { not: null },
-      },
-      select: {
-        slug: true,
-        title: true,
-        cover_image_url: true,
-        updated_at: true,
-        published_at: true,
-      },
-      orderBy: { published_at: 'desc' },
-    }).catch(() => []);
-
-    // Fetch active open jobs
-    const activeJobs = await (prisma as any).jobs.findMany({
-      where: {
-        OR: [
-          { status: 'ACTIVE' },
-          { status: 'OPEN' }
-        ],
-        AND: [
-          {
-            OR: [
-              { expires_at: null },
-              { expires_at: { gt: new Date() } }
+    try {
+      [categories, posts, activeJobs] = await Promise.all([
+        (prisma as any).blog_categories.findMany({
+          where: {
+            posts: {
+              some: {
+                status: 'PUBLISHED',
+                no_index: false,
+                published_at: { not: null },
+              },
+            },
+          },
+          select: {
+            slug: true,
+            updated_at: true,
+          },
+        }),
+        (prisma as any).blog_posts.findMany({
+          where: {
+            status: 'PUBLISHED',
+            no_index: false,
+            published_at: { not: null },
+          },
+          select: {
+            slug: true,
+            title: true,
+            cover_image_url: true,
+            updated_at: true,
+            published_at: true,
+          },
+          orderBy: { published_at: 'desc' },
+        }),
+        (prisma as any).jobs.findMany({
+          where: {
+            AND: [
+              {
+                OR: [
+                  { status: 'ACTIVE' },
+                  { status: 'OPEN' }
+                ]
+              },
+              {
+                OR: [
+                  { expires_at: null },
+                  { expires_at: { gt: new Date() } }
+                ]
+              }
             ]
-          }
-        ]
-      },
-      select: {
-        id: true,
-        title: true,
-        updated_at: true,
-        created_at: true,
-        cover_image_url: true,
-      },
-      take: 5000,
-      orderBy: { created_at: 'desc' },
-    }).catch(() => []);
+          },
+          select: {
+            id: true,
+            title: true,
+            city: true,
+            location: true,
+            payout_frequency: true,
+            updated_at: true,
+            created_at: true,
+            cover_image_url: true,
+          },
+          take: 5000,
+          orderBy: { created_at: 'desc' },
+        })
+      ]);
+    } catch (err) {
+      console.error('[SitemapService] DB query failed during sitemap generation:', err);
+      dbError = true;
+    }
 
     const urlEntries: string[] = [];
 
@@ -129,7 +147,7 @@ export class SitemapService {
       }
     }
 
-    // 2. Category URLs
+    // 2. Category URLs (Only when categories successfully loaded and have indexable posts)
     for (const cat of categories) {
       const lastmodDate = cat.updated_at ? new Date(cat.updated_at).toISOString().split('T')[0] : today;
       urlEntries.push(`  <url>
@@ -155,25 +173,28 @@ export class SitemapService {
   </url>`);
     }
 
-    // 4. Active Job URLs
+    // 4. Active Job URLs (Formatted with unified SEO slug)
     for (const job of activeJobs) {
       const rawDate = job.updated_at || job.created_at || new Date();
       const lastmodDate = new Date(rawDate).toISOString().split('T')[0];
+      const seoSlug = generateJobSeoSlug(job);
       const imageTag = job.cover_image_url
         ? `\n    <image:image>\n      <image:loc>${this.escapeXml(job.cover_image_url)}</image:loc>\n      <image:title>${this.escapeXml(job.title)}</image:title>\n    </image:image>`
         : '';
       urlEntries.push(`  <url>
-    <loc>${this.BASE_URL}/job/${job.id}</loc>
+    <loc>${this.BASE_URL}/job/${seoSlug}</loc>
     <lastmod>${lastmodDate}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>${imageTag}
   </url>`);
     }
 
-    return `<?xml version="1.0" encoding="UTF-8"?>
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urlEntries.join('\n')}
 </urlset>`;
+
+    return { xml, dbError };
   }
 
   /**
@@ -184,6 +205,7 @@ ${urlEntries.join('\n')}
       where: {
         status: 'PUBLISHED',
         no_index: false,
+        published_at: { not: null },
       },
       include: {
         category: true,

@@ -170,11 +170,23 @@ app.get('/api/health', (c) => {
 });
 
 app.get('/sitemap.xml', async (c) => {
-  const xml = await SitemapService.generateSitemapXml();
-  return c.text(xml, 200, {
-    'Content-Type': 'application/xml; charset=utf-8',
-    'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-  });
+  try {
+    const { xml, dbError } = await SitemapService.generateSitemapXml();
+    return c.text(xml, dbError ? 503 : 200, {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': dbError
+        ? 'no-cache, no-store'
+        : 'public, max-age=3600, s-maxage=86400',
+      ...(dbError ? { 'Retry-After': '300' } : {}),
+    });
+  } catch (err) {
+    console.error('[app.ts /sitemap.xml] Fatal error:', err);
+    return c.text(
+      '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',
+      503,
+      { 'Content-Type': 'application/xml; charset=utf-8', 'Retry-After': '300' }
+    );
+  }
 });
 
 app.get('/rss.xml', async (c) => {

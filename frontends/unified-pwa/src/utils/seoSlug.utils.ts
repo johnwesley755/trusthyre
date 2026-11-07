@@ -43,14 +43,14 @@ export function generateJobSeoSlug(job: JobSlugParams): string {
   const title = sanitizeSlugPart(job.title || 'opening');
   if (title) parts.push(title);
 
-  // 3. Formatted Date (e.g. 02-nov-2026)
+  // 3. Formatted Date in UTC (e.g. 02-nov-2026)
   if (job.created_at) {
     try {
       const d = new Date(job.created_at);
       if (!isNaN(d.getTime())) {
-        const dd = String(d.getDate()).padStart(2, '0');
-        const mmm = MONTH_NAMES[d.getMonth()] || 'nov';
-        const yyyy = d.getFullYear();
+        const dd = String(d.getUTCDate()).padStart(2, '0');
+        const mmm = MONTH_NAMES[d.getUTCMonth()] || 'nov';
+        const yyyy = d.getUTCFullYear();
         parts.push(`${dd}-${mmm}-${yyyy}`);
       }
     } catch {

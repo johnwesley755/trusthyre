@@ -145,7 +145,17 @@ export function buildJobPostingJsonLd(job: {
   city?: string;
   address?: string;
   salary?: number;
+  payoutFrequency?: string;
 }) {
+  const payFreq = (job.payoutFrequency || 'MONTHLY').toUpperCase();
+  const unitTextMap: Record<string, string> = {
+    MONTHLY: 'MONTH',
+    WEEKLY: 'WEEK',
+    DAILY: 'DAY',
+    HOURLY: 'HOUR',
+  };
+  const unitText = unitTextMap[payFreq] || 'MONTH';
+
   const salaryObj = job.salary && job.salary > 0 ? {
     baseSalary: {
       '@type': 'MonetaryAmount',
@@ -153,7 +163,7 @@ export function buildJobPostingJsonLd(job: {
       value: {
         '@type': 'QuantitativeValue',
         value: job.salary,
-        unitText: 'MONTH',
+        unitText: unitText,
       },
     },
   } : {};
@@ -222,23 +232,6 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     // Update standard meta
     setMetaTag('meta[name="description"]', 'name', 'description', description);
     setCanonicalLink(fullUrl);
-
-    // 3.1 Google Hreflang Tags for Multi-lingual Indexing (en, ta, hi, x-default)
-    const setHreflangTag = (lang: string, href: string) => {
-      let tag = document.querySelector(`link[rel="alternate"][hreflang="${lang}"]`);
-      if (!tag) {
-        tag = document.createElement('link');
-        tag.setAttribute('rel', 'alternate');
-        tag.setAttribute('hreflang', lang);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute('href', href);
-    };
-
-    setHreflangTag('en', `${fullUrl}?lang=en`);
-    setHreflangTag('ta', `${fullUrl}?lang=ta`);
-    setHreflangTag('hi', `${fullUrl}?lang=hi`);
-    setHreflangTag('x-default', fullUrl);
 
     // Robots index / noindex directive handling
     if (noIndex) {

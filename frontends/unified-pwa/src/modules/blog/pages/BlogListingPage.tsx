@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { 
   Search, 
   Clock, 
@@ -21,8 +21,9 @@ import { UserAvatar } from '../../../components/common/UserAvatar';
 import { sanitizeUrl } from '../../../components/common/MarkdownContent';
 
 export const BlogListingPage: React.FC = () => {
+  const { slug: categorySlug } = useParams<{ slug?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const selectedCategory = searchParams.get('category') || '';
+  const selectedCategory = categorySlug || searchParams.get('category') || '';
   const selectedCity = searchParams.get('city') || '';
   const searchQueryParam = searchParams.get('search') || '';
 
@@ -101,10 +102,17 @@ export const BlogListingPage: React.FC = () => {
   const featuredPost = posts[0];
   const regularPosts = currentPage === 1 && !searchQueryParam && !selectedCategory ? posts.slice(1) : posts;
 
+  const canonicalPath = categorySlug
+    ? `/blog/category/${categorySlug}`
+    : `/blog${selectedCategory ? `?category=${selectedCategory}` : ''}`;
+
   const breadcrumbsJsonLd = buildBreadcrumbJsonLd([
     { name: 'Home', path: '/' },
     { name: 'Blog', path: '/blog' },
-    ...(selectedCategory ? [{ name: selectedCategory, path: `/blog?category=${selectedCategory}` }] : []),
+    ...(categorySlug
+      ? [{ name: categorySlug, path: `/blog/category/${categorySlug}` }]
+      : (selectedCategory ? [{ name: selectedCategory, path: `/blog?category=${selectedCategory}` }] : [])
+    ),
   ]);
 
   return (
@@ -112,7 +120,7 @@ export const BlogListingPage: React.FC = () => {
       <SeoHead
         title={selectedCategory ? `${selectedCategory.toUpperCase()} Articles & Guides | TrustHyre` : 'Blue-Collar Hiring & Industry Insights Blog'}
         description="Comprehensive guides, salary benchmarks, hiring checklists, and regulatory insights for hiring verified skilled trade workers, electricians, delivery drivers, and warehouse staff across India."
-        canonicalPath={`/blog${selectedCategory ? `?category=${selectedCategory}` : ''}`}
+        canonicalPath={canonicalPath}
         ogType="website"
         jsonLd={breadcrumbsJsonLd}
       />
