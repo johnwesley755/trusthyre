@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { LeadService } from '../services/leadService';
 import prisma from '../config/prisma';
+import { detectJobIndustry, resolveTradeCoverImage } from './adminController';
 
 export class LeadController {
   static async getLeads(c: Context) {
@@ -29,6 +30,23 @@ export class LeadController {
     } catch (error: any) {
       console.error('Error fetching leads:', error);
       return c.json({ success: false, error: error.message || 'Failed to fetch leads' }, 500);
+    }
+  }
+
+  static async getLeadById(c: Context) {
+    try {
+      const id = c.req.param('id');
+      if (!id) {
+        return c.json({ success: false, error: 'Lead ID is required' }, 400);
+      }
+      const lead = await LeadService.getLeadById(id);
+      if (!lead) {
+        return c.json({ success: false, error: 'Lead not found' }, 404);
+      }
+      return c.json({ success: true, data: lead });
+    } catch (error: any) {
+      console.error('Error fetching lead by id:', error);
+      return c.json({ success: false, error: error.message || 'Failed to fetch lead' }, 500);
     }
   }
 
@@ -199,7 +217,7 @@ export class LeadController {
               title: item.title,
               employer_name: item.employer_name || 'Verified Employer',
               description: item.description || '',
-              industry: item.industry || 'Field Operations & Logistics',
+              industry: detectJobIndustry(item.title, item.industry),
               experience_years_required: item.experience_years_required || 0,
               budget: item.budget ? Number(item.budget) : null,
               status: 'PENDING_REVIEW',
@@ -208,6 +226,7 @@ export class LeadController {
               is_external: true,
               source_name: item.source_name || 'Web Discovery',
               source_url: item.source_url || '',
+              cover_image_url: item.cover_image_url || resolveTradeCoverImage(item.title, item.industry),
               source_hash: item.source_hash || item.id,
               external_id: item.external_id || item.id,
               created_at: item.created_at ? new Date(item.created_at) : new Date(),
@@ -334,7 +353,17 @@ export class LeadController {
       const id = c.req.param('id');
       const reqId = c.req.param('reqId');
       const body = await c.req.json().catch(() => ({}));
-      const { title, description, salaryRange, workersNeeded, additionalDetails, additional_details } = body;
+      const { 
+        title, 
+        description, 
+        salaryRange, 
+        workersNeeded, 
+        category,
+        city,
+        location,
+        additionalDetails, 
+        additional_details 
+      } = body;
 
       const { sanitizeHtmlDescription } = await import('../utils/textSanitizer');
 
@@ -343,6 +372,10 @@ export class LeadController {
       if (description !== undefined) updateData.description = sanitizeHtmlDescription(description);
       if (salaryRange !== undefined) updateData.salary_range = String(salaryRange).trim();
       if (workersNeeded !== undefined) updateData.workers_needed = Number(workersNeeded);
+      if (category !== undefined) updateData.category = String(category).trim();
+      if (city !== undefined) updateData.city = String(city).trim();
+      if (location !== undefined) updateData.location = String(location).trim();
+
       const details = additionalDetails || additional_details;
       if (details !== undefined) {
         updateData.normalized_title = JSON.stringify(details);

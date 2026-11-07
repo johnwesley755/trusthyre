@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { leadService, type EmployerLeadItem } from '../../../services/lead.service';
 import { 
@@ -27,8 +28,14 @@ import {
   RotateCcw,
   Edit3,
   Save,
-  FileText
+  FileText,
+  Image as ImageIcon,
+  UploadCloud,
+  Check
 } from 'lucide-react';
+import { mediaService } from '../../../services/media.service';
+import { sanitizeHtmlDescription } from '../../../utils/textSanitizer';
+import { TRADE_COVER_PRESETS, resolveTradeCover } from '../../../utils/coverImage.utils';
 import { toast } from 'sonner';
 import { AppLoader } from '../../../components/common/AppLoader';
 
@@ -65,6 +72,7 @@ const stripHtml = (html?: string | null): string => {
 };
 
 export const AdminLeadsPage: React.FC = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -84,6 +92,21 @@ export const AdminLeadsPage: React.FC = () => {
     description: string;
     salaryRange: string;
     workersNeeded: number;
+    coverImageUrl: string;
+    category: string;
+    city: string;
+    address: string;
+    experienceYearsRequired: number;
+    allowDirectCall: boolean;
+    allowDirectWhatsapp: boolean;
+    contactPhone: string;
+    isUrgentSpotHire: boolean;
+    isWalkInInterview: boolean;
+    walkInDates: string;
+    walkInTiming: string;
+    walkInVenue: string;
+    walkInContactPerson: string;
+    perks: string[];
     department: string;
     roleCategory: string;
     employmentType: string;
@@ -98,6 +121,21 @@ export const AdminLeadsPage: React.FC = () => {
     description: '',
     salaryRange: '',
     workersNeeded: 1,
+    coverImageUrl: '',
+    category: 'ELECTRICAL',
+    city: '',
+    address: '',
+    experienceYearsRequired: 0,
+    allowDirectCall: true,
+    allowDirectWhatsapp: true,
+    contactPhone: '',
+    isUrgentSpotHire: false,
+    isWalkInInterview: false,
+    walkInDates: '',
+    walkInTiming: '',
+    walkInVenue: '',
+    walkInContactPerson: '',
+    perks: [],
     department: '',
     roleCategory: '',
     employmentType: '',
@@ -108,6 +146,8 @@ export const AdminLeadsPage: React.FC = () => {
     ageLimit: '',
     gender: '',
   });
+  const leadsReqFileInputRef = useRef<HTMLInputElement>(null);
+  const [isLeadsUploading, setIsLeadsUploading] = useState<boolean>(false);
 
   const updateReqMutation = useMutation({
     mutationFn: ({ leadId, reqId, data }: { leadId: string; reqId: string; data: any }) =>
@@ -963,7 +1003,7 @@ export const AdminLeadsPage: React.FC = () => {
                         <div className="inline-flex items-center justify-end gap-2 shrink-0">
                           <button
                             type="button"
-                            onClick={() => setSelectedLead(lead)}
+                            onClick={() => navigate(`/admin/leads/${lead.id}`)}
                             className="px-3 py-1.5 bg-white hover:bg-[#f4f5f8] border border-[#e2e4e9] text-[#0a0a0a] hover:text-[#0f2f63] rounded-full text-xs font-semibold whitespace-nowrap shadow-2xs transition-all cursor-pointer"
                           >
                             View Details
@@ -1224,11 +1264,30 @@ export const AdminLeadsPage: React.FC = () => {
                               if (req.normalized_title && req.normalized_title.startsWith('{')) {
                                 try { reqExtra = JSON.parse(req.normalized_title); } catch (e) {}
                               }
+                              const walkIn = (req as any).walkInDetails || (req as any).walk_in_details || reqExtra?.walkInDetails || {};
+                              const rawPerks = Array.isArray((req as any).perks)
+                                ? (req as any).perks
+                                : (Array.isArray(reqExtra?.perks) ? reqExtra.perks : []);
                               setEditReqForm({
                                 title: req.title || '',
                                 description: req.description || '',
                                 salaryRange: req.salary_range || '',
                                 workersNeeded: req.workers_needed || 1,
+                                coverImageUrl: reqExtra?.coverImageUrl || (req as any).cover_image_url || '',
+                                category: req.category || reqExtra?.category || selectedLead.industry || 'ELECTRICAL',
+                                city: req.city || selectedLead.city || '',
+                                address: req.location || reqExtra?.address || '',
+                                experienceYearsRequired: reqExtra?.experienceYearsRequired ?? 0,
+                                allowDirectCall: reqExtra?.allowDirectCall ?? true,
+                                allowDirectWhatsapp: reqExtra?.allowDirectWhatsapp ?? true,
+                                contactPhone: reqExtra?.contactPhone || selectedLead.official_phone || '',
+                                isUrgentSpotHire: Boolean(reqExtra?.isUrgentSpotHire),
+                                isWalkInInterview: Boolean(reqExtra?.isWalkInInterview),
+                                walkInDates: walkIn.dates || '',
+                                walkInTiming: walkIn.timing || '',
+                                walkInVenue: walkIn.venue || '',
+                                walkInContactPerson: walkIn.contactPerson || '',
+                                perks: rawPerks,
                                 department: reqExtra.department || '',
                                 roleCategory: reqExtra.roleCategory || reqExtra.role_category || '',
                                 employmentType: reqExtra.employmentType || reqExtra.employment_type || '',
@@ -1407,9 +1466,100 @@ export const AdminLeadsPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="space-y-3.5 text-xs">
+            <div className="space-y-4 text-xs">
+              {/* Cover Image & Category Selector */}
+              <div className="bg-[#f8f9fa] p-3.5 rounded-2xl border border-[#e6e8ec] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-[#0f2f63]" />
+                    <span className="text-[11px] font-bold text-[#0a0a0a] uppercase tracking-wide">Worksite Photo & Cover Banner</span>
+                  </div>
+                  {editReqForm.coverImageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setEditReqForm({ ...editReqForm, coverImageUrl: '' })}
+                      className="text-[10px] text-rose-600 font-semibold hover:underline cursor-pointer"
+                    >
+                      Reset to Auto-Cover
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <div className="w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-slate-200 border border-[#e2e4e9] relative shrink-0">
+                    <img
+                      src={editReqForm.coverImageUrl || resolveTradeCover(editReqForm.title, editReqForm.category)}
+                      alt="Job cover"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-1 right-1 bg-black/60 text-[9px] text-white px-1.5 py-0.5 rounded font-medium backdrop-blur-xs">
+                      {editReqForm.coverImageUrl ? 'Custom' : 'Auto'}
+                    </div>
+                  </div>
+
+                  <div className="w-full flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={leadsReqFileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/jpg"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setIsLeadsUploading(true);
+                          const localReader = new FileReader();
+                          localReader.onload = (ev) => {
+                            const res = ev.target?.result as string;
+                            if (res) setEditReqForm(prev => ({ ...prev, coverImageUrl: res }));
+                          };
+                          localReader.readAsDataURL(file);
+                          try {
+                            const res = await mediaService.uploadFile(file);
+                            if (res?.url) {
+                              setEditReqForm(prev => ({ ...prev, coverImageUrl: res.url }));
+                              toast.success('Cover photo uploaded successfully!');
+                            }
+                          } catch {
+                            toast.success('Local photo ready!');
+                          } finally {
+                            setIsLeadsUploading(false);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => leadsReqFileInputRef.current?.click()}
+                        disabled={isLeadsUploading}
+                        className="px-3 py-1.5 rounded-lg bg-[#0f2f63] hover:bg-[#1a4487] text-white text-[11px] font-semibold cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        {isLeadsUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UploadCloud className="w-3.5 h-3.5" />}
+                        <span>Upload Custom Photo</span>
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {TRADE_COVER_PRESETS.slice(0, 8).map(preset => (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => setEditReqForm({ ...editReqForm, coverImageUrl: preset.url })}
+                          className={`text-[10px] px-2 py-0.5 rounded-md border font-medium cursor-pointer transition-all ${
+                            editReqForm.coverImageUrl === preset.url 
+                              ? 'bg-[#0f2f63] text-white border-[#0f2f63]' 
+                              : 'bg-white text-[#717784] border-[#e6e8ec] hover:border-[#0f2f63]'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Title</label>
+                <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Title *</label>
                 <input
                   type="text"
                   value={editReqForm.title}
@@ -1418,17 +1568,44 @@ export const AdminLeadsPage: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Trade Category *</label>
+                  <select
+                    value={editReqForm.category}
+                    onChange={(e) => setEditReqForm({ ...editReqForm, category: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-semibold focus:outline-none focus:border-[#0f2f63] bg-white cursor-pointer"
+                  >
+                    <option value="ELECTRICAL">⚡ Electrical & Maintenance</option>
+                    <option value="PLUMBING">🔧 Plumbing & Sanitation</option>
+                    <option value="CONSTRUCTION">🏗️ Construction & Civil</option>
+                    <option value="CARPENTRY">🪚 Carpentry & Woodwork</option>
+                    <option value="PAINTING">🎨 Painting & Finishing</option>
+                    <option value="HVAC">❄️ HVAC & Refrigeration</option>
+                    <option value="WELDING">🔥 Welding & Fabrication</option>
+                    <option value="LOGISTICS">🚚 Delivery & Driving</option>
+                    <option value="FACILITY_MANAGEMENT">🏢 Facility Management</option>
+                    <option value="SOLAR_RENEWABLE">☀️ Solar & Renewable</option>
+                    <option value="AUTOMOTIVE">🚗 Automotive & Mechanic</option>
+                    <option value="HOSPITALITY">🍽️ Cooking & Hospitality</option>
+                    <option value="RETAIL">🛍️ Retail & Store Operations</option>
+                    <option value="HEALTHCARE">🏥 Healthcare & Medical Staff</option>
+                    <option value="EDUCATION">🎓 Education & Training</option>
+                    <option value="OFFICE_ADMIN">💼 Office Admin & Computer</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Salary Range</label>
                   <input
                     type="text"
                     value={editReqForm.salaryRange}
                     onChange={(e) => setEditReqForm({ ...editReqForm, salaryRange: e.target.value })}
-                    placeholder="e.g. ₹35,000 - ₹75,000 monthly"
+                    placeholder="e.g. ₹25,000 - ₹35,000"
                     className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
                   />
                 </div>
+
                 <div>
                   <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Workers Needed</label>
                   <input
@@ -1441,15 +1618,188 @@ export const AdminLeadsPage: React.FC = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Worksite Location / Address</label>
+                  <input
+                    type="text"
+                    value={editReqForm.address}
+                    onChange={(e) => setEditReqForm({ ...editReqForm, address: e.target.value })}
+                    placeholder="e.g. Guindy Industrial Estate, Plot 14"
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">City / Region</label>
+                  <input
+                    type="text"
+                    value={editReqForm.city}
+                    onChange={(e) => setEditReqForm({ ...editReqForm, city: e.target.value })}
+                    placeholder="e.g. Chennai"
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Description & Scope</label>
                 <textarea
-                  rows={7}
+                  rows={6}
                   value={editReqForm.description}
                   onChange={(e) => setEditReqForm({ ...editReqForm, description: e.target.value })}
                   placeholder="Enter clean job description, duties, and hiring requirements..."
                   className="w-full px-3 py-2.5 rounded-xl border border-[#e2e4e9] text-xs leading-relaxed focus:outline-none focus:border-[#0f2f63] font-sans"
                 />
+              </div>
+
+              {/* Frontline Workplace Perks Multi-select */}
+              <div className="pt-3 border-t border-[#e6e8ec] space-y-2">
+                <label className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider block">
+                  Workplace Perks & Benefits Provided
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {[
+                    { id: 'Free Food', label: '🍛 Free Food / Meals' },
+                    { id: 'Room Provided', label: '🏠 Room / Lodging' },
+                    { id: 'Daily Pay', label: '💵 Daily / Weekly Payout' },
+                    { id: 'Overtime Pay', label: '⏱️ Overtime (OT) Pay' },
+                    { id: 'Travel Allowance', label: '⛽ Fuel / Travel Allowance' },
+                    { id: 'ESI PF Benefits', label: '🛡️ ESI / PF Benefits' },
+                  ].map(perk => {
+                    const isSelected = editReqForm.perks.includes(perk.id);
+                    return (
+                      <button
+                        key={perk.id}
+                        type="button"
+                        onClick={() => {
+                          setEditReqForm(prev => ({
+                            ...prev,
+                            perks: prev.perks.includes(perk.id)
+                              ? prev.perks.filter(p => p !== perk.id)
+                              : [...prev.perks, perk.id]
+                          }));
+                        }}
+                        className={`p-2.5 rounded-xl border text-[11px] font-bold text-left transition-all cursor-pointer flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-[#0f2f63] text-white border-[#0f2f63]'
+                            : 'bg-white text-[#0a0a0a] border-[#e6e8ec] hover:border-[#0f2f63]/40'
+                        }`}
+                      >
+                        <span>{perk.label}</span>
+                        {isSelected && <Check className="w-3 h-3 text-white" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Direct Calling & Contact Options */}
+              <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
+                <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider block">Candidate Contact Channels</span>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] bg-white">
+                    <div>
+                      <p className="text-xs font-bold text-[#0a0a0a]">Direct Phone Call</p>
+                      <p className="text-[10px] text-[#717784]">Enables Call HR button</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={editReqForm.allowDirectCall}
+                      onChange={(e) => setEditReqForm({ ...editReqForm, allowDirectCall: e.target.checked })}
+                      className="w-4 h-4 accent-[#0f2f63] cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] bg-white">
+                    <div>
+                      <p className="text-xs font-bold text-[#0a0a0a]">WhatsApp Chat</p>
+                      <p className="text-[10px] text-[#717784]">Enables WhatsApp button</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={editReqForm.allowDirectWhatsapp}
+                      onChange={(e) => setEditReqForm({ ...editReqForm, allowDirectWhatsapp: e.target.checked })}
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Recruiter / Supervisor Phone Number</label>
+                  <input
+                    type="tel"
+                    value={editReqForm.contactPhone}
+                    onChange={(e) => setEditReqForm({ ...editReqForm, contactPhone: e.target.value })}
+                    placeholder="e.g. +91 98765 43210"
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                  />
+                </div>
+              </div>
+
+              {/* Walk-in Interview Details */}
+              <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider">Walk-in Interview FastTrack</span>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editReqForm.isWalkInInterview}
+                      onChange={(e) => setEditReqForm({ ...editReqForm, isWalkInInterview: e.target.checked })}
+                      className="w-4 h-4 accent-amber-500 cursor-pointer"
+                    />
+                    <span>Is Walk-in Interview</span>
+                  </label>
+                </div>
+
+                {editReqForm.isWalkInInterview && (
+                  <div className="p-3.5 bg-amber-50/50 rounded-2xl border border-amber-200/60 space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Walk-in Dates</label>
+                        <input
+                          type="text"
+                          value={editReqForm.walkInDates}
+                          onChange={(e) => setEditReqForm({ ...editReqForm, walkInDates: e.target.value })}
+                          placeholder="e.g. 06 Nov - 09 Nov (Mon to Fri)"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Timing Slot</label>
+                        <input
+                          type="text"
+                          value={editReqForm.walkInTiming}
+                          onChange={(e) => setEditReqForm({ ...editReqForm, walkInTiming: e.target.value })}
+                          placeholder="e.g. 10:00 AM - 04:00 PM"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Venue / Landmark</label>
+                        <input
+                          type="text"
+                          value={editReqForm.walkInVenue}
+                          onChange={(e) => setEditReqForm({ ...editReqForm, walkInVenue: e.target.value })}
+                          placeholder="e.g. Near Metro Station, Opp. Police Station"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Contact Person / HR</label>
+                        <input
+                          type="text"
+                          value={editReqForm.walkInContactPerson}
+                          onChange={(e) => setEditReqForm({ ...editReqForm, walkInContactPerson: e.target.value })}
+                          placeholder="e.g. Mr. Ramesh (HR Manager)"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
                 <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
@@ -1600,7 +1950,29 @@ export const AdminLeadsPage: React.FC = () => {
                       description: editReqForm.description,
                       salaryRange: editReqForm.salaryRange,
                       workersNeeded: editReqForm.workersNeeded,
+                      category: editReqForm.category,
+                      city: editReqForm.city,
+                      location: editReqForm.address,
+                      coverImageUrl: editReqForm.coverImageUrl,
+                      cover_image_url: editReqForm.coverImageUrl,
+                      perks: editReqForm.perks,
+                      allowDirectCall: editReqForm.allowDirectCall,
+                      allowDirectWhatsapp: editReqForm.allowDirectWhatsapp,
+                      contactPhone: editReqForm.contactPhone,
+                      isUrgentSpotHire: editReqForm.isUrgentSpotHire,
+                      isWalkInInterview: editReqForm.isWalkInInterview,
+                      walkInDetails: editReqForm.isWalkInInterview ? {
+                        isWalkIn: true,
+                        dates: editReqForm.walkInDates,
+                        timing: editReqForm.walkInTiming,
+                        venue: editReqForm.walkInVenue,
+                        contactPerson: editReqForm.walkInContactPerson,
+                      } : null,
                       additionalDetails: {
+                        coverImageUrl: editReqForm.coverImageUrl,
+                        category: editReqForm.category,
+                        address: editReqForm.address,
+                        city: editReqForm.city,
                         department: editReqForm.department,
                         roleCategory: editReqForm.roleCategory,
                         employmentType: editReqForm.employmentType,
@@ -1610,6 +1982,19 @@ export const AdminLeadsPage: React.FC = () => {
                         languages: editReqForm.languages,
                         ageLimit: editReqForm.ageLimit,
                         gender: editReqForm.gender,
+                        perks: editReqForm.perks,
+                        allowDirectCall: editReqForm.allowDirectCall,
+                        allowDirectWhatsapp: editReqForm.allowDirectWhatsapp,
+                        contactPhone: editReqForm.contactPhone,
+                        isUrgentSpotHire: editReqForm.isUrgentSpotHire,
+                        isWalkInInterview: editReqForm.isWalkInInterview,
+                        walkInDetails: editReqForm.isWalkInInterview ? {
+                          isWalkIn: true,
+                          dates: editReqForm.walkInDates,
+                          timing: editReqForm.walkInTiming,
+                          venue: editReqForm.walkInVenue,
+                          contactPerson: editReqForm.walkInContactPerson,
+                        } : null,
                       }
                     },
                   });

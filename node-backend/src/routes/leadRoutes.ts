@@ -12,6 +12,7 @@ leadRouter.get('/', LeadController.getLeads);
 leadRouter.get('/stats', LeadController.getLeadStats);
 leadRouter.get('/sources', LeadController.getSources);
 leadRouter.get('/scan-status/:id', LeadController.getScanStatus);
+leadRouter.get('/:id', LeadController.getLeadById);
 leadRouter.post('/sync-leads', LeadController.syncLeads);
 leadRouter.post('/run-discovery', LeadController.runAutoDiscovery);
 leadRouter.post('/ingest', LeadController.ingestLead);

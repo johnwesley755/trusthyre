@@ -145,6 +145,11 @@ export const leadService = {
     return raw?.stats || raw?.data || raw;
   },
 
+  getLeadById: async (id: string): Promise<EmployerLeadItem> => {
+    const response = await apiClient.get(`/api/admin/leads/${id}`);
+    return response.data?.data || response.data;
+  },
+
   ingestLead: async (data: any): Promise<any> => {
     const response = await apiClient.post('/api/admin/leads/ingest', data);
     return response.data;

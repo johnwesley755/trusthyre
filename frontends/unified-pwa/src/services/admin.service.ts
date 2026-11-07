@@ -144,7 +144,32 @@ export const adminService = {
     return res.data;
   },
 
-  moderateJob: async (id: string, action: 'approve' | 'reject' | 'expire' | 'update', reason?: string, coverImageUrl?: string, extra?: { description?: string; title?: string; budget?: number; city?: string; additionalDetails?: any }): Promise<any> => {
+  moderateJob: async (
+    id: string, 
+    action: 'approve' | 'reject' | 'expire' | 'update', 
+    reason?: string, 
+    coverImageUrl?: string, 
+    extra?: { 
+      description?: string; 
+      title?: string; 
+      budget?: number; 
+      city?: string; 
+      location?: string;
+      address?: string;
+      industry?: string;
+      experienceYearsRequired?: number;
+      jobType?: string;
+      perks?: string[];
+      allowDirectCall?: boolean;
+      allowDirectWhatsapp?: boolean;
+      contactPhone?: string;
+      isUrgentSpotHire?: boolean;
+      isWalkInInterview?: boolean;
+      walkInDetails?: any;
+      additionalDetails?: any;
+      [key: string]: any;
+    }
+  ): Promise<any> => {
     const res = await apiClient.patch(`/api/admin/jobs/${id}/moderate`, { action, reason, coverImageUrl, ...extra });
     return res.data;
   },

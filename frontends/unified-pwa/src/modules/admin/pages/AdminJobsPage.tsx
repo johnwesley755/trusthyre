@@ -27,13 +27,16 @@ import {
   Camera,
   Edit3,
   FileText,
-  Save
+  Save,
+  Eye
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { mediaService } from '../../../services/media.service';
 import { sanitizeHtmlDescription } from '../../../utils/textSanitizer';
 import { toast } from 'sonner';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { ConfirmModal } from '../../../components/common/ConfirmModal';
+import { TRADE_COVER_PRESETS, resolveJobCategoryLabel, resolveTradeCover } from '../../../utils/coverImage.utils';
 
 const TN_PRIORITY_CITIES = [
   { name: 'Chennai', label: 'Chennai (சென்னை)' },
@@ -102,6 +105,20 @@ export const AdminJobsPage: React.FC = () => {
     description: string;
     budget: number;
     city: string;
+    address: string;
+    industry: string;
+    experienceYearsRequired: number;
+    coverImageUrl: string;
+    allowDirectCall: boolean;
+    allowDirectWhatsapp: boolean;
+    contactPhone: string;
+    isUrgentSpotHire: boolean;
+    isWalkInInterview: boolean;
+    walkInDates: string;
+    walkInTiming: string;
+    walkInVenue: string;
+    walkInContactPerson: string;
+    perks: string[];
     department: string;
     roleCategory: string;
     employmentType: string;
@@ -116,6 +133,20 @@ export const AdminJobsPage: React.FC = () => {
     description: '',
     budget: 0,
     city: '',
+    address: '',
+    industry: 'ELECTRICAL',
+    experienceYearsRequired: 0,
+    coverImageUrl: '',
+    allowDirectCall: true,
+    allowDirectWhatsapp: true,
+    contactPhone: '',
+    isUrgentSpotHire: false,
+    isWalkInInterview: false,
+    walkInDates: '',
+    walkInTiming: '',
+    walkInVenue: '',
+    walkInContactPerson: '',
+    perks: [],
     department: '',
     roleCategory: '',
     employmentType: '',
@@ -128,6 +159,7 @@ export const AdminJobsPage: React.FC = () => {
   });
   const [customCoverInput, setCustomCoverInput] = useState<string>('');
   const adminFileInputRef = useRef<HTMLInputElement>(null);
+  const editModalFileInputRef = useRef<HTMLInputElement>(null);
   const [isAdminUploading, setIsAdminUploading] = useState<boolean>(false);
 
   const handleAdminFileUpload = async (file: File) => {
@@ -540,7 +572,7 @@ export const AdminJobsPage: React.FC = () => {
                   {/* Job Cover Banner with Direct Edit Button */}
                   <div className="w-full h-28 -mx-5 -mt-5 mb-3 relative overflow-hidden bg-slate-100 border-b border-[#e6e8ec] group">
                     <img 
-                      src={job.cover_image_url || job.coverImageUrl || resolveAutoCover(job.title, job.industry)} 
+                      src={job.cover_image_url || job.coverImageUrl || resolveTradeCover(job.title, job.industry)} 
                       alt={job.title} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                     />
@@ -559,7 +591,7 @@ export const AdminJobsPage: React.FC = () => {
                       <span>Cover Photo</span>
                     </button>
                     <span className="absolute bottom-2 left-3 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-semibold">
-                      {job.industry || 'Field Operations'}
+                      {resolveJobCategoryLabel(job.title, job.industry)}
                     </span>
                   </div>
 
@@ -640,6 +672,16 @@ export const AdminJobsPage: React.FC = () => {
                   )}
 
                   <div className="flex items-center gap-1.5 ml-auto">
+                    <Link
+                      to={`/jobs/${job.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1 text-xs font-semibold text-[#0f2f63] hover:text-white bg-[#0f2f63]/5 hover:bg-[#0f2f63] rounded-full transition-all cursor-pointer flex items-center gap-1"
+                      title="View full job details page with candidate view and edit controls"
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>View</span>
+                    </Link>
                     <button
                       type="button"
                       onClick={() => {
@@ -647,11 +689,29 @@ export const AdminJobsPage: React.FC = () => {
                         const rawExtra = (job.alternate_sources && typeof job.alternate_sources === 'object')
                           ? ((job.alternate_sources as any).additional_details || job.alternate_sources)
                           : (job.additionalDetails || {});
+                        const walkIn = (job as any).walkInDetails || (job as any).walk_in_details || rawExtra?.walkInDetails || (job.alternate_sources as any)?.walk_in_details || {};
+                        const rawPerks = Array.isArray(job.perks) 
+                          ? job.perks 
+                          : (Array.isArray(rawExtra?.perks) ? rawExtra.perks : []);
                         setEditJobForm({
                           title: job.title || '',
                           description: sanitizeHtmlDescription(job.description || ''),
                           budget: job.budget ? Number(job.budget) : 0,
                           city: job.city || job.location || '',
+                          address: (job as any).address || '',
+                          industry: job.industry || 'ELECTRICAL',
+                          experienceYearsRequired: (job as any).experience_years_required ?? (job as any).experienceYearsRequired ?? 0,
+                          coverImageUrl: (job as any).cover_image_url || (job as any).coverImageUrl || '',
+                          allowDirectCall: (job as any).allow_direct_call ?? (job as any).allowDirectCall ?? true,
+                          allowDirectWhatsapp: (job as any).allow_direct_whatsapp ?? (job as any).allowDirectWhatsapp ?? true,
+                          contactPhone: (job as any).contact_phone || (job as any).contactPhone || '',
+                          isUrgentSpotHire: Boolean((job as any).is_urgent_spot_hire ?? (job as any).isUrgentSpotHire),
+                          isWalkInInterview: Boolean((job as any).is_walk_in_interview ?? (job as any).isWalkInInterview),
+                          walkInDates: walkIn.dates || '',
+                          walkInTiming: walkIn.timing || '',
+                          walkInVenue: walkIn.venue || '',
+                          walkInContactPerson: walkIn.contactPerson || walkIn.contact_person || '',
+                          perks: rawPerks,
                           department: rawExtra.department || '',
                           roleCategory: rawExtra.roleCategory || rawExtra.role_category || '',
                           employmentType: rawExtra.employmentType || rawExtra.employment_type || '',
@@ -984,8 +1044,99 @@ export const AdminJobsPage: React.FC = () => {
             </div>
 
             <div className="space-y-4 text-xs">
+              {/* Cover Image Uploader & Presets for Scraped/Admin Job */}
+              <div className="bg-[#f8f9fa] p-3.5 rounded-2xl border border-[#e6e8ec] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-[#0f2f63]" />
+                    <span className="text-[11px] font-bold text-[#0a0a0a] uppercase tracking-wide">Worksite Photo & Cover Banner</span>
+                  </div>
+                  {editJobForm.coverImageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setEditJobForm({ ...editJobForm, coverImageUrl: '' })}
+                      className="text-[10px] text-rose-600 font-semibold hover:underline cursor-pointer"
+                    >
+                      Reset to Category Auto-Cover
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <div className="w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-slate-200 border border-[#e2e4e9] relative shrink-0">
+                    <img
+                      src={editJobForm.coverImageUrl || resolveTradeCover(editJobForm.title, editJobForm.industry)}
+                      alt="Job cover"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-1 right-1 bg-black/60 text-[9px] text-white px-1.5 py-0.5 rounded font-medium backdrop-blur-xs">
+                      {editJobForm.coverImageUrl ? 'Custom' : 'Auto'}
+                    </div>
+                  </div>
+
+                  <div className="w-full flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={editModalFileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/jpg"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setIsAdminUploading(true);
+                          const localReader = new FileReader();
+                          localReader.onload = (ev) => {
+                            const res = ev.target?.result as string;
+                            if (res) setEditJobForm(prev => ({ ...prev, coverImageUrl: res }));
+                          };
+                          localReader.readAsDataURL(file);
+                          try {
+                            const res = await mediaService.uploadFile(file);
+                            if (res?.url) {
+                              setEditJobForm(prev => ({ ...prev, coverImageUrl: res.url }));
+                              toast.success('Cover photo uploaded successfully!');
+                            }
+                          } catch {
+                            toast.success('Local photo ready!');
+                          } finally {
+                            setIsAdminUploading(false);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => editModalFileInputRef.current?.click()}
+                        disabled={isAdminUploading}
+                        className="px-3 py-1.5 rounded-lg bg-[#0f2f63] hover:bg-[#1a4487] text-white text-[11px] font-semibold cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        {isAdminUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UploadCloud className="w-3.5 h-3.5" />}
+                        <span>Upload Custom Photo</span>
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {TRADE_COVER_PRESETS.slice(0, 8).map(preset => (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => setEditJobForm({ ...editJobForm, coverImageUrl: preset.url })}
+                          className={`text-[10px] px-2 py-0.5 rounded-md border font-medium cursor-pointer transition-all ${
+                            editJobForm.coverImageUrl === preset.url 
+                              ? 'bg-[#0f2f63] text-white border-[#0f2f63]' 
+                              : 'bg-white text-[#717784] border-[#e6e8ec] hover:border-[#0f2f63]'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Title</label>
+                <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Title *</label>
                 <input
                   type="text"
                   value={editJobForm.title}
@@ -994,16 +1145,44 @@ export const AdminJobsPage: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">City / Location</label>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Trade / Industry Category *</label>
+                  <select
+                    value={editJobForm.industry}
+                    onChange={(e) => setEditJobForm({ ...editJobForm, industry: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-semibold focus:outline-none focus:border-[#0f2f63] bg-white cursor-pointer"
+                  >
+                    <option value="ELECTRICAL">⚡ Electrical & Maintenance</option>
+                    <option value="PLUMBING">🔧 Plumbing & Sanitation</option>
+                    <option value="CONSTRUCTION">🏗️ Construction & Civil</option>
+                    <option value="CARPENTRY">🪚 Carpentry & Woodwork</option>
+                    <option value="PAINTING">🎨 Painting & Finishing</option>
+                    <option value="HVAC">❄️ HVAC & Refrigeration</option>
+                    <option value="WELDING">🔥 Welding & Fabrication</option>
+                    <option value="LOGISTICS">🚚 Delivery & Driving</option>
+                    <option value="FACILITY_MANAGEMENT">🏢 Facility Management</option>
+                    <option value="SOLAR_RENEWABLE">☀️ Solar & Renewable</option>
+                    <option value="AUTOMOTIVE">🚗 Automotive & Mechanic</option>
+                    <option value="HOSPITALITY">🍽️ Cooking & Hospitality</option>
+                    <option value="RETAIL">🛍️ Retail & Store Operations</option>
+                    <option value="HEALTHCARE">🏥 Healthcare & Medical Staff</option>
+                    <option value="EDUCATION">🎓 Education & Training</option>
+                    <option value="OFFICE_ADMIN">💼 Office Admin & Computer</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">City / Region *</label>
                   <input
                     type="text"
                     value={editJobForm.city}
                     onChange={(e) => setEditJobForm({ ...editJobForm, city: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    placeholder="e.g. Chennai"
                   />
                 </div>
+
                 <div>
                   <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Monthly Salary / Budget (₹)</label>
                   <input
@@ -1012,6 +1191,30 @@ export const AdminJobsPage: React.FC = () => {
                     onChange={(e) => setEditJobForm({ ...editJobForm, budget: Number(e.target.value) })}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
                     placeholder="e.g. 25000"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Worksite Street Address</label>
+                  <input
+                    type="text"
+                    value={editJobForm.address}
+                    onChange={(e) => setEditJobForm({ ...editJobForm, address: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    placeholder="e.g. Guindy Industrial Estate, Plot 14"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Experience Required (Years)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={editJobForm.experienceYearsRequired}
+                    onChange={(e) => setEditJobForm({ ...editJobForm, experienceYearsRequired: Number(e.target.value) || 0 })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    placeholder="0 for Fresher"
                   />
                 </div>
               </div>
@@ -1028,13 +1231,163 @@ export const AdminJobsPage: React.FC = () => {
                   </button>
                 </div>
                 <textarea
-                  rows={8}
+                  rows={6}
                   value={editJobForm.description}
                   onChange={(e) => setEditJobForm({ ...editJobForm, description: e.target.value })}
                   placeholder="Enter clean job description, duties, and hiring requirements..."
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs leading-relaxed focus:outline-none focus:border-[#0f2f63] font-sans"
                 />
                 <span className="text-[10px] text-[#717784]">Any HTML tags like &lt;p&gt; or &lt;br&gt; will be automatically stripped upon saving.</span>
+              </div>
+
+              {/* Frontline Workplace Perks Multi-select (Apna / WorkIndia) */}
+              <div className="pt-3 border-t border-[#e6e8ec] space-y-2">
+                <label className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider block">
+                  Workplace Perks & Benefits Provided
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {[
+                    { id: 'Free Food', label: '🍛 Free Food / Meals' },
+                    { id: 'Room Provided', label: '🏠 Room / Lodging' },
+                    { id: 'Daily Pay', label: '💵 Daily / Weekly Payout' },
+                    { id: 'Overtime Pay', label: '⏱️ Overtime (OT) Pay' },
+                    { id: 'Travel Allowance', label: '⛽ Fuel / Travel Allowance' },
+                    { id: 'ESI PF Benefits', label: '🛡️ ESI / PF Benefits' },
+                  ].map(perk => {
+                    const isSelected = editJobForm.perks.includes(perk.id);
+                    return (
+                      <button
+                        key={perk.id}
+                        type="button"
+                        onClick={() => {
+                          setEditJobForm(prev => ({
+                            ...prev,
+                            perks: prev.perks.includes(perk.id)
+                              ? prev.perks.filter(p => p !== perk.id)
+                              : [...prev.perks, perk.id]
+                          }));
+                        }}
+                        className={`p-2.5 rounded-xl border text-[11px] font-bold text-left transition-all cursor-pointer flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-[#0f2f63] text-white border-[#0f2f63]'
+                            : 'bg-white text-[#0a0a0a] border-[#e6e8ec] hover:border-[#0f2f63]/40'
+                        }`}
+                      >
+                        <span>{perk.label}</span>
+                        {isSelected && <Check className="w-3 h-3 text-white" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Direct Calling & Contact Options */}
+              <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
+                <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider block">Candidate Contact Channels</span>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] bg-white">
+                    <div>
+                      <p className="text-xs font-bold text-[#0a0a0a]">Direct Phone Call</p>
+                      <p className="text-[10px] text-[#717784]">Enables Call HR button</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={editJobForm.allowDirectCall}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, allowDirectCall: e.target.checked })}
+                      className="w-4 h-4 accent-[#0f2f63] cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] bg-white">
+                    <div>
+                      <p className="text-xs font-bold text-[#0a0a0a]">WhatsApp Chat</p>
+                      <p className="text-[10px] text-[#717784]">Enables WhatsApp button</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={editJobForm.allowDirectWhatsapp}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, allowDirectWhatsapp: e.target.checked })}
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Recruiter / Supervisor Phone Number</label>
+                  <input
+                    type="tel"
+                    value={editJobForm.contactPhone}
+                    onChange={(e) => setEditJobForm({ ...editJobForm, contactPhone: e.target.value })}
+                    placeholder="e.g. +91 98765 43210"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                  />
+                </div>
+              </div>
+
+              {/* Walk-in Interview Details */}
+              <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider">Walk-in Interview FastTrack</span>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editJobForm.isWalkInInterview}
+                      onChange={(e) => setEditJobForm({ ...editJobForm, isWalkInInterview: e.target.checked })}
+                      className="w-4 h-4 accent-amber-500 cursor-pointer"
+                    />
+                    <span>Is Walk-in Interview</span>
+                  </label>
+                </div>
+
+                {editJobForm.isWalkInInterview && (
+                  <div className="p-3.5 bg-amber-50/50 rounded-2xl border border-amber-200/60 space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Walk-in Dates</label>
+                        <input
+                          type="text"
+                          value={editJobForm.walkInDates}
+                          onChange={(e) => setEditJobForm({ ...editJobForm, walkInDates: e.target.value })}
+                          placeholder="e.g. 06 Nov - 09 Nov (Mon to Fri)"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Timing Slot</label>
+                        <input
+                          type="text"
+                          value={editJobForm.walkInTiming}
+                          onChange={(e) => setEditJobForm({ ...editJobForm, walkInTiming: e.target.value })}
+                          placeholder="e.g. 10:00 AM - 04:00 PM"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Venue / Landmark</label>
+                        <input
+                          type="text"
+                          value={editJobForm.walkInVenue}
+                          onChange={(e) => setEditJobForm({ ...editJobForm, walkInVenue: e.target.value })}
+                          placeholder="e.g. Near Metro Station, Opp. Police Station"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Contact Person / HR</label>
+                        <input
+                          type="text"
+                          value={editJobForm.walkInContactPerson}
+                          onChange={(e) => setEditJobForm({ ...editJobForm, walkInContactPerson: e.target.value })}
+                          placeholder="e.g. Mr. Ramesh (HR Manager)"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Rich Job Criteria & Eligibility Details (Optional) */}
@@ -1181,11 +1534,58 @@ export const AdminJobsPage: React.FC = () => {
                   moderateMutation.mutate({
                     id: editingJob.id,
                     action: 'update',
+                    coverImageUrl: editJobForm.coverImageUrl,
                     extra: {
                       title: editJobForm.title,
                       description: editJobForm.description,
                       budget: editJobForm.budget,
-                      city: editJobForm.city
+                      city: editJobForm.city,
+                      location: editJobForm.city,
+                      address: editJobForm.address,
+                      industry: editJobForm.industry,
+                      experienceYearsRequired: editJobForm.experienceYearsRequired,
+                      coverImageUrl: editJobForm.coverImageUrl,
+                      cover_image_url: editJobForm.coverImageUrl,
+                      perks: editJobForm.perks,
+                      allowDirectCall: editJobForm.allowDirectCall,
+                      allow_direct_call: editJobForm.allowDirectCall,
+                      allowDirectWhatsapp: editJobForm.allowDirectWhatsapp,
+                      allow_direct_whatsapp: editJobForm.allowDirectWhatsapp,
+                      contactPhone: editJobForm.contactPhone,
+                      contact_phone: editJobForm.contactPhone,
+                      isUrgentSpotHire: editJobForm.isUrgentSpotHire,
+                      is_urgent_spot_hire: editJobForm.isUrgentSpotHire,
+                      isWalkInInterview: editJobForm.isWalkInInterview,
+                      is_walk_in_interview: editJobForm.isWalkInInterview,
+                      walkInDetails: editJobForm.isWalkInInterview ? {
+                        isWalkIn: true,
+                        dates: editJobForm.walkInDates,
+                        timing: editJobForm.walkInTiming,
+                        venue: editJobForm.walkInVenue,
+                        contactPerson: editJobForm.walkInContactPerson,
+                      } : null,
+                      additionalDetails: {
+                        department: editJobForm.department,
+                        roleCategory: editJobForm.roleCategory,
+                        employmentType: editJobForm.employmentType,
+                        shift: editJobForm.shift,
+                        experience: editJobForm.experience,
+                        education: editJobForm.education,
+                        languages: editJobForm.languages,
+                        ageLimit: editJobForm.ageLimit,
+                        gender: editJobForm.gender,
+                        perks: editJobForm.perks,
+                        allowDirectCall: editJobForm.allowDirectCall,
+                        allowDirectWhatsapp: editJobForm.allowDirectWhatsapp,
+                        contactPhone: editJobForm.contactPhone,
+                        walkInDetails: editJobForm.isWalkInInterview ? {
+                          isWalkIn: true,
+                          dates: editJobForm.walkInDates,
+                          timing: editJobForm.walkInTiming,
+                          venue: editJobForm.walkInVenue,
+                          contactPerson: editJobForm.walkInContactPerson,
+                        } : null,
+                      }
                     }
                   });
                   setEditingJob(null);

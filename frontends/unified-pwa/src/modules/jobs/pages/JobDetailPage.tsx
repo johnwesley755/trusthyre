@@ -8,7 +8,7 @@ import { profileService } from '../../../services/profile.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { useState, useEffect } from 'react';
 import { SeoHead, buildJobPostingJsonLd, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
-import { getEffectiveCoverUrl, resolveTradeCover } from '../../../utils/coverImage.utils';
+import { getEffectiveCoverUrl, resolveTradeCover, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
 import { formatMissingProfileFields, getMissingProfileFields } from '../../../utils/profileCompletion';
 import { useUser } from '../../../providers/AuthContext';
 import { sanitizeRedirectUrl } from '../../../utils/redirectSanitizer';
@@ -228,7 +228,9 @@ export default function JobDetailPage() {
   });
 
   const employer = (job as any)?.employerProfile || (job as any)?.employer || null;
+  const isAdmin = Boolean(user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'));
   const isEmployer = Boolean(user && (user.role === 'EMPLOYER' || (user.id && ((job as any)?.employerId === user.id || (job as any)?.employer?.userId === user.id))));
+  const canManageJob = isEmployer || isAdmin;
   const rawExpiry = (job as any)?.expiresAt || (job as any)?.expires_at;
   const createdDate = (job as any)?.createdAt || (job as any)?.created_at;
   const effectiveExpiry = rawExpiry
@@ -660,7 +662,7 @@ export default function JobDetailPage() {
               
               <div className="absolute bottom-3 left-3 flex flex-col items-start gap-1.5 z-10">
                 <span className="px-3 py-1 rounded-md bg-black/75 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider">
-                  {job.industry || 'Verified Opening'}
+                  {resolveJobCategoryLabel(job.title, job.industry)}
                 </span>
                 <span className="px-2.5 py-1 rounded-md bg-emerald-600 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -738,23 +740,34 @@ export default function JobDetailPage() {
                   </p>
                 </div>
 
-                {/* Instant Apply, WhatsApp Apply, or Employer Manage & Edit Buttons */}
-                {isEmployer ? (
+                {/* Instant Apply, WhatsApp Apply, or Employer/Admin Manage & Edit Buttons */}
+                {canManageJob ? (
                   <div className="flex items-center gap-2">
                     <Link
                       to={`/post-job?jobId=${id}`}
                       className="inline-flex items-center gap-1.5 px-4 py-3 bg-white hover:bg-slate-50 text-[#0a0a0a] border border-[#e6e8ec] rounded-full font-bold text-xs tracking-wider shadow-2xs transition-all active:scale-95 uppercase"
+                      title={isAdmin ? "Edit job requisition as Admin" : "Edit your job post"}
                     >
-                      <Edit className="w-3.5 h-3.5" />
-                      <span>Edit</span>
+                      <Edit className="w-3.5 h-3.5 text-[#0f2f63]" />
+                      <span>Edit Job</span>
                     </Link>
-                    <Link
-                      to={`/jobs?jobId=${id}`}
-                      className="inline-flex items-center gap-2 px-5 py-3 bg-[#0f2f63] hover:bg-[#1a4484] text-white rounded-full font-bold text-xs tracking-wider shadow-sm transition-all active:scale-95 uppercase"
-                    >
-                      <Users className="w-4 h-4" />
-                      <span>Manage ({applicantCount})</span>
-                    </Link>
+                    {isEmployer && (
+                      <Link
+                        to={`/jobs?jobId=${id}`}
+                        className="inline-flex items-center gap-2 px-5 py-3 bg-[#0f2f63] hover:bg-[#1a4484] text-white rounded-full font-bold text-xs tracking-wider shadow-sm transition-all active:scale-95 uppercase"
+                      >
+                        <Users className="w-4 h-4" />
+                        <span>Manage ({applicantCount})</span>
+                      </Link>
+                    )}
+                    {isAdmin && (
+                      <Link
+                        to="/admin/jobs"
+                        className="inline-flex items-center gap-1.5 px-4 py-3 bg-[#0f2f63] hover:bg-[#1a4484] text-white rounded-full font-bold text-xs tracking-wider shadow-sm transition-all active:scale-95 uppercase"
+                      >
+                        <span>Admin Console</span>
+                      </Link>
+                    )}
                   </div>
                 ) : isExpired ? (
                   <div className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-slate-100 text-[#717784] rounded-full font-medium text-xs border border-[#e6e8ec]">
