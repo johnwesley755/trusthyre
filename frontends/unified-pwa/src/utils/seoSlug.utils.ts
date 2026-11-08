@@ -63,6 +63,8 @@ export function generateJobSeoSlug(job: JobSlugParams): string {
   return slugPrefix ? `${slugPrefix}-${job.id}` : job.id;
 }
 
+import { getTaluksForCity } from '../constants/regionalTaluks';
+
 export { 
   REGIONAL_DISTRICTS_TALUKS,
   getTaluksForCity 
@@ -83,8 +85,7 @@ export function isValidNeighborhoodForCity(city: string, neighborhoodSlug: strin
   const normCity = (city || '').trim().toLowerCase();
   const normSlug = (neighborhoodSlug || '').trim().toLowerCase().replace(/-jobs$/, '');
   
-  // Dynamic import of getTaluksForCity behavior
-  const taluks = typeof window !== 'undefined' ? (require('../constants/regionalTaluks') as any)?.getTaluksForCity?.(normCity) || [] : [];
+  const taluks = getTaluksForCity(normCity);
   for (const t of taluks) {
     if (slugifyNeighborhood(t) === normSlug) {
       return { valid: true, areaName: t };
