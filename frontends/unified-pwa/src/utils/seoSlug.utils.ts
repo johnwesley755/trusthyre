@@ -63,6 +63,56 @@ export function generateJobSeoSlug(job: JobSlugParams): string {
   return slugPrefix ? `${slugPrefix}-${job.id}` : job.id;
 }
 
+export { 
+  REGIONAL_DISTRICTS_TALUKS,
+  getTaluksForCity 
+} from '../constants/regionalTaluks';
+
+/**
+ * Normalizes an area/taluk name into a clean URL slug
+ * (e.g., 'T. Nagar' -> 't-nagar', 'Whitefield' -> 'whitefield')
+ */
+export function slugifyNeighborhood(area: string): string {
+  return sanitizeSlugPart(area);
+}
+
+/**
+ * Resolves whether an area/taluk is valid for a given city across India.
+ */
+export function isValidNeighborhoodForCity(city: string, neighborhoodSlug: string): { valid: boolean; areaName: string } {
+  const normCity = (city || '').trim().toLowerCase();
+  const normSlug = (neighborhoodSlug || '').trim().toLowerCase().replace(/-jobs$/, '');
+  
+  // Dynamic import of getTaluksForCity behavior
+  const taluks = typeof window !== 'undefined' ? (require('../constants/regionalTaluks') as any)?.getTaluksForCity?.(normCity) || [] : [];
+  for (const t of taluks) {
+    if (slugifyNeighborhood(t) === normSlug) {
+      return { valid: true, areaName: t };
+    }
+  }
+
+  return { valid: false, areaName: normSlug.charAt(0).toUpperCase() + normSlug.slice(1) };
+}
+
+/**
+ * Builds the canonical hierarchical Job URL:
+ * /:city/:title-slug/job/:id
+ * Example: /chennai/electrician-in-guindy/job/e3a84355-ebf3-4374-92db-588744d3c321
+ */
+export function generateHierarchicalJobUrl(job: JobSlugParams): string {
+  if (!job || !job.id) return '';
+  const city = sanitizeSlugPart(job.city || 'chennai') || 'chennai';
+  const area = sanitizeSlugPart(job.location || '');
+  const title = sanitizeSlugPart(job.title || 'opening');
+  
+  const titleParts: string[] = [];
+  if (title) titleParts.push(title);
+  if (area && area !== city) titleParts.push(`in-${area}`);
+  const titleSlug = titleParts.filter(Boolean).join('-') || 'opening';
+
+  return `/${city}/${titleSlug}/job/${job.id}`;
+}
+
 /**
  * Extracts the 36-char UUID from a slug or direct ID string.
  * Supports:

@@ -5,7 +5,7 @@ import { searchService } from '../../../services/search.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { JobSearchResultCard } from '../components/JobSearchResultCard';
 import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
-import { generateJobSeoSlug } from '../../../utils/seoSlug.utils';
+import { generateJobSeoSlug, generateHierarchicalJobUrl } from '../../../utils/seoSlug.utils';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { 
   MapPin, 
@@ -185,7 +185,7 @@ export const ProgrammaticJobHubPage: React.FC = () => {
         '@type': 'ListItem',
         position: index + 1,
         name: job.title,
-        url: `https://trusthyre.com/job/${generateJobSeoSlug(job)}`,
+        url: `https://trusthyre.com${generateHierarchicalJobUrl(job)}`,
         item: {
           '@type': 'JobPosting',
           title: job.title,

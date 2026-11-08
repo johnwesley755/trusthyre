@@ -3,6 +3,8 @@
  * Formats rich, bilingual (English/Tamil/Hindi) WhatsApp cards for Indian blue-collar hiring
  */
 
+import { generateHierarchicalJobUrl } from './seoSlug.utils';
+
 export interface WhatsAppJobData {
   id?: string;
   title: string;
@@ -28,7 +30,9 @@ export function buildJobWhatsAppMessage(
     ? `₹${Number(job.budget).toLocaleString('en-IN')} / month`
     : 'Best in Industry / சந்தை முன்னணி சம்பளம்';
 
-  const city = job.city || job.location || 'India';
+  const area = job.location ? `${job.location}, ` : '';
+  const city = job.city || 'India';
+  const locationText = `${area}${city}`;
   const company = job.companyName || 'Verified Enterprise';
   const experience = (job.experienceYearsRequired !== null && job.experienceYearsRequired !== undefined && job.experienceYearsRequired > 0)
     ? `${job.experienceYearsRequired}+ Years Experience`
@@ -40,7 +44,16 @@ export function buildJobWhatsAppMessage(
       ? job.skills.split(',').slice(0, 3).map((s) => s.trim()).join(', ')
       : 'Trade Skills';
 
-  const shareUrl = `${originUrl}/job/${job.id}?utm_source=whatsapp&utm_medium=viral_share`;
+  const jobPath = job.id
+    ? generateHierarchicalJobUrl({
+        id: job.id,
+        title: job.title,
+        city: job.city,
+        location: job.location,
+      })
+    : '/search';
+
+  const shareUrl = `${originUrl}${jobPath}?utm_source=whatsapp&utm_medium=viral_share`;
 
   if (language === 'ta') {
     return `🔥 *உடனடி வேலைவாய்ப்பு (Urgent Opening)*
@@ -48,7 +61,7 @@ export function buildJobWhatsAppMessage(
 💼 *வேலை / Role:* ${job.title}
 🏢 *நிறுவனம் / Company:* ${company}
 💰 *மாதச் சம்பளம் / Salary:* ${salaryText}
-📍 *பணிபுரியும் இடம் / City:* ${city}
+📍 *பணிபுரியும் இடம் / Area:* ${locationText}
 🛠️ *திறன்கள் / Skills:* ${skillsList}
 ⏳ *அனுபவம் / Exp:* ${experience}
 
@@ -67,7 +80,7 @@ ${shareUrl}
 💼 *पद / Role:* ${job.title}
 🏢 *कंपनी / Company:* ${company}
 💰 *वेतन / Salary:* ${salaryText}
-📍 *स्थान / Location:* ${city}
+📍 *स्थान / Location:* ${locationText}
 🛠️ *कौशल / Skills:* ${skillsList}
 ⏳ *अनुभव / Experience:* ${experience}
 
@@ -86,7 +99,7 @@ ${shareUrl}
 💼 *Role / வேலை:* ${job.title}
 🏢 *Company:* ${company}
 💰 *Salary / சம்பளம்:* ${salaryText}
-📍 *Location / இடம்:* ${city}
+📍 *Location / இடம்:* ${locationText}
 🛠️ *Required Skills:* ${skillsList}
 ⏳ *Experience:* ${experience}
 

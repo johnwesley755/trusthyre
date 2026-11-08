@@ -1,4 +1,5 @@
 import ProgrammaticJobHubPage from '../modules/jobs/pages/ProgrammaticJobHubPage';
+import NeighborhoodJobHubPage from '../modules/jobs/pages/NeighborhoodJobHubPage';
 import ProgrammaticHireHubPage from '../modules/search/pages/ProgrammaticHireHubPage';
 import { AdminAcceptInvitePage } from '../modules/admin/pages/AdminAcceptInvitePage';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
@@ -133,6 +134,18 @@ export const router = createBrowserRouter([
           {
             path: '/jobs/:id',
             element: <JobDetailPage />,
+          },
+          {
+            path: '/:city/:title/job/:id',
+            element: <JobDetailPage />,
+          },
+          {
+            path: '/:city/:neighborhood',
+            element: <NeighborhoodJobHubPage />,
+          },
+          {
+            path: '/:city/:neighborhood/:trade',
+            element: <NeighborhoodJobHubPage />,
           },
         ]
       },

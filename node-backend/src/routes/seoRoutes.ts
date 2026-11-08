@@ -1,7 +1,15 @@
 import { Hono } from 'hono';
 import { prisma } from '../config/prisma';
 import { SitemapService } from '../services/sitemapService';
-import { generateJobSeoSlug, ALLOWED_CITIES, ALLOWED_TRADES, TRADE_KEYWORD_MAP } from '../utils/seoSlug.util';
+import { 
+  generateJobSeoSlug, 
+  generateHierarchicalJobUrl, 
+  ALLOWED_CITIES, 
+  ALLOWED_TRADES, 
+  TRADE_KEYWORD_MAP,
+  isValidNeighborhoodForCity,
+  getTaluksForCity,
+} from '../utils/seoSlug.util';
 
 const CITY_STATE_PIN_MAP: Record<string, { state: string; postalCode: string }> = {
   chennai: { state: 'Tamil Nadu', postalCode: '600001' },
@@ -461,9 +469,235 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
     });
   }
 
-  // 1.5 Job Post Details: /job/:slug-or-id or /jobs/:slug-or-id
-  if (cleanPath.startsWith('/job/') || cleanPath.startsWith('/jobs/')) {
-    const rawSlugOrId = cleanPath.replace(/^\/jobs?\//, '').trim();
+  // 1.4.5 Hyper-Local Neighborhood Landing Pages: /:city/:neighborhood-jobs or /:city/:neighborhood-jobs/:trade
+  const neighborhoodMatch = cleanPath.match(/^\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+-jobs)(?:\/([a-zA-Z0-9_-]+))?$/);
+  if (neighborhoodMatch) {
+    const citySlug = (neighborhoodMatch[1] || 'chennai').toLowerCase().trim();
+    const neighborhoodSlug = (neighborhoodMatch[2] || '').replace(/-jobs$/, '').toLowerCase().trim();
+    const tradeSlug = (neighborhoodMatch[3] || '').toLowerCase().trim();
+
+    const { valid: isValidArea, areaName } = isValidNeighborhoodForCity(citySlug, neighborhoodSlug);
+
+    if (!ALLOWED_CITIES.includes(citySlug) || !isValidArea || (tradeSlug && !ALLOWED_TRADES.includes(tradeSlug))) {
+      return c.text('Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    }
+
+    const normCity = citySlug.charAt(0).toUpperCase() + citySlug.slice(1);
+    const normTrade = tradeSlug ? tradeSlug.charAt(0).toUpperCase() + tradeSlug.slice(1) : '';
+
+    let areaJobs: any[] = [];
+    let areaDbFailed = false;
+
+    try {
+      const whereClause: any = {
+        city: { contains: normCity, mode: 'insensitive' },
+        OR: [
+          { location: { contains: areaName, mode: 'insensitive' } },
+          { address: { contains: areaName, mode: 'insensitive' } },
+          { location: { contains: neighborhoodSlug.replace(/-/g, ' '), mode: 'insensitive' } },
+        ],
+        AND: [
+          { OR: [{ status: 'ACTIVE' }, { status: 'OPEN' }] },
+          {
+            OR: [
+              { expires_at: null },
+              { expires_at: { gt: new Date() } }
+            ]
+          }
+        ]
+      };
+
+      if (tradeSlug) {
+        const tradeKeywords = TRADE_KEYWORD_MAP[tradeSlug] || [tradeSlug];
+        whereClause.AND.push({
+          OR: [
+            { industry: { in: tradeKeywords, mode: 'insensitive' } },
+            ...tradeKeywords.map((kw: string) => ({ title: { contains: kw, mode: 'insensitive' } }))
+          ]
+        });
+      }
+
+      areaJobs = await (prisma as any).jobs.findMany({
+        where: whereClause,
+        take: 30,
+        orderBy: { created_at: 'desc' },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          employer_name: true,
+          city: true,
+          location: true,
+          address: true,
+          budget: true,
+          created_at: true,
+          expires_at: true,
+          payout_frequency: true,
+        },
+      });
+    } catch (err) {
+      console.error('[prerender /:city/:neighborhood-jobs] DB query failed:', err);
+      areaDbFailed = true;
+    }
+
+    if (areaDbFailed) {
+      return c.text('Service temporarily unavailable', 503, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Retry-After': '300',
+      });
+    }
+
+    // Google Doorway Page protection: return 404 if no content in this neighborhood
+    if (areaJobs.length === 0) {
+      return c.text('Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    }
+
+    const pageTitle = tradeSlug
+      ? `${normTrade} Jobs in ${areaName}, ${normCity} | Direct Employer Hiring | TrustHyre`
+      : `Verified Blue-Collar Jobs in ${areaName}, ${normCity} | Direct Hiring | TrustHyre`;
+
+    const pageDesc = `Explore ${areaJobs.length}+ verified job openings in ${areaName}, ${normCity}. Direct employer hiring with zero broker fee, confirmed worksites, and transparent wages.`;
+    const canonical = `${BASE_DOMAIN}/${citySlug}/${neighborhoodSlug}-jobs${tradeSlug ? `/${tradeSlug}` : ''}`;
+
+    const itemListJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: pageTitle,
+      description: pageDesc,
+      numberOfItems: areaJobs.length,
+      itemListElement: areaJobs.map((job: any, index: number) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: job.title,
+        url: `${BASE_DOMAIN}${generateHierarchicalJobUrl(job)}`,
+        item: {
+          '@type': 'JobPosting',
+          title: job.title,
+          hiringOrganization: {
+            '@type': 'Organization',
+            name: job.employer_name || 'TrustHyre Verified Employer',
+          },
+          jobLocation: {
+            '@type': 'Place',
+            address: {
+              '@type': 'PostalAddress',
+              ...resolveGeoAddress(job.city || normCity, job.address || job.location),
+            },
+          },
+        },
+      })),
+    };
+
+    const faqJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: `What jobs are available in ${areaName}, ${normCity}?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `Verified openings in ${areaName} include skilled technicians, drivers, helpers, and service staff with direct employer contacts.`
+          }
+        },
+        {
+          '@type': 'Question',
+          name: `Is there any agent or broker fee?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `Zero commission. TrustHyre is 100% free for job seekers.`
+          }
+        }
+      ]
+    };
+
+    const breadcrumbJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${BASE_DOMAIN}/` },
+        { '@type': 'ListItem', position: 2, name: `${normCity} Jobs`, item: `${BASE_DOMAIN}/jobs-in-${citySlug}` },
+        { '@type': 'ListItem', position: 3, name: `${areaName} Jobs`, item: canonical },
+      ],
+    };
+
+    const cityTaluks = getTaluksForCity(citySlug);
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(pageTitle)}</title>
+  <meta name="description" content="${escapeHtml(pageDesc)}">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="${canonical}">
+  <meta property="og:title" content="${escapeHtml(pageTitle)}">
+  <meta property="og:description" content="${escapeHtml(pageDesc)}">
+  <meta property="og:url" content="${canonical}">
+  <meta property="og:type" content="website">
+  <script type="application/ld+json">
+${JSON.stringify(itemListJsonLd, null, 2)}
+  </script>
+  <script type="application/ld+json">
+${JSON.stringify(faqJsonLd, null, 2)}
+  </script>
+  <script type="application/ld+json">
+${JSON.stringify(breadcrumbJsonLd, null, 2)}
+  </script>
+</head>
+<body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 24px; color: #111;">
+  <header style="margin-bottom: 24px; border-bottom: 1px solid #eee; padding-bottom: 16px;">
+    <h1 style="font-size: 2rem; color: #0f2f63; margin-bottom: 8px;">${escapeHtml(pageTitle)}</h1>
+    <p style="color: #555; font-size: 1rem;">${escapeHtml(pageDesc)}</p>
+    ${cityTaluks.length > 0 ? `
+    <div style="margin-top: 12px; font-size: 0.9rem; color: #444;">
+      <strong>Nearby ${escapeHtml(normCity)} Areas:</strong> ${escapeHtml(cityTaluks.slice(0, 8).join(' • '))}
+    </div>` : ''}
+  </header>
+  <section>
+    <h2 style="font-size: 1.3rem; color: #0f2f63;">Active Openings in ${escapeHtml(areaName)} (${areaJobs.length})</h2>
+    <ul style="list-style: none; padding: 0;">
+      ${areaJobs.map((job: any) => `
+        <li style="margin-bottom: 16px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h3 style="margin: 0 0 8px 0; font-size: 1.1rem;">
+            <a href="${BASE_DOMAIN}${generateHierarchicalJobUrl(job)}" style="color: #0f2f63; text-decoration: none; font-weight: bold;">${escapeHtml(job.title)}</a>
+          </h3>
+          <p style="margin: 0 0 4px 0; color: #4a5568; font-size: 0.9rem;">
+            Employer: <strong>${escapeHtml(job.employer_name || 'Verified Employer')}</strong> | Location: <strong>${escapeHtml(job.location || areaName)}</strong>
+          </p>
+          <p style="margin: 0; color: #2b6cb0; font-weight: bold; font-size: 0.9rem;">
+            ${job.budget ? `Salary: ₹${Number(job.budget).toLocaleString('en-IN')}` : 'Market Competitive'}
+          </p>
+        </li>
+      `).join('')}
+    </ul>
+  </section>
+</body>
+</html>`;
+
+    return c.html(html, 200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=1800, s-maxage=3600',
+    });
+  }
+
+  // 1.5 Job Post Details:
+  // Supports both canonical hierarchical format: /:city/:title/job/:id
+  // and legacy formats: /job/:slug-or-id or /jobs/:slug-or-id
+  const isHierarchicalJobPath = cleanPath.includes('/job/') && !cleanPath.startsWith('/job/') && !cleanPath.startsWith('/jobs/');
+  const isLegacyJobPath = cleanPath.startsWith('/job/') || cleanPath.startsWith('/jobs/');
+
+  if (isHierarchicalJobPath || isLegacyJobPath) {
+    let rawSlugOrId = '';
+    
+    if (isHierarchicalJobPath) {
+      // Format: /:city/:title/job/:id
+      const parts = cleanPath.split('/job/');
+      rawSlugOrId = (parts[1] || '').trim();
+    } else {
+      rawSlugOrId = cleanPath.replace(/^\/jobs?\//, '').trim();
+    }
+
     // Two-stage UUID extraction: extract trailing 36-char UUID or exact UUID
     const uuidRegex = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     const uuidMatch = rawSlugOrId.match(uuidRegex);
@@ -542,10 +776,9 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
       return c.text('Job Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
     }
 
-    const canonicalSlug = generateJobSeoSlug(job);
-    const expectedCanonicalPath = `/job/${canonicalSlug}`;
+    const expectedCanonicalPath = generateHierarchicalJobUrl(job);
 
-    // Server-side 301 Permanent Redirect for crawlers hitting legacy /job/:uuid or /jobs/:uuid
+    // Server-side 301 Permanent Redirect for crawlers hitting legacy /job/:uuid or /job/:slug
     if (cleanPath !== expectedCanonicalPath) {
       return c.redirect(`${BASE_DOMAIN}${expectedCanonicalPath}`, 301);
     }
@@ -554,7 +787,7 @@ ${JSON.stringify(serviceJsonLd, null, 2)}
     const pageDesc = job.description
       ? (job.description.length > 160 ? job.description.slice(0, 157) + '...' : job.description)
       : `Verified job opening for ${job.title} in ${job.city || 'India'}. Apply directly with verified skill check-in on TrustHyre.`;
-    const canonical = `${BASE_DOMAIN}/job/${generateJobSeoSlug(job)}`;
+    const canonical = `${BASE_DOMAIN}${expectedCanonicalPath}`;
     const imageUrl = job.cover_image_url || `${BASE_DOMAIN}/logo.png`;
     const pubDate = job.created_at ? new Date(job.created_at).toISOString() : new Date().toISOString();
     const validThrough = job.expires_at ? new Date(job.expires_at).toISOString() : undefined;

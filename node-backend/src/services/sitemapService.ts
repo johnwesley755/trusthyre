@@ -1,5 +1,13 @@
 import { prisma } from '../config/prisma';
-import { generateJobSeoSlug, ALLOWED_CITIES, ALLOWED_TRADES, TRADE_KEYWORD_MAP } from '../utils/seoSlug.util';
+import { 
+  generateJobSeoSlug, 
+  generateHierarchicalJobUrl, 
+  ALLOWED_CITIES, 
+  ALLOWED_TRADES, 
+  TRADE_KEYWORD_MAP,
+  getTaluksForCity,
+  slugifyNeighborhood
+} from '../utils/seoSlug.util';
 
 export class SitemapService {
   private static readonly BASE_URL = 'https://trusthyre.com';
@@ -171,6 +179,38 @@ export class SitemapService {
       }
     }
 
+    // 1.5 Dynamic Active Neighborhood Hubs for ALL allowed cities
+    // Only includes a neighborhood hub when at least 1 active opening exists in that area
+    for (const city of ALLOWED_CITIES) {
+      const cityTaluks = getTaluksForCity(city);
+      const cityJobs = activeJobs.filter(j => (j.city || '').toLowerCase().includes(city));
+
+      for (const taluk of cityTaluks) {
+        const nSlug = slugifyNeighborhood(taluk);
+        const areaName = taluk.toLowerCase();
+
+        const nJobs = cityJobs.filter(j => {
+          const loc = `${j.location || ''} ${j.address || ''} ${j.title || ''}`.toLowerCase();
+          return loc.includes(areaName) || loc.includes(nSlug.replace(/-/g, ' '));
+        });
+
+        if (nJobs.length > 0) {
+          const latestNDate = nJobs.reduce((acc, curr) => {
+            const d = curr.updated_at || curr.created_at;
+            return d && new Date(d) > acc ? new Date(d) : acc;
+          }, new Date(0));
+          const nLastmod = latestNDate.getTime() > 0 ? latestNDate.toISOString().split('T')[0] : today;
+
+          urlEntries.push(`  <url>
+    <loc>${this.BASE_URL}/${city}/${nSlug}-jobs</loc>
+    <lastmod>${nLastmod}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>`);
+        }
+      }
+    }
+
     // 2. Category URLs (Only when categories successfully loaded and have indexable posts)
     for (const cat of categories) {
       const lastmodDate = cat.updated_at ? new Date(cat.updated_at).toISOString().split('T')[0] : today;
@@ -197,16 +237,16 @@ export class SitemapService {
   </url>`);
     }
 
-    // 4. Active Job URLs (Formatted with unified SEO slug)
+    // 4. Active Job URLs (Formatted with hierarchical city-first SEO URL: /:city/:title/job/:id)
     for (const job of activeJobs) {
       const rawDate = job.updated_at || job.created_at || new Date();
       const lastmodDate = new Date(rawDate).toISOString().split('T')[0];
-      const seoSlug = generateJobSeoSlug(job);
+      const jobUrl = generateHierarchicalJobUrl(job);
       const imageTag = job.cover_image_url
         ? `\n    <image:image>\n      <image:loc>${this.escapeXml(job.cover_image_url)}</image:loc>\n      <image:title>${this.escapeXml(job.title)}</image:title>\n    </image:image>`
         : '';
       urlEntries.push(`  <url>
-    <loc>${this.BASE_URL}/job/${seoSlug}</loc>
+    <loc>${this.BASE_URL}${jobUrl}</loc>
     <lastmod>${lastmodDate}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>${imageTag}

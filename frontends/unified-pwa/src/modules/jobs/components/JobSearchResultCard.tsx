@@ -8,7 +8,7 @@ import { useTranslation } from '../../../providers/TranslationContext';
 import { buildJobWhatsAppMessage, openWhatsAppShare } from '../../../utils/whatsappTemplate.utils';
 import { TranslateText } from '../../../components/common/TranslateText';
 import { getEffectiveCoverUrl, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
-import { generateJobSeoSlug } from '../../../utils/seoSlug.utils';
+import { generateJobSeoSlug, generateHierarchicalJobUrl } from '../../../utils/seoSlug.utils';
 import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
 import { WalkInPassModal } from '../../../components/common/WalkInPassModal';
 import { InterviewPrepKitModal } from '../../../components/common/InterviewPrepKitModal';
@@ -225,13 +225,13 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
     });
   };
 
-  const jobDetailUrl = `/job/${generateJobSeoSlug({
+  const jobDetailUrl = generateHierarchicalJobUrl({
     id: job.id,
     title: job.title,
     city: job.city,
     location: job.location,
     created_at: job.createdAt,
-  })}`;
+  }) || `/job/${job.id}`;
 
   return (
     <div 
