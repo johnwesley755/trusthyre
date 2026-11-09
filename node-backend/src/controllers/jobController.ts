@@ -73,11 +73,40 @@ export const formatJob = (job: any) => {
     ? Boolean((job as any).payout_guarantee_badge)
     : (additionalDetails.payoutGuaranteeBadge !== undefined ? Boolean(additionalDetails.payoutGuaranteeBadge) : true);
 
+  const hasFood = (job as any).has_food !== undefined && (job as any).has_food !== null
+    ? Boolean((job as any).has_food)
+    : Boolean(additionalDetails.hasFood || additionalDetails.has_food || perks.some((p: any) => String(p).toLowerCase().includes('food') || String(p).toLowerCase().includes('meal')));
+
+  const hasAccommodation = (job as any).has_accommodation !== undefined && (job as any).has_accommodation !== null
+    ? Boolean((job as any).has_accommodation)
+    : Boolean(additionalDetails.hasAccommodation || additionalDetails.has_accommodation || perks.some((p: any) => String(p).toLowerCase().includes('room') || String(p).toLowerCase().includes('stay') || String(p).toLowerCase().includes('accommodation')));
+
+  const immediateJoining = (job as any).immediate_joining !== undefined && (job as any).immediate_joining !== null
+    ? Boolean((job as any).immediate_joining)
+    : Boolean(additionalDetails.immediateJoining || additionalDetails.immediate_joining || isUrgentSpotHire);
+
+  const shiftType = (job as any).shift_type || additionalDetails.shiftType || additionalDetails.shift_type || 'DAY_SHIFT';
+  const pfEsiAvailable = (job as any).pf_esi_available !== undefined && (job as any).pf_esi_available !== null
+    ? Boolean((job as any).pf_esi_available)
+    : Boolean(additionalDetails.pfEsiAvailable || additionalDetails.pf_esi_available || perks.some((p: any) => String(p).toLowerCase().includes('pf') || String(p).toLowerCase().includes('esi')));
+  const landmark = (job as any).landmark || additionalDetails.landmark || null;
+
   return {
     ...job,
     additionalDetails: additionalDetails || {},
     additional_details: additionalDetails || {},
     perks,
+    hasFood,
+    has_food: hasFood,
+    hasAccommodation,
+    has_accommodation: hasAccommodation,
+    immediateJoining,
+    immediate_joining: immediateJoining,
+    shiftType,
+    shift_type: shiftType,
+    pfEsiAvailable,
+    pf_esi_available: pfEsiAvailable,
+    landmark,
     allowDirectCall,
     allow_direct_call: allowDirectCall,
     allowDirectWhatsapp,
@@ -174,9 +203,22 @@ export const createJob = async (c: Context) => {
           ? Boolean(data.payout_guarantee_badge)
           : (data.additionalDetails?.payoutGuaranteeBadge !== undefined ? Boolean(data.additionalDetails?.payoutGuaranteeBadge) : true));
 
+    const hasFood = Boolean(data.hasFood || data.has_food || data.additionalDetails?.hasFood);
+    const hasAccommodation = Boolean(data.hasAccommodation || data.has_accommodation || data.additionalDetails?.hasAccommodation);
+    const immediateJoining = Boolean(data.immediateJoining || data.immediate_joining || data.isUrgentSpotHire || data.additionalDetails?.immediateJoining);
+    const shiftType = String(data.shiftType || data.shift_type || data.additionalDetails?.shiftType || 'DAY_SHIFT');
+    const pfEsiAvailable = Boolean(data.pfEsiAvailable || data.pf_esi_available || data.additionalDetails?.pfEsiAvailable);
+    const landmark = data.landmark || data.additionalDetails?.landmark || null;
+
     const mergedAdditionalDetails = {
       ...(data.additionalDetails || data.additional_details || {}),
       perks: Array.isArray(data.perks) ? data.perks : (data.additionalDetails?.perks || []),
+      hasFood,
+      hasAccommodation,
+      immediateJoining,
+      shiftType,
+      pfEsiAvailable,
+      landmark,
       allowDirectCall: data.allowDirectCall !== undefined ? Boolean(data.allowDirectCall) : true,
       allowDirectWhatsapp: data.allowDirectWhatsapp !== undefined ? Boolean(data.allowDirectWhatsapp) : true,
       contactPhone: data.contactPhone || data.contact_phone || userMeta?.phone_number || null,
@@ -213,6 +255,12 @@ export const createJob = async (c: Context) => {
         required_documents: parsedRequiredDocuments,
         payout_frequency: parsedPayoutFrequency,
         payout_guarantee_badge: parsedPayoutGuarantee,
+        has_food: hasFood,
+        has_accommodation: hasAccommodation,
+        immediate_joining: immediateJoining,
+        shift_type: shiftType,
+        pf_esi_available: pfEsiAvailable,
+        landmark: landmark,
         status: 'OPEN',
         expires_at: expiresAt,
         alternate_sources: { additional_details: mergedAdditionalDetails },
@@ -309,7 +357,7 @@ export const createJob = async (c: Context) => {
 
 export const getAllJobs = async (c: Context) => {
   try {
-    const { query, category, industry, location, city } = c.req.query();
+    const { query, category, industry, location, city, hasFood, hasAccommodation, immediateJoining, shiftType } = c.req.query();
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
@@ -363,6 +411,28 @@ export const getAllJobs = async (c: Context) => {
 
     if (location) whereClause.location = { contains: location as string, mode: 'insensitive' };
     if (city) whereClause.city = { contains: city as string, mode: 'insensitive' };
+
+    if (hasFood === 'true') {
+      whereClause.OR = [
+        ...(whereClause.OR || []),
+        { has_food: true }
+      ];
+    }
+    if (hasAccommodation === 'true') {
+      whereClause.OR = [
+        ...(whereClause.OR || []),
+        { has_accommodation: true }
+      ];
+    }
+    if (immediateJoining === 'true') {
+      whereClause.OR = [
+        ...(whereClause.OR || []),
+        { immediate_joining: true }
+      ];
+    }
+    if (shiftType && shiftType !== 'ALL') {
+      whereClause.shift_type = { equals: shiftType as string, mode: 'insensitive' };
+    }
 
     const jobs = await prisma.jobs.findMany({
       where: whereClause,

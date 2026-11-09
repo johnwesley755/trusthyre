@@ -32,6 +32,18 @@ interface JobFilterSidebarProps {
   selectedTaluk?: string;
   onSelectTaluk?: (taluk: string) => void;
 
+  hasFood?: boolean;
+  onToggleFood?: (val: boolean) => void;
+
+  hasAccommodation?: boolean;
+  onToggleAccommodation?: (val: boolean) => void;
+
+  immediateJoining?: boolean;
+  onToggleImmediateJoining?: (val: boolean) => void;
+
+  shiftType?: string;
+  onSelectShiftType?: (shift: string) => void;
+
   onSelectBenchmarkFilter?: (trade: string, minBudget?: number) => void;
 
   counts?: FilterCounts;
@@ -98,6 +110,14 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
   onSelectSource,
   selectedTaluk = '',
   onSelectTaluk,
+  hasFood = false,
+  onToggleFood,
+  hasAccommodation = false,
+  onToggleAccommodation,
+  immediateJoining = false,
+  onToggleImmediateJoining,
+  shiftType = 'ALL',
+  onSelectShiftType,
   onSelectBenchmarkFilter,
   counts,
   onClearAll,
@@ -125,6 +145,89 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
             <span>Clear All</span>
           </button>
         )}
+      </div>
+
+      {/* 🌟 BLUE-COLLAR PERKS & SUBSISTENCE FILTERS (WorkIndia / Nithra Jobs) */}
+      <div className="space-y-2 p-3 bg-amber-50/50 rounded-2xl border border-amber-200/80">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 block">
+          Worker Perks & Needs (சலுகைகள்)
+        </span>
+        <div className="space-y-1.5">
+          {/* Free Food */}
+          {onToggleFood && (
+            <button
+              type="button"
+              onClick={() => onToggleFood(!hasFood)}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
+                hasFood
+                  ? 'bg-amber-600 text-white shadow-xs font-bold'
+                  : 'bg-white hover:bg-amber-50/50 text-[#0a0a0a] border border-amber-200/60'
+              }`}
+            >
+              <span>🍛 Free Food (உணவு உண்டு)</span>
+              {hasFood && <Check className="w-3.5 h-3.5 text-white" />}
+            </button>
+          )}
+
+          {/* Accommodation / Room */}
+          {onToggleAccommodation && (
+            <button
+              type="button"
+              onClick={() => onToggleAccommodation(!hasAccommodation)}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
+                hasAccommodation
+                  ? 'bg-indigo-600 text-white shadow-xs font-bold'
+                  : 'bg-white hover:bg-indigo-50/50 text-[#0a0a0a] border border-indigo-200/60'
+              }`}
+            >
+              <span>🏠 Room / Stay (தங்குமிடம்)</span>
+              {hasAccommodation && <Check className="w-3.5 h-3.5 text-white" />}
+            </button>
+          )}
+
+          {/* Immediate Joining */}
+          {onToggleImmediateJoining && (
+            <button
+              type="button"
+              onClick={() => onToggleImmediateJoining(!immediateJoining)}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
+                immediateJoining
+                  ? 'bg-emerald-600 text-white shadow-xs font-bold'
+                  : 'bg-white hover:bg-emerald-50/50 text-[#0a0a0a] border border-emerald-200/60'
+              }`}
+            >
+              <span>⚡ Immediate Join (இன்றே சேரலாம்)</span>
+              {immediateJoining && <Check className="w-3.5 h-3.5 text-white" />}
+            </button>
+          )}
+
+          {/* Shift Timing */}
+          {onSelectShiftType && (
+            <div className="pt-1">
+              <span className="text-[10px] text-slate-600 font-medium block mb-1">Shift Timing</span>
+              <div className="grid grid-cols-3 gap-1">
+                {[
+                  { label: 'All', value: 'ALL' },
+                  { label: 'Day', value: 'DAY_SHIFT' },
+                  { label: 'Night', value: 'NIGHT_SHIFT' }
+                ].map((s) => (
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => onSelectShiftType(s.value)}
+                    className={`py-1 text-center rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
+                      shiftType === s.value
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 0. OPPORTUNITY SOURCE SECTION */}

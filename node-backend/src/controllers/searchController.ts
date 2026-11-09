@@ -5,7 +5,7 @@ import { sanitizeHtmlDescription } from '../utils/textSanitizer';
 
 export const searchJobs = async (c: Context) => {
   try {
-    const { query, category, industry, location, city, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, employerId, includeExpired, source } = c.req.query();
+    const { query, category, industry, location, city, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, employerId, includeExpired, source, hasFood, hasAccommodation, immediateJoining, shiftType } = c.req.query();
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
@@ -76,6 +76,19 @@ export const searchJobs = async (c: Context) => {
     if (location) whereClause.location = { contains: location as string, mode: 'insensitive' };
     if (city) whereClause.city = { contains: city as string, mode: 'insensitive' };
     if (employerId) whereClause.employer_id = employerId;
+
+    if (hasFood === 'true') {
+      whereClause.has_food = true;
+    }
+    if (hasAccommodation === 'true') {
+      whereClause.has_accommodation = true;
+    }
+    if (immediateJoining === 'true') {
+      whereClause.immediate_joining = true;
+    }
+    if (shiftType && shiftType !== 'ALL') {
+      whereClause.shift_type = { equals: shiftType as string, mode: 'insensitive' };
+    }
 
     if (source === 'internal') {
       whereClause.is_external = false;
@@ -180,6 +193,24 @@ export const searchJobs = async (c: Context) => {
         const contactWhatsapp = additionalDetails.contactWhatsapp || additionalDetails.contact_whatsapp || (j as any).contact_whatsapp || null;
         const isUrgentSpotHire = Boolean(additionalDetails.isUrgentSpotHire || additionalDetails.is_urgent_spot_hire);
 
+        const hasFood = (j as any).has_food !== undefined && (j as any).has_food !== null
+          ? Boolean((j as any).has_food)
+          : Boolean(additionalDetails.hasFood || additionalDetails.has_food || perks.some((p: any) => String(p).toLowerCase().includes('food') || String(p).toLowerCase().includes('meal')));
+
+        const hasAccommodation = (j as any).has_accommodation !== undefined && (j as any).has_accommodation !== null
+          ? Boolean((j as any).has_accommodation)
+          : Boolean(additionalDetails.hasAccommodation || additionalDetails.has_accommodation || perks.some((p: any) => String(p).toLowerCase().includes('room') || String(p).toLowerCase().includes('stay') || String(p).toLowerCase().includes('accommodation')));
+
+        const immediateJoining = (j as any).immediate_joining !== undefined && (j as any).immediate_joining !== null
+          ? Boolean((j as any).immediate_joining)
+          : Boolean(additionalDetails.immediateJoining || additionalDetails.immediate_joining || isUrgentSpotHire);
+
+        const shiftType = (j as any).shift_type || additionalDetails.shiftType || additionalDetails.shift_type || 'DAY_SHIFT';
+        const pfEsiAvailable = (j as any).pf_esi_available !== undefined && (j as any).pf_esi_available !== null
+          ? Boolean((j as any).pf_esi_available)
+          : Boolean(additionalDetails.pfEsiAvailable || additionalDetails.pf_esi_available || perks.some((p: any) => String(p).toLowerCase().includes('pf') || String(p).toLowerCase().includes('esi')));
+        const landmark = (j as any).landmark || additionalDetails.landmark || null;
+
         return {
           id: j.id,
           title: j.title,
@@ -189,6 +220,7 @@ export const searchJobs = async (c: Context) => {
           location: j.location || '',
           city: j.city || '',
           budget: j.budget ? Number(j.budget) : 0,
+          dailyRate: j.budget ? Math.round(Number(j.budget) / 26) : null,
           experienceYearsRequired: j.experience_years_required != null ? Number(j.experience_years_required) : 0,
           experienceLevel: 'Standard',
           status: isJobExpired ? 'EXPIRED' : (j.status || 'OPEN'),
@@ -201,6 +233,17 @@ export const searchJobs = async (c: Context) => {
           additionalDetails,
           additional_details: additionalDetails,
           perks,
+          hasFood,
+          has_food: hasFood,
+          hasAccommodation,
+          has_accommodation: hasAccommodation,
+          immediateJoining,
+          immediate_joining: immediateJoining,
+          shiftType,
+          shift_type: shiftType,
+          pfEsiAvailable,
+          pf_esi_available: pfEsiAvailable,
+          landmark,
           allowDirectCall,
           allow_direct_call: allowDirectCall,
           allowDirectWhatsapp,

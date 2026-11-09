@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { searchService } from '../../../services/search.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { JobSearchResultCard } from '../components/JobSearchResultCard';
+import { WhatsAppPingBanner } from '../components/WhatsAppPingBanner';
 import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
 import { generateHierarchicalJobUrl, slugifyNeighborhood } from '../../../utils/seoSlug.utils';
 import { getTaluksForCity } from '../../../constants/regionalTaluks';
@@ -282,6 +283,14 @@ export default function NeighborhoodJobHubPage() {
                 View all in search <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
+
+            {/* 🌟 1-Click WhatsApp Hyper-Local Alert Ping Engine */}
+            <WhatsAppPingBanner
+              city={cityName}
+              taluk={areaName}
+              trade={tradeSlug}
+              className="my-3"
+            />
 
             {isLoading ? (
               <div className="py-12 flex justify-center">

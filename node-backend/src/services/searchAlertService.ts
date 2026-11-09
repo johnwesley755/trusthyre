@@ -619,5 +619,57 @@ export class SearchAlertService {
       throw err;
     }
   }
+
+  /**
+   * 1-Click WhatsApp Hyper-Local Alert Ping Subscription
+   */
+  public static async quickSubscribeWhatsApp(input: {
+    phone: string;
+    city: string;
+    talukSlug?: string | null;
+    tradeSlug?: string | null;
+  }) {
+    const { phone, city, talukSlug, tradeSlug } = input;
+    try {
+      if ((prisma as any).job_alert_subscriptions) {
+        const existing = await (prisma as any).job_alert_subscriptions.findFirst({
+          where: {
+            phone,
+            city,
+            taluk_slug: talukSlug || null,
+            trade_slug: tradeSlug || null
+          }
+        });
+
+        if (existing) {
+          return await (prisma as any).job_alert_subscriptions.update({
+            where: { id: existing.id },
+            data: { is_active: true, updated_at: new Date() }
+          });
+        }
+
+        return await (prisma as any).job_alert_subscriptions.create({
+          data: {
+            phone,
+            city,
+            taluk_slug: talukSlug || null,
+            trade_slug: tradeSlug || null,
+            frequency: 'INSTANT',
+            is_active: true
+          }
+        });
+      } else {
+        // Fallback with raw SQL in case model is accessed via driver adapter
+        await prisma.$executeRaw`
+          INSERT INTO "job_alert_subscriptions" ("id", "phone", "city", "taluk_slug", "trade_slug", "frequency", "is_active", "created_at", "updated_at")
+          VALUES (gen_random_uuid(), ${phone}, ${city}, ${talukSlug || null}, ${tradeSlug || null}, 'INSTANT', true, NOW(), NOW())
+        `;
+        return { phone, city, talukSlug, tradeSlug, is_active: true };
+      }
+    } catch (err: any) {
+      console.error('[SearchAlertService] quickSubscribeWhatsApp error:', err.message);
+      throw err;
+    }
+  }
 }
 

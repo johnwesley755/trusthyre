@@ -64,6 +64,17 @@ export interface JobCardData {
   payout_frequency?: string;
   payoutGuaranteeBadge?: boolean;
   payout_guarantee_badge?: boolean;
+  hasFood?: boolean;
+  has_food?: boolean;
+  hasAccommodation?: boolean;
+  has_accommodation?: boolean;
+  immediateJoining?: boolean;
+  immediate_joining?: boolean;
+  shiftType?: string;
+  shift_type?: string;
+  pfEsiAvailable?: boolean;
+  pf_esi_available?: boolean;
+  landmark?: string | null;
 }
 
 interface JobSearchResultCardProps {
@@ -478,10 +489,51 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           const payoutFreq = job.payoutFrequency || job.payout_frequency || job.additionalDetails?.payoutFrequency;
           const hasGuarantee = job.payoutGuaranteeBadge ?? job.payout_guarantee_badge ?? job.additionalDetails?.payoutGuaranteeBadge;
 
-          if (perksList.length === 0 && !payoutFreq && !hasGuarantee) return null;
+          const hasFood = Boolean(job.hasFood ?? job.has_food ?? job.additionalDetails?.hasFood ?? perksList.some(p => String(p).toLowerCase().includes('food') || String(p).toLowerCase().includes('meal')));
+          const hasAccommodation = Boolean(job.hasAccommodation ?? job.has_accommodation ?? job.additionalDetails?.hasAccommodation ?? perksList.some(p => String(p).toLowerCase().includes('room') || String(p).toLowerCase().includes('stay') || String(p).toLowerCase().includes('accommodation')));
+          const isImmediate = Boolean(job.immediateJoining ?? job.immediate_joining ?? job.isUrgentSpotHire ?? job.additionalDetails?.immediateJoining);
+          const shiftType = job.shiftType || job.shift_type || job.additionalDetails?.shiftType;
 
           return (
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+              {/* Anti-Scam Zero Fee Verified Direct Badge */}
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-emerald-50 text-emerald-900 border-emerald-300">
+                <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                <span>Zero Fee / 100% Free</span>
+              </span>
+
+              {/* Immediate Spot Hire Badge */}
+              {isImmediate && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-amber-500 text-slate-950 border-amber-600 animate-pulse">
+                  <Zap className="w-3 h-3 fill-slate-950 text-slate-950" />
+                  <span>Immediate Joining / இன்றே சேரலாம்</span>
+                </span>
+              )}
+
+              {/* Free Food Badge */}
+              {hasFood && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-amber-50 text-amber-900 border-amber-200">
+                  <Utensils className="w-3 h-3 text-amber-600" />
+                  <span>Food Provided (உணவு உண்டு)</span>
+                </span>
+              )}
+
+              {/* Accommodation Provided Badge */}
+              {hasAccommodation && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-indigo-50 text-indigo-900 border-indigo-200">
+                  <Home className="w-3 h-3 text-indigo-600" />
+                  <span>Stay Provided (தங்குமிடம் உண்டு)</span>
+                </span>
+              )}
+
+              {/* Shift Timing Badge */}
+              {shiftType && shiftType !== 'DAY_SHIFT' && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-slate-100 text-slate-800 border-slate-300">
+                  <Clock3 className="w-3 h-3 text-slate-600" />
+                  <span>{shiftType.replace('_', ' ')}</span>
+                </span>
+              )}
+
               {payoutFreq && payoutFreq !== 'MONTHLY' && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-emerald-50 text-emerald-900 border-emerald-200">
                   <Zap className="w-3 h-3 text-emerald-600" />

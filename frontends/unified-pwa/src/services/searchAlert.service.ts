@@ -62,6 +62,16 @@ export const searchAlertService = {
   testJobMatch: async (alertId?: string): Promise<any> => {
     const res = await apiClient.post<any>('/api/search/alerts/test-match', { alertId, alertType: 'JOB_ALERT' });
     return res.data?.data || res.data;
+  },
+
+  quickSubscribeWhatsApp: async (payload: {
+    phone: string;
+    city: string;
+    talukSlug?: string | null;
+    tradeSlug?: string | null;
+  }): Promise<any> => {
+    const res = await apiClient.post<any>('/api/search/alerts/quick-subscribe', payload);
+    return res.data?.data || res.data;
   }
 };
 
