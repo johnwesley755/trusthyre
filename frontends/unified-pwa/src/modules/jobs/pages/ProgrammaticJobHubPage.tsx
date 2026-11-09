@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { searchService } from '../../../services/search.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { JobSearchResultCard } from '../components/JobSearchResultCard';
-import { WhatsAppPingBanner } from '../components/WhatsAppPingBanner';
 import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
 import { generateJobSeoSlug, generateHierarchicalJobUrl } from '../../../utils/seoSlug.utils';
 import { AppLoader } from '../../../components/common/AppLoader';
@@ -292,13 +291,6 @@ export const ProgrammaticJobHubPage: React.FC = () => {
             </h2>
             <span className="text-xs text-[#5a6270] font-medium">Showing {jobs.length} jobs</span>
           </div>
-
-          {/* 🌟 1-Click WhatsApp Hyper-Local Alert Ping Engine */}
-          <WhatsAppPingBanner
-            city={cityMeta.name}
-            trade={tradeMeta?.title}
-            className="my-3"
-          />
 
           {isLoading ? (
             <div className="py-20 flex justify-center">

@@ -48,10 +48,6 @@ export default function JobSearchPage() {
   const [budgetRange, setBudgetRange] = useState(searchParams.get('budget') || 'all');
   const [experience, setExperience] = useState(searchParams.get('exp') || 'all');
   const [trade, setTrade] = useState(searchParams.get('trade') || 'All');
-  const [hasFood, setHasFood] = useState(searchParams.get('food') === 'true');
-  const [hasAccommodation, setHasAccommodation] = useState(searchParams.get('stay') === 'true');
-  const [immediateJoining, setImmediateJoining] = useState(searchParams.get('immediate') === 'true');
-  const [shiftType, setShiftType] = useState(searchParams.get('shift') || 'ALL');
   const [source, setSource] = useState(searchParams.get('source') || 'all');
   const [sortBy, setSortBy] = useState<'date_desc' | 'salary_desc' | 'salary_asc'>('date_desc');
   const [wageViewMode, setWageViewMode] = useState<'monthly' | 'daily'>(
@@ -124,10 +120,6 @@ export default function JobSearchPage() {
     const exp = searchParams.get('exp') || 'all';
     const tr = searchParams.get('trade') || 'All';
     const s = searchParams.get('source') || 'all';
-    const f = searchParams.get('food') === 'true';
-    const stay = searchParams.get('stay') === 'true';
-    const imm = searchParams.get('immediate') === 'true';
-    const sh = searchParams.get('shift') || 'ALL';
 
     if (q !== query) setQuery(q);
     if (c !== city) setCity(c);
@@ -136,10 +128,6 @@ export default function JobSearchPage() {
     if (exp !== experience) setExperience(exp);
     if (tr !== trade) setTrade(tr);
     if (s !== source) setSource(s);
-    if (f !== hasFood) setHasFood(f);
-    if (stay !== hasAccommodation) setHasAccommodation(stay);
-    if (imm !== immediateJoining) setImmediateJoining(imm);
-    if (sh !== shiftType) setShiftType(sh);
   }, [searchParams]);
 
   // Helper to sync to URL
@@ -179,7 +167,7 @@ export default function JobSearchPage() {
 
   // Fetch Jobs via Search API
   const { data: jobs = [], isLoading } = useQuery({
-    queryKey: ['jobs', 'search', { query, city, trade, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, source, hasFood, hasAccommodation, immediateJoining, shiftType }],
+    queryKey: ['jobs', 'search', { query, city, trade, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, source }],
     queryFn: () => searchService.searchJobs({
       query: query || undefined,
       city: city || undefined,
@@ -190,11 +178,7 @@ export default function JobSearchPage() {
       maxExperience,
       sortBy,
       source: source !== 'all' ? source : undefined,
-      includeExpired: 'true',
-      hasFood: hasFood ? true : undefined,
-      hasAccommodation: hasAccommodation ? true : undefined,
-      immediateJoining: immediateJoining ? true : undefined,
-      shiftType: shiftType !== 'ALL' ? shiftType : undefined,
+      includeExpired: 'true'
     }),
     staleTime: 1000 * 60 * 2,
   });
@@ -490,26 +474,6 @@ export default function JobSearchPage() {
               onSelectSource={(s) => {
                 setSource(s);
                 updateUrlParams({ source: s });
-              }}
-              hasFood={hasFood}
-              onToggleFood={(f) => {
-                setHasFood(f);
-                updateUrlParams({ food: f ? 'true' : '' });
-              }}
-              hasAccommodation={hasAccommodation}
-              onToggleAccommodation={(stay) => {
-                setHasAccommodation(stay);
-                updateUrlParams({ stay: stay ? 'true' : '' });
-              }}
-              immediateJoining={immediateJoining}
-              onToggleImmediateJoining={(imm) => {
-                setImmediateJoining(imm);
-                updateUrlParams({ immediate: imm ? 'true' : '' });
-              }}
-              shiftType={shiftType}
-              onSelectShiftType={(sh) => {
-                setShiftType(sh);
-                updateUrlParams({ shift: sh });
               }}
               onSelectBenchmarkFilter={(bTrade, _minBudget) => {
                 setQuery(bTrade);

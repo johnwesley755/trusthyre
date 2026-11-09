@@ -110,38 +110,4 @@ export const testCandidateMatch = async (c: Context) => {
   }
 };
 
-/**
- * 1-Click WhatsApp Hyper-Local Alert Ping Engine
- * Allows candidates to instantly subscribe their WhatsApp/mobile number to a specific city, taluk, or trade
- * without mandatory login/password.
- */
-export const quickSubscribeWhatsAppAlert = async (c: Context) => {
-  try {
-    const body = await c.req.json();
-    const phone = String(body.phone || '').trim().replace(/[^0-9]/g, '');
-
-    // Validate 10-digit Indian phone number
-    if (!phone || phone.length < 10) {
-      return c.json(ApiResponse.error("Please enter a valid 10-digit mobile number for WhatsApp alerts"), 400 as any);
-    }
-    const cleanPhone = phone.slice(-10);
-
-    const city = String(body.city || 'Chennai').trim();
-    const talukSlug = body.talukSlug ? String(body.talukSlug).trim().toLowerCase() : null;
-    const tradeSlug = body.tradeSlug ? String(body.tradeSlug).trim().toLowerCase() : null;
-
-    const subscription = await SearchAlertService.quickSubscribeWhatsApp({
-      phone: cleanPhone,
-      city,
-      talukSlug,
-      tradeSlug
-    });
-
-    return c.json(ApiResponse.ok("WhatsApp alert subscription activated successfully", subscription), 201 as any);
-  } catch (err: any) {
-    return c.json(ApiResponse.error(err.message), 500 as any);
-  }
-};
-
-
 

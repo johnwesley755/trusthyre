@@ -128,12 +128,6 @@ model jobs {
   required_documents        String[]              @default(["aadhaar", "bank_passbook"])
   payout_frequency          String?               @default("MONTHLY") @db.VarChar(50)
   payout_guarantee_badge    Boolean?              @default(true)
-  has_food                  Boolean?              @default(false)
-  has_accommodation         Boolean?              @default(false)
-  immediate_joining         Boolean?              @default(false)
-  shift_type                String?               @default("DAY_SHIFT") @db.VarChar(30)
-  pf_esi_available          Boolean?              @default(false)
-  landmark                  String?               @db.VarChar(255)
   job_applications          job_applications[]
   job_required_skills       job_required_skills[] @ignore
   saved_jobs                saved_jobs[]
@@ -661,23 +655,6 @@ model worker_work_history {
   @@index([worker_id], map: "idx_worker_work_history_worker_id")
   @@index([verification_status], map: "idx_worker_work_history_status")
 }
-
-model job_alert_subscriptions {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  phone      String    @db.VarChar(20)
-  city       String    @db.VarChar(100)
-  taluk_slug String?   @db.VarChar(100)
-  trade_slug String?   @db.VarChar(100)
-  frequency  String    @default("INSTANT") @db.VarChar(20)
-  is_active  Boolean   @default(true)
-  created_at DateTime  @default(now()) @db.Timestamp(6)
-  updated_at DateTime  @default(now()) @db.Timestamp(6)
-
-  @@index([phone], map: "idx_job_alerts_phone")
-  @@index([city, trade_slug, is_active], map: "idx_job_alerts_city_trade")
-  @@index([city, taluk_slug, is_active], map: "idx_job_alerts_taluk")
-}
-
 
 
 

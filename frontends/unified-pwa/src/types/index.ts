@@ -98,17 +98,6 @@ export interface Job {
   coverImageUrl?: string | null;
   cover_image_url?: string | null;
   perks?: string[];
-  hasFood?: boolean;
-  has_food?: boolean;
-  hasAccommodation?: boolean;
-  has_accommodation?: boolean;
-  immediateJoining?: boolean;
-  immediate_joining?: boolean;
-  shiftType?: 'DAY_SHIFT' | 'NIGHT_SHIFT' | 'ROTATIONAL' | string;
-  shift_type?: 'DAY_SHIFT' | 'NIGHT_SHIFT' | 'ROTATIONAL' | string;
-  pfEsiAvailable?: boolean;
-  pf_esi_available?: boolean;
-  landmark?: string | null;
   allowDirectCall?: boolean;
   allowDirectWhatsapp?: boolean;
   contactPhone?: string | null;

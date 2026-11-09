@@ -30,10 +30,6 @@ export interface SearchParams {
   lon?: number;
   includeExpired?: boolean | string;
   source?: 'all' | 'internal' | 'external' | string;
-  hasFood?: boolean | string;
-  hasAccommodation?: boolean | string;
-  immediateJoining?: boolean | string;
-  shiftType?: string;
 }
 
 export interface WorkerSearch {
