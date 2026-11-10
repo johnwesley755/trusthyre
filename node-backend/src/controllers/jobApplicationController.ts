@@ -5,10 +5,19 @@ import { v4 as uuidv4 } from 'uuid';
 import { NotificationDispatcher } from '../services/notificationDispatcher';
 import { formatJob } from './jobController';
 
+const extractTransitMode = (coverLetter?: string | null): string | null => {
+  if (!coverLetter || typeof coverLetter !== 'string') return null;
+  const match = coverLetter.match(/\[Transit:\s*([^\]]+)\]/i);
+  return match ? match[1].trim() : null;
+};
+
 const formatApplication = (app: any) => {
   if (!app) return app;
   const rawJob = app.jobs || app.job;
   const formattedJob = rawJob ? formatJob(rawJob) : undefined;
+  const transitMode = (app as any).transit_mode_preferred ||
+                      (app as any).transitModePreferred ||
+                      extractTransitMode(app.cover_letter || app.coverLetter);
 
   return {
     ...app,
@@ -16,8 +25,8 @@ const formatApplication = (app: any) => {
     workerId: app.worker_id || app.workerId,
     appliedAt: app.applied_at || app.appliedAt,
     coverLetter: app.cover_letter || app.coverLetter,
-    transitModePreferred: (app as any).transit_mode_preferred || (app as any).transitModePreferred || (app.cover_letter?.includes('[Transit: ') ? app.cover_letter.split('[Transit: ')[1]?.replace(']', '') : null),
-    transit_mode_preferred: (app as any).transit_mode_preferred || (app as any).transitModePreferred || (app.cover_letter?.includes('[Transit: ') ? app.cover_letter.split('[Transit: ')[1]?.replace(']', '') : null),
+    transitModePreferred: transitMode,
+    transit_mode_preferred: transitMode,
     job: formattedJob || app.job,
     jobs: formattedJob || app.jobs,
     jobTitle: formattedJob?.title || app.jobTitle || rawJob?.title,
