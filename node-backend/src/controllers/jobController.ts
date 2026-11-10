@@ -571,6 +571,17 @@ export const updateJob = async (c: Context) => {
 
     const data = (await c.req.json());
 
+    // Security Gate: Validate job ownership BEFORE executing any mutations
+    const whereClause: any = { id };
+    if (authUser.role !== 'ADMIN' && authUser.role !== 'SUPER_ADMIN') {
+      whereClause.employer_id = employerId;
+    }
+
+    const existingJob = await prisma.jobs.findFirst({ where: whereClause });
+    if (!existingJob) {
+      return c.json(ApiResponse.error("Job not found or not owned by employer"), 404 as any);
+    }
+
     // Defect fix 3.5: Validate status against allowed enum set
     if (data.status && !ALLOWED_JOB_STATUSES.includes(data.status)) {
       return c.json(ApiResponse.error(`Invalid job status: ${data.status}. Must be one of: ${ALLOWED_JOB_STATUSES.join(', ')}`), 400 as any);
@@ -664,11 +675,6 @@ export const updateJob = async (c: Context) => {
     if (data.status !== undefined) updatePayload.status = data.status;
     if (data.coverImageUrl !== undefined || data.cover_image_url !== undefined) {
       updatePayload.cover_image_url = data.coverImageUrl || data.cover_image_url || null;
-    }
-
-    const whereClause: any = { id };
-    if (authUser.role !== 'ADMIN' && authUser.role !== 'SUPER_ADMIN') {
-      whereClause.employer_id = employerId;
     }
 
     const job = await prisma.jobs.updateMany({

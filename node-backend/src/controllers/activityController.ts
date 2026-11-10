@@ -5,7 +5,8 @@ import { ApiResponse } from '../utils/ApiResponse';
 export const getRecentActivities = async (c: Context) => {
   try {
     const userId = c.get('user')?.sub;
-    const limit = parseInt(c.req.query('limit') as string) || 10;
+    const rawLimit = parseInt(c.req.query('limit') as string, 10);
+    const limit = Math.min(Math.max(isNaN(rawLimit) ? 10 : rawLimit, 1), 100);
 
     if (!userId) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
 

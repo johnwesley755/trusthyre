@@ -1,10 +1,11 @@
 import { Hono } from 'hono';
 import * as jobController from '../controllers/jobController';
 import { authenticateJWT, optionalAuth } from '../middlewares/auth';
+import { writeActionLimiter } from '../middlewares/rateLimiter';
 
 const router = new Hono();
 
-router.post('/', authenticateJWT, jobController.createJob);
+router.post('/', authenticateJWT, writeActionLimiter, jobController.createJob);
 router.get('/', optionalAuth, jobController.getAllJobs);
 router.get('/employer', authenticateJWT, jobController.getMyJobs);
 router.get('/stats', jobController.getStats);

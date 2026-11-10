@@ -135,6 +135,20 @@ app.use('*', cors({
   credentials: true
 }));
 
+import { globalApiLimiter } from './middlewares/rateLimiter';
+import { botDetectionMiddleware } from './middlewares/botDetection';
+
+// Global baseline rate limiter across all /api/* routes (bypassing /api/health)
+app.use('/api/*', async (c, next) => {
+  if (c.req.path === '/api/health') {
+    return next();
+  }
+  return globalApiLimiter(c, next);
+});
+
+// Automated Bot & Scraper Detection Middleware across all /api/* routes
+app.use('/api/*', botDetectionMiddleware);
+
 app.route('/api/auth', authRoutes);
 app.route('/api/worker', workerRoutes);
 app.route('/api/employer', employerRoutes);

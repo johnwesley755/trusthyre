@@ -9,10 +9,33 @@ import { sendEmail } from '../services/mailer';
 import { getOtpTemplate, getResetPasswordTemplate } from '../utils/emailTemplates';
 import { validatePasswordStrength } from '../utils/validators';
 import { SearchAlertService } from '../services/searchAlertService';
+import { isHoneypotTriggered, isFormSubmittedTooFast } from '../middlewares/botDetection';
+import { TurnstileService } from '../services/turnstileService';
+import { getClientIp } from '../middlewares/rateLimiter';
 
 export const register = async (c: Context) => {
   try {
-    const { email, password, firstName, lastName, role, phoneNumber, otp } = (await c.req.json());
+    const body = (await c.req.json().catch(() => ({})));
+    const { email, password, firstName, lastName, role, phoneNumber, otp, form_ts, turnstileToken } = body;
+
+    // Bot Gate 1: Honeypot trap check (Shadow drop)
+    if (isHoneypotTriggered(body)) {
+      return c.json(ApiResponse.ok("Registration successful", {
+        token: jwt.sign({ sub: 'shadow-bot', role: 'WORKER' }, process.env.JWT_SECRET as string, { expiresIn: '1h' }),
+        user: { id: 'shadow-bot', email, role: 'WORKER' }
+      }));
+    }
+
+    // Bot Gate 2: Form submission velocity
+    if (isFormSubmittedTooFast(form_ts, 1200)) {
+      return c.json(ApiResponse.error("Form submitted too quickly. Please try again."), 400 as any);
+    }
+
+    // Bot Gate 3: Cloudflare Turnstile token validation
+    const turnstileCheck = await TurnstileService.verifyToken(turnstileToken, getClientIp(c));
+    if (!turnstileCheck.success) {
+      return c.json(ApiResponse.error(turnstileCheck.message || "Bot verification failed"), 400 as any);
+    }
 
     // Security fix 1.1: Restrict public role to WORKER or EMPLOYER only (block ADMIN privilege escalation)
     const assignedRole = role === 'EMPLOYER' ? 'EMPLOYER' : 'WORKER';
@@ -28,7 +51,8 @@ export const register = async (c: Context) => {
     // Verify Email OTP if provided
     if (otp) {
       const cleanOtp = String(otp).trim();
-      if (!existing || !existing.reset_token || existing.reset_token !== cleanOtp) {
+      const validToken = existing?.reset_token === `VERIFY:${cleanOtp}` || existing?.reset_token === cleanOtp;
+      if (!existing || !existing.reset_token || !validToken) {
         return c.json(ApiResponse.error("Invalid verification code. Please check your email and try again."), 400 as any);
       }
       if (!existing.reset_token_expiry || new Date(existing.reset_token_expiry) < new Date()) {
@@ -163,8 +187,25 @@ export const login = async (c: Context) => {
 
 export const sendOtp = async (c: Context) => {
   try {
-    const { email, role } = (await c.req.json());
+    const body = (await c.req.json().catch(() => ({})));
+    const { email, role, form_ts, turnstileToken } = body;
     if (!email) return c.json(ApiResponse.error("Email is required"), 400 as any);
+
+    // Bot Gate 1: Honeypot trap check (Shadow drop)
+    if (isHoneypotTriggered(body)) {
+      return c.json(ApiResponse.ok(`OTP sent to ${email}`, "sent"));
+    }
+
+    // Bot Gate 2: Form submission velocity
+    if (isFormSubmittedTooFast(form_ts, 1000)) {
+      return c.json(ApiResponse.error("Form submitted too quickly. Please try again."), 400 as any);
+    }
+
+    // Bot Gate 3: Cloudflare Turnstile token validation
+    const turnstileCheck = await TurnstileService.verifyToken(turnstileToken, getClientIp(c));
+    if (!turnstileCheck.success) {
+      return c.json(ApiResponse.error(turnstileCheck.message || "Bot verification failed"), 400 as any);
+    }
 
     const targetRole = role === 'WORKER' ? 'WORKER' : 'EMPLOYER';
     let user = await prisma.user_metadata.findUnique({ where: { email } });
@@ -182,13 +223,12 @@ export const sendOtp = async (c: Context) => {
     const otp = crypto.randomInt(100000, 1000000).toString();
     const expiry = new Date(Date.now() + 15 * 60 * 1000);
 
-    console.log(`\n🔑 [OTP:GENERATED] Target: ${email} | Role: ${targetRole} | Code: ${otp} | Expires in 15 mins`);
-
-    // Defect fix 1.2: Server-side OTP Persistence with 15m expiration
+    // Defect fix 1.2: Server-side OTP Persistence with 15m expiration & scope isolation
+    const scopedToken = `VERIFY:${otp}`;
     if (user) {
       await prisma.user_metadata.update({
         where: { id: user.id },
-        data: { reset_token: otp, reset_token_expiry: expiry, role: targetRole }
+        data: { reset_token: scopedToken, reset_token_expiry: expiry, role: targetRole }
       });
     } else {
       user = await prisma.user_metadata.create({
@@ -196,7 +236,7 @@ export const sendOtp = async (c: Context) => {
           id: uuidv4(),
           email,
           role: targetRole,
-          reset_token: otp,
+          reset_token: scopedToken,
           reset_token_expiry: expiry,
           email_verified: false,
           onboarded: false,
@@ -224,13 +264,15 @@ export const verifyEmployerOtp = async (c: Context) => {
       return c.json(ApiResponse.error("Email and OTP are required"), 400 as any);
     }
 
+    const cleanOtp = String(otp).trim();
     const user = await prisma.user_metadata.findUnique({ where: { email } });
     if (!user) {
       return c.json(ApiResponse.error("User account not found. Please request a new OTP."), 404 as any);
     }
 
-    // Defect fix 1.2 & 1.3: Validate persisted OTP and expiry
-    if (!user.reset_token || user.reset_token !== otp) {
+    // Defect fix 1.2 & 1.3: Validate persisted OTP and expiry (scoped verification token)
+    const validOtp = user.reset_token === `VERIFY:${cleanOtp}` || user.reset_token === cleanOtp;
+    if (!user.reset_token || !validOtp) {
       return c.json(ApiResponse.error("Invalid verification code. Please check and try again."), 400 as any);
     }
 
@@ -264,7 +306,14 @@ export const verifyEmployerOtp = async (c: Context) => {
 
 export const forgotPassword = async (c: Context) => {
   try {
-    const { email, role } = (await c.req.json());
+    const body = (await c.req.json().catch(() => ({})));
+    const { email, role } = body;
+
+    // Bot Gate 1: Honeypot trap check (Shadow drop)
+    if (isHoneypotTriggered(body)) {
+      return c.json(ApiResponse.ok("Reset email sent successfully", "sent"));
+    }
+
     const user = await prisma.user_metadata.findUnique({ where: { email } });
     if (user) {
       if (role && user.role && user.role !== role && user.role !== 'ADMIN') {
@@ -275,7 +324,7 @@ export const forgotPassword = async (c: Context) => {
       const token = crypto.randomInt(100000, 1000000).toString();
       await prisma.user_metadata.update({
         where: { email },
-        data: { reset_token: token, reset_token_expiry: new Date(Date.now() + 15 * 60 * 1000) }
+        data: { reset_token: `RESET:${token}`, reset_token_expiry: new Date(Date.now() + 15 * 60 * 1000) }
       });
       await sendEmail(email, `${token} is your TrustHyre password reset code`, getResetPasswordTemplate(token, email), {
         category: 'auth',
@@ -292,15 +341,16 @@ export const forgotPassword = async (c: Context) => {
 export const verifyResetCode = async (c: Context) => {
   try {
     const { token, email } = (await c.req.json());
-    if (!token || token.length < 6) {
+    if (!token || String(token).trim().length < 6) {
       return c.json(ApiResponse.error("A valid 6-digit verification code is required"), 400 as any);
     }
+    const cleanToken = String(token).trim();
     const whereClause: any = {
-      reset_token: token,
+      reset_token: { in: [`RESET:${cleanToken}`, cleanToken] },
       reset_token_expiry: { gt: new Date() }
     };
     if (email) {
-      whereClause.email = email;
+      whereClause.email = String(email).trim().toLowerCase();
     }
     const user = await prisma.user_metadata.findFirst({ where: whereClause });
     if (!user) {
@@ -315,10 +365,20 @@ export const verifyResetCode = async (c: Context) => {
 
 export const resetPassword = async (c: Context) => {
   try {
-    const { token, password } = (await c.req.json());
-    const user = await prisma.user_metadata.findFirst({
-      where: { reset_token: token, reset_token_expiry: { gt: new Date() } }
-    });
+    const { token, password, email } = (await c.req.json());
+    if (!token) return c.json(ApiResponse.error("Reset token is required"), 400 as any);
+    const cleanToken = String(token).trim();
+    const cleanEmail = email ? String(email).trim().toLowerCase() : undefined;
+
+    const whereClause: any = {
+      reset_token: { in: [`RESET:${cleanToken}`, cleanToken] },
+      reset_token_expiry: { gt: new Date() }
+    };
+    if (cleanEmail) {
+      whereClause.email = cleanEmail;
+    }
+
+    const user = await prisma.user_metadata.findFirst({ where: whereClause });
     if (!user) return c.json(ApiResponse.error("Invalid or expired token"), 400 as any);
 
     // Security Gate: Enforce password complexity policy
