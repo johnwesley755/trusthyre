@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import * as notificationController from '../controllers/notificationController';
 import { authenticateJWT } from '../middlewares/auth';
+import { fcmLimiter } from '../middlewares/rateLimiter';
 
 const router = new Hono();
 
@@ -12,9 +13,9 @@ router.patch('/read-all', authenticateJWT, notificationController.markAllAsRead)
 router.delete('/all', authenticateJWT, notificationController.deleteAllNotifications);
 
 // Firebase Cloud Messaging (FCM) device token management & testing
-router.post('/fcm-token', authenticateJWT, notificationController.registerFcmToken);
-router.delete('/fcm-token', authenticateJWT, notificationController.unregisterFcmToken);
-router.post('/test-push', authenticateJWT, notificationController.testPushNotification);
+router.post('/fcm-token', authenticateJWT, fcmLimiter, notificationController.registerFcmToken);
+router.delete('/fcm-token', authenticateJWT, fcmLimiter, notificationController.unregisterFcmToken);
+router.post('/test-push', authenticateJWT, fcmLimiter, notificationController.testPushNotification);
 router.post('/trigger-digest', authenticateJWT, async (c) => {
   const { DailyDigestService } = await import('../services/dailyDigestService');
   const result = await DailyDigestService.sendDailyDigests();

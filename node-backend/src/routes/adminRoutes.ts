@@ -12,21 +12,31 @@ router.get('/invitations/verify', adminController.getAdminInvitationByToken);
 router.post('/invitations/accept', adminController.acceptAdminInvitation);
 
 /**
- * Authenticated Administrative Endpoints
+ * Security Boundary: All other administrative endpoints require valid authentication and ADMIN role.
  */
-router.use('/diagnostics/*', authenticateJWT, requireSuperAdmin);
-router.use('/stats', authenticateJWT, requireAdmin);
-router.use('/analytics/*', authenticateJWT, requireAdmin);
-router.use('/verifications/*', authenticateJWT, requireAdmin);
-router.use('/users/*', authenticateJWT, requireAdmin);
-router.use('/jobs/*', authenticateJWT, requireAdmin);
+const publicGuard = (middleware: (c: any, next: any) => Promise<any>) => async (c: any, next: any) => {
+  const path = c.req.path;
+  if (path.endsWith('/invitations/verify') || path.endsWith('/invitations/accept')) {
+    return next();
+  }
+  return middleware(c, next);
+};
 
-// Super-Admin Only routes for user deletion and admin provisioning
-router.post('/invitations/create', authenticateJWT, requireSuperAdmin, adminController.createAdminInvitation);
-router.post('/users/create-admin', authenticateJWT, requireSuperAdmin, adminController.createAdminUser);
-router.delete('/users/:id', authenticateJWT, requireSuperAdmin, adminController.deleteUserByAdmin);
+router.use('*', publicGuard(authenticateJWT));
+router.use('*', publicGuard(requireAdmin));
 
-router.get('/diagnostics/brevo', diagnosticController.getBrevoDiagnostics);
+/**
+ * Super-Admin Gated Endpoints
+ */
+router.use('/diagnostics/*', requireSuperAdmin);
+router.post('/invitations/create', requireSuperAdmin, adminController.createAdminInvitation);
+router.post('/users/create-admin', requireSuperAdmin, adminController.createAdminUser);
+router.delete('/users/:id', requireSuperAdmin, adminController.deleteUserByAdmin);
+router.get('/diagnostics/brevo', requireSuperAdmin, diagnosticController.getBrevoDiagnostics);
+
+/**
+ * General Administrative Endpoints (Admin & Super Admin)
+ */
 router.get('/stats', adminController.getAdminStats);
 router.get('/analytics/visitors', adminController.getVisitorAnalytics);
 router.get('/analytics', adminController.getVisitorAnalytics);

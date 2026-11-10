@@ -8,7 +8,7 @@ router.get('/profile', authenticateJWT, workerController.getMyProfile);
 router.get('/me', authenticateJWT, workerController.getMyProfile);
 router.put('/profile', authenticateJWT, workerController.updateProfile);
 router.put('/me', authenticateJWT, workerController.updateProfile);
-router.get('/internal/profiles/:userId/completion', workerController.getProfileCompletion);
+router.get('/internal/profiles/:userId/completion', authenticateJWT, workerController.getProfileCompletion);
 router.post('/profiles/by-user-ids', optionalAuth, workerController.getProfilesByUserIds);
 router.post('/profile/:userId/view', workerController.incrementProfileView);
 router.get('/trust-score/:userId', workerController.getTrustScore);

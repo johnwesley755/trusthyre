@@ -1,12 +1,13 @@
 import { Hono } from 'hono';
 import * as searchController from '../controllers/searchController';
 import { optionalAuth, authenticateJWT, requireAdmin } from '../middlewares/auth';
+import { searchLimiter } from '../middlewares/rateLimiter';
 
 const router = new Hono();
 
-router.get('/jobs', optionalAuth, searchController.searchJobs);
-router.get('/workers', optionalAuth, searchController.searchWorkers);
-router.get('/popular-employers', searchController.getPopularEmployers);
+router.get('/jobs', searchLimiter, optionalAuth, searchController.searchJobs);
+router.get('/workers', searchLimiter, optionalAuth, searchController.searchWorkers);
+router.get('/popular-employers', searchLimiter, searchController.getPopularEmployers);
 
 // Defect fix 1.15: Protect index mutations behind admin/auth checks
 router.post('/index/job', authenticateJWT, requireAdmin, searchController.indexJob);

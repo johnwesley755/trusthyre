@@ -2,6 +2,7 @@ import { Context } from 'hono';
 import { ApiResponse } from '../utils/ApiResponse';
 import { sendEmail } from '../services/mailer';
 import { renderEmailShell } from '../services/emailTemplateService';
+import { isHoneypotTriggered, isFormSubmittedTooFast } from '../middlewares/botDetection';
 
 const escapeHtml = (str: string): string => {
   return String(str)
@@ -14,7 +15,19 @@ const escapeHtml = (str: string): string => {
 
 export const requestEarlyAccess = async (c: Context) => {
   try {
-    const { email, name, role, companyName, phoneNumber } = (await c.req.json());
+    const body = (await c.req.json().catch(() => ({})));
+    const { email, name, role, companyName, phoneNumber, form_ts } = body;
+
+    // Bot Gate 1: Honeypot trap check (Shadow drop)
+    if (isHoneypotTriggered(body)) {
+      return c.json(ApiResponse.ok("Early access requested successfully", { priorityId: `TH-${Date.now().toString(36).toUpperCase()}` }));
+    }
+
+    // Bot Gate 2: Form submission velocity
+    if (isFormSubmittedTooFast(form_ts, 1200)) {
+      return c.json(ApiResponse.error("Form submitted too quickly. Please try again."), 400 as any);
+    }
+
     if (!email || !email.includes('@')) {
       return c.json(ApiResponse.error("Valid email address is required"), 400 as any);
     }
