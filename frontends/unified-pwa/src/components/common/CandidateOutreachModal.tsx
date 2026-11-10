@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { BaseModal } from './BaseModal';
+import { employerService } from '../../services/employer.service';
 
 export interface CandidateOutreachCandidate {
   id?: string;
@@ -56,6 +57,8 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
   defaultJobId
 }) => {
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [unlockedPhone, setUnlockedPhone] = useState<string | null>(null);
+  const [isUnlocking, setIsUnlocking] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string>(() => {
     if (defaultJobId) return defaultJobId;
     if (activeJobs.length > 0) return activeJobs[0].id;
@@ -73,7 +76,7 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
   const salaryText = selectedJob?.budget ? `₹${selectedJob.budget.toLocaleString('en-IN')}/month` : 'Market Competitive Wage';
 
   // Format real or fallback phone number
-  const candidatePhone = candidate.phoneNumber || '+91 98765 43210';
+  const candidatePhone = unlockedPhone || candidate.phoneNumber || '+91 98765 43210';
   const cleanPhone = candidatePhone.replace(/[^0-9]/g, '');
 
   const formatWhatsAppMessage = () => {
@@ -98,9 +101,29 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleUnlock = () => {
-    setIsUnlocked(true);
-    toast.success(`Contact details unlocked for ${candidate.fullName}!`);
+  const handleUnlock = async () => {
+    const targetWorkerId = candidate.userId || candidate.id;
+    if (!targetWorkerId) {
+      setIsUnlocked(true);
+      return;
+    }
+    setIsUnlocking(true);
+    try {
+      const res = await employerService.unlockContact(targetWorkerId);
+      if (res.data?.phoneNumber) {
+        setUnlockedPhone(res.data.phoneNumber);
+      }
+      setIsUnlocked(true);
+      toast.success(`Contact unlocked! Remaining credits: ${res.data?.remainingCredits ?? 'Active'}`);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Failed to unlock contact';
+      toast.error(msg);
+      if (candidate.phoneNumber) {
+        setIsUnlocked(true);
+      }
+    } finally {
+      setIsUnlocking(false);
+    }
   };
 
   return (
@@ -172,11 +195,12 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
         {!isUnlocked ? (
           <button
             onClick={handleUnlock}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-2xs cursor-pointer active:scale-95 shrink-0"
-            title="Unlock phone number and WhatsApp"
+            disabled={isUnlocking}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-2xs cursor-pointer active:scale-95 shrink-0 disabled:opacity-50"
+            title="Unlock phone number and WhatsApp with 1 Contact Credit"
           >
             <Unlock className="w-3.5 h-3.5" />
-            <span>Unlock Contact</span>
+            <span>{isUnlocking ? 'Unlocking...' : 'Unlock Contact (1 Credit)'}</span>
           </button>
         ) : (
           <div className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center gap-1.5 border border-emerald-200 shrink-0">

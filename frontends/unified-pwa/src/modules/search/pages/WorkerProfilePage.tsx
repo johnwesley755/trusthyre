@@ -38,6 +38,7 @@ import { AppLoader } from '../../../components/common/AppLoader';
 import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
 import { CandidateResumeModal } from '../../profile/components/resume/CandidateResumeModal';
 import { useUser } from '../../../providers/AuthContext';
+import { employerService } from '../../../services/employer.service';
 import { 
   buildEmployerToWorkerOutreachMessage, 
   buildWorkerSkillBadgeShareMessage, 
@@ -107,7 +108,25 @@ export const WorkerProfilePage = () => {
 
   const { user } = useUser();
   const isCandidateViewingOwn = Boolean(user && (user.id === id || user.id === worker?.userId));
-  const isEmployer = Boolean(user && user.role === 'EMPLOYER');
+  const isEmployer = Boolean(user && (user.role === 'EMPLOYER' || user.role === 'ADMIN'));
+  const [unlockedPhone, setUnlockedPhone] = useState<string | null>(null);
+  const [isUnlockingPhone, setIsUnlockingPhone] = useState(false);
+
+  const handleUnlockContact = async () => {
+    if (!targetUserId) return;
+    setIsUnlockingPhone(true);
+    try {
+      const res = await employerService.unlockContact(targetUserId);
+      if (res.data?.phoneNumber) {
+        setUnlockedPhone(res.data.phoneNumber);
+      }
+      toast.success(`Candidate contact unlocked! Remaining credits: ${res.data?.remainingCredits ?? 0}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to unlock contact');
+    } finally {
+      setIsUnlockingPhone(false);
+    }
+  };
 
   const handleWhatsAppEmployerChat = () => {
     if (!worker) return;
@@ -736,9 +755,29 @@ export const WorkerProfilePage = () => {
                   <span className="text-slate-500 font-medium flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-[#0f2f63]" /> Phone
                   </span>
-                  <span className="font-bold text-[#0A1931]">
-                    {worker?.phoneNumber || 'Disclosed on Hire'}
-                  </span>
+                  {unlockedPhone || isCandidateViewingOwn ? (
+                    <span className="font-bold text-[#0A1931]">
+                      {unlockedPhone || worker?.phoneNumber || 'Disclosed on Hire'}
+                    </span>
+                  ) : isEmployer ? (
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-slate-400">
+                        {worker?.phoneNumber ? `${worker.phoneNumber.slice(0, 5)}••• ••` : '+91 98••• •••••'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleUnlockContact}
+                        disabled={isUnlockingPhone}
+                        className="px-2.5 py-1 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-[11px] shadow-2xs transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                      >
+                        {isUnlockingPhone ? 'Unlocking...' : 'Unlock (1 Credit)'}
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="font-bold text-slate-400">
+                      {worker?.phoneNumber || 'Disclosed on Hire'}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between py-1 border-b border-slate-100">

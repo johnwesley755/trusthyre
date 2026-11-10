@@ -8,7 +8,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const uploadMedia = async (mediaInput: string | Buffer, folder: string = 'trusthyre') => {
+export const uploadMedia = async (mediaInput: string | Buffer, folder: string = 'trusthyre', mimeType: string = 'image/jpeg') => {
   try {
     if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY) {
       console.warn("Cloudinary credentials not configured in environment, returning direct reference");
@@ -19,7 +19,7 @@ export const uploadMedia = async (mediaInput: string | Buffer, folder: string = 
     }
 
     if (Buffer.isBuffer(mediaInput)) {
-      const base64Data = `data:image/jpeg;base64,${mediaInput.toString('base64')}`;
+      const base64Data = `data:${mimeType};base64,${mediaInput.toString('base64')}`;
       const result = await cloudinary.uploader.upload(base64Data, { folder, resource_type: 'auto' });
       return result;
     }

@@ -687,6 +687,20 @@ export default function ApplicationManagementPage() {
                               "{app.coverLetter}"
                             </p>
                           )}
+
+                          {(app.voiceNoteUrl || (app as any).voice_note_url) && (
+                            <div className="flex items-center gap-3 bg-sky-50 border border-sky-200 rounded-xl p-2.5 max-w-md">
+                              <span className="text-base">🎙️</span>
+                              <div className="flex-1">
+                                <span className="text-[11px] font-bold text-sky-950 block">Candidate Voice Introduction</span>
+                                <audio 
+                                  controls 
+                                  src={app.voiceNoteUrl || (app as any).voice_note_url} 
+                                  className="h-8 w-full mt-1"
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 

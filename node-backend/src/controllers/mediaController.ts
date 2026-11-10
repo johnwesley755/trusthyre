@@ -3,7 +3,10 @@ import prisma from '../config/prisma';
 import { uploadMedia, deleteMedia } from '../services/cloudinary';
 import { ApiResponse } from '../utils/ApiResponse';
 
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'application/pdf'];
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'application/pdf',
+  'audio/webm', 'audio/mp4', 'audio/ogg', 'audio/mpeg', 'audio/wav', 'audio/x-m4a'
+];
 const DANGEROUS_EXTENSIONS = ['.html', '.htm', '.svg', '.exe', '.sh', '.bat', '.cmd', '.php', '.js', '.vbs', '.py'];
 
 const isPrivateIp = (host: string): boolean => {
@@ -20,18 +23,20 @@ export const upload = async (c: Context) => {
   try {
     const contentType = c.req.header('content-type') || '';
     let mediaInput: any = null;
+    let detectedMime = 'image/jpeg';
 
     if (contentType.includes('multipart/form-data')) {
       const body = await c.req.parseBody();
-      const file = body['file'] || body['image'] || body['document'];
+      const file = body['file'] || body['image'] || body['document'] || body['audio'];
       if (file && typeof file === 'object' && 'arrayBuffer' in (file as any)) {
         const fileObj = file as any;
         const mimeType = fileObj.type || '';
         const fileName = (fileObj.name || '').toLowerCase();
+        detectedMime = mimeType;
 
         // Security Gate: Reject unapproved MIME types and dangerous executable extensions
         if (mimeType && !ALLOWED_MIME_TYPES.includes(mimeType.toLowerCase())) {
-          return c.json(ApiResponse.error(`Unsupported file type: ${mimeType}. Allowed formats: JPEG, PNG, WebP, PDF`), 400 as any);
+          return c.json(ApiResponse.error(`Unsupported file type: ${mimeType}. Allowed formats: Images, PDF, Audio`), 400 as any);
         }
 
         if (DANGEROUS_EXTENSIONS.some(ext => fileName.endsWith(ext))) {
@@ -39,8 +44,8 @@ export const upload = async (c: Context) => {
         }
 
         const arrayBuf = await fileObj.arrayBuffer();
-        if (arrayBuf.byteLength > 10 * 1024 * 1024) {
-          return c.json(ApiResponse.error("File size exceeds 10MB limit"), 400 as any);
+        if (arrayBuf.byteLength > 15 * 1024 * 1024) {
+          return c.json(ApiResponse.error("File size exceeds 15MB limit"), 400 as any);
         }
         mediaInput = Buffer.from(arrayBuf);
       } else if (typeof file === 'string') {
@@ -48,7 +53,7 @@ export const upload = async (c: Context) => {
       }
     } else {
       const jsonBody = await c.req.json().catch(() => ({}));
-      mediaInput = jsonBody.image || jsonBody.file || jsonBody.dataUrl || jsonBody.base64 || jsonBody.url;
+      mediaInput = jsonBody.image || jsonBody.file || jsonBody.dataUrl || jsonBody.base64 || jsonBody.url || jsonBody.audio;
 
       // Security Gate: SSRF Protection for URL-based uploads
       if (typeof mediaInput === 'string' && (mediaInput.startsWith('http://') || mediaInput.startsWith('https://'))) {
@@ -65,9 +70,10 @@ export const upload = async (c: Context) => {
       // Security Gate: Data-URL MIME check
       if (typeof mediaInput === 'string' && mediaInput.startsWith('data:')) {
         const header = mediaInput.split(';')[0].toLowerCase();
+        detectedMime = header.replace('data:', '');
         const isAllowedDataUrl = ALLOWED_MIME_TYPES.some(m => header.includes(m));
         if (!isAllowedDataUrl) {
-          return c.json(ApiResponse.error("Unsupported data-URL format. Allowed formats: JPEG, PNG, WebP, PDF"), 400 as any);
+          return c.json(ApiResponse.error("Unsupported data-URL format. Allowed formats: Images, PDF, Audio"), 400 as any);
         }
       }
     }
@@ -76,7 +82,7 @@ export const upload = async (c: Context) => {
       return c.json(ApiResponse.error("No file or image provided for upload"), 400 as any);
     }
 
-    const result = await uploadMedia(mediaInput, 'media');
+    const result = await uploadMedia(mediaInput, 'media', detectedMime);
     return c.json(ApiResponse.ok("File uploaded successfully", {
       url: result.secure_url,
       publicId: result.public_id,

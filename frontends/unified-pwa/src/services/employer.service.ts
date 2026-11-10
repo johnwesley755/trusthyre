@@ -8,4 +8,5 @@ export const employerService = {
   getEmployerStats: () => apiClient.get('/api/employer/stats'),
   completeOnboarding: (data: any) => apiClient.post('/api/employer/complete-onboarding', data),
   updateTier: (tier: string) => apiClient.put('/api/employer/tier', { tier }),
+  unlockContact: (workerId: string) => apiClient.post<{ workerId: string; workerName: string; phoneNumber: string; whatsappPhone: string; remainingCredits: number }>(`/api/employer/unlock-contact/${workerId}`),
 };

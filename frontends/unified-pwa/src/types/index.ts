@@ -64,6 +64,8 @@ export interface EmployerProfile {
   city?: string;
   profileBio?: string;
   isVerified: boolean;
+  contactCredits?: number;
+  contact_credits?: number;
 }
 
 export interface Job {
@@ -143,6 +145,8 @@ export interface JobApplication {
   coverLetter?: string;
   transitModePreferred?: string;
   transit_mode_preferred?: string;
+  voiceNoteUrl?: string;
+  voice_note_url?: string;
   job?: Job;
   worker?: WorkerProfile;
   workerName?: string;
