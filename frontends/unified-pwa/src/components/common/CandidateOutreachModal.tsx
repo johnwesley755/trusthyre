@@ -56,9 +56,6 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
   activeJobs = [],
   defaultJobId
 }) => {
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [unlockedPhone, setUnlockedPhone] = useState<string | null>(null);
-  const [isUnlocking, setIsUnlocking] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string>(() => {
     if (defaultJobId) return defaultJobId;
     if (activeJobs.length > 0) return activeJobs[0].id;
@@ -75,8 +72,8 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
   const jobTitle = selectedJob ? selectedJob.title : (candidate.trade ? `${candidate.trade} Opening` : 'Frontline Position');
   const salaryText = selectedJob?.budget ? `₹${selectedJob.budget.toLocaleString('en-IN')}/month` : 'Market Competitive Wage';
 
-  // Format real or fallback phone number
-  const candidatePhone = unlockedPhone || candidate.phoneNumber || '+91 98765 43210';
+  // Format real or fallback phone number - free direct contact for authenticated employers
+  const candidatePhone = candidate.phoneNumber || '+91 98765 43210';
   const cleanPhone = candidatePhone.replace(/[^0-9]/g, '');
 
   const formatWhatsAppMessage = () => {
@@ -101,31 +98,6 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleUnlock = async () => {
-    const targetWorkerId = candidate.userId || candidate.id;
-    if (!targetWorkerId) {
-      setIsUnlocked(true);
-      return;
-    }
-    setIsUnlocking(true);
-    try {
-      const res = await employerService.unlockContact(targetWorkerId);
-      if (res.data?.phoneNumber) {
-        setUnlockedPhone(res.data.phoneNumber);
-      }
-      setIsUnlocked(true);
-      toast.success(`Contact unlocked! Remaining credits: ${res.data?.remainingCredits ?? 'Active'}`);
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || 'Failed to unlock contact';
-      toast.error(msg);
-      if (candidate.phoneNumber) {
-        setIsUnlocked(true);
-      }
-    } finally {
-      setIsUnlocking(false);
-    }
-  };
-
   return (
     <BaseModal
       isOpen={isOpen}
@@ -139,30 +111,21 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
       footer={
         <div className="flex flex-wrap items-center justify-between gap-3">
           <a
-            href={isUnlocked ? `tel:${cleanPhone}` : '#'}
-            onClick={(e) => {
-              if (!isUnlocked) {
-                e.preventDefault();
-                handleUnlock();
-              }
-            }}
+            href={`tel:${cleanPhone}`}
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold bg-white border border-[#e6e8ec] text-[#0A1931] hover:bg-[#F8FAFC] transition-all shadow-2xs cursor-pointer active:scale-95"
           >
             <Phone className="w-4 h-4 text-[#10b981]" />
-            <span>{isUnlocked ? 'Call Candidate' : 'Unlock & Call'}</span>
+            <span>Call Candidate</span>
           </a>
 
           <a
             href={
-              isUnlocked && cleanPhone
+              cleanPhone
                 ? `https://wa.me/${cleanPhone}?text=${formatWhatsAppMessage()}`
                 : `https://wa.me/?text=${formatWhatsAppMessage()}`
             }
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => {
-              if (!isUnlocked) setIsUnlocked(true);
-            }}
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs sm:text-sm bg-[#0066ff] hover:bg-[#0052cc] active:bg-[#003d99] text-white shadow-md transition-all cursor-pointer"
           >
             <MessageSquare className="w-4 h-4 fill-white text-white" />
@@ -171,7 +134,7 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
         </div>
       }
     >
-      {/* Candidate Snapshot & Quick Unlock */}
+      {/* Candidate Snapshot */}
       <div className="p-3.5 bg-[#F8FAFC] rounded-2xl border border-[#e6e8ec] flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 rounded-full bg-[#eff6ff] border border-[#dbeafe] text-[#0066ff] flex items-center justify-center font-bold text-base shrink-0">
@@ -186,28 +149,16 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
               <span>•</span>
               <span className="flex items-center gap-1 text-[#10b981] font-semibold">
                 <CheckCircle2 className="w-3.5 h-3.5 text-[#10b981]" />
-                Available for Hire
+                Available for Direct Hire
               </span>
             </div>
           </div>
         </div>
 
-        {!isUnlocked ? (
-          <button
-            onClick={handleUnlock}
-            disabled={isUnlocking}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-2xs cursor-pointer active:scale-95 shrink-0 disabled:opacity-50"
-            title="Unlock phone number and WhatsApp with 1 Contact Credit"
-          >
-            <Unlock className="w-3.5 h-3.5" />
-            <span>{isUnlocking ? 'Unlocking...' : 'Unlock Contact (1 Credit)'}</span>
-          </button>
-        ) : (
-          <div className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center gap-1.5 border border-emerald-200 shrink-0">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Contact Unlocked</span>
-          </div>
-        )}
+        <div className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center gap-1.5 border border-emerald-200 shrink-0">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Direct Contact Active</span>
+        </div>
       </div>
 
       {/* Active Job Assignment */}
@@ -305,14 +256,13 @@ Please reply YES to confirm.`}
             Candidate Phone:
           </span>
           <span className="font-bold font-mono text-[#0A1931]">
-            {isUnlocked ? candidatePhone : '•••••• ' + candidatePhone.slice(-4)}
+            {candidatePhone}
           </span>
         </div>
-        {!isUnlocked && (
-          <span className="text-[11px] text-amber-700 font-semibold">
-            Tap Unlock to Reveal
-          </span>
-        )}
+        <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          Verified Direct Contact
+        </span>
       </div>
     </BaseModal>
   );

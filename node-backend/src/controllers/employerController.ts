@@ -238,47 +238,16 @@ export const unlockCandidateContact = async (c: Context) => {
       return c.json(ApiResponse.error("Candidate not found"), 404 as any);
     }
 
-    // Find employer profile
-    let employerProfile: any = await prisma.employer_profiles.findFirst({
-      where: { user_id: authUser.sub }
-    });
-
-    employerProfile ??= await prisma.employer_profiles.create({
-      data: {
-        id: uuidv4(),
-        user_id: authUser.sub,
-        company_name: 'Employer',
-        business_tier: 'STARTER',
-        contact_credits: 5,
-        created_at: new Date(),
-        updated_at: new Date()
-      } as any
-    });
-
-    const currentCredits: number = Number(employerProfile?.contact_credits ?? 5);
-    if (currentCredits <= 0) {
-      return c.json(ApiResponse.error("Insufficient contact unlock credits. Please upgrade or purchase credits to view candidate phone numbers."), 402 as any);
-    }
-
-    // Deduct 1 credit
-    const updatedProfile: any = await prisma.employer_profiles.update({
-      where: { id: employerProfile.id },
-      data: {
-        contact_credits: currentCredits - 1,
-        updated_at: new Date()
-      } as any
-    });
-
     const phoneNumber = workerProfile?.phone_number || workerUser?.phone_number || 'Not Provided';
     const whatsappPhone = phoneNumber.replace(/[^0-9]/g, '');
     const workerName = workerProfile?.full_name || `${workerUser?.first_name || ''} ${workerUser?.last_name || ''}`.trim() || 'Candidate';
 
-    return c.json(ApiResponse.ok("Candidate contact unlocked successfully", {
+    return c.json(ApiResponse.ok("Candidate contact retrieved successfully", {
       workerId,
       workerName,
       phoneNumber,
       whatsappPhone,
-      remainingCredits: updatedProfile?.contact_credits ?? (currentCredits - 1)
+      unlimitedAccess: true
     }));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
