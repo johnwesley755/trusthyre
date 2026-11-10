@@ -4,31 +4,24 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../providers/AuthContext";
 import { 
   ShieldCheck, 
-  CheckCircle2, 
-  Briefcase, 
-  UserCheck, 
-  Building2, 
-  LayoutDashboard,
-  Check,
+  CheckCircle2,
   X,
   ArrowRight,
   ChevronRight,
   Clock,
-  Sparkles,
   Globe,
-  ChevronDown,
   BookOpen,
   MapPin
 } from "lucide-react";
 
 import { useTranslation, SUPPORTED_LANGUAGES } from "../../../providers/TranslationContext";
 import { LANDING_IMAGES } from "../constants/landingAssets";
-import trustHyreLogo from "../../../assets/TrustHyre Skills and Opportunities Logo.png";
 import trustHyreLightLogo from "../../../assets/TrustHyre Logo with Skills Tagline.png";
 import { SeoHead } from "../../../components/common/SeoHead";
 import { BlogService } from "../../../services/blog.service";
 import { LandingJobSearchBar } from "../components/LandingJobSearchBar";
 import { AppLoader } from "../../../components/common/AppLoader";
+import { Dropdown } from "../../../components/ui/dropdown";
 
 // Trust Carousel Slide Data (Sourced from LANDING_IMAGES.specialists)
 const TRUST_SLIDES = LANDING_IMAGES.specialists;
@@ -712,49 +705,22 @@ export default function LandingPage() {
               )}
 
               {/* Language Switcher Pill */}
-              <div className="relative shrink-0" ref={langMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/15 backdrop-blur-xs hover:bg-white/25 border border-white/20 text-white text-xs font-semibold transition-all cursor-pointer select-none"
-                  aria-label="Select Language"
-                >
-                  <Globe className="w-3.5 h-3.5 text-white shrink-0" />
-                  <span className="font-bold text-[11px] uppercase tracking-wider text-white">
-                    {language}
-                  </span>
-                  <ChevronDown className={`w-3 h-3 text-white/70 shrink-0 transition-transform duration-200 ${isLangMenuOpen ? "rotate-180" : ""}`} />
-                </button>
-
-                {isLangMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white text-[#0a0a0a] rounded-2xl shadow-2xl border border-slate-200 py-1.5 z-50 overflow-hidden font-['Onest',system-ui,sans-serif]">
-                    <div className="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                      Language / மொழி / भाषा
-                    </div>
-                    {SUPPORTED_LANGUAGES.map((lang) => {
-                      const isSelected = language === lang.code;
-                      return (
-                        <button
-                          key={lang.code}
-                          type="button"
-                          onClick={() => {
-                            setLanguage(lang.code);
-                            setIsLangMenuOpen(false);
-                          }}
-                          className={`w-full px-3.5 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                            isSelected ? "bg-[#0f2f63]/10 text-[#0f2f63] font-bold" : "text-slate-700 hover:bg-slate-50"
-                          }`}
-                        >
-                          <div>
-                            <div className="font-semibold text-xs text-[#0A1931]">{lang.native}</div>
-                            <div className="text-[10px] text-slate-400">{lang.name}</div>
-                          </div>
-                          {isSelected && <CheckCircle2 className="w-4 h-4 text-[#0f2f63] shrink-0" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+              <div className="relative shrink-0">
+                <Dropdown
+                  variant="dark"
+                  size="sm"
+                  fullWidth={false}
+                  icon={<Globe className="w-3.5 h-3.5 text-white shrink-0" />}
+                  value={language}
+                  onChange={(val) => setLanguage(val as any)}
+                  options={SUPPORTED_LANGUAGES.map((lang) => ({
+                    value: lang.code,
+                    label: lang.native,
+                    sublabel: lang.name,
+                  }))}
+                  triggerClassName="rounded-full px-3 py-1.5"
+                  menuClassName="w-48 right-0 text-[#0a0a0a]"
+                />
               </div>
 
               {/* Hamburger Button */}

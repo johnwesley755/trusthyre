@@ -3,6 +3,7 @@ import { IndianRupee, Clock3, Utensils, Home, Zap, ArrowRight, ShieldCheck, Chec
 import { useNavigate } from 'react-router-dom';
 import { getWageBenchmark, TRADE_WAGE_BENCHMARKS } from '../../constants/tradeWageBenchmarks';
 import { BaseModal } from './BaseModal';
+import { Dropdown } from '../ui/dropdown';
 
 interface WageBenchmarkModalProps {
   isOpen: boolean;
@@ -85,17 +86,17 @@ export const WageBenchmarkModal: React.FC<WageBenchmarkModalProps> = ({
           <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
             Select Frontline Trade:
           </label>
-          <select
+          <Dropdown
             value={selectedTradeName}
-            onChange={(e) => setSelectedTradeName(e.target.value)}
-            className="w-full p-2.5 rounded-xl border border-[#e6e8ec] bg-[#F8FAFC] text-xs sm:text-sm font-semibold text-[#0A1931] focus:ring-2 focus:ring-[#0066ff] outline-none cursor-pointer"
-          >
-            {TRADE_WAGE_BENCHMARKS.map((b) => (
-              <option key={b.trade} value={b.trade}>
-                {b.trade} (Avg: ₹{b.avgMonthly.toLocaleString('en-IN')}/mo)
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setSelectedTradeName(val)}
+            searchable
+            options={TRADE_WAGE_BENCHMARKS.map((b) => ({
+              value: b.trade,
+              label: b.trade,
+              sublabel: `Avg: ₹${b.avgMonthly.toLocaleString('en-IN')}/mo`,
+            }))}
+            className="w-full"
+          />
         </div>
 
         {/* 2. Official Market Range 3-Tier Grid */}

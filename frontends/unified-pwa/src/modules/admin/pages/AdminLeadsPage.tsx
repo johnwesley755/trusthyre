@@ -38,6 +38,7 @@ import { sanitizeHtmlDescription } from '../../../utils/textSanitizer';
 import { TRADE_COVER_PRESETS, resolveTradeCover } from '../../../utils/coverImage.utils';
 import { toast } from 'sonner';
 import { AppLoader } from '../../../components/common/AppLoader';
+import { Select } from '../../../components/ui/select';
 
 /**
  * Strips HTML tags, handles entities, and normalizes text for clean UI display.
@@ -730,30 +731,30 @@ export const AdminLeadsPage: React.FC = () => {
 
           {/* Contact Readiness Filter */}
           <div>
-            <select
+            <Select
+              variant="subtle"
               value={contactabilityFilter}
               onChange={(e) => {
                 setContactabilityFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-[#f8fafc] border border-[#e2e4e9] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] font-medium outline-none transition-all cursor-pointer"
             >
               <option value="ALL">All Contact Readiness</option>
               <option value="COMPLETE">Full Info (Phone + Email ✓)</option>
               <option value="PARTIAL">Partial (Website only)</option>
               <option value="UNCONTACTABLE">No Contact Info</option>
-            </select>
+            </Select>
           </div>
 
           {/* Industry Category Filter */}
           <div>
-            <select
+            <Select
+              variant="subtle"
               value={categoryFilter}
               onChange={(e) => {
                 setCategoryFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-[#f8fafc] border border-[#e2e4e9] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] font-medium outline-none transition-all cursor-pointer"
             >
               <option value="ALL">All Trade Industries</option>
               <option value="Logistics">Logistics & Delivery</option>
@@ -764,38 +765,42 @@ export const AdminLeadsPage: React.FC = () => {
               <option value="Healthcare">Healthcare & Facilities</option>
               <option value="Manufacturing">Manufacturing & Welding</option>
               <option value="Warehousing">Warehousing & Packing</option>
-            </select>
+            </Select>
           </div>
 
           {/* Sort By & Page Size Controls */}
           <div className="flex items-center gap-2">
-            <select
-              value={sortBy}
-              onChange={(e) => {
-                setSortBy(e.target.value);
-                setPage(1);
-              }}
-              className="flex-1 bg-[#f8fafc] border border-[#e2e4e9] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-2.5 py-2 text-xs text-[#0a0a0a] font-medium outline-none transition-all cursor-pointer"
-            >
-              <option value="NEWEST">Newest First</option>
-              <option value="OLDEST">Oldest First</option>
-              <option value="NAME_ASC">Name (A-Z)</option>
-              <option value="NAME_DESC">Name (Z-A)</option>
-            </select>
+            <div className="flex-1">
+              <Select
+                variant="subtle"
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="NEWEST">Newest First</option>
+                <option value="OLDEST">Oldest First</option>
+                <option value="NAME_ASC">Name (A-Z)</option>
+                <option value="NAME_DESC">Name (Z-A)</option>
+              </Select>
+            </div>
 
-            <select
-              value={limit}
-              onChange={(e) => {
-                setLimit(Number(e.target.value));
-                setPage(1);
-              }}
-              className="bg-[#f8fafc] border border-[#e2e4e9] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-2.5 py-2 text-xs text-[#0a0a0a] font-medium outline-none shrink-0 transition-all cursor-pointer"
-              title="Items per page"
-            >
-              <option value={10}>10 / page</option>
-              <option value={25}>25 / page</option>
-              <option value={50}>50 / page</option>
-            </select>
+            <div className="w-28 shrink-0">
+              <Select
+                variant="subtle"
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                title="Items per page"
+              >
+                <option value={10}>10 / page</option>
+                <option value={25}>25 / page</option>
+                <option value={50}>50 / page</option>
+              </Select>
+            </div>
           </div>
         </div>
       </div>
@@ -1192,20 +1197,22 @@ export const AdminLeadsPage: React.FC = () => {
                 <span className="text-[10px] font-bold text-[#717784] uppercase tracking-wider block">
                   Progress Status
                 </span>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#717784]">Stage:</span>
-                  <select
-                    value={selectedLead.status}
-                    onChange={(e) => updateStatusMutation.mutate({ id: selectedLead.id, status: e.target.value })}
-                    className="bg-white border border-[#e2e4e9] rounded-xl px-2.5 py-1 text-xs font-semibold text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
-                  >
-                    <option value="DISCOVERED">New Found</option>
-                    <option value="VERIFIED">Verified Info</option>
-                    <option value="CONTACTED">Contacted</option>
-                    <option value="INTERESTED">Interested</option>
-                    <option value="ONBOARDED">Joined TrustHyre</option>
-                    <option value="EXPIRED">Closed / Expired</option>
-                  </select>
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className="text-[#717784] shrink-0">Stage:</span>
+                  <div className="w-36">
+                    <Select
+                      selectSize="sm"
+                      value={selectedLead.status}
+                      onChange={(e) => updateStatusMutation.mutate({ id: selectedLead.id, status: e.target.value })}
+                    >
+                      <option value="DISCOVERED">New Found</option>
+                      <option value="VERIFIED">Verified Info</option>
+                      <option value="CONTACTED">Contacted</option>
+                      <option value="INTERESTED">Interested</option>
+                      <option value="ONBOARDED">Joined TrustHyre</option>
+                      <option value="EXPIRED">Closed / Expired</option>
+                    </Select>
+                  </div>
                 </div>
                 <div className="text-[11px] text-[#717784] flex justify-between">
                   <span>Found on:</span>
@@ -1346,27 +1353,27 @@ export const AdminLeadsPage: React.FC = () => {
                 className="p-3.5 bg-[#f8fafc] border border-[#e2e4e9] rounded-2xl space-y-2.5"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <select
+                  <Select
+                    selectSize="sm"
                     value={outreachForm.channel}
                     onChange={(e) => setOutreachForm({ ...outreachForm, channel: e.target.value })}
-                    className="bg-white border border-[#e2e4e9] rounded-xl px-2.5 py-1.5 text-xs font-medium text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
                   >
                     <option value="PHONE">Phone Call</option>
                     <option value="EMAIL">Email</option>
                     <option value="IN_PERSON">In Person Visit</option>
                     <option value="CONTACT_FORM">Contact Form</option>
-                  </select>
+                  </Select>
 
-                  <select
+                  <Select
+                    selectSize="sm"
                     value={outreachForm.outcome}
                     onChange={(e) => setOutreachForm({ ...outreachForm, outcome: e.target.value })}
-                    className="bg-white border border-[#e2e4e9] rounded-xl px-2.5 py-1.5 text-xs font-medium text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
                   >
                     <option value="INTERESTED">Interested in TrustHyre</option>
                     <option value="FOLLOW_UP">Needs Follow-Up</option>
                     <option value="NOT_INTERESTED">Not Interested</option>
                     <option value="NO_ANSWER">No Answer</option>
-                  </select>
+                  </Select>
 
                   <input
                     type="text"
@@ -1571,10 +1578,9 @@ export const AdminLeadsPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Trade Category *</label>
-                  <select
+                  <Select
                     value={editReqForm.category}
                     onChange={(e) => setEditReqForm({ ...editReqForm, category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-semibold focus:outline-none focus:border-[#0f2f63] bg-white cursor-pointer"
                   >
                     <option value="ELECTRICAL">⚡ Electrical & Maintenance</option>
                     <option value="PLUMBING">🔧 Plumbing & Sanitation</option>
@@ -1592,7 +1598,7 @@ export const AdminLeadsPage: React.FC = () => {
                     <option value="HEALTHCARE">🏥 Healthcare & Medical Staff</option>
                     <option value="EDUCATION">🎓 Education & Training</option>
                     <option value="OFFICE_ADMIN">💼 Office Admin & Computer</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div>
@@ -1834,31 +1840,29 @@ export const AdminLeadsPage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Employment Type</label>
-                      <select
+                      <Select
                         value={editReqForm.employmentType}
                         onChange={(e) => setEditReqForm({ ...editReqForm, employmentType: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                       >
                         <option value="">Not specified</option>
                         <option value="Full Time">Full Time</option>
                         <option value="Part Time">Part Time</option>
                         <option value="Contract">Contract</option>
                         <option value="Shift Based">Shift Based</option>
-                      </select>
+                      </Select>
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Shift</label>
-                      <select
+                      <Select
                         value={editReqForm.shift}
                         onChange={(e) => setEditReqForm({ ...editReqForm, shift: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                       >
                         <option value="">Not specified</option>
                         <option value="Day Shift">Day Shift</option>
                         <option value="Night Shift">Night Shift</option>
                         <option value="Rotational Shift">Rotational Shift</option>
                         <option value="Flexible Hours">Flexible Hours</option>
-                      </select>
+                      </Select>
                     </div>
                   </div>
 
@@ -1875,10 +1879,9 @@ export const AdminLeadsPage: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Education</label>
-                      <select
+                      <Select
                         value={editReqForm.education}
                         onChange={(e) => setEditReqForm({ ...editReqForm, education: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                       >
                         <option value="">Not specified</option>
                         <option value="Below 10th">Below 10th</option>
@@ -1887,7 +1890,7 @@ export const AdminLeadsPage: React.FC = () => {
                         <option value="Diploma / ITI">Diploma / ITI</option>
                         <option value="Graduate">Graduate</option>
                         <option value="Any Education">Any Education</option>
-                      </select>
+                      </Select>
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Languages</label>
@@ -1914,16 +1917,15 @@ export const AdminLeadsPage: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Gender Preference</label>
-                      <select
+                      <Select
                         value={editReqForm.gender}
                         onChange={(e) => setEditReqForm({ ...editReqForm, gender: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                       >
                         <option value="">Any gender</option>
                         <option value="Male Only">Male Only</option>
                         <option value="Female Only">Female Only</option>
                         <option value="Any gender">Any gender</option>
-                      </select>
+                      </Select>
                     </div>
                   </div>
                 </div>
@@ -2230,10 +2232,10 @@ export const AdminLeadsPage: React.FC = () => {
                 <label className="block text-xs font-semibold text-[#0a0a0a] mb-1.5">
                   Target Blue-Collar Role / Trade:
                 </label>
-                <select
+                <Select
+                  variant="subtle"
                   value={discoveryTrade}
                   onChange={(e) => setDiscoveryTrade(e.target.value)}
-                  className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2.5 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
                 >
                   <option value="ALL">🌟 All Trades (Driver, Electrician, Plumber, Warehouse, Security, Cook, Cleaner)</option>
                   <option value="Delivery Driver">🛵 Delivery Driver & Courier Executive</option>
@@ -2246,7 +2248,7 @@ export const AdminLeadsPage: React.FC = () => {
                   <option value="Technician">🛠️ AC Mechanic, Field Technician & Repair</option>
                   <option value="Tailor">🧵 Tailor & Sewing Machine Operator</option>
                   <option value="CUSTOM">✏️ Custom Job Role...</option>
-                </select>
+                </Select>
               </div>
 
               {discoveryTrade === 'CUSTOM' && (
@@ -2267,10 +2269,10 @@ export const AdminLeadsPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-[#0a0a0a] mb-1.5">Target City:</label>
-                  <select
+                  <Select
+                    variant="subtle"
                     value={discoveryCity}
                     onChange={(e) => setDiscoveryCity(e.target.value)}
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2.5 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63]"
                   >
                     <option value="Chennai">Chennai (Tamil Nadu)</option>
                     <option value="Bengaluru">Bengaluru (Karnataka)</option>
@@ -2280,20 +2282,20 @@ export const AdminLeadsPage: React.FC = () => {
                     <option value="Pune">Pune (Maharashtra)</option>
                     <option value="Kolkata">Kolkata (West Bengal)</option>
                     <option value="CUSTOM">Custom City...</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-[#0a0a0a] mb-1.5">Scan Limit:</label>
-                  <select
+                  <Select
+                    variant="subtle"
                     value={discoveryLimit}
                     onChange={(e) => setDiscoveryLimit(Number(e.target.value))}
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2.5 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63]"
                   >
                     <option value={15}>15 Vacancies (Fast)</option>
                     <option value={25}>25 Vacancies (Recommended)</option>
                     <option value={50}>50 Vacancies (Deep Crawl)</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
 

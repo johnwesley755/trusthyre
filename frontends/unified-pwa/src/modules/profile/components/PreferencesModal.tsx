@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Select } from '../../../components/ui/select';
 
 export interface WorkerPreferences {
   skills: string[];
@@ -190,16 +191,16 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-[#0A1931]">Availability</label>
-                <select
+                <Select
                   value={preferences.availability}
                   onChange={(e) => setPreferences({ ...preferences, availability: e.target.value as any })}
-                  className="w-full bg-[#F8FAFC] border border-neutral-200 rounded-lg px-3 py-2 text-xs font-medium text-[#0A1931] focus:outline-none focus:ring-2 focus:ring-[#FACD15]"
+                  variant="subtle"
                 >
                   <option value="IMMEDIATE">Immediate (Today)</option>
                   <option value="FULL_TIME">Full Time</option>
                   <option value="PART_TIME">Part Time</option>
                   <option value="WEEKENDS_ONLY">Weekends Only</option>
-                </select>
+                </Select>
               </div>
             </div>
           </div>

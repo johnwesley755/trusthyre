@@ -29,6 +29,7 @@ import { LocationPicker } from '../components/LocationPicker';
 import { PostJobSuccessModal } from '../components/PostJobSuccessModal';
 import { toast } from 'sonner';
 import { TRADE_COVER_PRESETS, resolveTradeCover } from '../../../utils/coverImage.utils';
+import { Select } from '../../../components/ui/select';
 
 export const JobPostingPage = () => {
   const navigate = useNavigate();
@@ -459,7 +460,7 @@ export const JobPostingPage = () => {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0a0a0a]">Industry Category *</label>
-                    <select 
+                    <Select 
                       name="industry"
                       value={industry}
                       onChange={(e) => {
@@ -473,7 +474,7 @@ export const JobPostingPage = () => {
                           }
                         }
                       }}
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all cursor-pointer"
+                      className="text-xs font-semibold"
                     >
                       <option value="EDUCATION">Education, Teaching & Counseling</option>
                       <option value="HEALTHCARE">Healthcare & Medical Staff</option>
@@ -490,7 +491,7 @@ export const JobPostingPage = () => {
                       <option value="DOMESTIC_HELP">Housekeeping / Cleaning</option>
                       <option value="SECURITY">Security Services</option>
                       <option value="MANUFACTURING">Manufacturing & Fabrication</option>
-                    </select>
+                    </Select>
                   </div>
                 </div>
 
@@ -929,45 +930,42 @@ export const JobPostingPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0a0a0a]">Employment Type</label>
-                    <select 
+                    <Select 
                       name="employmentType"
                       value={employmentType}
                       onChange={(e) => setEmploymentType(e.target.value)}
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
                     >
                       <option value="">Not specified</option>
                       <option value="Full Time">Full Time</option>
                       <option value="Part Time">Part Time</option>
                       <option value="Contract">Contract</option>
                       <option value="Shift Based">Shift Based</option>
-                    </select>
+                    </Select>
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0a0a0a]">Shift</label>
-                    <select 
+                    <Select 
                       name="shift"
                       value={shift}
                       onChange={(e) => setShift(e.target.value)}
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
                     >
                       <option value="">Not specified</option>
                       <option value="Day Shift">Day Shift</option>
                       <option value="Night Shift">Night Shift</option>
                       <option value="Rotational Shift">Rotational Shift</option>
                       <option value="Flexible Hours">Flexible Hours</option>
-                    </select>
+                    </Select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0a0a0a]">Education</label>
-                    <select 
+                    <Select 
                       name="education"
                       value={education}
                       onChange={(e) => setEducation(e.target.value)}
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
                     >
                       <option value="">Not specified</option>
                       <option value="Below 10th">Below 10th</option>
@@ -976,7 +974,7 @@ export const JobPostingPage = () => {
                       <option value="Diploma / ITI">Diploma / ITI</option>
                       <option value="Graduate">Graduate</option>
                       <option value="Any Education">Any Education</option>
-                    </select>
+                    </Select>
                   </div>
 
                   <div className="space-y-1.5">
@@ -1004,17 +1002,16 @@ export const JobPostingPage = () => {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-[#0a0a0a]">Gender Preference</label>
-                  <select 
+                  <Select 
                     name="gender"
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
-                    className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none cursor-pointer"
                   >
                     <option value="">Any gender</option>
                     <option value="Male Only">Male Only</option>
                     <option value="Female Only">Female Only</option>
                     <option value="Any gender">Any gender</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
 

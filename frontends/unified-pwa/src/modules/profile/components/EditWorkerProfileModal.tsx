@@ -24,6 +24,7 @@ import { profileService, type WorkerProfile } from '../../../services/profile.se
 import { queryKeys } from '../../../lib/queryKeys';
 import { useAuth, useUser } from '../../../providers/AuthContext';
 import { UserAvatar } from '../../../components/common/UserAvatar';
+import { Select } from '../../../components/ui/select';
 
 interface EditWorkerProfileModalProps {
   isOpen: boolean;
@@ -492,15 +493,14 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0A1931]">Gender</label>
-                    <select
+                    <Select
                       value={formData.gender}
                       onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all cursor-pointer"
                     >
                       <option value="MALE">Male</option>
                       <option value="FEMALE">Female</option>
                       <option value="OTHER">Other</option>
-                    </select>
+                    </Select>
                   </div>
 
                   <div className="space-y-1.5">
@@ -747,15 +747,14 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0A1931]">Highest Education</label>
-                    <select
+                    <Select
                       value={formData.highestEducation}
                       onChange={(e) => setFormData({ ...formData, highestEducation: e.target.value })}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all cursor-pointer"
                     >
                       {EDUCATION_OPTIONS.map((opt) => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
 
                   <div className="space-y-1.5">
@@ -805,15 +804,14 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0A1931]">English Proficiency</label>
-                    <select
+                    <Select
                       value={formData.englishProficiency}
                       onChange={(e) => setFormData({ ...formData, englishProficiency: e.target.value })}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all cursor-pointer"
                     >
                       {ENGLISH_LEVELS.map((lvl) => (
                         <option key={lvl.id} value={lvl.id}>{lvl.label}</option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
 
                   <div className="space-y-1.5">

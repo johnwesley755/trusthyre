@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { BaseModal } from './BaseModal';
+import { Dropdown } from '../ui/dropdown';
 import { employerService } from '../../services/employer.service';
 
 export interface CandidateOutreachCandidate {
@@ -167,17 +168,16 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
           <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
             Assign to Your Active Job Vacancy:
           </label>
-          <select
+          <Dropdown
             value={selectedJobId}
-            onChange={(e) => setSelectedJobId(e.target.value)}
-            className="w-full p-2.5 rounded-xl border border-[#e6e8ec] bg-[#F8FAFC] text-xs sm:text-sm font-semibold text-[#0A1931] focus:ring-2 focus:ring-[#0066ff] outline-none"
-          >
-            {activeJobs.map((j) => (
-              <option key={j.id} value={j.id}>
-                {j.title} • {j.city || 'Local'} ({j.budget ? `₹${j.budget}/mo` : 'Competitive'})
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setSelectedJobId(val)}
+            options={activeJobs.map((j) => ({
+              value: j.id,
+              label: j.title,
+              sublabel: `${j.city || 'Local'}${j.budget ? ` • ₹${j.budget}/mo` : ''}`,
+            }))}
+            className="w-full"
+          />
         </div>
       ) : (
         <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 text-xs text-[#0f2f63] flex items-center gap-2">

@@ -16,6 +16,7 @@ import {
 import { BlogService, type BlogCategory } from '../../../services/blog.service';
 import { MarkdownContent, sanitizeUrl } from '../../../components/common/MarkdownContent';
 import { mediaService } from '../../../services/media.service';
+import { Select } from '../../../components/ui/select';
 import { toast } from 'sonner';
 
 const toSlug = (text: string) =>
@@ -328,16 +329,15 @@ export const AdminBlogEditorPage: React.FC = () => {
                 <label className="block text-[11px] font-semibold text-[#5a6270] uppercase mb-1">
                   Category
                 </label>
-                <select
+                <Select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] text-xs text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63] bg-white cursor-pointer"
                 >
                   <option value="">Select Topic Category...</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
-                </select>
+                </Select>
               </div>
             </div>
 

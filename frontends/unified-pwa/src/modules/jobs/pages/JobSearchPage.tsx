@@ -37,6 +37,7 @@ import { getTaluksForCity } from '../../../constants/regionalTaluks';
 import { WageBenchmarkModal } from '../../../components/common/WageBenchmarkModal';
 import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
 import { useSearch } from '../../../providers/SearchContext';
+import { Dropdown } from '../../../components/ui/dropdown';
 
 export default function JobSearchPage() {
   const queryClient = useQueryClient();
@@ -680,18 +681,19 @@ export default function JobSearchPage() {
                   </button>
                 </div>
 
-                <div className="relative inline-block">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="appearance-none bg-[#f4f4f4] hover:bg-[#e6e8ec] border border-[#e6e8ec] rounded-full pl-3 pr-7 py-1 text-xs font-medium text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63] cursor-pointer transition-colors"
-                  >
-                    <option value="date_desc">Newest First</option>
-                    <option value="salary_desc">Highest Pay</option>
-                    <option value="salary_asc">Lowest Pay</option>
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#717784] pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
-                </div>
+                <Dropdown
+                  variant="pill"
+                  size="sm"
+                  fullWidth={false}
+                  value={sortBy}
+                  onChange={(val) => setSortBy(val as any)}
+                  options={[
+                    { value: 'date_desc', label: 'Newest First' },
+                    { value: 'salary_desc', label: 'Highest Pay' },
+                    { value: 'salary_asc', label: 'Lowest Pay' },
+                  ]}
+                  triggerClassName="rounded-full px-3 py-1 font-medium"
+                />
               </div>
             </div>
 

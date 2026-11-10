@@ -36,6 +36,7 @@ import { sanitizeHtmlDescription } from '../../../utils/textSanitizer';
 import { toast } from 'sonner';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { ConfirmModal } from '../../../components/common/ConfirmModal';
+import { Select } from '../../../components/ui/select';
 import { TRADE_COVER_PRESETS, resolveJobCategoryLabel, resolveTradeCover } from '../../../utils/coverImage.utils';
 
 const TN_PRIORITY_CITIES = [
@@ -1148,10 +1149,9 @@ export const AdminJobsPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Trade / Industry Category *</label>
-                  <select
+                  <Select
                     value={editJobForm.industry}
                     onChange={(e) => setEditJobForm({ ...editJobForm, industry: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-semibold focus:outline-none focus:border-[#0f2f63] bg-white cursor-pointer"
                   >
                     <option value="ELECTRICAL">⚡ Electrical & Maintenance</option>
                     <option value="PLUMBING">🔧 Plumbing & Sanitation</option>
@@ -1169,7 +1169,7 @@ export const AdminJobsPage: React.FC = () => {
                     <option value="HEALTHCARE">🏥 Healthcare & Medical Staff</option>
                     <option value="EDUCATION">🎓 Education & Training</option>
                     <option value="OFFICE_ADMIN">💼 Office Admin & Computer</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div>
@@ -1423,31 +1423,29 @@ export const AdminJobsPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Employment Type</label>
-                    <select
+                    <Select
                       value={editJobForm.employmentType}
                       onChange={(e) => setEditJobForm({ ...editJobForm, employmentType: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                     >
                       <option value="">Not specified</option>
                       <option value="Full Time">Full Time</option>
                       <option value="Part Time">Part Time</option>
                       <option value="Contract">Contract</option>
                       <option value="Shift Based">Shift Based</option>
-                    </select>
+                    </Select>
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Shift</label>
-                    <select
+                    <Select
                       value={editJobForm.shift}
                       onChange={(e) => setEditJobForm({ ...editJobForm, shift: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                     >
                       <option value="">Not specified</option>
                       <option value="Day Shift">Day Shift</option>
                       <option value="Night Shift">Night Shift</option>
                       <option value="Rotational Shift">Rotational Shift</option>
                       <option value="Flexible Hours">Flexible Hours</option>
-                    </select>
+                    </Select>
                   </div>
                 </div>
 
@@ -1464,10 +1462,9 @@ export const AdminJobsPage: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Education</label>
-                    <select
+                    <Select
                       value={editJobForm.education}
                       onChange={(e) => setEditJobForm({ ...editJobForm, education: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                     >
                       <option value="">Not specified</option>
                       <option value="Below 10th">Below 10th</option>
@@ -1476,7 +1473,7 @@ export const AdminJobsPage: React.FC = () => {
                       <option value="Diploma / ITI">Diploma / ITI</option>
                       <option value="Graduate">Graduate</option>
                       <option value="Any Education">Any Education</option>
-                    </select>
+                    </Select>
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Languages</label>
@@ -1503,16 +1500,15 @@ export const AdminJobsPage: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Gender Preference</label>
-                    <select
+                    <Select
                       value={editJobForm.gender}
                       onChange={(e) => setEditJobForm({ ...editJobForm, gender: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                     >
                       <option value="">Any gender</option>
                       <option value="Male Only">Male Only</option>
                       <option value="Female Only">Female Only</option>
                       <option value="Any gender">Any gender</option>
-                    </select>
+                    </Select>
                   </div>
                 </div>
               </div>

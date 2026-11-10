@@ -4,8 +4,8 @@ import { useAuth, useUser } from "../../../providers/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import apiClient from "../../../api/apiClient";
 import { queryKeys } from "../../../lib/queryKeys";
+import { Select } from "../../../components/ui/select";
 import { 
-  User, 
   MapPin, 
   Sparkles, 
   Check, 
@@ -14,27 +14,17 @@ import {
   AlertCircle,
   ArrowRight,
   ArrowLeft,
-  Calendar,
-  GraduationCap,
   Languages,
-  Briefcase,
   Search,
   X,
-  FileText,
   Zap,
   CheckCircle2,
-  Building2,
   ShieldCheck,
-  ChevronRight,
   LogOut,
   Camera,
   UploadCloud,
   Image as ImageIcon,
-  Plus,
   Wrench,
-  Clock,
-  RotateCcw,
-  Phone,
   MessageSquare,
   Accessibility,
   Car,
@@ -51,7 +41,7 @@ import {
 import { CandidateResumeModal } from "../components/resume/CandidateResumeModal";
 import type { ResumeData } from "../components/resume/CandidateResumeView";
 import { OnboardingVisualHero } from "../components/OnboardingVisualHero";
-import { metadataService, type OnboardingOption, type LocalityItem } from "../../../services/metadata.service";
+import { metadataService, type LocalityItem } from "../../../services/metadata.service";
 
 const STEP_TITLES: Record<number, string> = {
   1: "Basic Details & Photo",
@@ -1098,45 +1088,42 @@ export default function WorkerOnboardingPage() {
                     <div className="space-y-3 pt-3 border-t border-slate-200">
                       <div className="space-y-1.5">
                         <label className="block text-[11px] font-bold text-slate-700">Disability Type</label>
-                        <select
+                        <Select
                           value={disabilityType}
                           onChange={(e) => setDisabilityType(e.target.value)}
-                          className="w-full bg-white border border-[#e6e8ec] rounded-xl px-3 py-2 text-xs font-semibold text-[#0A1931] outline-none"
                         >
                           <option value="">Select Disability Type...</option>
                           {onboardingOptions?.disabilityTypes?.map((dt) => (
                             <option key={dt.key} value={dt.label}>{dt.label}</option>
                           ))}
-                        </select>
+                        </Select>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1.5">
                           <label className="block text-[11px] font-bold text-slate-700">Affected Area</label>
-                          <select
+                          <Select
                             value={disabilityArea}
                             onChange={(e) => setDisabilityArea(e.target.value)}
-                            className="w-full bg-white border border-[#e6e8ec] rounded-xl px-3 py-2 text-xs font-semibold text-[#0A1931] outline-none"
                           >
                             <option value="">Select Area...</option>
                             {onboardingOptions?.disabilityAreas?.map((da) => (
                               <option key={da.key} value={da.label}>{da.label}</option>
                             ))}
-                          </select>
+                          </Select>
                         </div>
 
                         <div className="space-y-1.5">
                           <label className="block text-[11px] font-bold text-slate-700">Disability Reason</label>
-                          <select
+                          <Select
                             value={disabilityReason}
                             onChange={(e) => setDisabilityReason(e.target.value)}
-                            className="w-full bg-white border border-[#e6e8ec] rounded-xl px-3 py-2 text-xs font-semibold text-[#0A1931] outline-none"
                           >
                             <option value="">Select Reason...</option>
                             {onboardingOptions?.disabilityReasons?.map((dr) => (
                               <option key={dr.key} value={dr.label}>{dr.label}</option>
                             ))}
-                          </select>
+                          </Select>
                         </div>
                       </div>
                     </div>
@@ -1211,7 +1198,7 @@ export default function WorkerOnboardingPage() {
                       <label className="block text-[11px] font-bold text-slate-700">
                         State / Union Territory <span className="text-red-500 font-bold ml-0.5">*</span>
                       </label>
-                      <select
+                      <Select
                         value={state}
                         onChange={(e) => {
                           const newState = e.target.value;
@@ -1219,12 +1206,11 @@ export default function WorkerOnboardingPage() {
                           setDistrict("");
                           setTownPanchayat("");
                         }}
-                        className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3 py-2.5 text-xs font-semibold text-[#0A1931] outline-none"
                       >
                         {dynamicStates.map((st: string) => (
                           <option key={st} value={st}>{st}</option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
 
                     {/* District Selector */}
@@ -1232,7 +1218,7 @@ export default function WorkerOnboardingPage() {
                       <label className="block text-[11px] font-bold text-slate-700">
                         District ({dynamicDistricts.length} available) <span className="text-red-500 font-bold ml-0.5">*</span>
                       </label>
-                      <select
+                      <Select
                         value={district}
                         onChange={(e) => {
                           const newDist = e.target.value;
@@ -1240,13 +1226,12 @@ export default function WorkerOnboardingPage() {
                           setCity(newDist);
                           setTownPanchayat("");
                         }}
-                        className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3 py-2.5 text-xs font-semibold text-[#0A1931] outline-none"
                       >
                         <option value="">Select District...</option>
                         {dynamicDistricts.map((dst: string) => (
                           <option key={dst} value={dst}>{dst}</option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
                   </div>
 
@@ -1266,14 +1251,13 @@ export default function WorkerOnboardingPage() {
                     </div>
 
                     {!isUsingCustomLocality ? (
-                      <select
+                      <Select
                         value={townPanchayat}
                         onChange={(e) => {
                           const val = e.target.value;
                           setTownPanchayat(val);
                           setArea(val);
                         }}
-                        className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3 py-2.5 text-xs font-semibold text-[#0A1931] outline-none"
                       >
                         <option value="">Select Town Panchayat, Taluk, or Locality...</option>
                         {dynamicLocalities.map((loc: LocalityItem) => (
@@ -1281,7 +1265,7 @@ export default function WorkerOnboardingPage() {
                             {loc.name} {loc.taluk ? `(${loc.taluk})` : ''} - {loc.type.replace('_', ' ')}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     ) : (
                       <input
                         type="text"
@@ -1428,10 +1412,9 @@ export default function WorkerOnboardingPage() {
                         <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931]">
                           Degree / Qualification
                         </label>
-                        <select
+                        <Select
                           value={degree}
                           onChange={(e) => setDegree(e.target.value)}
-                          className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none"
                         >
                           {(onboardingOptions?.degrees?.map(d => d.label) || [
                             "B.E / B.Tech (Engineering)",
@@ -1447,7 +1430,7 @@ export default function WorkerOnboardingPage() {
                           ]).map((d) => (
                             <option key={d} value={d}>{d}</option>
                           ))}
-                        </select>
+                        </Select>
                       </div>
 
                       <div className="space-y-1.5">
@@ -1470,10 +1453,9 @@ export default function WorkerOnboardingPage() {
                       <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931]">
                         School Medium of Instruction
                       </label>
-                      <select
+                      <Select
                         value={schoolMedium}
                         onChange={(e) => setSchoolMedium(e.target.value)}
-                        className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none"
                       >
                         {(onboardingOptions?.schoolMediums?.map(m => m.label) || [
                           "Tamil Medium",
@@ -1485,7 +1467,7 @@ export default function WorkerOnboardingPage() {
                         ]).map((m) => (
                           <option key={m} value={m}>{m}</option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
                   </div>
                 )}

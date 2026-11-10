@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useTranslation } from '../../providers/TranslationContext';
+import { Dropdown } from '../ui/dropdown';
 
 export interface DataTablePaginationProps {
   currentPage: number;
@@ -72,17 +73,18 @@ export const DataTablePagination: React.FC<DataTablePaginationProps> = ({
         {onPageSizeChange && (
           <div className="flex items-center gap-1.5 ml-2">
             <span className="text-[11px] text-slate-400 font-medium">{t("Per page:", "Per page:")}</span>
-            <select
+            <Dropdown
+              size="sm"
+              variant="subtle"
+              fullWidth={false}
               value={pageSize}
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#0066FF] cursor-pointer"
-            >
-              {pageSizeOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
+              onChange={(optVal) => onPageSizeChange(Number(optVal))}
+              options={pageSizeOptions.map((opt) => ({
+                value: opt,
+                label: String(opt),
+              }))}
+              className="w-16"
+            />
           </div>
         )}
       </div>

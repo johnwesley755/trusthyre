@@ -13,6 +13,7 @@ import {
 import { detectCurrentCity } from '../../../utils/geolocation';
 import { useTranslation } from '../../../providers/TranslationContext';
 import { useSearch } from '../../../providers/SearchContext';
+import { Dropdown } from '../../../components/ui/dropdown';
 
 interface LandingJobSearchBarProps {
   onSearchSubmit?: (params: { query: string; city: string; experience: string; trade: string }) => void;
@@ -58,7 +59,6 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
   const [selectedTrade, setSelectedTrade] = useState('all');
   const [isLocating, setIsLocating] = useState(false);
   const [citySuggestionsVisible, setCitySuggestionsVisible] = useState(false);
-  const [experienceDropdownVisible, setExperienceDropdownVisible] = useState(false);
 
   // Auto-detect location
   const handleDetectLocation = async () => {
@@ -78,7 +78,6 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setCitySuggestionsVisible(false);
-    setExperienceDropdownVisible(false);
     
     // Store search query in memory state without polluting URL query params
     const trimmed = query.trim();
@@ -128,62 +127,19 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
         </div>
 
         {/* Segment B: Experience Dropdown matching City / Location Popup UI */}
-        <div className="relative flex items-center gap-2 px-3.5 py-1.5 sm:py-1 border-b sm:border-b-0 sm:border-r border-slate-200/80 min-w-[155px] shrink-0">
-          <Briefcase className="w-4 h-4 text-[#0f2f63] shrink-0" />
-          <button
-            type="button"
-            onClick={() => {
-              setExperienceDropdownVisible(!experienceDropdownVisible);
-              setCitySuggestionsVisible(false);
-            }}
-            className="w-full flex items-center justify-between gap-1 text-xs sm:text-sm font-semibold text-slate-800 hover:text-[#0f2f63] transition-colors cursor-pointer text-left focus:outline-none"
-            aria-label="Experience Level"
-          >
-            <span className="truncate">
-              {EXPERIENCE_LEVELS.find((l) => l.value === experience)?.label || 'Any Experience'}
-            </span>
-            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${experienceDropdownVisible ? 'rotate-180 text-[#0f2f63]' : ''}`} />
-          </button>
-
-          {/* Experience Popup Menu matching City Suggestions Popup */}
-          {experienceDropdownVisible && (
-            <>
-              <div 
-                className="fixed inset-0 z-40" 
-                onClick={() => setExperienceDropdownVisible(false)} 
-              />
-              <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 overflow-hidden font-['Onest',system-ui,sans-serif]">
-                <div className="px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1">
-                  Experience Tier
-                </div>
-                {EXPERIENCE_LEVELS.map((lvl) => {
-                  const isSelected = experience === lvl.value;
-                  return (
-                    <button
-                      key={lvl.value}
-                      type="button"
-                      onClick={() => {
-                        setExperience(lvl.value);
-                        setExperienceDropdownVisible(false);
-                      }}
-                      className={`w-full text-left px-3.5 py-2 text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${
-                        isSelected 
-                          ? 'bg-[#0f2f63]/10 text-[#0f2f63]' 
-                          : 'text-slate-700 hover:bg-[#0f2f63]/5 hover:text-[#0f2f63]'
-                      }`}
-                    >
-                      <span>{lvl.label}</span>
-                      {isSelected ? (
-                        <Check className="w-3.5 h-3.5 text-[#0f2f63]" />
-                      ) : (
-                        <span className="text-[10px] text-slate-400 font-medium">Filter</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
+        <div className="relative flex items-center px-1 border-b sm:border-b-0 sm:border-r border-slate-200/80 min-w-[170px] shrink-0">
+          <Dropdown
+            variant="outline"
+            icon={<Briefcase className="w-4 h-4 text-[#0f2f63] shrink-0" />}
+            value={experience}
+            onChange={(val) => setExperience(val)}
+            options={EXPERIENCE_LEVELS.map((lvl) => ({
+              value: lvl.value,
+              label: lvl.label,
+            }))}
+            triggerClassName="border-0 bg-transparent shadow-none hover:bg-transparent px-2.5 py-1 text-xs sm:text-sm font-semibold text-slate-800"
+            menuClassName="w-56"
+          />
         </div>
 
         {/* Segment C: Location / City with Geolocation */}
@@ -229,7 +185,6 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
                     onClick={() => {
                       setCity(popCity);
                       setCitySuggestionsVisible(false);
-    setExperienceDropdownVisible(false);
                     }}
                     className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-[#0f2f63]/10 hover:text-[#0f2f63] transition-colors flex items-center justify-between cursor-pointer"
                   >

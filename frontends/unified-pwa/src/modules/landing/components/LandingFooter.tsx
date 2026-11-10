@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import trustHyreLightLogo from "../../../assets/TrustHyre Logo with Skills Tagline.png";
 import { useTranslation, SUPPORTED_LANGUAGES } from "../../../providers/TranslationContext";
-import { Globe, MapPin, Briefcase, Users } from "lucide-react";
+import { Globe, Briefcase, Users } from "lucide-react";
+import { Dropdown } from "../../../components/ui/dropdown";
 
 export function LandingFooter() {
   const { language, setLanguage } = useTranslation();
@@ -55,18 +56,17 @@ export function LandingFooter() {
             <Globe className="w-3.5 h-3.5 text-blue-200" />
             Regional Language / மொழி
           </h5>
-          <div className="bg-white/10 rounded-xl p-2.5 inline-block shadow-xs border border-white/15 w-full max-w-[220px]">
-            <select 
+          <div className="w-full max-w-[220px]">
+            <Dropdown
+              variant="dark"
               value={language}
-              onChange={(e) => setLanguage(e.target.value as any)}
-              className="bg-transparent border-none text-xs font-bold text-white focus:ring-0 cursor-pointer w-full outline-none"
-            >
-              {SUPPORTED_LANGUAGES.map((lang) => (
-                <option key={lang.code} value={lang.code} className="bg-[#0f2f63] text-white">
-                  {lang.native} ({lang.name})
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setLanguage(val as any)}
+              options={SUPPORTED_LANGUAGES.map((lang) => ({
+                value: lang.code,
+                label: `${lang.native} (${lang.name})`,
+              }))}
+              className="w-full"
+            />
           </div>
           <p className="text-[11px] text-white/50 leading-relaxed">
             Switch UI to Tamil, Hindi, or Telugu for blue-collar staff & local contractors.

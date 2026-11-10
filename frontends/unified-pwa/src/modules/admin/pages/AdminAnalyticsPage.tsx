@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { adminService, type VisitorAnalyticsData } from '../../../services/admin.service';
 import { AppLoader } from '../../../components/common/AppLoader';
+import { Dropdown } from '../../../components/ui/dropdown';
 import { 
   ArrowLeft, 
   RefreshCw, 
@@ -188,55 +189,52 @@ export const AdminAnalyticsPage: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-2.5 flex-1 justify-start sm:justify-end">
           {/* Date Range Filter */}
-          <div className="relative inline-flex items-center">
-            <Calendar className="w-3.5 h-3.5 text-[#717784] absolute left-3 pointer-events-none" />
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="pl-8 pr-8 py-2 bg-[#f8fafc] hover:bg-slate-100 border border-[#e6e8ec] rounded-xl text-xs font-semibold text-[#0a0a0a] outline-none appearance-none cursor-pointer transition-all"
-            >
-              <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
-              <option value="7d">Last 7 Days</option>
-              <option value="14d">Last 14 Days</option>
-              <option value="30d">Last 30 Days</option>
-              <option value="90d">Last 90 Days</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-[#717784] absolute right-2.5 pointer-events-none" />
-          </div>
+          <Dropdown
+            value={dateRange}
+            onChange={setDateRange}
+            icon={<Calendar className="w-3.5 h-3.5" />}
+            size="sm"
+            variant="subtle"
+            options={[
+              { value: "today", label: "Today" },
+              { value: "yesterday", label: "Yesterday" },
+              { value: "7d", label: "Last 7 Days" },
+              { value: "14d", label: "Last 14 Days" },
+              { value: "30d", label: "Last 30 Days" },
+              { value: "90d", label: "Last 90 Days" },
+            ]}
+          />
 
           {/* Acquisition Channel Filter */}
-          <div className="relative inline-flex items-center">
-            <Share2 className="w-3.5 h-3.5 text-[#717784] absolute left-3 pointer-events-none" />
-            <select
-              value={channelFilter}
-              onChange={(e) => setChannelFilter(e.target.value)}
-              className="pl-8 pr-8 py-2 bg-[#f8fafc] hover:bg-slate-100 border border-[#e6e8ec] rounded-xl text-xs font-semibold text-[#0a0a0a] outline-none appearance-none cursor-pointer transition-all"
-            >
-              <option value="all">All Traffic Channels</option>
-              <option value="Direct">Direct</option>
-              <option value="Organic Search">Organic Search</option>
-              <option value="Referral">Referral / Social</option>
-              <option value="Email">Email / WhatsApp</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-[#717784] absolute right-2.5 pointer-events-none" />
-          </div>
+          <Dropdown
+            value={channelFilter}
+            onChange={setChannelFilter}
+            icon={<Share2 className="w-3.5 h-3.5" />}
+            size="sm"
+            variant="subtle"
+            options={[
+              { value: "all", label: "All Traffic Channels" },
+              { value: "Direct", label: "Direct" },
+              { value: "Organic Search", label: "Organic Search" },
+              { value: "Referral", label: "Referral / Social" },
+              { value: "Email", label: "Email / WhatsApp" },
+            ]}
+          />
 
           {/* Device Category Filter */}
-          <div className="relative inline-flex items-center">
-            <Smartphone className="w-3.5 h-3.5 text-[#717784] absolute left-3 pointer-events-none" />
-            <select
-              value={deviceFilter}
-              onChange={(e) => setDeviceFilter(e.target.value)}
-              className="pl-8 pr-8 py-2 bg-[#f8fafc] hover:bg-slate-100 border border-[#e6e8ec] rounded-xl text-xs font-semibold text-[#0a0a0a] outline-none appearance-none cursor-pointer transition-all"
-            >
-              <option value="all">All Devices</option>
-              <option value="mobile">Mobile Devices</option>
-              <option value="desktop">Desktop / Laptop</option>
-              <option value="tablet">Tablets</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-[#717784] absolute right-2.5 pointer-events-none" />
-          </div>
+          <Dropdown
+            value={deviceFilter}
+            onChange={setDeviceFilter}
+            icon={<Smartphone className="w-3.5 h-3.5" />}
+            size="sm"
+            variant="subtle"
+            options={[
+              { value: "all", label: "All Devices" },
+              { value: "mobile", label: "Mobile Devices" },
+              { value: "desktop", label: "Desktop / Laptop" },
+              { value: "tablet", label: "Tablets" },
+            ]}
+          />
 
           {(dateRange !== '30d' || channelFilter !== 'all' || deviceFilter !== 'all') && (
             <button

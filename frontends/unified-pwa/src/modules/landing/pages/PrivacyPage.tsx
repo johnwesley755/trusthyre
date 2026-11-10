@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
   ShieldCheck, 
   Lock, 
@@ -12,16 +11,15 @@ import {
   CheckCircle2, 
   Printer, 
   ArrowLeft,
-  HelpCircle,
   KeyRound,
   ShieldAlert,
   Globe,
-  ChevronDown
 } from 'lucide-react';
 import trustHyreLogo from '../../../assets/TrustHyre Skills and Opportunities Logo.png';
 import { SeoHead } from '../../../components/common/SeoHead';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../../../providers/TranslationContext';
 import { AutoTranslate } from '../../../components/common/AutoTranslate';
+import { Dropdown } from '../../../components/ui/dropdown';
 
 export const PrivacyPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState('collection');
@@ -99,40 +97,22 @@ export const PrivacyPage: React.FC = () => {
 
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Language Selector Dropdown */}
-            <div className="relative" ref={langMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-700 bg-white border border-slate-200/90 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
-                aria-label="Change language"
-              >
-                <Globe className="w-3.5 h-3.5 text-[#0066FF]" />
-                <span className="hidden sm:inline">{currentLangObj?.native || "English"}</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
-
-              {isLangMenuOpen && (
-                <div className="absolute right-0 mt-1.5 w-44 bg-white rounded-2xl shadow-xl border border-slate-200/90 py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                  {SUPPORTED_LANGUAGES.map((l) => (
-                    <button
-                      key={l.code}
-                      type="button"
-                      onClick={() => {
-                        setLanguage(l.code);
-                        setIsLangMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between transition-colors cursor-pointer ${
-                        language === l.code
-                          ? "bg-blue-50 text-[#0066FF] font-bold"
-                          : "text-slate-700 hover:bg-slate-50 font-medium"
-                      }`}
-                    >
-                      <span>{l.native}</span>
-                      <span className="text-[11px] text-slate-400 font-normal">{l.name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+            <div className="relative">
+              <Dropdown
+                variant="outline"
+                size="sm"
+                fullWidth={false}
+                icon={<Globe className="w-3.5 h-3.5 text-[#0066FF]" />}
+                value={language}
+                onChange={(val) => setLanguage(val as any)}
+                options={SUPPORTED_LANGUAGES.map((l) => ({
+                  value: l.code,
+                  label: l.native,
+                  sublabel: l.name,
+                }))}
+                triggerClassName="rounded-full px-3 py-1.5"
+                menuClassName="w-44 right-0"
+              />
             </div>
 
             <button

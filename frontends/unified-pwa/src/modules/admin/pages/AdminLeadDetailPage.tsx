@@ -6,6 +6,7 @@ import { mediaService } from '../../../services/media.service';
 import { sanitizeHtmlDescription } from '../../../utils/textSanitizer';
 import { TRADE_COVER_PRESETS, resolveTradeCover, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
 import { AppLoader } from '../../../components/common/AppLoader';
+import { Select } from '../../../components/ui/select';
 import { toast } from 'sonner';
 import {
   Building2,
@@ -344,20 +345,23 @@ export const AdminLeadDetailPage: React.FC = () => {
         {/* Pipeline Lifecycle Status */}
         <div className="bg-white p-5 rounded-2xl border border-[#e2e4e9] shadow-xs space-y-2.5">
           <span className="text-[10px] font-bold text-[#717784] uppercase tracking-wider block">Pipeline Stage</span>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-[#717784]">Stage:</span>
-            <select
-              value={lead.status}
-              onChange={(e) => updateStatusMutation.mutate(e.target.value)}
-              className="bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-1.5 text-xs font-semibold text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
-            >
-              <option value="DISCOVERED">New Found</option>
-              <option value="VERIFIED">Verified Info</option>
-              <option value="CONTACTED">Contacted</option>
-              <option value="INTERESTED">Interested</option>
-              <option value="ONBOARDED">Joined TrustHyre</option>
-              <option value="EXPIRED">Closed / Expired</option>
-            </select>
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <span className="text-[#717784] shrink-0">Stage:</span>
+            <div className="w-44">
+              <Select
+                selectSize="sm"
+                variant="subtle"
+                value={lead.status}
+                onChange={(e) => updateStatusMutation.mutate(e.target.value)}
+              >
+                <option value="DISCOVERED">New Found</option>
+                <option value="VERIFIED">Verified Info</option>
+                <option value="CONTACTED">Contacted</option>
+                <option value="INTERESTED">Interested</option>
+                <option value="ONBOARDED">Joined TrustHyre</option>
+                <option value="EXPIRED">Closed / Expired</option>
+              </Select>
+            </div>
           </div>
           <div className="text-[11px] text-[#717784] flex justify-between pt-1">
             <span>First Discovered:</span>
@@ -513,10 +517,9 @@ export const AdminLeadDetailPage: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
                         <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Trade Category *</label>
-                        <select
+                        <Select
                           value={editReqForm.category}
                           onChange={(e) => setEditReqForm({ ...editReqForm, category: e.target.value })}
-                          className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-semibold focus:outline-none focus:border-[#0f2f63] bg-white cursor-pointer"
                         >
                           <option value="ELECTRICAL">⚡ Electrical & Maintenance</option>
                           <option value="PLUMBING">🔧 Plumbing & Sanitation</option>
@@ -534,7 +537,7 @@ export const AdminLeadDetailPage: React.FC = () => {
                           <option value="HEALTHCARE">🏥 Healthcare & Medical Staff</option>
                           <option value="EDUCATION">🎓 Education & Training</option>
                           <option value="OFFICE_ADMIN">💼 Office Admin & Computer</option>
-                        </select>
+                        </Select>
                       </div>
 
                       <div>
@@ -781,31 +784,29 @@ export const AdminLeadDetailPage: React.FC = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Employment Type</label>
-                          <select
+                          <Select
                             value={editReqForm.employmentType}
                             onChange={(e) => setEditReqForm({ ...editReqForm, employmentType: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                           >
                             <option value="">Not specified</option>
                             <option value="Full Time">Full Time</option>
                             <option value="Part Time">Part Time</option>
                             <option value="Contract">Contract</option>
                             <option value="Shift Based">Shift Based</option>
-                          </select>
+                          </Select>
                         </div>
                         <div>
                           <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Shift</label>
-                          <select
+                          <Select
                             value={editReqForm.shift}
                             onChange={(e) => setEditReqForm({ ...editReqForm, shift: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                           >
                             <option value="">Not specified</option>
                             <option value="Day Shift">Day Shift</option>
                             <option value="Night Shift">Night Shift</option>
                             <option value="Rotational Shift">Rotational Shift</option>
                             <option value="Flexible Hours">Flexible Hours</option>
-                          </select>
+                          </Select>
                         </div>
                       </div>
 
@@ -822,10 +823,9 @@ export const AdminLeadDetailPage: React.FC = () => {
                         </div>
                         <div>
                           <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Education</label>
-                          <select
+                          <Select
                             value={editReqForm.education}
                             onChange={(e) => setEditReqForm({ ...editReqForm, education: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63] bg-white"
                           >
                             <option value="">Not specified</option>
                             <option value="Below 10th">Below 10th</option>
@@ -834,7 +834,7 @@ export const AdminLeadDetailPage: React.FC = () => {
                             <option value="Diploma / ITI">Diploma / ITI</option>
                             <option value="Graduate">Graduate</option>
                             <option value="Any Education">Any Education</option>
-                          </select>
+                          </Select>
                         </div>
                         <div>
                           <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Languages</label>
@@ -1014,30 +1014,30 @@ export const AdminLeadDetailPage: React.FC = () => {
             >
               <div>
                 <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Outreach Channel</label>
-                <select
+                <Select
+                  variant="subtle"
                   value={outreachForm.channel}
                   onChange={(e) => setOutreachForm({ ...outreachForm, channel: e.target.value })}
-                  className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs font-medium text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
                 >
                   <option value="PHONE">📞 Phone Call</option>
                   <option value="EMAIL">✉️ Email Outreach</option>
                   <option value="IN_PERSON">🏢 In Person Visit</option>
                   <option value="CONTACT_FORM">🌐 Web Contact Form</option>
-                </select>
+                </Select>
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Call Outcome</label>
-                <select
+                <Select
+                  variant="subtle"
                   value={outreachForm.outcome}
                   onChange={(e) => setOutreachForm({ ...outreachForm, outcome: e.target.value })}
-                  className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs font-medium text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
                 >
                   <option value="INTERESTED">⭐ Interested in TrustHyre</option>
                   <option value="FOLLOW_UP">⏳ Needs Follow-Up</option>
                   <option value="NOT_INTERESTED">❌ Not Interested</option>
                   <option value="NO_ANSWER">📵 No Answer / Busy</option>
-                </select>
+                </Select>
               </div>
 
               <div>
