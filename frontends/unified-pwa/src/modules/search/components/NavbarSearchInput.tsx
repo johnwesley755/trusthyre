@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Search, MapPin, X } from 'lucide-react';
+import { useSearch } from '../../../providers/SearchContext';
+import { useUser } from '../../../providers/AuthContext';
 
 interface NavbarSearchInputProps {
   className?: string;
@@ -14,17 +16,31 @@ export const NavbarSearchInput: React.FC<NavbarSearchInputProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { searchQuery, setSearchQuery, clearSearchQuery } = useSearch();
+  const { user } = useUser();
 
-  const [query, setQuery] = useState(searchParams.get('q') || '');
+  const [query, setQuery] = useState(searchQuery);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const city = searchParams.get('city') || '';
 
-  // Keep query in sync with URL
+  // Keep internal input in sync with global search state
   useEffect(() => {
-    setQuery(searchParams.get('q') || '');
-  }, [searchParams]);
+    setQuery(searchQuery);
+  }, [searchQuery]);
+
+  // Purge any legacy 'q' query parameter from URL on load and absorb it into memory state
+  useEffect(() => {
+    const legacyQ = searchParams.get('q');
+    if (legacyQ) {
+      setSearchQuery(legacyQ);
+      setQuery(legacyQ);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('q');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams, setSearchQuery]);
 
   // Global ⌘K / Ctrl+K shortcut listener
   useEffect(() => {
@@ -39,35 +55,45 @@ export const NavbarSearchInput: React.FC<NavbarSearchInputProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setQuery(val);
+    // If user removes the search value (e.g. backspaces or clears text), immediately clear search state
+    if (!val.trim()) {
+      clearSearchQuery();
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = query.trim();
-    
-    // If currently on search pages, update search params in place
+    setSearchQuery(trimmed);
+
+    // If currently on search pages, ensure 'q' is NOT in URL query parameters
     if (location.pathname === '/find-workers' || location.pathname === '/search') {
-      const newParams = new URLSearchParams(searchParams);
-      if (trimmed) {
-        newParams.set('q', trimmed);
-      } else {
+      if (searchParams.has('q')) {
+        const newParams = new URLSearchParams(searchParams);
         newParams.delete('q');
+        setSearchParams(newParams, { replace: true });
       }
-      setSearchParams(newParams);
     } else {
-      // Navigate to /find-workers with the search query
+      // Navigate cleanly without adding 'q' to query params
+      const targetPath = user?.role === 'WORKER' ? '/search' : '/find-workers';
       const params = new URLSearchParams();
-      if (trimmed) params.set('q', trimmed);
       if (city) params.set('city', city);
-      navigate(`/find-workers?${params.toString()}`);
+      const qs = params.toString();
+      navigate(qs ? `${targetPath}?${qs}` : targetPath);
     }
   };
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
     setQuery('');
-    if (location.pathname === '/find-workers' || location.pathname === '/search') {
+    clearSearchQuery();
+    if (searchParams.has('q')) {
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('q');
-      setSearchParams(newParams);
+      setSearchParams(newParams, { replace: true });
     }
     inputRef.current?.focus();
   };
@@ -87,7 +113,7 @@ export const NavbarSearchInput: React.FC<NavbarSearchInputProps> = ({
         ref={inputRef}
         type="text"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={handleChange}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholder={placeholder}

@@ -36,13 +36,14 @@ import { SeoHead } from '../../../components/common/SeoHead';
 import { getTaluksForCity } from '../../../constants/regionalTaluks';
 import { WageBenchmarkModal } from '../../../components/common/WageBenchmarkModal';
 import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
+import { useSearch } from '../../../providers/SearchContext';
 
 export default function JobSearchPage() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { searchQuery, setSearchQuery, clearSearchQuery } = useSearch();
 
   // Search & Filter State
-  const [query, setQuery] = useState(searchParams.get('q') || '');
   const [city, setCity] = useState(searchParams.get('city') || '');
   const [jobType, setJobType] = useState(searchParams.get('type') || 'All');
   const [budgetRange, setBudgetRange] = useState(searchParams.get('budget') || 'all');
@@ -115,7 +116,15 @@ export default function JobSearchPage() {
 
   // Sync state if URL changes externally
   useEffect(() => {
-    const q = searchParams.get('q') || '';
+    // Ingest and purge any legacy 'q' from URL to avoid query parameter pollution
+    const legacyQ = searchParams.get('q');
+    if (legacyQ) {
+      setSearchQuery(legacyQ);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('q');
+      setSearchParams(newParams, { replace: true });
+    }
+
     const c = searchParams.get('city') || '';
     const t = searchParams.get('type') || 'All';
     const b = searchParams.get('budget') || 'all';
@@ -123,25 +132,27 @@ export default function JobSearchPage() {
     const tr = searchParams.get('trade') || 'All';
     const s = searchParams.get('source') || 'all';
 
-    if (q !== query) setQuery(q);
     if (c !== city) setCity(c);
     if (t !== jobType) setJobType(t);
     if (b !== budgetRange) setBudgetRange(b);
     if (exp !== experience) setExperience(exp);
     if (tr !== trade) setTrade(tr);
     if (s !== source) setSource(s);
-  }, [searchParams]);
+  }, [searchParams, setSearchParams, setSearchQuery, city, jobType, budgetRange, experience, trade, source]);
 
   // Helper to sync to URL
   const updateUrlParams = (updates: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([key, val]) => {
+      if (key === 'q') return; // Do NOT add 'q' to query parameters
       if (val && val !== 'All' && val !== 'all') {
         newParams.set(key, val);
       } else {
         newParams.delete(key);
       }
     });
+    // Ensure 'q' is never preserved in URL query parameters
+    newParams.delete('q');
     setSearchParams(newParams);
   };
 
@@ -169,9 +180,9 @@ export default function JobSearchPage() {
 
   // Fetch Jobs via Search API
   const { data: jobs = [], isLoading } = useQuery({
-    queryKey: ['jobs', 'search', { query, city, trade, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, source, nearTransit, transportProvided }],
+    queryKey: ['jobs', 'search', { query: searchQuery, city, trade, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, source, nearTransit, transportProvided }],
     queryFn: () => searchService.searchJobs({
-      query: query || undefined,
+      query: searchQuery || undefined,
       city: city || undefined,
       industry: trade !== 'All' ? trade : undefined,
       minSalary,
@@ -243,11 +254,11 @@ export default function JobSearchPage() {
     return counts;
   }, [jobs]);
 
-  // Handle Search Submission
+  // Handle Search Submission (updates memory state without polluting URL query params)
   const handleSearch = (newQuery: string, newCity: string) => {
-    setQuery(newQuery);
+    setSearchQuery(newQuery);
     setCity(newCity);
-    updateUrlParams({ q: newQuery, city: newCity });
+    updateUrlParams({ city: newCity });
   };
 
   // Handle Auto Location
@@ -273,7 +284,7 @@ export default function JobSearchPage() {
 
   // Clear all filters
   const handleClearAll = () => {
-    setQuery('');
+    clearSearchQuery();
     setCity('');
     setJobType('All');
     setBudgetRange('all');
@@ -284,7 +295,7 @@ export default function JobSearchPage() {
   };
 
   const activeFilterCount = (jobType !== 'All' ? 1 : 0) + (budgetRange !== 'all' ? 1 : 0) + (experience !== 'all' ? 1 : 0) + (trade !== 'All' ? 1 : 0) + (city ? 1 : 0) + (source !== 'all' ? 1 : 0);
-  const hasActiveFilters = Boolean(query || city || jobType !== 'All' || budgetRange !== 'all' || experience !== 'all' || trade !== 'All' || source !== 'all');
+  const hasActiveFilters = Boolean(searchQuery || city || jobType !== 'All' || budgetRange !== 'all' || experience !== 'all' || trade !== 'All' || source !== 'all');
 
   const TRADE_CATEGORIES = [
     'All',
@@ -385,7 +396,7 @@ export default function JobSearchPage() {
   // Reset pagination on filter or search changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, city, jobType, budgetRange, experience, trade, sortBy, hideExpired, source]);
+  }, [searchQuery, city, jobType, budgetRange, experience, trade, sortBy, hideExpired, source]);
 
   // Safe pagination calculations
   const totalItems = displayJobs.length;
@@ -408,7 +419,7 @@ export default function JobSearchPage() {
         
         {/* 1. Header Hero Banner Replicating Landing Page Navy Editorial Aesthetic */}
         <JobSearchHero
-          initialQuery={query}
+          initialQuery={searchQuery}
           initialCity={city}
           totalJobs={displayJobs.length}
           selectedTrade={trade}
@@ -456,13 +467,12 @@ export default function JobSearchPage() {
               selectedLocation={city}
               onSelectLocation={(l) => {
                 setCity(l);
-                setQuery('');
-                updateUrlParams({ city: l, q: '' });
+                clearSearchQuery();
+                updateUrlParams({ city: l });
               }}
-              selectedTaluk={query}
+              selectedTaluk={searchQuery}
               onSelectTaluk={(t) => {
-                setQuery(t);
-                updateUrlParams({ q: t });
+                setSearchQuery(t);
               }}
               selectedBudget={budgetRange}
               onSelectBudget={(b) => {
@@ -485,9 +495,9 @@ export default function JobSearchPage() {
                 updateUrlParams({ source: s });
               }}
               onSelectBenchmarkFilter={(bTrade, _minBudget) => {
-                setQuery(bTrade);
+                setSearchQuery(bTrade);
                 setTrade('All');
-                updateUrlParams({ q: bTrade, trade: 'All' });
+                updateUrlParams({ trade: 'All' });
               }}
               counts={filterCounts}
               onClearAll={handleClearAll}
@@ -751,12 +761,11 @@ export default function JobSearchPage() {
             <JobSearchRightSidebar
               currentCity={city}
               currentTrade={trade}
-              currentQuery={query}
+              currentQuery={searchQuery}
               minSalary={numericMinSalary}
               onOpenAlertModal={handleOpenAlertModal}
               onSelectCompany={(comp) => {
-                setQuery(comp);
-                updateUrlParams({ q: comp });
+                setSearchQuery(comp);
               }}
             />
           </div>
@@ -810,11 +819,10 @@ export default function JobSearchPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setQuery('');
-                        updateUrlParams({ q: '' });
+                        clearSearchQuery();
                       }}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                        !query
+                        !searchQuery
                           ? 'bg-[#0f2f63] text-white shadow-xs'
                           : 'bg-[#f4f4f4] hover:bg-[#e6e8ec] border border-[#e6e8ec] text-[#0a0a0a]'
                       }`}
@@ -822,14 +830,13 @@ export default function JobSearchPage() {
                       All {city} Areas
                     </button>
                     {getTaluksForCity(city).map((tName: string) => {
-                      const isSelected = query.toLowerCase() === tName.toLowerCase();
+                      const isSelected = searchQuery.toLowerCase() === tName.toLowerCase();
                       return (
                         <button
                           key={tName}
                           type="button"
                           onClick={() => {
-                            setQuery(tName);
-                            updateUrlParams({ q: tName });
+                            setSearchQuery(tName);
                           }}
                           className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
                             isSelected
@@ -1049,7 +1056,7 @@ export default function JobSearchPage() {
       <JobAlertModal
         isOpen={isJobAlertModalOpen}
         onClose={() => setIsJobAlertModalOpen(false)}
-        currentQuery={query}
+        currentQuery={searchQuery}
         currentCity={city}
         currentTrade={trade}
         currentMinSalary={numericMinSalary}
@@ -1080,9 +1087,9 @@ export default function JobSearchPage() {
           defaultTrade={trade !== 'All' ? trade : 'Electrician'}
           currentCity={city || 'Chennai'}
           onSelectBenchmarkFilter={(bTrade) => {
-            setQuery(bTrade);
+            setSearchQuery(bTrade);
             setTrade('All');
-            updateUrlParams({ q: bTrade, trade: 'All' });
+            updateUrlParams({ trade: 'All' });
           }}
         />
       )}

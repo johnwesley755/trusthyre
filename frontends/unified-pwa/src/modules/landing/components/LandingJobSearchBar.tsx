@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { detectCurrentCity } from '../../../utils/geolocation';
 import { useTranslation } from '../../../providers/TranslationContext';
+import { useSearch } from '../../../providers/SearchContext';
 
 interface LandingJobSearchBarProps {
   onSearchSubmit?: (params: { query: string; city: string; experience: string; trade: string }) => void;
@@ -49,6 +50,7 @@ const POPULAR_CITIES = [
 export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSearchSubmit }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { setSearchQuery } = useSearch();
 
   const [query, setQuery] = useState('');
   const [city, setCity] = useState('');
@@ -78,8 +80,11 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
     setCitySuggestionsVisible(false);
     setExperienceDropdownVisible(false);
     
+    // Store search query in memory state without polluting URL query params
+    const trimmed = query.trim();
+    setSearchQuery(trimmed);
+
     const params = new URLSearchParams();
-    if (query.trim()) params.set('q', query.trim());
     if (city.trim()) params.set('city', city.trim());
     if (experience !== 'all') params.set('exp', experience);
     if (selectedTrade !== 'all') {
@@ -89,14 +94,15 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
 
     if (onSearchSubmit) {
       onSearchSubmit({
-        query: query.trim(),
+        query: trimmed,
         city: city.trim(),
         experience,
         trade: selectedTrade
       });
     }
 
-    navigate(`/search?${params.toString()}`);
+    const qs = params.toString();
+    navigate(qs ? `/search?${qs}` : '/search');
   };
 
   return (

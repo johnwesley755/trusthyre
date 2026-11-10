@@ -24,6 +24,7 @@ import { useSavedStore } from '../../../hooks/useSavedStore';
 import { DataTablePagination } from '../../../components/common/DataTablePagination';
 import { useTranslation } from '../../../providers/TranslationContext';
 import { useAuth } from '../../../providers/AuthContext';
+import { useSearch } from '../../../providers/SearchContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { fcmService } from '../../../services/fcm.service';
 import { searchAlertService, type SearchAlert } from '../../../services/searchAlert.service';
@@ -59,7 +60,7 @@ const EXPERIENCE_LEVELS = [
 export const WorkerSearchPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [query, setQuery] = useState(searchParams.get('q') || '');
+  const { searchQuery, setSearchQuery, clearSearchQuery } = useSearch();
   const [city, setCity] = useState(searchParams.get('city') || '');
   const [experience, setExperience] = useState(searchParams.get('exp') || 'all');
   const [selectedTrade, setSelectedTrade] = useState(searchParams.get('trade') || 'All');
@@ -101,7 +102,7 @@ export const WorkerSearchPage = () => {
     const alertTrade = (a.category || 'All').trim().toLowerCase();
     const currentTradeLower = (selectedTrade || 'All').trim().toLowerCase();
     const alertQuery = (a.query || '').trim().toLowerCase();
-    const currentQueryLower = (query || '').trim().toLowerCase();
+    const currentQueryLower = (searchQuery || '').trim().toLowerCase();
 
     return alertCity === currentCityLower && alertTrade === currentTradeLower && alertQuery === currentQueryLower;
   }));
@@ -117,28 +118,43 @@ export const WorkerSearchPage = () => {
   const { isWorkerSaved, toggleSaveWorker, syncSavedStatusFromList } = useSavedStore({ lazy: true });
 
   useEffect(() => {
-    const q = searchParams.get('q') || '';
+    // Ingest and purge any legacy 'q' from URL to avoid query parameter pollution
+    const legacyQ = searchParams.get('q');
+    if (legacyQ) {
+      setSearchQuery(legacyQ);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('q');
+      setSearchParams(newParams, { replace: true });
+    }
+
     const c = searchParams.get('city') || '';
     const exp = searchParams.get('exp') || 'all';
     const tr = searchParams.get('trade') || 'All';
     
-    if (q !== query) setQuery(q);
     if (c !== city) setCity(c);
     if (exp !== experience) setExperience(exp);
     if (tr !== selectedTrade) setSelectedTrade(tr);
-  }, [searchParams]);
+  }, [searchParams, setSearchParams, setSearchQuery, city, experience, selectedTrade]);
+
+  // Reset pagination on filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, city, experience, selectedTrade]);
 
   const updateSearchParams = (updates: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([key, value]) => {
+      if (key === 'q') return; // Do NOT store search query in URL parameters
       if (value && value !== 'all' && value !== 'All') newParams.set(key, value);
       else newParams.delete(key);
     });
+    // Ensure 'q' is never preserved in the URL
+    newParams.delete('q');
     setSearchParams(newParams);
   };
 
   const clearFilters = () => {
-    setQuery('');
+    clearSearchQuery();
     setCity('');
     setExperience('all');
     setSelectedTrade('All');
@@ -147,13 +163,13 @@ export const WorkerSearchPage = () => {
 
   const { data: results = [], isLoading } = useQuery<WorkerSearch[]>({
     queryKey: queryKeys.workers.search({ 
-      q: query, 
+      q: searchQuery, 
       city, 
       trade: selectedTrade !== 'All' ? selectedTrade : undefined,
       experience: experience !== 'all' ? experience : undefined 
     }),
     queryFn: () => searchService.searchWorkers({
-      query: query || undefined,
+      query: searchQuery || undefined,
       city: city || undefined,
       trade: selectedTrade !== 'All' ? selectedTrade : undefined,
       experience: experience !== 'all' ? experience : undefined,
@@ -169,7 +185,7 @@ export const WorkerSearchPage = () => {
   }, [results, syncSavedStatusFromList]);
 
   const activeFilterCount = (experience !== 'all' ? 1 : 0) + (selectedTrade !== 'All' ? 1 : 0) + (city ? 1 : 0);
-  const hasActiveFilters = Boolean(query || city || experience !== 'all' || selectedTrade !== 'All');
+  const hasActiveFilters = Boolean(searchQuery || city || experience !== 'all' || selectedTrade !== 'All');
 
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0A1931]">
@@ -182,7 +198,7 @@ export const WorkerSearchPage = () => {
         
         {/* 1. Header Hero Banner Replicating Landing Page Navy Aesthetic */}
         <WorkerSearchHero
-          initialQuery={query}
+          initialQuery={searchQuery}
           initialCity={city}
           totalWorkers={results.length}
           selectedTrade={selectedTrade}
@@ -191,9 +207,9 @@ export const WorkerSearchPage = () => {
             updateSearchParams({ trade });
           }}
           onSearch={(q, c) => {
-            setQuery(q);
+            setSearchQuery(q);
             setCity(c);
-            updateSearchParams({ q, city: c });
+            updateSearchParams({ city: c });
           }}
         />
 
@@ -759,7 +775,7 @@ export const WorkerSearchPage = () => {
       <TalentAlertModal
         isOpen={isTalentAlertModalOpen}
         onClose={() => setIsTalentAlertModalOpen(false)}
-        currentQuery={query}
+        currentQuery={searchQuery}
         currentCity={city}
         currentTrade={selectedTrade}
         currentExperience={experience}
