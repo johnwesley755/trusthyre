@@ -21,6 +21,10 @@ router.post('/complete-onboarding', authenticateJWT, employerController.updateEm
 router.get('/stats', authenticateJWT, dashboardController.getEmployerStats);
 router.put('/tier', authenticateJWT, employerController.updateEmployerTier);
 
+// Candidate contact unlock
+router.post('/unlock-contact/:workerId', authenticateJWT, employerController.unlockCandidateContact);
+router.post('/unlock-contact', authenticateJWT, employerController.unlockCandidateContact);
+
 // User-ID based endpoints
 router.get('/:userId', employerController.getEmployerProfile);
 router.put('/:userId', authenticateJWT, employerController.updateEmployerProfile);

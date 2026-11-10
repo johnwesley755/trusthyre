@@ -27,6 +27,8 @@ const formatApplication = (app: any) => {
     coverLetter: app.cover_letter || app.coverLetter,
     transitModePreferred: transitMode,
     transit_mode_preferred: transitMode,
+    voiceNoteUrl: app.voice_note_url || (app as any).voiceNoteUrl || null,
+    voice_note_url: app.voice_note_url || (app as any).voiceNoteUrl || null,
     job: formattedJob || app.job,
     jobs: formattedJob || app.jobs,
     jobTitle: formattedJob?.title || app.jobTitle || rawJob?.title,
@@ -46,7 +48,7 @@ export const applyForJob = async (c: Context) => {
       return c.json(ApiResponse.error("Forbidden: Only worker accounts can apply for jobs."), 403 as any);
     }
 
-    const { jobId, coverLetter, transitModePreferred } = (await c.req.json());
+    const { jobId, coverLetter, transitModePreferred, voiceNoteUrl, voice_note_url } = (await c.req.json());
     if (!jobId) return c.json(ApiResponse.error("Job ID is required"), 400 as any);
 
     const job = await prisma.jobs.findUnique({ where: { id: jobId } });
@@ -85,6 +87,8 @@ export const applyForJob = async (c: Context) => {
       return c.json(ApiResponse.error("You have already applied for this job"), 400 as any);
     }
 
+    const effectiveVoiceNote = voiceNoteUrl || voice_note_url || null;
+
     const application = await prisma.job_applications.create({
       data: {
         id: uuidv4(),
@@ -92,6 +96,7 @@ export const applyForJob = async (c: Context) => {
         worker_id: workerId,
         status: 'PENDING',
         cover_letter: coverLetter ? (transitModePreferred ? `${coverLetter} [Transit: ${transitModePreferred}]` : coverLetter) : (transitModePreferred ? `[Transit: ${transitModePreferred}]` : null),
+        voice_note_url: effectiveVoiceNote,
         applied_at: new Date()
       } as any
     });

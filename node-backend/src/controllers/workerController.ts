@@ -558,8 +558,9 @@ export const getWorkerById = async (c: Context) => {
     }
 
     const isVerified = verification?.status === 'VERIFIED' || verification?.status === 'APPROVED' || Boolean(userMeta?.email_verified);
-    // Privacy Gate: Mask contact details unless requester is profile owner, admin, or related employer
-    const shouldMask = !isSelf && !isAdmin && !hasEmployerRelation;
+    const isEmployer = authUser?.role === 'EMPLOYER';
+    // Privacy Gate: Mask contact details for unauthenticated guests or unrelated worker accounts; reveal to authenticated employers, admins, or self
+    const shouldMask = !isSelf && !isAdmin && !isEmployer && !hasEmployerRelation;
 
     return c.json(ApiResponse.ok(formatWorkerProfile(profile, userMeta, isVerified, shouldMask)));
   } catch (err: any) {

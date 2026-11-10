@@ -38,6 +38,7 @@ import { AppLoader } from '../../../components/common/AppLoader';
 import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
 import { CandidateResumeModal } from '../../profile/components/resume/CandidateResumeModal';
 import { useUser } from '../../../providers/AuthContext';
+import { employerService } from '../../../services/employer.service';
 import { 
   buildEmployerToWorkerOutreachMessage, 
   buildWorkerSkillBadgeShareMessage, 
@@ -107,7 +108,7 @@ export const WorkerProfilePage = () => {
 
   const { user } = useUser();
   const isCandidateViewingOwn = Boolean(user && (user.id === id || user.id === worker?.userId));
-  const isEmployer = Boolean(user && user.role === 'EMPLOYER');
+  const isEmployer = Boolean(user && (user.role === 'EMPLOYER' || user.role === 'ADMIN'));
 
   const handleWhatsAppEmployerChat = () => {
     if (!worker) return;
@@ -736,9 +737,32 @@ export const WorkerProfilePage = () => {
                   <span className="text-slate-500 font-medium flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-[#0f2f63]" /> Phone
                   </span>
-                  <span className="font-bold text-[#0A1931]">
-                    {worker?.phoneNumber || 'Disclosed on Hire'}
-                  </span>
+                  {user ? (
+                    worker?.phoneNumber ? (
+                      <a
+                        href={`tel:${worker.phoneNumber.replace(/\D/g, '')}`}
+                        className="font-bold text-[#0f2f63] hover:underline flex items-center gap-1"
+                        title="Call candidate directly"
+                      >
+                        <span>{worker.phoneNumber}</span>
+                      </a>
+                    ) : (
+                      <span className="font-bold text-[#0A1931]">Disclosed on Hire</span>
+                    )
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-slate-400">
+                        {worker?.phoneNumber ? `${worker.phoneNumber.slice(0, 5)}••••••` : '+91 98•••• ••42'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/sign-in')}
+                        className="px-2.5 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-[#0f2f63] font-bold text-[11px] border border-slate-200 transition-all cursor-pointer"
+                      >
+                        Sign in to view
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between py-1 border-b border-slate-100">

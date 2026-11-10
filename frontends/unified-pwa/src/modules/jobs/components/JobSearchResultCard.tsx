@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe, Phone, Utensils, Home, Zap, Clock3, Fuel, Gift, Volume2, VolumeX } from 'lucide-react';
+import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe, Phone, MessageCircle, Utensils, Home, Zap, Clock3, Fuel, Gift, Volume2, VolumeX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { useSavedStore } from '../../../hooks/useSavedStore';
 import { useAuth } from '../../../providers/AuthContext';
 import { useTranslation } from '../../../providers/TranslationContext';
-import { buildJobWhatsAppMessage, openWhatsAppShare } from '../../../utils/whatsappTemplate.utils';
+import { buildJobWhatsAppMessage, openWhatsAppShare, buildWorkerToEmployerApplicationMessage, openWhatsAppDirectChat } from '../../../utils/whatsappTemplate.utils';
 import { TranslateText } from '../../../components/common/TranslateText';
 import { getEffectiveCoverUrl, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
 import { generateJobSeoSlug, generateHierarchicalJobUrl } from '../../../utils/seoSlug.utils';
@@ -646,6 +646,41 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                   10am-5pm
                 </span>
               </div>
+            )}
+
+            {/* 💬 Apply / Chat on WhatsApp */}
+            {!isExpired && (job.allowDirectWhatsapp ?? true) && (job.contactWhatsapp || job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber) && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const rawPhone = job.contactWhatsapp || job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber;
+                  const phoneDigits = String(rawPhone).replace(/\D/g, '');
+                  const fullPhone = phoneDigits.startsWith('91') ? phoneDigits : (phoneDigits.length === 10 ? `91${phoneDigits}` : phoneDigits);
+                  const msg = buildWorkerToEmployerApplicationMessage(
+                    {
+                      id: job.id,
+                      title: job.title,
+                      companyName: companyName,
+                      city: job.city,
+                      location: job.location,
+                      budget: job.budget
+                    },
+                    {
+                      name: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Job Seeker',
+                      phone: user?.phoneNumber || '',
+                      trade: job.industry
+                    },
+                    'en'
+                  );
+                  openWhatsAppDirectChat(fullPhone, msg);
+                }}
+                className="rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
+                title="Apply & Chat Directly on WhatsApp"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">WhatsApp</span>
+              </button>
             )}
 
             {job.hasApplied ? (

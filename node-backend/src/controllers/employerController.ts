@@ -18,6 +18,8 @@ const formatEmployerProfile = (profile: any, user?: any) => {
     profile_bio: profile?.profile_bio || '',
     businessTier: profile?.business_tier || 'STARTER',
     business_tier: profile?.business_tier || 'STARTER',
+    contactCredits: (profile as any)?.contact_credits ?? 5,
+    contact_credits: (profile as any)?.contact_credits ?? 5,
     isVerified: profile?.is_verified ?? (user?.identity_verified ?? false),
     is_verified: profile?.is_verified ?? (user?.identity_verified ?? false),
     location: profile?.location || '',
@@ -86,6 +88,8 @@ export const getEmployerProfile = async (c: Context) => {
       industry: 'Enterprise',
       businessTier: 'STARTER',
       business_tier: 'STARTER',
+      contactCredits: 5,
+      contact_credits: 5,
       isVerified: true,
       is_verified: true,
       location: 'Chennai',
@@ -201,6 +205,50 @@ export const updateEmployerTier = async (c: Context) => {
       data: { business_tier: tier, updated_at: new Date() }
     });
     return c.json(ApiResponse.ok("Tier updated", formatEmployerProfile(profile)));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+export const unlockCandidateContact = async (c: Context) => {
+  try {
+    const authUser = c.get('user');
+    if (!authUser?.sub) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
+
+    if (authUser.role !== 'EMPLOYER' && authUser.role !== 'ADMIN') {
+      return c.json(ApiResponse.error("Forbidden: Only employer accounts can unlock candidate contact details."), 403 as any);
+    }
+
+    const body = await c.req.json().catch(() => ({}));
+    const workerId = c.req.param('workerId') || body?.workerId;
+    if (!workerId) {
+      return c.json(ApiResponse.error("Worker ID is required"), 400 as any);
+    }
+
+    // Find the worker
+    const workerUser = await prisma.user_metadata.findUnique({
+      where: { id: workerId }
+    });
+
+    const workerProfile = await prisma.worker_profiles.findFirst({
+      where: { user_id: workerId }
+    });
+
+    if (!workerUser && !workerProfile) {
+      return c.json(ApiResponse.error("Candidate not found"), 404 as any);
+    }
+
+    const phoneNumber = workerProfile?.phone_number || workerUser?.phone_number || 'Not Provided';
+    const whatsappPhone = phoneNumber.replace(/[^0-9]/g, '');
+    const workerName = workerProfile?.full_name || `${workerUser?.first_name || ''} ${workerUser?.last_name || ''}`.trim() || 'Candidate';
+
+    return c.json(ApiResponse.ok("Candidate contact retrieved successfully", {
+      workerId,
+      workerName,
+      phoneNumber,
+      whatsappPhone,
+      unlimitedAccess: true
+    }));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }

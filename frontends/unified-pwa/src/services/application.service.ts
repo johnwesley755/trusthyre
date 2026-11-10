@@ -11,6 +11,8 @@ const mapApp = (app: any): JobApplication => ({
   coverLetter: app.cover_letter || app.coverLetter,
   transitModePreferred: app.transit_mode_preferred || app.transitModePreferred,
   transit_mode_preferred: app.transit_mode_preferred || app.transitModePreferred,
+  voiceNoteUrl: app.voice_note_url || app.voiceNoteUrl,
+  voice_note_url: app.voice_note_url || app.voiceNoteUrl,
   job: app.job || app.jobs,
   jobs: app.jobs || app.job,
   jobTitle: app.job?.title || app.jobs?.title || app.jobTitle,
@@ -18,7 +20,7 @@ const mapApp = (app: any): JobApplication => ({
 
 export const applicationService = {
   applyForJob: async (
-    jobIdOrPayload: string | { jobId: string; coverLetter?: string; transitModePreferred?: string }, 
+    jobIdOrPayload: string | { jobId: string; coverLetter?: string; transitModePreferred?: string; voiceNoteUrl?: string }, 
     coverLetter?: string
   ): Promise<JobApplication> => {
     const payload = typeof jobIdOrPayload === 'string'
