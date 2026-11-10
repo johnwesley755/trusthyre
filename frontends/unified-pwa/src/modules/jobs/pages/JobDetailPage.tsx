@@ -6,7 +6,7 @@ import { jobService } from '../../../services/job.service';
 import { applicationService } from '../../../services/application.service';
 import { profileService } from '../../../services/profile.service';
 import { queryKeys } from '../../../lib/queryKeys';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { SeoHead, buildJobPostingJsonLd, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
 import { getEffectiveCoverUrl, resolveTradeCover, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
 import { formatMissingProfileFields, getMissingProfileFields } from '../../../utils/profileCompletion';
@@ -229,14 +229,8 @@ export default function JobDetailPage() {
     enabled: user?.role === 'WORKER'
   });
 
-  const cleanJobCity = useMemo(() => {
-    if (!job?.city) return 'Chennai';
-    return job.city.split(',')[0].trim() || 'Chennai';
-  }, [job?.city]);
-
-  const cleanJobCitySlug = useMemo(() => {
-    return cleanJobCity.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '') || 'chennai';
-  }, [cleanJobCity]);
+  const cleanJobCity = (job?.city ? job.city.split(',')[0].trim() : '') || 'Chennai';
+  const cleanJobCitySlug = cleanJobCity.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '') || 'chennai';
 
   const employer = (job as any)?.employerProfile || (job as any)?.employer || null;
   const isAdmin = Boolean(user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'));
