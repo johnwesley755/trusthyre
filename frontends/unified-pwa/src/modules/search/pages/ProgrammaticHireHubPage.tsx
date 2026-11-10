@@ -59,6 +59,12 @@ const CITY_METADATA: Record<string, { name: string; state: string; popularLocali
     popularLocalities: ['Avinashi Road', 'Kangeyam Road', 'Palladam', 'Uthukuli'],
     topTrades: ['Tailoring & Garments', 'Quality Checker', 'Machine Operator', 'Driver']
   },
+  sriperumbudur: {
+    name: 'Sriperumbudur',
+    state: 'Tamil Nadu',
+    popularLocalities: ['SIPCOT Industrial Park', 'Sunguvarchatram', 'Vallam Vadagal', 'Mambakkam', 'Irungattukottai', 'Oragadam'],
+    topTrades: ['Industrial Welders', 'CNC Operators', 'Electricians', 'Warehouse Staff', 'Drivers']
+  },
   bengaluru: {
     name: 'Bengaluru',
     state: 'Karnataka',
@@ -154,16 +160,69 @@ const TRADE_METADATA: Record<string, { title: string; category: string; descript
   }
 };
 
-export const ProgrammaticHireHubPage: React.FC = () => {
-  const { city: rawCity, trade: rawTrade } = useParams<{ city?: string; trade?: string }>();
+export interface ProgrammaticHireHubPageProps {
+  city?: string;
+  trade?: string;
+}
+
+export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = ({
+  city: propCity,
+  trade: propTrade
+}) => {
+  const params = useParams<{ city?: string; trade?: string; cityOrSlug?: string }>();
   const navigate = useNavigate();
 
-  const citySlug = (rawCity || 'chennai').toLowerCase().trim();
-  const tradeSlug = (rawTrade || 'workers').toLowerCase().trim();
+  const rawCityParam = propCity || params.city || params.cityOrSlug || 'chennai';
+  const rawTradeParam = propTrade || params.trade || 'workers';
+
+  const { citySlug, cityName, cityState } = useMemo(() => {
+    const raw = (rawCityParam || 'chennai')
+      .toLowerCase()
+      .replace(/^hire-workers-in-/, '')
+      .replace(/^hire-[^-]+-in-/, '')
+      .replace(/,/g, '')
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .trim();
+
+    const stateSuffixes: Record<string, string> = {
+      'tamil-nadu': 'Tamil Nadu',
+      'karnataka': 'Karnataka',
+      'maharashtra': 'Maharashtra',
+      'telangana': 'Telangana',
+      'kerala': 'Kerala',
+      'andhra-pradesh': 'Andhra Pradesh',
+      'delhi': 'Delhi NCR',
+    };
+
+    let baseSlug = raw;
+    let resolvedState = 'Tamil Nadu';
+
+    for (const [suffix, stateName] of Object.entries(stateSuffixes)) {
+      if (raw.endsWith(`-${suffix}`)) {
+        baseSlug = raw.slice(0, -(suffix.length + 1));
+        resolvedState = stateName;
+        break;
+      }
+    }
+
+    const formattedName = baseSlug
+      .split('-')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+
+    return {
+      citySlug: baseSlug || 'chennai',
+      cityName: formattedName || 'Chennai',
+      cityState: resolvedState,
+    };
+  }, [rawCityParam]);
+
+  const tradeSlug = (rawTradeParam || 'workers').toLowerCase().trim();
 
   const cityMeta = CITY_METADATA[citySlug] || {
-    name: citySlug.charAt(0).toUpperCase() + citySlug.slice(1),
-    state: 'India',
+    name: cityName,
+    state: cityState,
     popularLocalities: ['Central Zone', 'Industrial Estate', 'Suburban Cluster'],
     topTrades: ['Electricians', 'Drivers', 'Cooks', 'Plumbers']
   };

@@ -6,7 +6,7 @@ import { jobService } from '../../../services/job.service';
 import { applicationService } from '../../../services/application.service';
 import { profileService } from '../../../services/profile.service';
 import { queryKeys } from '../../../lib/queryKeys';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { SeoHead, buildJobPostingJsonLd, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
 import { getEffectiveCoverUrl, resolveTradeCover, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
 import { formatMissingProfileFields, getMissingProfileFields } from '../../../utils/profileCompletion';
@@ -228,6 +228,15 @@ export default function JobDetailPage() {
     staleTime: 1000 * 60 * 5,
     enabled: user?.role === 'WORKER'
   });
+
+  const cleanJobCity = useMemo(() => {
+    if (!job?.city) return 'Chennai';
+    return job.city.split(',')[0].trim() || 'Chennai';
+  }, [job?.city]);
+
+  const cleanJobCitySlug = useMemo(() => {
+    return cleanJobCity.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '') || 'chennai';
+  }, [cleanJobCity]);
 
   const employer = (job as any)?.employerProfile || (job as any)?.employer || null;
   const isAdmin = Boolean(user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'));
@@ -542,7 +551,7 @@ export default function JobDetailPage() {
           })] : []),
           ...(job ? [buildBreadcrumbJsonLd([
             { name: 'Home', path: '/' },
-            { name: `Jobs in ${job.city || 'India'}`, path: `/jobs-in-${(job.city || 'chennai').toLowerCase()}` },
+            { name: `Jobs in ${cleanJobCity}`, path: `/jobs-in-${cleanJobCitySlug}` },
             { name: job.title, path: generateHierarchicalJobUrl(job) },
           ])] : [])
         ]}
@@ -922,10 +931,10 @@ export default function JobDetailPage() {
                 </p>
                 {job.city && (
                   <Link
-                    to={`/jobs-in-${job.city.toLowerCase().replace(/\s+/g, '-')}`}
+                    to={`/jobs-in-${cleanJobCitySlug}`}
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0f2f63] text-white rounded-full text-xs font-bold hover:bg-[#1a4484] transition"
                   >
-                    <span>View all verified jobs in {job.city}</span>
+                    <span>View all verified jobs in {cleanJobCity}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 )}
@@ -1276,18 +1285,18 @@ export default function JobDetailPage() {
                 <div className="flex items-center gap-2 border-b border-[#e6e8ec] pb-3">
                   <MapPin className="w-4 h-4 text-[#0f2f63]" />
                   <h3 className="text-xs font-bold uppercase text-[#717784]">
-                    Explore More Verified Jobs in {job.city}
+                    Explore More Verified Jobs in {cleanJobCity}
                   </h3>
                 </div>
                 <p className="text-xs text-[#5a6270] leading-relaxed">
-                  Looking for more verified openings in {job.city}? Browse direct employer opportunities across trades with guaranteed wage transparency.
+                  Looking for more verified openings in {cleanJobCity}? Browse direct employer opportunities across trades with guaranteed wage transparency.
                 </p>
                 <div className="pt-1">
                   <Link
-                    to={`/jobs-in-${job.city.toLowerCase().replace(/\s+/g, '-')}`}
+                    to={`/jobs-in-${cleanJobCitySlug}`}
                     className="inline-flex items-center justify-between w-full p-3 bg-white hover:bg-slate-50 border border-[#e2e4e9] rounded-xl text-xs font-bold text-[#0f2f63] transition shadow-2xs"
                   >
-                    <span>View all {job.city} Openings</span>
+                    <span>View all {cleanJobCity} Openings</span>
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>

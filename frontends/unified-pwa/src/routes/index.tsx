@@ -1,6 +1,7 @@
 import ProgrammaticJobHubPage from '../modules/jobs/pages/ProgrammaticJobHubPage';
 import NeighborhoodJobHubPage from '../modules/jobs/pages/NeighborhoodJobHubPage';
 import ProgrammaticHireHubPage from '../modules/search/pages/ProgrammaticHireHubPage';
+import { PublicDiscoveryRouter } from './PublicDiscoveryRouter';
 import { AdminAcceptInvitePage } from '../modules/admin/pages/AdminAcceptInvitePage';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import LandingPage from '../modules/landing/pages/LandingPage';
@@ -112,22 +113,6 @@ export const router = createBrowserRouter([
             element: <JobSearchPage />,
           },
           {
-            path: '/jobs-in-:city',
-            element: <ProgrammaticJobHubPage />,
-          },
-          {
-            path: '/jobs-in-:city/:trade',
-            element: <ProgrammaticJobHubPage />,
-          },
-          {
-            path: '/hire-workers-in-:city',
-            element: <ProgrammaticHireHubPage />,
-          },
-          {
-            path: '/hire-:trade-in-:city',
-            element: <ProgrammaticHireHubPage />,
-          },
-          {
             path: '/job/:id',
             element: <JobDetailPage />,
           },
@@ -140,12 +125,16 @@ export const router = createBrowserRouter([
             element: <JobDetailPage />,
           },
           {
-            path: '/:city/:neighborhood',
-            element: <NeighborhoodJobHubPage />,
+            path: '/:cityOrSlug',
+            element: <PublicDiscoveryRouter />,
           },
           {
-            path: '/:city/:neighborhood/:trade',
-            element: <NeighborhoodJobHubPage />,
+            path: '/:cityOrSlug/:tradeOrNeighborhood',
+            element: <PublicDiscoveryRouter />,
+          },
+          {
+            path: '/:cityOrSlug/:tradeOrNeighborhood/:trade',
+            element: <PublicDiscoveryRouter />,
           },
         ]
       },

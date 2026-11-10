@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { searchService } from '../../../services/search.service';
-import { queryKeys } from '../../../lib/queryKeys';
 import { JobSearchResultCard } from '../components/JobSearchResultCard';
 import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
 import { generateHierarchicalJobUrl, slugifyNeighborhood } from '../../../utils/seoSlug.utils';
@@ -15,7 +14,6 @@ import {
   ChevronRight, 
   IndianRupee, 
   ArrowRight,
-  TrendingUp,
   Navigation,
   Compass,
   CheckCircle2,
@@ -23,12 +21,26 @@ import {
   Train
 } from 'lucide-react';
 
-export default function NeighborhoodJobHubPage() {
-  const { city = 'chennai', neighborhood: rawNeighborhood = '', trade: rawTrade = '' } = useParams<{
+export interface NeighborhoodJobHubPageProps {
+  city?: string;
+  neighborhood?: string;
+  trade?: string;
+}
+
+export default function NeighborhoodJobHubPage({
+  city: propCity,
+  neighborhood: propNeighborhood,
+  trade: propTrade,
+}: NeighborhoodJobHubPageProps = {}) {
+  const params = useParams<{
     city: string;
     neighborhood: string;
     trade?: string;
   }>();
+
+  const city = propCity || params.city || 'chennai';
+  const rawNeighborhood = propNeighborhood || params.neighborhood || '';
+  const rawTrade = propTrade || params.trade || '';
 
   // Normalize neighborhood: remove trailing '-jobs' if present
   const neighborhoodSlug = rawNeighborhood.replace(/-jobs$/, '').toLowerCase().trim();
