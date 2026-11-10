@@ -30,6 +30,8 @@ export interface SearchParams {
   lon?: number;
   includeExpired?: boolean | string;
   source?: 'all' | 'internal' | 'external' | string;
+  nearTransit?: boolean | string;
+  transportProvided?: boolean | string;
 }
 
 export interface WorkerSearch {

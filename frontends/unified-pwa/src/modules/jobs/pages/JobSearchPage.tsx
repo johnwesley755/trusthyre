@@ -49,6 +49,8 @@ export default function JobSearchPage() {
   const [experience, setExperience] = useState(searchParams.get('exp') || 'all');
   const [trade, setTrade] = useState(searchParams.get('trade') || 'All');
   const [source, setSource] = useState(searchParams.get('source') || 'all');
+  const [nearTransit, setNearTransit] = useState(searchParams.get('transit') === 'true');
+  const [transportProvided, setTransportProvided] = useState(searchParams.get('transport') === 'true');
   const [sortBy, setSortBy] = useState<'date_desc' | 'salary_desc' | 'salary_asc'>('date_desc');
   const [wageViewMode, setWageViewMode] = useState<'monthly' | 'daily'>(
     (searchParams.get('rate') as 'monthly' | 'daily') || 'monthly'
@@ -167,7 +169,7 @@ export default function JobSearchPage() {
 
   // Fetch Jobs via Search API
   const { data: jobs = [], isLoading } = useQuery({
-    queryKey: ['jobs', 'search', { query, city, trade, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, source }],
+    queryKey: ['jobs', 'search', { query, city, trade, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, source, nearTransit, transportProvided }],
     queryFn: () => searchService.searchJobs({
       query: query || undefined,
       city: city || undefined,
@@ -178,7 +180,9 @@ export default function JobSearchPage() {
       maxExperience,
       sortBy,
       source: source !== 'all' ? source : undefined,
-      includeExpired: 'true'
+      includeExpired: 'true',
+      nearTransit: nearTransit ? true : undefined,
+      transportProvided: transportProvided ? true : undefined,
     }),
     staleTime: 1000 * 60 * 2,
   });
@@ -343,6 +347,11 @@ export default function JobSearchPage() {
         additionalDetails: j.additionalDetails || j.additional_details,
         isUrgentSpotHire: Boolean(j.isUrgentSpotHire || j.is_urgent_spot_hire || (j.additionalDetails && j.additionalDetails.isUrgentSpotHire)),
         requiredDocuments: j.requiredDocuments || j.required_documents || j.additionalDetails?.requiredDocuments,
+        nearestMetroStation: j.nearestMetroStation || j.nearest_metro_station || j.additionalDetails?.nearestMetroStation,
+        nearestBusStand: j.nearestBusStand || j.nearest_bus_stand || j.additionalDetails?.nearestBusStand,
+        companyTransportProvided: Boolean(j.companyTransportProvided ?? j.company_transport_provided ?? j.additionalDetails?.companyTransportProvided),
+        walkingMinutesToTransit: j.walkingMinutesToTransit || j.walking_minutes_to_transit || j.additionalDetails?.walkingMinutesToTransit || 5,
+        landmark: j.landmark || j.additionalDetails?.landmark,
         payoutFrequency: j.payoutFrequency || j.payout_frequency || j.additionalDetails?.payoutFrequency,
         payoutGuaranteeBadge: j.payoutGuaranteeBadge ?? j.payout_guarantee_badge ?? j.additionalDetails?.payoutGuaranteeBadge,
       };
@@ -489,35 +498,70 @@ export default function JobSearchPage() {
           {/* CENTER COLUMN: Feed (Full width on mobile, 6 cols on desktop) */}
           <div className="col-span-1 lg:col-span-6 space-y-3">
             
-            {/* ⚡ High-Conversion Frontline Quick Action & Filter Bar */}
+            {/* ⚡ High-Conversion Smart Transit & Frontline Quick Action Bar */}
             <div className="bg-white border border-[#e6e8ec] rounded-2xl p-2.5 sm:p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                 {/* 1-Tap Instant Spot Hire Button */}
                 <button
                   type="button"
                   onClick={() => setIsChowkModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-all cursor-pointer shrink-0 active:scale-95 shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs bg-amber-400 hover:bg-amber-500 text-slate-950 border border-amber-500 transition-all cursor-pointer shrink-0 active:scale-95 shadow-2xs"
                 >
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                  <span>Instant Spot Hire</span>
+                  <Zap className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+                  <span>Spot Chowk</span>
                 </button>
 
-                {/* Unified Perks Filters */}
+                {/* 🚇 Smart Commute & Transit Filter Toggle */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextVal = !nearTransit;
+                    setNearTransit(nextVal);
+                    updateUrlParams({ transit: nextVal ? 'true' : '' });
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                    nearTransit
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-blue-50/70 hover:bg-blue-100 text-blue-900 border border-blue-200'
+                  }`}
+                  title="Filter jobs located near Metro stations or major bus stands"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>🚇 Near Metro/Bus Stop</span>
+                </button>
+
+                {/* 🚐 Company Cab / Transport Provided Filter Toggle */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextVal = !transportProvided;
+                    setTransportProvided(nextVal);
+                    updateUrlParams({ transport: nextVal ? 'true' : '' });
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                    transportProvided
+                      ? 'bg-purple-600 text-white shadow-xs'
+                      : 'bg-purple-50/70 hover:bg-purple-100 text-purple-900 border border-purple-200'
+                  }`}
+                  title="Filter jobs with company van/cab transport provided"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>🚐 Cab/Van Provided</span>
+                </button>
+
+                {/* Core Perks Filters */}
                 {[
                   { id: 'all', label: 'All Openings' },
-                  { id: 'spot', label: '⚡ Urgent Spot Hire' },
+                  { id: 'spot', label: '⚡ Urgent Hire' },
                   { id: 'food', label: '🍛 Free Food' },
                   { id: 'room', label: '🏠 With Room' },
-                  { id: 'daily', label: '💵 Daily Pay' },
-                  { id: 'ot', label: '⏱️ Overtime OT' },
-                  { id: 'travel', label: '⛽ Fuel Allowance' },
+                  { id: 'daily', label: '💵 Daily Cash' },
                 ].map((perk) => (
                   <button
                     key={perk.id}
                     type="button"
                     onClick={() => setSelectedPerkFilter(perk.id)}
-                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                       selectedPerkFilter === perk.id
                         ? 'bg-[#0f2f63] text-white shadow-xs'
                         : 'bg-[#F8FAFC] hover:bg-slate-100 text-[#475467] border border-[#e6e8ec]'
@@ -531,7 +575,7 @@ export default function JobSearchPage() {
               {/* 100% Free Guarantee Pill */}
               <div className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200 shrink-0">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>100% Free • No Consultant</span>
+                <span>Zero Fee / 100% Free</span>
               </div>
             </div>
 

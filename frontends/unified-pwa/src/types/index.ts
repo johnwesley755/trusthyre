@@ -98,6 +98,15 @@ export interface Job {
   coverImageUrl?: string | null;
   cover_image_url?: string | null;
   perks?: string[];
+  nearestMetroStation?: string | null;
+  nearest_metro_station?: string | null;
+  nearestBusStand?: string | null;
+  nearest_bus_stand?: string | null;
+  companyTransportProvided?: boolean;
+  company_transport_provided?: boolean;
+  walkingMinutesToTransit?: number;
+  walking_minutes_to_transit?: number;
+  landmark?: string | null;
   allowDirectCall?: boolean;
   allowDirectWhatsapp?: boolean;
   contactPhone?: string | null;
@@ -132,6 +141,8 @@ export interface JobApplication {
   status: 'APPLIED' | 'PENDING' | 'OFFER_SENT' | 'REVIEWING' | 'SHORTLISTED' | 'ACCEPTED' | 'APPROVED' | 'REJECTED' | 'DECLINED' | 'COMPLETED';
   appliedAt: string;
   coverLetter?: string;
+  transitModePreferred?: string;
+  transit_mode_preferred?: string;
   job?: Job;
   worker?: WorkerProfile;
   workerName?: string;

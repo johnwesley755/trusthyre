@@ -5,7 +5,24 @@ import { sanitizeHtmlDescription } from '../utils/textSanitizer';
 
 export const searchJobs = async (c: Context) => {
   try {
-    const { query, category, industry, location, city, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, employerId, includeExpired, source } = c.req.query();
+    const { 
+      query, 
+      category, 
+      industry, 
+      location, 
+      city, 
+      jobType, 
+      minSalary, 
+      maxSalary, 
+      minExperience, 
+      maxExperience, 
+      sortBy, 
+      employerId, 
+      includeExpired, 
+      source,
+      nearTransit,
+      transportProvided
+    } = c.req.query();
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
@@ -76,6 +93,23 @@ export const searchJobs = async (c: Context) => {
     if (location) whereClause.location = { contains: location as string, mode: 'insensitive' };
     if (city) whereClause.city = { contains: city as string, mode: 'insensitive' };
     if (employerId) whereClause.employer_id = employerId;
+
+    if (transportProvided === 'true') {
+      whereClause.company_transport_provided = true;
+    }
+
+    if (nearTransit === 'true') {
+      whereClause.AND.push({
+        OR: [
+          { company_transport_provided: true },
+          { nearest_metro_station: { not: null } },
+          { nearest_bus_stand: { not: null } },
+          { landmark: { contains: 'metro', mode: 'insensitive' } },
+          { landmark: { contains: 'bus', mode: 'insensitive' } },
+          { landmark: { contains: 'station', mode: 'insensitive' } },
+        ]
+      });
+    }
 
     if (source === 'internal') {
       whereClause.is_external = false;
@@ -180,6 +214,16 @@ export const searchJobs = async (c: Context) => {
         const contactWhatsapp = additionalDetails.contactWhatsapp || additionalDetails.contact_whatsapp || (j as any).contact_whatsapp || null;
         const isUrgentSpotHire = Boolean(additionalDetails.isUrgentSpotHire || additionalDetails.is_urgent_spot_hire);
 
+        const nearestMetroStation = (j as any).nearest_metro_station || additionalDetails.nearestMetroStation || additionalDetails.nearest_metro_station || null;
+        const nearestBusStand = (j as any).nearest_bus_stand || additionalDetails.nearestBusStand || additionalDetails.nearest_bus_stand || null;
+        const companyTransportProvided = (j as any).company_transport_provided !== undefined && (j as any).company_transport_provided !== null
+          ? Boolean((j as any).company_transport_provided)
+          : Boolean(additionalDetails.companyTransportProvided || additionalDetails.company_transport_provided);
+        const walkingMinutesToTransit = (j as any).walking_minutes_to_transit != null
+          ? Number((j as any).walking_minutes_to_transit)
+          : (additionalDetails.walkingMinutesToTransit != null ? Number(additionalDetails.walkingMinutesToTransit) : 5);
+        const landmark = (j as any).landmark || additionalDetails.landmark || null;
+
         return {
           id: j.id,
           title: j.title,
@@ -201,6 +245,15 @@ export const searchJobs = async (c: Context) => {
           additionalDetails,
           additional_details: additionalDetails,
           perks,
+          nearestMetroStation,
+          nearest_metro_station: nearestMetroStation,
+          nearestBusStand,
+          nearest_bus_stand: nearestBusStand,
+          companyTransportProvided,
+          company_transport_provided: companyTransportProvided,
+          walkingMinutesToTransit,
+          walking_minutes_to_transit: walkingMinutesToTransit,
+          landmark,
           allowDirectCall,
           allow_direct_call: allowDirectCall,
           allowDirectWhatsapp,

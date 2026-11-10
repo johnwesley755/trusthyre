@@ -73,11 +73,30 @@ export const formatJob = (job: any) => {
     ? Boolean((job as any).payout_guarantee_badge)
     : (additionalDetails.payoutGuaranteeBadge !== undefined ? Boolean(additionalDetails.payoutGuaranteeBadge) : true);
 
+  const nearestMetroStation = (job as any).nearest_metro_station || additionalDetails.nearestMetroStation || additionalDetails.nearest_metro_station || null;
+  const nearestBusStand = (job as any).nearest_bus_stand || additionalDetails.nearestBusStand || additionalDetails.nearest_bus_stand || null;
+  const companyTransportProvided = (job as any).company_transport_provided !== undefined && (job as any).company_transport_provided !== null
+    ? Boolean((job as any).company_transport_provided)
+    : Boolean(additionalDetails.companyTransportProvided || additionalDetails.company_transport_provided);
+  const walkingMinutesToTransit = (job as any).walking_minutes_to_transit != null
+    ? Number((job as any).walking_minutes_to_transit)
+    : (additionalDetails.walkingMinutesToTransit != null ? Number(additionalDetails.walkingMinutesToTransit) : 5);
+  const landmark = (job as any).landmark || additionalDetails.landmark || null;
+
   return {
     ...job,
     additionalDetails: additionalDetails || {},
     additional_details: additionalDetails || {},
     perks,
+    nearestMetroStation,
+    nearest_metro_station: nearestMetroStation,
+    nearestBusStand,
+    nearest_bus_stand: nearestBusStand,
+    companyTransportProvided,
+    company_transport_provided: companyTransportProvided,
+    walkingMinutesToTransit,
+    walking_minutes_to_transit: walkingMinutesToTransit,
+    landmark,
     allowDirectCall,
     allow_direct_call: allowDirectCall,
     allowDirectWhatsapp,

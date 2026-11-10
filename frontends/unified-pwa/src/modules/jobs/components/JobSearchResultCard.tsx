@@ -64,6 +64,15 @@ export interface JobCardData {
   payout_frequency?: string;
   payoutGuaranteeBadge?: boolean;
   payout_guarantee_badge?: boolean;
+  nearestMetroStation?: string | null;
+  nearest_metro_station?: string | null;
+  nearestBusStand?: string | null;
+  nearest_bus_stand?: string | null;
+  companyTransportProvided?: boolean;
+  company_transport_provided?: boolean;
+  walkingMinutesToTransit?: number;
+  walking_minutes_to_transit?: number;
+  landmark?: string | null;
 }
 
 interface JobSearchResultCardProps {
@@ -478,10 +487,35 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           const payoutFreq = job.payoutFrequency || job.payout_frequency || job.additionalDetails?.payoutFrequency;
           const hasGuarantee = job.payoutGuaranteeBadge ?? job.payout_guarantee_badge ?? job.additionalDetails?.payoutGuaranteeBadge;
 
-          if (perksList.length === 0 && !payoutFreq && !hasGuarantee) return null;
+          const nearestMetro = job.nearestMetroStation || job.nearest_metro_station || job.additionalDetails?.nearestMetroStation;
+          const nearestBus = job.nearestBusStand || job.nearest_bus_stand || job.additionalDetails?.nearestBusStand;
+          const companyTransport = Boolean(job.companyTransportProvided ?? job.company_transport_provided ?? job.additionalDetails?.companyTransportProvided);
+          const walkMins = job.walkingMinutesToTransit || job.walking_minutes_to_transit || job.additionalDetails?.walkingMinutesToTransit || 5;
 
           return (
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+              {/* 🚇 Smart Commute & Transit-Aware Badges */}
+              {companyTransport && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-purple-50 text-purple-900 border-purple-200">
+                  <Fuel className="w-3 h-3 text-purple-600" />
+                  <span>Company Cab/Van Provided (இலவச வாகனம்)</span>
+                </span>
+              )}
+
+              {nearestMetro && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-blue-50 text-blue-900 border-blue-200">
+                  <MapPin className="w-3 h-3 text-blue-600" />
+                  <span>{walkMins}m to {nearestMetro} Metro</span>
+                </span>
+              )}
+
+              {nearestBus && !nearestMetro && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-amber-50 text-amber-900 border-amber-200">
+                  <MapPin className="w-3 h-3 text-amber-600" />
+                  <span>Near {nearestBus} Bus Stop</span>
+                </span>
+              )}
+
               {payoutFreq && payoutFreq !== 'MONTHLY' && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-emerald-50 text-emerald-900 border-emerald-200">
                   <Zap className="w-3 h-3 text-emerald-600" />
@@ -564,21 +598,6 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* 📱 1-Tap Hiring Flyer / Visiting Card Generator (Available for Employers) */}
-            {isEmployer && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsPamphletOpen(true);
-                }}
-                className="p-2 rounded-full bg-[#f4f4f4] hover:bg-amber-100 text-amber-700 hover:text-amber-800 border border-[#e6e8ec] transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
-                title="Share as visual WhatsApp hiring flyer"
-              >
-                <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-              </button>
-            )}
-
             {/* 🎟️ 1-Tap Walk-In Admit Pass Button (When Walk-In is active) */}
             {!isExpired && (job.isWalkInInterview || (job.additionalDetails as any)?.isWalkInInterview) && (
               <button

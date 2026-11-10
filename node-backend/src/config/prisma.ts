@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { Pool, neonConfig } from '@neondatabase/serverless';
+import { Pool as NeonPool, neonConfig } from '@neondatabase/serverless';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import ws from 'ws';
 import { AsyncLocalStorage } from 'node:async_hooks';
@@ -11,7 +11,7 @@ if (typeof WebSocket === 'undefined') {
 
 export interface RequestScope {
   prisma?: PrismaClient;
-  pool?: Pool;
+  pool?: any;
   env?: any;
   ctx?: any;
 }
@@ -21,6 +21,8 @@ export const requestContextStorage = new AsyncLocalStorage<RequestScope>();
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
 let cachedLocalPrisma: PrismaClient | null = globalForPrisma.prisma || null;
+
+const DEFAULT_LOCAL_DATABASE_URL = "postgresql://postgres:G2q2hxzc%2427@localhost:5432/trusthire_auth_db?schema=public";
 
 const attachRetryExtension = (client: PrismaClient): PrismaClient => {
   return (client as any).$extends({
@@ -63,6 +65,67 @@ const attachRetryExtension = (client: PrismaClient): PrismaClient => {
   }) as unknown as PrismaClient;
 };
 
+const getLocalClient = (dbUrl: string): PrismaClient => {
+  if (cachedLocalPrisma) {
+    return cachedLocalPrisma;
+  }
+
+  if (dbUrl.includes('neon.tech')) {
+    let finalUrl = dbUrl;
+    if (!finalUrl.includes('connect_timeout=')) {
+      finalUrl += finalUrl.includes('?') ? '&connect_timeout=15' : '?connect_timeout=15';
+    }
+    const pool = new NeonPool({
+      connectionString: finalUrl,
+      connectionTimeoutMillis: 15000,
+      idleTimeoutMillis: 30000,
+    });
+    const adapter = new PrismaNeon(pool);
+    const baseClient = new PrismaClient({
+      adapter,
+      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+    });
+    cachedLocalPrisma = attachRetryExtension(baseClient);
+    globalForPrisma.prisma = cachedLocalPrisma;
+    return cachedLocalPrisma;
+  }
+
+  // Standard Local PostgreSQL Connection with pg driver adapter
+  try {
+    const { Pool: PgPool } = require('pg');
+    const { PrismaPg } = require('@prisma/adapter-pg');
+    const pool = new PgPool({
+      connectionString: dbUrl,
+      connectionTimeoutMillis: 15000,
+      max: 10,
+    });
+    const adapter = new PrismaPg(pool);
+    const baseClient = new PrismaClient({
+      adapter,
+      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+    });
+    cachedLocalPrisma = attachRetryExtension(baseClient);
+    globalForPrisma.prisma = cachedLocalPrisma;
+    return cachedLocalPrisma;
+  } catch (adapterErr) {
+    console.warn('[Prisma] Could not load @prisma/adapter-pg, falling back to direct PrismaClient:', adapterErr);
+    let finalUrl = dbUrl;
+    if (!finalUrl.includes('connection_limit')) {
+      finalUrl += finalUrl.includes('?') ? '&connection_limit=10' : '?connection_limit=10';
+    }
+    if (!finalUrl.includes('connect_timeout=')) {
+      finalUrl += finalUrl.includes('?') ? '&connect_timeout=15' : '?connect_timeout=15';
+    }
+    const baseClient = new PrismaClient({
+      datasources: { db: { url: finalUrl } },
+      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+    });
+    cachedLocalPrisma = attachRetryExtension(baseClient);
+    globalForPrisma.prisma = cachedLocalPrisma;
+    return cachedLocalPrisma;
+  }
+};
+
 const createPrismaClient = (): PrismaClient => {
   const store = requestContextStorage.getStore();
 
@@ -72,10 +135,7 @@ const createPrismaClient = (): PrismaClient => {
       return store.prisma;
     }
 
-    const rawUrl = store.env?.DATABASE_URL || process.env.DATABASE_URL || (globalThis as any).DATABASE_URL;
-    if (!rawUrl) {
-      return new PrismaClient();
-    }
+    const rawUrl = store.env?.DATABASE_URL || process.env.DATABASE_URL || (globalThis as any).DATABASE_URL || DEFAULT_LOCAL_DATABASE_URL;
 
     let dbUrl = rawUrl;
     if (dbUrl.includes('neon.tech')) {
@@ -84,7 +144,7 @@ const createPrismaClient = (): PrismaClient => {
       }
 
       // Create a fresh Neon Pool bound to THIS specific request's execution context
-      const pool = new Pool({
+      const pool = new NeonPool({
         connectionString: dbUrl,
         connectionTimeoutMillis: 15000,
         idleTimeoutMillis: 30000,
@@ -102,57 +162,16 @@ const createPrismaClient = (): PrismaClient => {
       store.prisma = clientWithRetry;
       return clientWithRetry;
     }
+
+    // In local Node server request context, reuse local client
+    const localClient = getLocalClient(dbUrl);
+    store.prisma = localClient;
+    return localClient;
   }
 
   // 2. Fallback for non-request environments (e.g. Node.js local dev server, seeds, migrations)
-  if (cachedLocalPrisma) {
-    return cachedLocalPrisma;
-  }
-
-  const rawUrl = process.env.DATABASE_URL || (globalThis as any).process?.env?.DATABASE_URL || (globalThis as any).DATABASE_URL;
-  if (!rawUrl) {
-    return new PrismaClient();
-  }
-
-  let dbUrl = rawUrl;
-  if (dbUrl.includes('neon.tech')) {
-    if (!dbUrl.includes('connect_timeout=')) {
-      dbUrl += dbUrl.includes('?') ? '&connect_timeout=15' : '?connect_timeout=15';
-    }
-    const pool = new Pool({
-      connectionString: dbUrl,
-      connectionTimeoutMillis: 15000,
-      idleTimeoutMillis: 30000,
-    });
-    const adapter = new PrismaNeon(pool);
-    const baseClient = new PrismaClient({
-      adapter,
-      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-    });
-    cachedLocalPrisma = attachRetryExtension(baseClient);
-    return cachedLocalPrisma;
-  } else {
-    // Standard Local PostgreSQL Connection with connection pooling
-    let finalUrl = dbUrl;
-    if (!finalUrl.includes('connection_limit')) {
-      finalUrl += finalUrl.includes('?') ? '&connection_limit=10' : '?connection_limit=10';
-    }
-    if (!finalUrl.includes('connect_timeout=')) {
-      finalUrl += finalUrl.includes('?') ? '&connect_timeout=15' : '?connect_timeout=15';
-    }
-
-    const baseClient = new PrismaClient({
-      datasources: {
-        db: {
-          url: finalUrl
-        }
-      },
-      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-    });
-    cachedLocalPrisma = attachRetryExtension(baseClient);
-    globalForPrisma.prisma = cachedLocalPrisma;
-    return cachedLocalPrisma;
-  }
+  const rawUrl = process.env.DATABASE_URL || (globalThis as any).process?.env?.DATABASE_URL || (globalThis as any).DATABASE_URL || DEFAULT_LOCAL_DATABASE_URL;
+  return getLocalClient(rawUrl);
 };
 
 // Use Proxy for lazy evaluation so module import at deploy time doesn't throw if env is not yet bound
@@ -165,4 +184,3 @@ export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
 });
 
 export default prisma;
-

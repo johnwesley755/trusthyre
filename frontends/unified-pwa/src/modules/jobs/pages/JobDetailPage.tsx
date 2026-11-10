@@ -986,6 +986,61 @@ export default function JobDetailPage() {
               </p>
             </div>
 
+            {/* 🚇 Smart Commute & Transit Accessibility Card (WorkIndia & Apna Style) */}
+            {(() => {
+              const nearestMetro = (job as any).nearestMetroStation || (job as any).nearest_metro_station || additionalDetails.nearestMetroStation;
+              const nearestBus = (job as any).nearestBusStand || (job as any).nearest_bus_stand || additionalDetails.nearestBusStand;
+              const companyTransport = Boolean((job as any).companyTransportProvided ?? (job as any).company_transport_provided ?? additionalDetails.companyTransportProvided);
+              const walkMins = (job as any).walkingMinutesToTransit || (job as any).walking_minutes_to_transit || additionalDetails.walkingMinutesToTransit || 5;
+              const landmark = (job as any).landmark || additionalDetails.landmark;
+
+              if (!nearestMetro && !nearestBus && !companyTransport && !landmark) return null;
+
+              return (
+                <div className="bg-[#f4f4f4] rounded-[1.75rem] p-6 sm:p-8 border border-[#e6e8ec] space-y-4">
+                  <div className="flex items-center gap-2 border-b border-[#e6e8ec] pb-3">
+                    <MapPin className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-xs font-bold uppercase text-[#717784]">
+                      How to Reach Worksite (பணிமனைக்கு செல்லும் வழி)
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {nearestMetro && (
+                      <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-1 shadow-2xs">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-900 block">Nearest Metro</span>
+                        <p className="text-xs font-bold text-blue-950">{nearestMetro} Metro Station</p>
+                        <p className="text-[11px] text-blue-800">~{walkMins} mins walk or share-auto from station</p>
+                      </div>
+                    )}
+
+                    {nearestBus && (
+                      <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-1 shadow-2xs">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 block">Nearest Bus Stop</span>
+                        <p className="text-xs font-bold text-amber-950">{nearestBus}</p>
+                        <p className="text-[11px] text-amber-800">Direct MTC/state bus connectivity</p>
+                      </div>
+                    )}
+
+                    {companyTransport && (
+                      <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-200/80 space-y-1 shadow-2xs sm:col-span-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-purple-900 block">Company Commute Provided</span>
+                        <p className="text-xs font-bold text-purple-950">Free Pickup & Drop Van / Cab</p>
+                        <p className="text-[11px] text-purple-800">Fixed shift pickup points provided by employer at no extra cost</p>
+                      </div>
+                    )}
+
+                    {landmark && !nearestMetro && !nearestBus && (
+                      <div className="p-4 rounded-2xl bg-white border border-[#e6e8ec] space-y-1 shadow-2xs sm:col-span-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] block">Worksite Landmark</span>
+                        <p className="text-xs font-bold text-[#0a0a0a]">{landmark}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Blue-Collar Perks & Facilities Card (WorkIndia & Apna Viral Conversion Pattern) */}
             {(() => {
               const perksList: string[] = Array.isArray((job as any).perks) && (job as any).perks.length > 0

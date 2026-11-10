@@ -9,13 +9,18 @@ const mapApp = (app: any): JobApplication => ({
   workerId: app.worker_id || app.workerId,
   appliedAt: app.applied_at || app.appliedAt,
   coverLetter: app.cover_letter || app.coverLetter,
+  transitModePreferred: app.transit_mode_preferred || app.transitModePreferred,
+  transit_mode_preferred: app.transit_mode_preferred || app.transitModePreferred,
   job: app.job || app.jobs,
   jobs: app.jobs || app.job,
   jobTitle: app.job?.title || app.jobs?.title || app.jobTitle,
 });
 
 export const applicationService = {
-  applyForJob: async (jobIdOrPayload: string | { jobId: string; coverLetter?: string }, coverLetter?: string): Promise<JobApplication> => {
+  applyForJob: async (
+    jobIdOrPayload: string | { jobId: string; coverLetter?: string; transitModePreferred?: string }, 
+    coverLetter?: string
+  ): Promise<JobApplication> => {
     const payload = typeof jobIdOrPayload === 'string'
       ? { jobId: jobIdOrPayload, coverLetter }
       : jobIdOrPayload;

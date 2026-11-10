@@ -57,10 +57,11 @@ model job_applications {
   id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   job_id       String    @db.Uuid
   worker_id    String    @db.VarChar(255)
-  status       String?   @default("PENDING") @db.VarChar(50)
-  cover_letter String?
-  applied_at   DateTime? @default(now()) @db.Timestamp(6)
-  jobs         jobs      @relation(fields: [job_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  status                 String?   @default("PENDING") @db.VarChar(50)
+  cover_letter           String?
+  applied_at             DateTime? @default(now()) @db.Timestamp(6)
+  transit_mode_preferred String?   @db.VarChar(50)
+  jobs                   jobs      @relation(fields: [job_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([job_id], map: "idx_job_applications_job_id")
   @@index([worker_id], map: "idx_job_applications_worker_id")
@@ -126,9 +127,14 @@ model jobs {
   date_posted               DateTime?             @db.Timestamp(6)
   last_verified_at          DateTime?             @db.Timestamp(6)
   required_documents        String[]              @default(["aadhaar", "bank_passbook"])
-  payout_frequency          String?               @default("MONTHLY") @db.VarChar(50)
-  payout_guarantee_badge    Boolean?              @default(true)
-  job_applications          job_applications[]
+  payout_frequency           String?               @default("MONTHLY") @db.VarChar(50)
+  payout_guarantee_badge     Boolean?              @default(true)
+  nearest_metro_station      String?               @db.VarChar(150)
+  nearest_bus_stand          String?               @db.VarChar(150)
+  company_transport_provided Boolean?              @default(false)
+  walking_minutes_to_transit Int?                  @default(5)
+  landmark                   String?               @db.VarChar(255)
+  job_applications           job_applications[]
   job_required_skills       job_required_skills[] @ignore
   saved_jobs                saved_jobs[]
 

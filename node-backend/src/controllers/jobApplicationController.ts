@@ -16,6 +16,8 @@ const formatApplication = (app: any) => {
     workerId: app.worker_id || app.workerId,
     appliedAt: app.applied_at || app.appliedAt,
     coverLetter: app.cover_letter || app.coverLetter,
+    transitModePreferred: (app as any).transit_mode_preferred || (app as any).transitModePreferred || (app.cover_letter?.includes('[Transit: ') ? app.cover_letter.split('[Transit: ')[1]?.replace(']', '') : null),
+    transit_mode_preferred: (app as any).transit_mode_preferred || (app as any).transitModePreferred || (app.cover_letter?.includes('[Transit: ') ? app.cover_letter.split('[Transit: ')[1]?.replace(']', '') : null),
     job: formattedJob || app.job,
     jobs: formattedJob || app.jobs,
     jobTitle: formattedJob?.title || app.jobTitle || rawJob?.title,
@@ -35,7 +37,7 @@ export const applyForJob = async (c: Context) => {
       return c.json(ApiResponse.error("Forbidden: Only worker accounts can apply for jobs."), 403 as any);
     }
 
-    const { jobId, coverLetter } = (await c.req.json());
+    const { jobId, coverLetter, transitModePreferred } = (await c.req.json());
     if (!jobId) return c.json(ApiResponse.error("Job ID is required"), 400 as any);
 
     const job = await prisma.jobs.findUnique({ where: { id: jobId } });
@@ -80,9 +82,9 @@ export const applyForJob = async (c: Context) => {
         job_id: jobId,
         worker_id: workerId,
         status: 'PENDING',
-        cover_letter: coverLetter,
+        cover_letter: coverLetter ? (transitModePreferred ? `${coverLetter} [Transit: ${transitModePreferred}]` : coverLetter) : (transitModePreferred ? `[Transit: ${transitModePreferred}]` : null),
         applied_at: new Date()
-      }
+      } as any
     });
 
     // Dispatch Synchronized Notification for Employer (In-App + FCM Push)

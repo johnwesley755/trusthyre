@@ -3,13 +3,33 @@ import { serve } from '@hono/node-server';
 import app from './app';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import path from 'path';
 
-// Load .env into process.env so our node server acts like Cloudflare Workers environment variables
-if (fs.existsSync('.env')) {
-  const envConfig = dotenv.parse(fs.readFileSync('.env'));
-  for (const k in envConfig) {
-    process.env[k] = envConfig[k];
+// Multi-path .env resolution so server runs identically whether invoked from repo root or node-backend
+const envCandidates = [
+  path.resolve(__dirname, '../.env'),
+  path.resolve(process.cwd(), 'node-backend/.env'),
+  path.resolve(process.cwd(), '.env'),
+];
+
+for (const envPath of envCandidates) {
+  if (fs.existsSync(envPath)) {
+    try {
+      const envConfig = dotenv.parse(fs.readFileSync(envPath));
+      for (const k in envConfig) {
+        if (!process.env[k]) {
+          process.env[k] = envConfig[k];
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
   }
+}
+
+// Ensure default local database fallback if DATABASE_URL is not set
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = "postgresql://postgres:G2q2hxzc%2427@localhost:5432/trusthire_auth_db?schema=public";
 }
 
 const port = Number(process.env.PORT) || 8787;
@@ -22,5 +42,3 @@ serve({
   port,
   hostname: '0.0.0.0'
 });
-
-
