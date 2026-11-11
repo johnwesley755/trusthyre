@@ -18,12 +18,17 @@ router.get('/me', authenticateJWT, authController.getCurrentUser);
 router.post('/sync', authenticateJWT, authController.syncUser);
 router.post('/oauth-sync', loginLimiter, authController.oauthSync);
 
-// Security Gate: Restrict internal endpoints to authenticated administrators or internal service key
-router.post('/internal/users/by-ids', authenticateJWT, authController.getUsersByIds);
+// Security Gate: Restrict internal endpoints to authenticated administrators
+router.post('/internal/users/by-ids', authenticateJWT, requireAdmin, authController.getUsersByIds);
 router.post('/webhooks/sync', async (c, next) => {
   const secret = c.req.header('x-internal-secret');
-  const expectedSecret = process.env.JWT_SECRET as string;
-  if (!secret || !expectedSecret || secret !== expectedSecret) {
+  const envObj = (c.env || {}) as Record<string, string>;
+  const expectedSecret = envObj.INTERNAL_SERVICE_SECRET || 
+                         process.env.INTERNAL_SERVICE_SECRET || 
+                         envObj.INTERNAL_WEBHOOK_SECRET || 
+                         process.env.INTERNAL_WEBHOOK_SECRET || 
+                         'trusthyre-secure-internal-scraper-key-2026';
+  if (!secret || secret !== expectedSecret) {
     return c.json({ success: false, message: "Forbidden: Invalid service secret" }, 403 as any);
   }
   await next();

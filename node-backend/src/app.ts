@@ -213,9 +213,38 @@ app.get('/rss.xml', async (c) => {
 
 app.onError((err, c) => {
   console.error('Unhandled Application Error:', err);
-  const origin = c.req.header('Origin') || '*';
-  c.header('Access-Control-Allow-Origin', origin);
-  c.header('Access-Control-Allow-Credentials', 'true');
+  const rawOrigin = c.req.header('Origin');
+  let allowedOrigin = '';
+  if (rawOrigin) {
+    if (ALLOWED_ORIGINS.includes(rawOrigin)) {
+      allowedOrigin = rawOrigin;
+    } else {
+      try {
+        const url = new URL(rawOrigin);
+        const host = url.hostname.toLowerCase();
+        if (
+          host === 'trusthyre.com' ||
+          host.endsWith('.trusthyre.com') ||
+          host === 'trusthire.in' ||
+          host.endsWith('.trusthire.in') ||
+          host === 'trust-hire-one.vercel.app' ||
+          host.endsWith('.trust-hire-one.vercel.app') ||
+          host === 'trust-hire-6edba.web.app' ||
+          host === 'trust-hire-6edba.firebaseapp.com'
+        ) {
+          allowedOrigin = rawOrigin;
+        }
+      } catch {
+        // Invalid origin format
+      }
+    }
+  }
+
+  if (allowedOrigin) {
+    c.header('Access-Control-Allow-Origin', allowedOrigin);
+    c.header('Access-Control-Allow-Credentials', 'true');
+  }
+
   const isProd = process.env.NODE_ENV === 'production';
   const safeMessage = isProd ? 'An unexpected error occurred. Please try again later.' : (err?.message || 'Internal Server Error');
   return c.json({ success: false, message: safeMessage }, 500);

@@ -1022,7 +1022,10 @@ export const acceptAdminInvitation = async (c: Context) => {
 
     // Issue JWT token so new admin is immediately authenticated
     const jwt = await import('jsonwebtoken');
-    const secret = (c.env?.JWT_SECRET as string) || (process.env.JWT_SECRET as string) || 'trusthyre_jwt_secret_default';
+    const secret = (c.env?.JWT_SECRET as string) || (process.env.JWT_SECRET as string);
+    if (!secret) {
+      throw new Error("Critical Security Error: JWT_SECRET environment variable is not configured");
+    }
     const authToken = jwt.default.sign(
       {
         sub: newAdmin.id,

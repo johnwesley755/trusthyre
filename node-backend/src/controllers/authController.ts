@@ -340,19 +340,25 @@ export const forgotPassword = async (c: Context) => {
 
 export const verifyResetCode = async (c: Context) => {
   try {
-    const { token, email } = (await c.req.json());
+    const { token, email } = (await c.req.json().catch(() => ({})));
+    if (!email || typeof email !== 'string' || !email.trim()) {
+      return c.json(ApiResponse.error("Email address is required to verify reset code"), 400 as any);
+    }
     if (!token || String(token).trim().length < 6) {
       return c.json(ApiResponse.error("A valid 6-digit verification code is required"), 400 as any);
     }
+    const cleanEmail = String(email).trim().toLowerCase();
     const cleanToken = String(token).trim();
-    const whereClause: any = {
-      reset_token: { in: [`RESET:${cleanToken}`, cleanToken] },
-      reset_token_expiry: { gt: new Date() }
-    };
-    if (email) {
-      whereClause.email = String(email).trim().toLowerCase();
-    }
-    const user = await prisma.user_metadata.findFirst({ where: whereClause });
+
+    // Security Fix SEC-01: Scoped strictly to email to prevent cross-account OTP brute force
+    const user = await prisma.user_metadata.findFirst({
+      where: {
+        email: cleanEmail,
+        reset_token: { in: [`RESET:${cleanToken}`, cleanToken] },
+        reset_token_expiry: { gt: new Date() }
+      }
+    });
+
     if (!user) {
       return c.json(ApiResponse.error("Invalid or expired verification code"), 400 as any);
     }
@@ -365,20 +371,23 @@ export const verifyResetCode = async (c: Context) => {
 
 export const resetPassword = async (c: Context) => {
   try {
-    const { token, password, email } = (await c.req.json());
-    if (!token) return c.json(ApiResponse.error("Reset token is required"), 400 as any);
-    const cleanToken = String(token).trim();
-    const cleanEmail = email ? String(email).trim().toLowerCase() : undefined;
-
-    const whereClause: any = {
-      reset_token: { in: [`RESET:${cleanToken}`, cleanToken] },
-      reset_token_expiry: { gt: new Date() }
-    };
-    if (cleanEmail) {
-      whereClause.email = cleanEmail;
+    const { token, password, email } = (await c.req.json().catch(() => ({})));
+    if (!email || typeof email !== 'string' || !email.trim()) {
+      return c.json(ApiResponse.error("Email address is required to reset password"), 400 as any);
     }
+    if (!token) return c.json(ApiResponse.error("Reset token is required"), 400 as any);
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanToken = String(token).trim();
 
-    const user = await prisma.user_metadata.findFirst({ where: whereClause });
+    // Security Fix SEC-01: Scoped strictly to email to prevent cross-account takeover
+    const user = await prisma.user_metadata.findFirst({
+      where: {
+        email: cleanEmail,
+        reset_token: { in: [`RESET:${cleanToken}`, cleanToken] },
+        reset_token_expiry: { gt: new Date() }
+      }
+    });
+
     if (!user) return c.json(ApiResponse.error("Invalid or expired token"), 400 as any);
 
     // Security Gate: Enforce password complexity policy
@@ -390,7 +399,7 @@ export const resetPassword = async (c: Context) => {
     const passwordHash = await bcrypt.hash(password, 10);
     await prisma.user_metadata.update({
       where: { id: user.id },
-      data: { password_hash: passwordHash, reset_token: null, reset_token_expiry: null }
+      data: { password_hash: passwordHash, reset_token: null, reset_token_expiry: null, updated_at: new Date() }
     });
     return c.json(ApiResponse.ok("Password updated successfully", "updated"));
   } catch (err: any) {

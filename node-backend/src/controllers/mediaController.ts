@@ -83,6 +83,23 @@ export const upload = async (c: Context) => {
     }
 
     const result = await uploadMedia(mediaInput, 'media', detectedMime);
+
+    // Security & Audit: Persist asset record with owner_id for deterministic RLS ownership
+    const authUser = c.get('user');
+    if (authUser?.sub && result?.public_id) {
+      await prisma.media_assets.create({
+        data: {
+          url: result.secure_url,
+          public_id: result.public_id,
+          file_name: (result as any).original_filename || null,
+          file_type: detectedMime,
+          file_size: (result as any).bytes ? BigInt((result as any).bytes) : null,
+          owner_id: authUser.sub,
+          created_at: new Date()
+        }
+      }).catch((e: any) => console.warn("[MediaController] DB record note:", e?.message));
+    }
+
     return c.json(ApiResponse.ok("File uploaded successfully", {
       url: result.secure_url,
       publicId: result.public_id,
@@ -104,42 +121,55 @@ export const remove = async (c: Context) => {
     const id = c.req.param('id') as string;
     if (!id) return c.json(ApiResponse.error("Media ID required"), 400 as any);
 
-    // Security Gate: Validate asset ownership
+    // Security Gate: Validate asset ownership via direct RLS-backed media_assets or legacy profile links
     if (authUser.role !== 'ADMIN') {
-      const [userWithMedia, workerWithMedia, verificationWithMedia] = await Promise.all([
-        prisma.user_metadata.findFirst({
-          where: {
-            id: authUser.sub,
-            profile_image_url: { contains: id }
-          }
-        }),
-        prisma.worker_profiles.findFirst({
-          where: {
-            user_id: authUser.sub,
-            OR: [
-              { profile_image_url: { contains: id } },
-              { resume_url: { contains: id } }
-            ]
-          }
-        }),
-        prisma.verification_records.findFirst({
-          where: {
-            user_id: authUser.sub,
-            OR: [
-              { doc_image_url: { contains: id } },
-              { live_image_url: { contains: id } }
-            ]
-          }
-        })
-      ]);
+      const ownedAsset = await prisma.media_assets.findFirst({
+        where: {
+          public_id: id,
+          owner_id: authUser.sub
+        }
+      });
 
-      const isOwner = Boolean(userWithMedia || workerWithMedia || verificationWithMedia);
-      if (!isOwner) {
-        return c.json(ApiResponse.error("Forbidden: You do not own this media asset."), 403 as any);
+      if (!ownedAsset) {
+        const [userWithMedia, workerWithMedia, verificationWithMedia] = await Promise.all([
+          prisma.user_metadata.findFirst({
+            where: {
+              id: authUser.sub,
+              profile_image_url: { contains: id }
+            }
+          }),
+          prisma.worker_profiles.findFirst({
+            where: {
+              user_id: authUser.sub,
+              OR: [
+                { profile_image_url: { contains: id } },
+                { resume_url: { contains: id } }
+              ]
+            }
+          }),
+          prisma.verification_records.findFirst({
+            where: {
+              user_id: authUser.sub,
+              OR: [
+                { doc_image_url: { contains: id } },
+                { live_image_url: { contains: id } }
+              ]
+            }
+          })
+        ]);
+
+        const isOwner = Boolean(userWithMedia || workerWithMedia || verificationWithMedia);
+        if (!isOwner) {
+          return c.json(ApiResponse.error("Forbidden: You do not own this media asset."), 403 as any);
+        }
       }
     }
 
     const result = await deleteMedia(id);
+    await prisma.media_assets.deleteMany({
+      where: { public_id: id }
+    }).catch(() => {});
+
     return c.json(ApiResponse.ok("File deleted", result));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
