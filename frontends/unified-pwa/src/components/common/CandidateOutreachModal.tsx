@@ -237,7 +237,7 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
           </button>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 font-mono text-xs text-[#0A1931] whitespace-pre-line leading-relaxed">
+        <div className="p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 font-mono text-xs text-[#0A1931] dark:text-emerald-200 whitespace-pre-line leading-relaxed">
           {`Hello ${candidate.fullName},
 We reviewed your verified profile on TrustHyre and invite you for an interview:
 • Position: ${jobTitle}
@@ -249,13 +249,13 @@ Please reply YES to confirm.`}
       </div>
 
       {/* Quick Call Information */}
-      <div className="p-3 rounded-2xl bg-[#F8FAFC] border border-[#e6e8ec] flex items-center justify-between text-xs">
+      <div className="p-3 rounded-2xl bg-[#F8FAFC] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           <Phone className="w-4 h-4 text-[#10b981]" />
           <span className="font-semibold text-[#717784] dark:text-zinc-400">
             Candidate Phone:
           </span>
-          <span className="font-bold font-mono text-[#0A1931]">
+          <span className="font-bold font-mono text-[#0A1931] dark:text-white">
             {candidatePhone}
           </span>
         </div>

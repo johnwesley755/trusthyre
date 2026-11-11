@@ -33,7 +33,7 @@ export const ProfileDetailsForm: React.FC<ProfileDetailsFormProps> = ({
   };
 
   return (
-    <section className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-sm border border-[#0A1931]/5">
+    <section className="bg-white dark:bg-[#09090B] rounded-[2rem] p-8 lg:p-10 shadow-sm border border-[#0A1931]/5 dark:border-zinc-800">
       <h3 className="text-xl font-black text-[#0A1931] dark:text-white mb-8 flex items-center gap-4">
         <span className="w-2.5 h-7 bg-[#FACD15] rounded-full shadow-[0_0_15px_rgba(250,205,21,0.5)]"></span>
         Application
@@ -47,7 +47,7 @@ export const ProfileDetailsForm: React.FC<ProfileDetailsFormProps> = ({
               name="fullName"
               value={form.fullName}
               onChange={handleChange}
-              className="w-full bg-[#F8FAFC] border-none rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
+              className="w-full bg-[#F8FAFC] dark:bg-[#121215] border border-transparent dark:border-zinc-800 rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
               type="text" 
             />
           </div>
@@ -57,7 +57,7 @@ export const ProfileDetailsForm: React.FC<ProfileDetailsFormProps> = ({
               name="city"
               value={form.city}
               onChange={handleChange}
-              className="w-full bg-[#F8FAFC] border-none rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
+              className="w-full bg-[#F8FAFC] dark:bg-[#121215] border border-transparent dark:border-zinc-800 rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
               type="text" 
             />
           </div>
@@ -67,7 +67,7 @@ export const ProfileDetailsForm: React.FC<ProfileDetailsFormProps> = ({
               name="experienceYears"
               value={form.experienceYears}
               onChange={handleChange}
-              className="w-full bg-[#F8FAFC] border-none rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
+              className="w-full bg-[#F8FAFC] dark:bg-[#121215] border border-transparent dark:border-zinc-800 rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
               type="number" 
             />
           </div>
@@ -77,7 +77,7 @@ export const ProfileDetailsForm: React.FC<ProfileDetailsFormProps> = ({
               name="hourlyRate"
               value={form.hourlyRate}
               onChange={handleChange}
-              className="w-full bg-[#F8FAFC] border-none rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
+              className="w-full bg-[#F8FAFC] dark:bg-[#121215] border border-transparent dark:border-zinc-800 rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
               type="number" 
             />
           </div>
@@ -100,7 +100,7 @@ export const ProfileDetailsForm: React.FC<ProfileDetailsFormProps> = ({
               value={form.address}
               onChange={handleChange}
               placeholder="Detect via map or enter manually..."
-              className="w-full bg-[#F8FAFC] border-none rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
+              className="w-full bg-[#F8FAFC] dark:bg-[#121215] border border-transparent dark:border-zinc-800 rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
               type="text" 
             />
 
@@ -128,7 +128,7 @@ export const ProfileDetailsForm: React.FC<ProfileDetailsFormProps> = ({
               value={form.skills}
               onChange={handleChange}
               placeholder="Electrical, HVAC, Plumbing..."
-              className="w-full bg-[#F8FAFC] border-none rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
+              className="w-full bg-[#F8FAFC] dark:bg-[#121215] border border-transparent dark:border-zinc-800 rounded-2xl px-5 py-3.5 focus:ring-2 focus:ring-[#FACD15]/50 text-[#0A1931] dark:text-white font-bold text-sm transition-all shadow-inner" 
               type="text" 
             />
           </div>

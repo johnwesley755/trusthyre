@@ -148,8 +148,8 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
           onClick={() => setPinToTop(!pinToTop)}
           className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
             pinToTop
-              ? 'border-[#0066ff] bg-[#eff6ff]/40 shadow-2xs'
-              : 'border-[#e6e8ec] bg-[#F8FAFC]'
+              ? 'border-[#0066ff] bg-[#eff6ff]/40 dark:bg-blue-950/30 shadow-2xs'
+              : 'border-[#e6e8ec] dark:border-zinc-800 bg-[#F8FAFC] dark:bg-[#121215] hover:border-slate-300 dark:hover:border-zinc-700'
           }`}
         >
           <div className="mt-0.5 text-[#0066ff]">
@@ -164,7 +164,7 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
               <span className="text-xs sm:text-sm font-bold text-[#0A1931] dark:text-white">
                 Pin Job to Top of Search Feed
               </span>
-              <span className="text-[10px] font-bold uppercase text-[#0066ff] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+              <span className="text-[10px] font-bold uppercase text-[#0066ff] dark:text-[#38BDF8] bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-800">
                 Rank #1
               </span>
             </div>
@@ -179,8 +179,8 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
           onClick={() => setAttachSpotHire(!attachSpotHire)}
           className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
             attachSpotHire
-              ? 'border-amber-400 bg-amber-50/40 shadow-2xs'
-              : 'border-[#e6e8ec] bg-[#F8FAFC]'
+              ? 'border-amber-400 bg-amber-50/40 dark:bg-amber-950/30 shadow-2xs'
+              : 'border-[#e6e8ec] dark:border-zinc-800 bg-[#F8FAFC] dark:bg-[#121215] hover:border-slate-300 dark:hover:border-zinc-700'
           }`}
         >
           <div className="mt-0.5 text-amber-600">
@@ -196,7 +196,7 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
                 <Flame className="w-4 h-4 text-amber-600 fill-amber-500" />
                 <span>Attach "⚡ Spot Hire" Urgent Tag</span>
               </span>
-              <span className="text-[10px] font-bold uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold uppercase text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
                 Urgent
               </span>
             </div>
@@ -211,8 +211,8 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
           onClick={() => setEnableWalkInPass(!enableWalkInPass)}
           className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
             enableWalkInPass
-              ? 'border-emerald-400 bg-emerald-50/40 shadow-2xs'
-              : 'border-[#e6e8ec] bg-[#F8FAFC]'
+              ? 'border-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/30 shadow-2xs'
+              : 'border-[#e6e8ec] dark:border-zinc-800 bg-[#F8FAFC] dark:bg-[#121215] hover:border-slate-300 dark:hover:border-zinc-700'
           }`}
         >
           <div className="mt-0.5 text-emerald-600">
@@ -228,7 +228,7 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 <span>Enable 1-Tap Walk-In Interview Pass</span>
               </span>
-              <span className="text-[10px] font-bold uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold uppercase text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                 Direct Entry
               </span>
             </div>

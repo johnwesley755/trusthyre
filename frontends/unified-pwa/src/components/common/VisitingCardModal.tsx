@@ -156,7 +156,7 @@ export const VisitingCardModal: React.FC<VisitingCardModalProps> = ({
 
             <div className="flex items-center gap-2.5 shrink-0">
               {/* Theme Toggle Button (Dark vs Light) */}
-              <div className="flex items-center bg-[#f4f4f4] p-0.5 rounded-xl border border-[#e6e8ec]">
+              <div className="flex items-center bg-[#f4f4f4] dark:bg-[#121215] p-0.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setThemeMode('dark')}
@@ -199,7 +199,7 @@ export const VisitingCardModal: React.FC<VisitingCardModalProps> = ({
           </div>
 
           {/* Scrollable Container with Preview Card */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[#f8f9fa] overscroll-contain flex flex-col items-center">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[#f8f9fa] dark:bg-[#000000] overscroll-contain flex flex-col items-center">
             
             {/* 📇 DUAL-THEME VISITING CARD */}
             <div 
@@ -373,7 +373,7 @@ export const VisitingCardModal: React.FC<VisitingCardModalProps> = ({
             <button
               type="button"
               onClick={handleCopyLink}
-              className="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-slate-700 hover:text-[#0a0a0a] hover:bg-slate-100 rounded-xl sm:rounded-full transition-colors cursor-pointer border border-[#e6e8ec] flex items-center justify-center gap-1.5 order-3 sm:order-1"
+              className="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl sm:rounded-full transition-colors cursor-pointer border border-[#e6e8ec] dark:border-zinc-700 flex items-center justify-center gap-1.5 order-3 sm:order-1"
             >
               {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />}
               <span>{isCopied ? 'Link Copied' : 'Copy Profile Link'}</span>
@@ -384,7 +384,7 @@ export const VisitingCardModal: React.FC<VisitingCardModalProps> = ({
                 type="button"
                 onClick={handleDownload}
                 disabled={isGenerating}
-                className="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-[#0f2f63] bg-[#0f2f63]/8 hover:bg-[#0f2f63]/15 rounded-xl sm:rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-[#0f2f63] dark:text-[#38BDF8] bg-[#0f2f63]/8 dark:bg-blue-950/40 hover:bg-[#0f2f63]/15 dark:hover:bg-blue-900/40 rounded-xl sm:rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
               >
                 {isGenerating ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
