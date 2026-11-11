@@ -29,7 +29,57 @@ import { LocationPicker } from '../components/LocationPicker';
 import { PostJobSuccessModal } from '../components/PostJobSuccessModal';
 import { toast } from 'sonner';
 import { TRADE_COVER_PRESETS, resolveTradeCover } from '../../../utils/coverImage.utils';
-import { Select } from '../../../components/ui/select';
+import { Dropdown } from '../../../components/ui/dropdown';
+
+const INDUSTRY_OPTIONS = [
+  { value: 'EDUCATION', label: 'Education, Teaching & Counseling' },
+  { value: 'HEALTHCARE', label: 'Healthcare & Medical Staff' },
+  { value: 'RETAIL', label: 'Retail & Counter Sales' },
+  { value: 'OFFICE_ADMIN', label: 'Office & Customer Support' },
+  { value: 'AUTOMOTIVE', label: 'Driver & Mobility Fleet' },
+  { value: 'ELECTRICAL', label: 'Electrical Work' },
+  { value: 'PLUMBING', label: 'Plumbing' },
+  { value: 'CONSTRUCTION', label: 'Construction & Masonry' },
+  { value: 'MAINTENANCE', label: 'Facility Maintenance & Repair' },
+  { value: 'LOGISTICS', label: 'Logistics & Warehouse' },
+  { value: 'COOKING_CHEF', label: 'Cooking / Commercial Chef' },
+  { value: 'HOSPITALITY', label: 'Hospitality & Hotel Staff' },
+  { value: 'DOMESTIC_HELP', label: 'Housekeeping / Cleaning' },
+  { value: 'SECURITY', label: 'Security Services' },
+  { value: 'MANUFACTURING', label: 'Manufacturing & Fabrication' },
+];
+
+const EMPLOYMENT_TYPE_OPTIONS = [
+  { value: '', label: 'Not specified' },
+  { value: 'Full Time', label: 'Full Time' },
+  { value: 'Part Time', label: 'Part Time' },
+  { value: 'Contract', label: 'Contract' },
+  { value: 'Shift Based', label: 'Shift Based' },
+];
+
+const SHIFT_OPTIONS = [
+  { value: '', label: 'Not specified' },
+  { value: 'Day Shift', label: 'Day Shift' },
+  { value: 'Night Shift', label: 'Night Shift' },
+  { value: 'Rotational Shift', label: 'Rotational Shift' },
+  { value: 'Flexible Hours', label: 'Flexible Hours' },
+];
+
+const EDUCATION_OPTIONS = [
+  { value: '', label: 'Not specified' },
+  { value: 'Below 10th', label: 'Below 10th' },
+  { value: '10th Pass', label: '10th Pass' },
+  { value: '12th Pass', label: '12th Pass' },
+  { value: 'Diploma / ITI', label: 'Diploma / ITI' },
+  { value: 'Graduate', label: 'Graduate' },
+  { value: 'Any Education', label: 'Any Education' },
+];
+
+const GENDER_OPTIONS = [
+  { value: '', label: 'Any gender' },
+  { value: 'Male Only', label: 'Male Only' },
+  { value: 'Female Only', label: 'Female Only' },
+];
 
 export const JobPostingPage = () => {
   const navigate = useNavigate();
@@ -460,11 +510,11 @@ export const JobPostingPage = () => {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0a0a0a]">Industry Category *</label>
-                    <Select 
+                    <Dropdown
                       name="industry"
                       value={industry}
-                      onChange={(e) => {
-                        const nextInd = e.target.value;
+                      onChange={(val) => {
+                        const nextInd = String(val);
                         setIndustry(nextInd);
                         setPreviewIndustry(nextInd);
                         if (!uploadedImageUrl) {
@@ -474,24 +524,10 @@ export const JobPostingPage = () => {
                           }
                         }
                       }}
-                      className="text-xs font-semibold"
-                    >
-                      <option value="EDUCATION">Education, Teaching & Counseling</option>
-                      <option value="HEALTHCARE">Healthcare & Medical Staff</option>
-                      <option value="RETAIL">Retail & Counter Sales</option>
-                      <option value="OFFICE_ADMIN">Office & Customer Support</option>
-                      <option value="AUTOMOTIVE">Driver & Mobility Fleet</option>
-                      <option value="ELECTRICAL">Electrical Work</option>
-                      <option value="PLUMBING">Plumbing</option>
-                      <option value="CONSTRUCTION">Construction & Masonry</option>
-                      <option value="MAINTENANCE">Facility Maintenance & Repair</option>
-                      <option value="LOGISTICS">Logistics & Warehouse</option>
-                      <option value="COOKING_CHEF">Cooking / Commercial Chef</option>
-                      <option value="HOSPITALITY">Hospitality & Hotel Staff</option>
-                      <option value="DOMESTIC_HELP">Housekeeping / Cleaning</option>
-                      <option value="SECURITY">Security Services</option>
-                      <option value="MANUFACTURING">Manufacturing & Fabrication</option>
-                    </Select>
+                      options={INDUSTRY_OPTIONS}
+                      searchable={true}
+                      placeholder="Select industry category"
+                    />
                   </div>
                 </div>
 
@@ -930,51 +966,37 @@ export const JobPostingPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0a0a0a]">Employment Type</label>
-                    <Select 
+                    <Dropdown
                       name="employmentType"
                       value={employmentType}
-                      onChange={(e) => setEmploymentType(e.target.value)}
-                    >
-                      <option value="">Not specified</option>
-                      <option value="Full Time">Full Time</option>
-                      <option value="Part Time">Part Time</option>
-                      <option value="Contract">Contract</option>
-                      <option value="Shift Based">Shift Based</option>
-                    </Select>
+                      onChange={(val) => setEmploymentType(String(val))}
+                      options={EMPLOYMENT_TYPE_OPTIONS}
+                      placeholder="Select employment type"
+                    />
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0a0a0a]">Shift</label>
-                    <Select 
+                    <Dropdown
                       name="shift"
                       value={shift}
-                      onChange={(e) => setShift(e.target.value)}
-                    >
-                      <option value="">Not specified</option>
-                      <option value="Day Shift">Day Shift</option>
-                      <option value="Night Shift">Night Shift</option>
-                      <option value="Rotational Shift">Rotational Shift</option>
-                      <option value="Flexible Hours">Flexible Hours</option>
-                    </Select>
+                      onChange={(val) => setShift(String(val))}
+                      options={SHIFT_OPTIONS}
+                      placeholder="Select shift"
+                    />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0a0a0a]">Education</label>
-                    <Select 
+                    <Dropdown
                       name="education"
                       value={education}
-                      onChange={(e) => setEducation(e.target.value)}
-                    >
-                      <option value="">Not specified</option>
-                      <option value="Below 10th">Below 10th</option>
-                      <option value="10th Pass">10th Pass</option>
-                      <option value="12th Pass">12th Pass</option>
-                      <option value="Diploma / ITI">Diploma / ITI</option>
-                      <option value="Graduate">Graduate</option>
-                      <option value="Any Education">Any Education</option>
-                    </Select>
+                      onChange={(val) => setEducation(String(val))}
+                      options={EDUCATION_OPTIONS}
+                      placeholder="Select education requirement"
+                    />
                   </div>
 
                   <div className="space-y-1.5">
@@ -1002,16 +1024,13 @@ export const JobPostingPage = () => {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-[#0a0a0a]">Gender Preference</label>
-                  <Select 
+                  <Dropdown
                     name="gender"
                     value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                  >
-                    <option value="">Any gender</option>
-                    <option value="Male Only">Male Only</option>
-                    <option value="Female Only">Female Only</option>
-                    <option value="Any gender">Any gender</option>
-                  </Select>
+                    onChange={(val) => setGender(String(val))}
+                    options={GENDER_OPTIONS}
+                    placeholder="Select gender preference"
+                  />
                 </div>
               </div>
 
