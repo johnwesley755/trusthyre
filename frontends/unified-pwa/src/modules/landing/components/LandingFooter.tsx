@@ -58,7 +58,7 @@ export function LandingFooter() {
           </h5>
           <div className="w-full max-w-[220px]">
             <Dropdown
-              variant="dark"
+              variant="default"
               value={language}
               onChange={(val) => setLanguage(val as any)}
               options={SUPPORTED_LANGUAGES.map((lang) => ({

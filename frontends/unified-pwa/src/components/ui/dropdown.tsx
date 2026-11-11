@@ -225,18 +225,18 @@ export function Dropdown<T extends string | number = string>({
     }
   }, [highlightedIndex]);
 
-  // Luxury-Grade Design Tokens & Aesthetics
+  // Design Tokens & Aesthetics (Strictly Light Theme by Default)
   const variantStyles = {
     default:
       'bg-white text-[#0A1931] border border-slate-200/90 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:border-slate-300 hover:shadow-xs focus-visible:border-[#0f2f63] focus-visible:ring-2 focus-visible:ring-[#0f2f63]/10',
     outline:
       'bg-white text-slate-800 border border-slate-300/80 hover:border-slate-400 hover:bg-slate-50/50 shadow-2xs focus-visible:border-[#0066FF] focus-visible:ring-2 focus-visible:ring-[#0066FF]/10',
     pill:
-      'bg-slate-100/90 hover:bg-slate-200/70 border border-slate-200/80 rounded-full text-[#0a0a0a] shadow-2xs focus-visible:ring-2 focus-visible:ring-[#0f2f63]/10',
+      'bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-[#0A1931] shadow-2xs focus-visible:ring-2 focus-visible:ring-[#0f2f63]/10',
     subtle:
       'bg-[#f8fafc] hover:bg-slate-100/90 border border-slate-200/80 text-slate-800 focus-visible:border-[#0f2f63] focus-visible:ring-2 focus-visible:ring-[#0f2f63]/10',
     dark:
-      'bg-slate-900/90 hover:bg-slate-900 border border-white/15 text-white shadow-lg backdrop-blur-md focus-visible:ring-2 focus-visible:ring-white/20',
+      'bg-white/15 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md focus-visible:ring-2 focus-visible:ring-white/30',
   };
 
   const sizeStyles = {
@@ -245,7 +245,7 @@ export function Dropdown<T extends string | number = string>({
     lg: 'h-12 px-4 py-2.5 text-sm sm:text-base gap-2.5 rounded-2xl font-semibold',
   };
 
-  const isDark = variant === 'dark';
+  const isTriggerDark = variant === 'dark';
 
   return (
     <div
@@ -288,7 +288,7 @@ export function Dropdown<T extends string | number = string>({
           variant === 'pill' && 'rounded-full',
           disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
           isOpen && 'border-[#0f2f63] ring-2 ring-[#0f2f63]/10 shadow-xs',
-          isOpen && isDark && 'border-white/30 ring-2 ring-white/10',
+          isOpen && isTriggerDark && 'border-white/50 ring-2 ring-white/20',
           triggerClassName
         )}
         aria-haspopup="listbox"
@@ -296,7 +296,7 @@ export function Dropdown<T extends string | number = string>({
       >
         <div className="flex items-center gap-2 truncate min-w-0 flex-1">
           {icon && (
-            <span className={cn('shrink-0 transition-colors', isDark ? 'text-slate-400' : 'text-slate-500')}>
+            <span className={cn('shrink-0 transition-colors', isTriggerDark ? 'text-white/80' : 'text-slate-500')}>
               {icon}
             </span>
           )}
@@ -304,8 +304,8 @@ export function Dropdown<T extends string | number = string>({
           <span
             className={cn(
               'truncate transition-colors',
-              !selectedOption && (isDark ? 'text-slate-400 font-normal' : 'text-slate-400 font-normal'),
-              selectedOption && (isDark ? 'text-white' : 'text-[#0A1931]')
+              !selectedOption && (isTriggerDark ? 'text-white/60 font-normal' : 'text-slate-400 font-normal'),
+              selectedOption && (isTriggerDark ? 'text-white font-medium' : 'text-[#0A1931]')
             )}
           >
             {selectedOption ? selectedOption.label : placeholder}
@@ -314,7 +314,7 @@ export function Dropdown<T extends string | number = string>({
             <span
               className={cn(
                 'ml-1 px-1.5 py-0.5 text-[10px] font-bold rounded-md shrink-0 uppercase tracking-wider',
-                isDark
+                isTriggerDark
                   ? 'bg-white/20 text-white'
                   : 'bg-[#0f2f63]/10 text-[#0f2f63]'
               )}
@@ -329,7 +329,12 @@ export function Dropdown<T extends string | number = string>({
             <button
               type="button"
               onClick={handleClear}
-              className="p-0.5 rounded-full hover:bg-slate-200/60 dark:hover:bg-white/20 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+              className={cn(
+                'p-0.5 rounded-full transition-colors',
+                isTriggerDark
+                  ? 'text-white/60 hover:text-white hover:bg-white/20'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+              )}
               title="Clear selection"
             >
               <X className="w-3 h-3" />
@@ -339,36 +344,28 @@ export function Dropdown<T extends string | number = string>({
           <ChevronDown
             className={cn(
               'w-3.5 h-3.5 shrink-0 transition-transform duration-200 ease-out',
-              isDark ? 'text-white/60' : 'text-slate-400',
+              isTriggerDark ? 'text-white/80' : 'text-slate-400',
               isOpen && 'rotate-180',
-              isOpen && (isDark ? 'text-white' : 'text-[#0f2f63]')
+              isOpen && (isTriggerDark ? 'text-white' : 'text-[#0f2f63]')
             )}
           />
         </div>
       </button>
 
-      {/* Floating Popover Menu with Raycast/Linear-Grade Floating Depth */}
+      {/* Floating Popover Menu (ALWAYS Crisp Light Theme) */}
       {isOpen && (
         <div
           className={cn(
-            'absolute z-50 mt-1.5 w-full min-w-[200px] rounded-2xl shadow-[0_12px_36px_-6px_rgba(15,47,99,0.18),0_4px_12px_-2px_rgba(0,0,0,0.06)] border overflow-hidden',
+            'absolute z-50 mt-1.5 w-full min-w-[200px] rounded-2xl shadow-[0_12px_36px_-6px_rgba(15,47,99,0.18),0_4px_12px_-2px_rgba(0,0,0,0.06)] border border-slate-200/90 bg-white text-[#0A1931] overflow-hidden',
             'animate-in fade-in-0 zoom-in-95 slide-in-from-top-1.5 duration-150 ease-out',
-            isDark
-              ? 'bg-slate-900/95 border-slate-700/80 text-white backdrop-blur-md'
-              : 'bg-white/98 border-slate-200/90 text-[#0A1931] backdrop-blur-md',
             menuClassName
           )}
           role="listbox"
         >
-          {/* Frosted Glass Sticky Search Input */}
+          {/* Frosted Glass Sticky Search Input (Light Theme) */}
           {isSearchEnabled && (
-            <div
-              className={cn(
-                'sticky top-0 z-10 px-3 py-2 border-b flex items-center gap-2 backdrop-blur-xs',
-                isDark ? 'bg-slate-900/90 border-slate-800' : 'bg-white/95 border-slate-100'
-              )}
-            >
-              <Search className={cn('w-3.5 h-3.5 shrink-0', isDark ? 'text-slate-400' : 'text-slate-400')} />
+            <div className="sticky top-0 z-10 px-3 py-2 border-b border-slate-100 bg-white/95 backdrop-blur-xs flex items-center gap-2">
+              <Search className="w-3.5 h-3.5 shrink-0 text-slate-400" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -378,19 +375,13 @@ export function Dropdown<T extends string | number = string>({
                   setHighlightedIndex(0);
                 }}
                 placeholder="Search options..."
-                className={cn(
-                  'w-full text-xs font-medium placeholder:font-normal bg-transparent outline-none',
-                  isDark ? 'text-white placeholder:text-slate-400' : 'text-slate-800 placeholder:text-slate-400'
-                )}
+                className="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400 placeholder:font-normal bg-transparent outline-none"
               />
               {searchTerm && (
                 <button
                   type="button"
                   onClick={() => setSearchTerm('')}
-                  className={cn(
-                    'p-0.5 rounded-full transition-colors',
-                    isDark ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-600'
-                  )}
+                  className="p-0.5 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -398,7 +389,7 @@ export function Dropdown<T extends string | number = string>({
             </div>
           )}
 
-          {/* Options List with Dynamic Padding & Pill Highlights */}
+          {/* Options List (Light Theme with Smooth Rounded Highlights) */}
           <div ref={menuListRef} className="max-h-64 overflow-y-auto no-scrollbar p-1.5 space-y-0.5">
             {filteredOptions.length === 0 ? (
               <div className="px-3.5 py-6 text-xs text-slate-400 text-center font-medium">
@@ -419,21 +410,9 @@ export function Dropdown<T extends string | number = string>({
                     onMouseEnter={() => setHighlightedIndex(idx)}
                     className={cn(
                       'w-full px-3 py-2 rounded-xl text-left flex items-center justify-between text-xs transition-all duration-100 cursor-pointer select-none',
-                      isSelected && (
-                        isDark
-                          ? 'bg-blue-600/30 text-white font-bold ring-1 ring-blue-500/40'
-                          : 'bg-[#0f2f63]/10 text-[#0f2f63] font-bold'
-                      ),
-                      !isSelected && isHighlighted && (
-                        isDark
-                          ? 'bg-white/10 text-white font-medium'
-                          : 'bg-slate-100 text-[#0A1931] font-medium'
-                      ),
-                      !isSelected && !isHighlighted && (
-                        isDark
-                          ? 'text-slate-300 hover:bg-white/10'
-                          : 'text-slate-700 hover:bg-slate-50'
-                      ),
+                      isSelected && 'bg-[#0f2f63]/10 text-[#0f2f63] font-bold',
+                      !isSelected && isHighlighted && 'bg-slate-100 text-[#0A1931] font-semibold',
+                      !isSelected && !isHighlighted && 'text-slate-700 hover:bg-slate-50 font-medium',
                       option.disabled && 'opacity-40 cursor-not-allowed pointer-events-none'
                     )}
                     role="option"
@@ -448,35 +427,25 @@ export function Dropdown<T extends string | number = string>({
                       <div className="truncate flex flex-col">
                         <span className="truncate">{option.label}</span>
                         {option.description && (
-                          <span className={cn('text-[10px] truncate mt-0.5', isDark ? 'text-slate-400' : 'text-slate-500')}>
+                          <span className="text-[10px] text-slate-500 truncate mt-0.5">
                             {option.description}
                           </span>
                         )}
                       </div>
                       {option.sublabel && (
-                        <span className={cn('text-[10px] shrink-0', isDark ? 'text-slate-400' : 'text-slate-400')}>
+                        <span className="text-[10px] text-slate-400 shrink-0">
                           {option.sublabel}
                         </span>
                       )}
                       {option.badge && (
-                        <span
-                          className={cn(
-                            'px-1.5 py-0.5 text-[9px] font-bold rounded-md shrink-0 uppercase tracking-wider',
-                            isDark ? 'bg-white/20 text-white' : 'bg-slate-200/70 text-slate-700'
-                          )}
-                        >
+                        <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md shrink-0 uppercase tracking-wider bg-slate-200/70 text-slate-700">
                           {option.badge}
                         </span>
                       )}
                     </div>
 
                     {isSelected && (
-                      <Check
-                        className={cn(
-                          'w-3.5 h-3.5 shrink-0 ml-1.5',
-                          isDark ? 'text-blue-400' : 'text-[#0f2f63]'
-                        )}
-                      />
+                      <Check className="w-3.5 h-3.5 shrink-0 ml-1.5 text-[#0f2f63]" />
                     )}
                   </button>
                 );

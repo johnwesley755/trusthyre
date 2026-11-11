@@ -704,13 +704,13 @@ export default function LandingPage() {
                 </>
               )}
 
-              {/* Language Switcher Pill */}
+              {/* Language Switcher Pill (Light Theme) */}
               <div className="relative shrink-0">
                 <Dropdown
-                  variant="dark"
+                  variant="pill"
                   size="sm"
                   fullWidth={false}
-                  icon={<Globe className="w-3.5 h-3.5 text-white shrink-0" />}
+                  icon={<Globe className="w-3.5 h-3.5 text-[#0f2f63] shrink-0" />}
                   value={language}
                   onChange={(val) => setLanguage(val as any)}
                   options={SUPPORTED_LANGUAGES.map((lang) => ({
@@ -718,8 +718,8 @@ export default function LandingPage() {
                     label: lang.native,
                     sublabel: lang.name,
                   }))}
-                  triggerClassName="rounded-full px-3 py-1.5"
-                  menuClassName="w-48 right-0 text-[#0a0a0a]"
+                  triggerClassName="rounded-full px-3.5 py-1.5 bg-white text-[#0A1931] border border-slate-200/90 shadow-2xs font-semibold hover:bg-slate-50 transition-colors"
+                  menuClassName="w-48 right-0"
                 />
               </div>
 
