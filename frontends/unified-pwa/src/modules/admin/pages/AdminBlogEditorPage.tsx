@@ -243,7 +243,7 @@ export const AdminBlogEditorPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-12 text-center text-[#717784] text-xs animate-pulse font-['Onest',system-ui,sans-serif]">
+      <div className="p-12 text-center text-[#717784] dark:text-zinc-400 text-xs animate-pulse font-['Onest',system-ui,sans-serif]">
         Loading article editor...
       </div>
     );
@@ -252,19 +252,19 @@ export const AdminBlogEditorPage: React.FC = () => {
   return (
     <div className="space-y-6 pb-20 max-w-7xl w-full mx-auto font-['Onest',system-ui,sans-serif]">
       {/* Editor Header Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#121215] p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs">
         <div className="flex items-center gap-3">
           <Link
             to="/admin/blog"
-            className="p-2 text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f4f4] rounded-full transition-colors"
+            className="p-2 text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 rounded-full transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold uppercase tracking-tight text-[#0a0a0a]">
+            <h1 className="text-lg sm:text-xl font-bold uppercase tracking-tight text-[#0a0a0a] dark:text-white">
               {isEditing ? 'Edit Article' : 'Compose New Article'}
             </h1>
-            <p className="text-[11px] text-[#717784] font-mono">
+            <p className="text-[11px] text-[#717784] dark:text-zinc-400 font-mono">
               /blog/{slug || 'url-slug'}
             </p>
           </div>
@@ -274,16 +274,16 @@ export const AdminBlogEditorPage: React.FC = () => {
           <button
             onClick={() => handleSubmit(false)}
             disabled={saving}
-            className="px-4 py-2 bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] rounded-full text-xs font-semibold uppercase tracking-wider border border-[#e6e8ec] transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 bg-[#f4f4f4] dark:bg-zinc-800 hover:bg-[#e6e8ec] dark:hover:bg-zinc-700 text-[#0a0a0a] dark:text-zinc-100 rounded-full text-xs font-semibold uppercase tracking-wider border border-[#e6e8ec] dark:border-zinc-700 transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Save className="w-4 h-4 text-[#717784]" />
+            <Save className="w-4 h-4 text-[#717784] dark:text-zinc-400" />
             <span>{saving ? 'Saving...' : 'Save Draft'}</span>
           </button>
 
           <button
             onClick={() => handleSubmit(true)}
             disabled={saving}
-            className="px-5 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
+            className="px-5 py-2 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#2563c9] text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
           >
             <Globe className="w-4 h-4" />
             <span>{status === 'PUBLISHED' ? 'Update Live' : 'Publish Article'}</span>
@@ -297,9 +297,9 @@ export const AdminBlogEditorPage: React.FC = () => {
         <div className="lg:col-span-8 space-y-6">
           
           {/* Article Core Metadata Card */}
-          <div className="bg-white p-6 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-4">
+          <div className="bg-white dark:bg-[#121215] p-6 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] dark:text-white mb-1.5">
                 Article Title *
               </label>
               <input
@@ -307,13 +307,13 @@ export const AdminBlogEditorPage: React.FC = () => {
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="e.g. Electrician Jobs & Hiring in Chennai: Skills & Certifications"
-                className="w-full px-4 py-2.5 rounded-xl border border-[#e6e8ec] text-sm font-semibold text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63] focus:ring-1 focus:ring-[#0f2f63] shadow-2xs transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-sm font-semibold text-[#0a0a0a] dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-1 focus:ring-[#0f2f63] shadow-2xs transition-all"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-semibold text-[#5a6270] uppercase mb-1">
+                <label className="block text-[11px] font-semibold text-[#5a6270] dark:text-zinc-400 uppercase mb-1">
                   URL Slug (Auto or Custom)
                 </label>
                 <input
@@ -321,12 +321,12 @@ export const AdminBlogEditorPage: React.FC = () => {
                   value={slug}
                   onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, ''))}
                   placeholder="electrician-hiring-guide-chennai"
-                  className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] text-xs font-mono text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-mono text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-[#5a6270] uppercase mb-1">
+                <label className="block text-[11px] font-semibold text-[#5a6270] dark:text-zinc-400 uppercase mb-1">
                   Category
                 </label>
                 <Select
@@ -342,7 +342,7 @@ export const AdminBlogEditorPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-[#5a6270] uppercase mb-1">
+              <label className="block text-[11px] font-semibold text-[#5a6270] dark:text-zinc-400 uppercase mb-1">
                 Short Excerpt (Displayed on Cards & Search Previews)
               </label>
               <textarea
@@ -350,20 +350,20 @@ export const AdminBlogEditorPage: React.FC = () => {
                 value={excerpt}
                 onChange={(e) => handleExcerptChange(e.target.value)}
                 placeholder="A concise 2-sentence summary outlining what this guide covers..."
-                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] text-xs text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63]"
+                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs text-[#0a0a0a] dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
               />
             </div>
           </div>
 
           {/* Content Editor Tab Bar */}
-          <div className="bg-white rounded-2xl border border-[#e6e8ec] shadow-xs overflow-hidden">
-            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-[#f4f4f4] border-b border-[#e6e8ec]">
+          <div className="bg-white dark:bg-[#121215] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-[#f4f4f4] dark:bg-[#09090b] border-b border-[#e6e8ec] dark:border-zinc-800">
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setActiveTab('write')}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
-                    activeTab === 'write' ? 'bg-[#0f2f63] text-white shadow-xs' : 'text-[#717784] hover:text-[#0a0a0a]'
+                    activeTab === 'write' ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-xs' : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
                   }`}
                 >
                   <FileText className="w-3.5 h-3.5" />
@@ -373,7 +373,7 @@ export const AdminBlogEditorPage: React.FC = () => {
                   type="button"
                   onClick={() => setActiveTab('preview')}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
-                    activeTab === 'preview' ? 'bg-[#0f2f63] text-white shadow-xs' : 'text-[#717784] hover:text-[#0a0a0a]'
+                    activeTab === 'preview' ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-xs' : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
                   }`}
                 >
                   <Eye className="w-3.5 h-3.5" />
@@ -393,18 +393,18 @@ export const AdminBlogEditorPage: React.FC = () => {
                   type="button"
                   onClick={() => contentFileInputRef.current?.click()}
                   disabled={uploadingContentImage}
-                  className="px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5 bg-white border border-[#e6e8ec] text-[#0a0a0a] hover:bg-[#e6e8ec] disabled:opacity-50 cursor-pointer shadow-2xs"
+                  className="px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5 bg-white dark:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-700 text-[#0a0a0a] dark:text-zinc-100 hover:bg-[#e6e8ec] dark:hover:bg-zinc-700 disabled:opacity-50 cursor-pointer shadow-2xs"
                   title="Upload an image to Cloudinary and insert markdown into article"
                 >
                   {uploadingContentImage ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0f2f63]" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0f2f63] dark:text-sky-400" />
                   ) : (
-                    <Upload className="w-3.5 h-3.5 text-[#0f2f63]" />
+                    <Upload className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
                   )}
                   <span>{uploadingContentImage ? 'Uploading...' : 'Insert Image (Cloudinary)'}</span>
                 </button>
 
-                <div className="text-[10px] text-[#717784] font-mono hidden sm:block">
+                <div className="text-[10px] text-[#717784] dark:text-zinc-500 font-mono hidden sm:block">
                   Markdown: ## H2, ### H3, - Lists, &gt; Quotes
                 </div>
               </div>
@@ -416,10 +416,10 @@ export const AdminBlogEditorPage: React.FC = () => {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Write your article in Markdown or rich text...&#10;&#10;## 1. Introduction&#10;Explain the industry demand in the region...&#10;&#10;## 2. Required Qualifications&#10;- ITI Certification&#10;- Government Wireman License&#10;&#10;> Verified technicians on TrustHyre complete photo check-ins daily."
-                className="w-full p-4 text-xs font-mono text-[#0a0a0a] leading-relaxed focus:outline-none resize-y min-h-[420px]"
+                className="w-full p-4 text-xs font-mono text-[#0a0a0a] dark:text-zinc-100 bg-white dark:bg-[#000000] leading-relaxed focus:outline-none resize-y min-h-[420px]"
               />
             ) : (
-              <div className="p-6 max-w-none text-xs leading-relaxed min-h-[420px] bg-slate-50/30">
+              <div className="p-6 max-w-none text-xs leading-relaxed min-h-[420px] bg-slate-50/30 dark:bg-[#000000] text-[#0a0a0a] dark:text-zinc-100">
                 <MarkdownContent content={content} />
               </div>
             )}
@@ -431,51 +431,51 @@ export const AdminBlogEditorPage: React.FC = () => {
         <div className="lg:col-span-4 space-y-6">
           
           {/* Target Geography & Trade Filter */}
-          <div className="bg-white p-5 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#0f2f63]" />
+          <div className="bg-white dark:bg-[#121215] p-5 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] dark:text-white flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
               <span>GEO & Trade Targeting</span>
             </h3>
 
             <div>
-              <label className="block text-[11px] font-semibold text-[#5a6270] mb-1">Target City</label>
+              <label className="block text-[11px] font-semibold text-[#5a6270] dark:text-zinc-400 mb-1">Target City</label>
               <input
                 type="text"
                 value={targetCity}
                 onChange={(e) => setTargetCity(e.target.value)}
                 placeholder="e.g. Chennai, Bangalore, Coimbatore"
-                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] text-xs text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63]"
+                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-[#5a6270] mb-1">Target Skilled Trade</label>
+              <label className="block text-[11px] font-semibold text-[#5a6270] dark:text-zinc-400 mb-1">Target Skilled Trade</label>
               <input
                 type="text"
                 value={targetTrade}
                 onChange={(e) => setTargetTrade(e.target.value)}
                 placeholder="e.g. Electrician, Warehouse Staff, Plumber"
-                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] text-xs text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63]"
+                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-[#5a6270] mb-1">Tags (Comma-separated)</label>
+              <label className="block text-[11px] font-semibold text-[#5a6270] dark:text-zinc-400 mb-1">Tags (Comma-separated)</label>
               <input
                 type="text"
                 value={tagsInput}
                 onChange={(e) => setTagsInput(e.target.value)}
                 placeholder="Hiring, Blue Collar, Chennai"
-                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] text-xs text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63]"
+                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
               />
             </div>
           </div>
 
           {/* Cover Image Settings */}
-          <div className="bg-white p-5 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-4">
+          <div className="bg-white dark:bg-[#121215] p-5 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] flex items-center gap-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-[#0f2f63]" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] dark:text-white flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
                 <span>Cover Image</span>
               </h3>
               {coverImageUrl && (
@@ -502,7 +502,7 @@ export const AdminBlogEditorPage: React.FC = () => {
               type="button"
               onClick={() => coverFileInputRef.current?.click()}
               disabled={uploadingCover}
-              className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[#0f2f63]/30 hover:border-[#0f2f63] bg-[#0f2f63]/5 hover:bg-[#0f2f63]/10 text-xs font-semibold text-[#0f2f63] flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[#0f2f63]/30 dark:border-sky-500/40 hover:border-[#0f2f63] dark:hover:border-sky-400 bg-[#0f2f63]/5 dark:bg-sky-500/10 hover:bg-[#0f2f63]/10 text-xs font-semibold text-[#0f2f63] dark:text-sky-400 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
             >
               {uploadingCover ? (
                 <>
@@ -518,7 +518,7 @@ export const AdminBlogEditorPage: React.FC = () => {
             </button>
 
             <div>
-              <label className="block text-[10px] font-semibold text-[#717784] uppercase mb-1">
+              <label className="block text-[10px] font-semibold text-[#717784] dark:text-zinc-500 uppercase mb-1">
                 Or Paste Image URL directly
               </label>
               <input
@@ -526,18 +526,18 @@ export const AdminBlogEditorPage: React.FC = () => {
                 value={coverImageUrl}
                 onChange={(e) => setCoverImageUrl(e.target.value)}
                 placeholder="https://res.cloudinary.com/... or https://images.unsplash.com/..."
-                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] text-xs text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63]"
+                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
               />
             </div>
 
             {(() => {
               const sanitizedCoverUrl = sanitizeUrl(coverImageUrl);
               return sanitizedCoverUrl ? (
-                <div className="rounded-xl overflow-hidden aspect-video bg-[#f4f4f4] border border-[#e6e8ec]">
+                <div className="rounded-xl overflow-hidden aspect-video bg-[#f4f4f4] dark:bg-zinc-900 border border-[#e6e8ec] dark:border-zinc-800">
                   <img src={sanitizedCoverUrl} alt="Cover Preview" className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="p-4 text-center border-2 border-dashed border-[#e6e8ec] rounded-xl text-[#717784] text-[11px]">
+                <div className="p-4 text-center border-2 border-dashed border-[#e6e8ec] dark:border-zinc-800 rounded-xl text-[#717784] dark:text-zinc-500 text-[11px]">
                   Upload an image to Cloudinary or paste a valid URL to preview hero banner
                 </div>
               );
@@ -545,16 +545,16 @@ export const AdminBlogEditorPage: React.FC = () => {
           </div>
 
           {/* SEO & SERP Snippet Preview */}
-          <div className="bg-white p-5 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#0f2f63]" />
+          <div className="bg-white dark:bg-[#121215] p-5 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] dark:text-white flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
               <span>Search Engine Optimization</span>
             </h3>
 
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="text-[11px] font-semibold text-[#5a6270]">Meta Title</label>
-                <span className={`text-[10px] font-mono ${metaTitle.length > 60 ? 'text-amber-600 font-bold' : 'text-[#717784]'}`}>
+                <label className="text-[11px] font-semibold text-[#5a6270] dark:text-zinc-400">Meta Title</label>
+                <span className={`text-[10px] font-mono ${metaTitle.length > 60 ? 'text-amber-600 font-bold' : 'text-[#717784] dark:text-zinc-500'}`}>
                   {metaTitle.length}/60
                 </span>
               </div>
@@ -563,14 +563,14 @@ export const AdminBlogEditorPage: React.FC = () => {
                 value={metaTitle}
                 onChange={(e) => setMetaTitle(e.target.value)}
                 placeholder="Title shown on Google SERPs..."
-                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] text-xs text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63]"
+                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
               />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="text-[11px] font-semibold text-[#5a6270]">Meta Description</label>
-                <span className={`text-[10px] font-mono ${metaDescription.length > 160 ? 'text-amber-600 font-bold' : 'text-[#717784]'}`}>
+                <label className="text-[11px] font-semibold text-[#5a6270] dark:text-zinc-400">Meta Description</label>
+                <span className={`text-[10px] font-mono ${metaDescription.length > 160 ? 'text-amber-600 font-bold' : 'text-[#717784] dark:text-zinc-500'}`}>
                   {metaDescription.length}/160
                 </span>
               </div>
@@ -579,25 +579,25 @@ export const AdminBlogEditorPage: React.FC = () => {
                 value={metaDescription}
                 onChange={(e) => setMetaDescription(e.target.value)}
                 placeholder="Description snippet shown on search engines..."
-                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] text-xs text-[#0a0a0a] focus:outline-none focus:border-[#0f2f63]"
+                className="w-full px-3 py-2 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
               />
             </div>
 
             {/* Google SERP Card Preview */}
             <div className="pt-2">
-              <p className="text-[10px] font-bold uppercase text-[#717784] mb-1.5">Google Search Preview</p>
-              <div className="bg-[#f4f4f4] p-3 rounded-xl border border-[#e6e8ec] space-y-1">
-                <div className="text-[10px] text-[#717784] font-mono flex items-center gap-1 truncate">
+              <p className="text-[10px] font-bold uppercase text-[#717784] dark:text-zinc-500 mb-1.5">Google Search Preview</p>
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] p-3 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 space-y-1">
+                <div className="text-[10px] text-[#717784] dark:text-zinc-500 font-mono flex items-center gap-1 truncate">
                   <span>https://trusthyre.com</span>
                   <span>›</span>
                   <span>blog</span>
                   <span>›</span>
                   <span className="truncate">{slug || 'article-slug'}</span>
                 </div>
-                <div className="text-xs font-bold text-[#0f2f63] line-clamp-1">
+                <div className="text-xs font-bold text-[#0f2f63] dark:text-[#38BDF8] line-clamp-1">
                   {metaTitle || title || 'Article Title'} | TrustHyre
                 </div>
-                <div className="text-[11px] text-[#5a6270] line-clamp-2 leading-snug">
+                <div className="text-[11px] text-[#5a6270] dark:text-zinc-400 line-clamp-2 leading-snug">
                   {metaDescription || excerpt || 'Article excerpt and meta summary will appear here on Google searches.'}
                 </div>
               </div>

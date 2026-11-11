@@ -185,14 +185,14 @@ export default function ApplicationManagementPage() {
 
   if (isJobsLoading || (isAppsLoading && !allApplications)) {
     return (
-      <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] flex items-center justify-center">
+      <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] flex items-center justify-center transition-colors duration-200">
         <AppLoader variant="page" message="Loading hiring pipeline & applications..." />
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
+    <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <main className="max-w-7xl mx-auto space-y-6 pb-20">
         
         {/* VIEW 1: OPENINGS LISTING (When no job is selected) */}
@@ -200,27 +200,27 @@ export default function ApplicationManagementPage() {
           <div className="space-y-6">
             
             {/* Header Hero Card */}
-            <div className="bg-[#f4f4f4] rounded-[2rem] p-6 sm:p-8 border border-[#e6e8ec]">
+            <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-8 border border-[#e6e8ec] dark:border-zinc-800">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] animate-pulse" />
-                    <span className="text-[10px] font-semibold uppercase text-[#0f2f63]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] dark:bg-sky-400 animate-pulse" />
+                    <span className="text-[10px] font-semibold uppercase text-[#0f2f63] dark:text-sky-400">
                       Employer Operations Hub
                     </span>
                   </div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a]">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100">
                     Active Openings & Applications
                   </h1>
-                  <p className="text-xs text-[#717784] font-medium leading-relaxed max-w-xl">
+                  <p className="text-xs text-[#717784] dark:text-zinc-400 font-medium leading-relaxed max-w-xl">
                     Select any active job posting to review candidate profiles, verify technical certifications, and extend instant shift offers.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="bg-white px-3.5 py-1.5 rounded-full flex items-center gap-2 border border-[#e6e8ec] shadow-2xs">
+                  <div className="bg-white dark:bg-[#121215] px-3.5 py-1.5 rounded-full flex items-center gap-2 border border-[#e6e8ec] dark:border-zinc-800 shadow-2xs">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-xs font-bold text-[#0a0a0a] tabular-nums">
+                    <span className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200 tabular-nums">
                       {allApplications.length} Applicants Received
                     </span>
                   </div>
@@ -237,9 +237,9 @@ export default function ApplicationManagementPage() {
 
           
             {/* Search Filter Capsule */}
-            <div className="bg-[#fbfbfb] p-3 rounded-2xl border border-[#e6e8ec] flex items-center gap-3">
+            <div className="bg-[#fbfbfb] dark:bg-[#09090b] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 flex items-center gap-3">
               <div className="relative flex-1">
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#717784]" />
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#717784] dark:text-zinc-500" />
                 <input
                   type="text"
                   value={jobSearchQuery}
@@ -248,22 +248,22 @@ export default function ApplicationManagementPage() {
                     setJobCurrentPage(1);
                   }}
                   placeholder="Filter openings by role title, trade, or site location..."
-                  className="w-full text-xs pl-9 pr-4 py-2 rounded-xl bg-white border border-[#e6e8ec] focus:border-[#0f2f63] outline-none"
+                  className="w-full text-xs pl-9 pr-4 py-2 rounded-xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-sky-500 text-[#0a0a0a] dark:text-zinc-100 outline-none"
                 />
               </div>
-              <span className="text-xs font-semibold text-[#717784] shrink-0 px-2 tabular-nums">
+              <span className="text-xs font-semibold text-[#717784] dark:text-zinc-400 shrink-0 px-2 tabular-nums">
                 {filteredJobs.length} {filteredJobs.length === 1 ? 'Job' : 'Jobs'}
               </span>
             </div>
 
             {/* Jobs Cards Grid */}
             {filteredJobs.length === 0 ? (
-              <div className="bg-[#f4f4f4] rounded-[1.75rem] p-10 border border-[#e6e8ec] text-center space-y-3">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto text-[#717784] border border-[#e6e8ec]">
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-[1.75rem] p-10 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-3">
+                <div className="w-12 h-12 bg-white dark:bg-[#121215] rounded-full flex items-center justify-center mx-auto text-[#717784] dark:text-zinc-400 border border-[#e6e8ec] dark:border-zinc-800">
                   <Briefcase className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-bold text-[#0a0a0a]">No Openings Found</h3>
-                <p className="text-xs text-[#717784] max-w-sm mx-auto">
+                <h3 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">No Openings Found</h3>
+                <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-sm mx-auto">
                   {jobSearchQuery ? "No jobs match your search filter." : "You haven't posted any jobs yet. Create a new listing to start receiving verified applicants."}
                 </p>
                 <Link
@@ -294,59 +294,59 @@ export default function ApplicationManagementPage() {
                           setSelectedJobId(job.id);
                           navigate(`/jobs/${job.id}/applicants`);
                         }}
-                        className={`bg-white rounded-2xl p-5 border transition-all space-y-4 shadow-2xs group cursor-pointer flex flex-col justify-between ${
+                        className={`rounded-2xl p-5 border transition-all space-y-4 shadow-2xs group cursor-pointer flex flex-col justify-between ${
                           isExpired 
-                            ? 'border-rose-200 hover:border-rose-300 bg-rose-50/20' 
-                            : 'border-[#e6e8ec] hover:border-[#0f2f63]/40'
+                            ? 'border-rose-200 dark:border-rose-900/40 hover:border-rose-300 dark:hover:border-rose-800 bg-rose-50/20 dark:bg-rose-950/20' 
+                            : 'bg-white dark:bg-[#121215] border-[#e6e8ec] dark:border-zinc-800/80 hover:border-[#0f2f63]/40 dark:hover:border-zinc-700'
                         }`}
                       >
                         <div className="space-y-2.5">
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="px-2 py-0.5 rounded-full bg-[#0f2f63]/5 text-[#0f2f63] text-[10px] font-bold border border-[#0f2f63]/10">
+                                <span className="px-2 py-0.5 rounded-full bg-[#0f2f63]/5 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 text-[10px] font-bold border border-[#0f2f63]/10 dark:border-sky-500/20">
                                   {job.industry || 'Specialist'}
                                 </span>
                                 {isExpired ? (
-                                  <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-800 text-[10px] font-bold border border-rose-200 flex items-center gap-1">
+                                  <span className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-[10px] font-bold border border-rose-200 dark:border-rose-900/50 flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                                     <span>EXPIRED</span>
                                   </span>
                                 ) : (
-                                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
+                                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                     <span>{job.status || 'ACTIVE'}</span>
                                   </span>
                                 )}
                               </div>
-                              <h3 className="text-base font-bold text-[#0a0a0a] group-hover:text-[#0f2f63] transition-colors mt-1">
+                              <h3 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100 group-hover:text-[#0f2f63] dark:group-hover:text-sky-400 transition-colors mt-1">
                                 {job.title}
                               </h3>
                             </div>
 
                             <div className="text-right shrink-0">
-                              <span className="font-bold text-sm text-emerald-700">
+                              <span className="font-bold text-sm text-emerald-700 dark:text-emerald-400">
                                 ₹{(job.budget || 0).toLocaleString('en-IN')}
                               </span>
-                              <span className="block text-[10px] text-[#717784]">Direct Posting</span>
+                              <span className="block text-[10px] text-[#717784] dark:text-zinc-400">Direct Posting</span>
                             </div>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-2.5 text-xs text-[#717784]">
+                          <div className="flex flex-wrap items-center gap-2.5 text-xs text-[#717784] dark:text-zinc-400">
                             <span className="flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5 text-[#0f2f63]" />
+                              <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
                               <span>{job.location || job.city || 'Pan India'}</span>
                             </span>
                             <span>•</span>
                             <span className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-[#717784]" />
+                              <Clock className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-500" />
                               <span>{job.createdAt ? new Date(job.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recent'}</span>
                             </span>
                             {job.expiresAt && (
                               <>
                                 <span>•</span>
-                                <span className={`flex items-center gap-1 ${isExpired ? 'text-rose-700 font-semibold' : 'text-[#717784]'}`}>
-                                  <CalendarClock className={`w-3.5 h-3.5 ${isExpired ? 'text-rose-600' : 'text-[#0f2f63]'}`} />
+                                <span className={`flex items-center gap-1 ${isExpired ? 'text-rose-700 dark:text-rose-400 font-semibold' : 'text-[#717784] dark:text-zinc-400'}`}>
+                                  <CalendarClock className={`w-3.5 h-3.5 ${isExpired ? 'text-rose-600 dark:text-rose-400' : 'text-[#0f2f63] dark:text-sky-400'}`} />
                                   <span>
                                     {isExpired ? 'Expired' : 'Expires'}: {new Date(job.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}, {new Date(job.expiresAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                                   </span>
@@ -356,13 +356,13 @@ export default function ApplicationManagementPage() {
                           </div>
                         </div>
 
-                      <div className="pt-3 border-t border-[#e6e8ec] flex items-center justify-between">
+                      <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-[#0a0a0a]">
+                          <span className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">
                             {totalCount} Total Applicants
                           </span>
                           {pendingCount > 0 && (
-                            <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-bold border border-amber-200 animate-pulse">
+                            <span className="px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-[10px] font-bold border border-amber-200 dark:border-amber-900/50 animate-pulse">
                               {pendingCount} need review
                             </span>
                           )}
@@ -372,12 +372,12 @@ export default function ApplicationManagementPage() {
                           <Link
                             to={`/post-job?jobId=${job.id}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="p-1.5 rounded-lg hover:bg-slate-100 text-[#717784] hover:text-[#0f2f63] transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-[#717784] dark:text-zinc-400 hover:text-[#0f2f63] dark:hover:text-sky-400 transition-colors"
                             title="Edit Opening"
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </Link>
-                          <span className="text-xs font-semibold text-[#0f2f63] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                          <span className="text-xs font-semibold text-[#0f2f63] dark:text-sky-400 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                             <span>Review Applicants</span>
                             <ChevronRight className="w-3.5 h-3.5" />
                           </span>
@@ -418,19 +418,19 @@ export default function ApplicationManagementPage() {
                 setStatusFilter('ALL');
                 navigate('/jobs');
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] text-xs font-medium transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f4f4f4] dark:bg-[#121215] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-transparent dark:border-zinc-800 text-xs font-medium transition-all cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               <span>Back to All Openings</span>
             </button>
 
             {!selectedJob && !isJobsLoading ? (
-              <div className="bg-[#f4f4f4] rounded-[2rem] p-10 border border-[#e6e8ec] text-center space-y-4">
-                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mx-auto text-[#717784] border border-[#e6e8ec] shadow-xs">
-                  <Briefcase className="w-7 h-7 text-[#0f2f63]" />
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-[2rem] p-10 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-4">
+                <div className="w-14 h-14 bg-white dark:bg-[#121215] rounded-2xl flex items-center justify-center mx-auto text-[#717784] border border-[#e6e8ec] dark:border-zinc-800 shadow-xs">
+                  <Briefcase className="w-7 h-7 text-[#0f2f63] dark:text-sky-400" />
                 </div>
-                <h3 className="text-lg font-bold text-[#0a0a0a]">Opening Not Found</h3>
-                <p className="text-xs text-[#717784] max-w-md mx-auto">
+                <h3 className="text-lg font-bold text-[#0a0a0a] dark:text-zinc-100">Opening Not Found</h3>
+                <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-md mx-auto">
                   The requested job opening could not be located in your listings. It may have been archived or removed.
                 </p>
                 <button
@@ -459,39 +459,39 @@ export default function ApplicationManagementPage() {
                 <>
                   <div className={`rounded-[2rem] p-6 sm:p-8 border transition-all ${
                     isSelectedJobExpired 
-                      ? 'bg-rose-50/40 border-rose-200' 
-                      : 'bg-[#f4f4f4] border-[#e6e8ec]'
+                      ? 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40' 
+                      : 'bg-[#f4f4f4] dark:bg-[#09090b] border-[#e6e8ec] dark:border-zinc-800'
                   }`}>
                     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-full bg-[#0f2f63]/5 text-[#0f2f63] text-[10px] font-bold border border-[#0f2f63]/10">
+                          <span className="px-2 py-0.5 rounded-full bg-[#0f2f63]/5 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 text-[10px] font-bold border border-[#0f2f63]/10 dark:border-sky-500/20">
                             {selectedJob?.industry || 'Enterprise Trade'}
                           </span>
                           {isSelectedJobExpired ? (
-                            <span className="text-xs font-semibold text-rose-800 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200 flex items-center gap-1">
+                            <span className="text-xs font-semibold text-rose-800 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-900/50 flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                               <span>Requisition Expired</span>
                             </span>
                           ) : (
-                            <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                            <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                               <span>Requisition Active</span>
                             </span>
                           )}
                         </div>
 
-                        <h1 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a]">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100">
                           {selectedJob?.title}
                         </h1>
 
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-[#717784]">
-                          <span className="font-semibold text-emerald-700">
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-[#717784] dark:text-zinc-400">
+                          <span className="font-semibold text-emerald-700 dark:text-emerald-400">
                             ₹{(selectedJob?.budget || 0).toLocaleString('en-IN')} / month
                           </span>
                           <span>•</span>
                           <span className="flex items-center gap-1">
-                            <MapPin className="w-3.5 h-3.5 text-[#0f2f63]" />
+                            <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
                             <span>{selectedJob?.location || selectedJob?.city || 'Worksite'}</span>
                           </span>
                           <span>•</span>
@@ -506,8 +506,8 @@ export default function ApplicationManagementPage() {
                           {selectedJob?.expiresAt && (
                             <>
                               <span>•</span>
-                              <span className={`flex items-center gap-1 font-semibold ${isSelectedJobExpired ? 'text-rose-700' : 'text-[#717784]'}`}>
-                                <CalendarClock className={`w-3.5 h-3.5 ${isSelectedJobExpired ? 'text-rose-600' : 'text-[#0f2f63]'}`} />
+                              <span className={`flex items-center gap-1 font-semibold ${isSelectedJobExpired ? 'text-rose-700 dark:text-rose-400' : 'text-[#717784]'}`}>
+                                <CalendarClock className={`w-3.5 h-3.5 ${isSelectedJobExpired ? 'text-rose-600 dark:text-rose-400' : 'text-[#0f2f63] dark:text-sky-400'}`} />
                                 <span>
                                   {isSelectedJobExpired ? 'Expired on' : 'Auto-expires:'} {new Date(selectedJob.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(selectedJob.expiresAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
@@ -521,26 +521,26 @@ export default function ApplicationManagementPage() {
                       <div className="flex flex-wrap items-center gap-3">
                         <Link
                           to={`/post-job?jobId=${selectedJob?.id}`}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white hover:bg-slate-50 border border-[#e6e8ec] text-[#0a0a0a] text-xs font-semibold uppercase transition-all shadow-2xs hover:border-[#0f2f63] hover:text-[#0f2f63] cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white dark:bg-[#121215] hover:bg-slate-50 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 text-[#0a0a0a] dark:text-zinc-200 text-xs font-semibold uppercase transition-all shadow-2xs hover:border-[#0f2f63] dark:hover:border-sky-500 hover:text-[#0f2f63] dark:hover:text-sky-400 cursor-pointer"
                         >
                           <Edit className="w-3.5 h-3.5" />
                           <span>Edit Opening</span>
                         </Link>
 
-                        <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-[#e6e8ec] shadow-2xs">
+                        <div className="flex items-center gap-3 bg-white dark:bg-[#121215] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-2xs">
                           <div className="text-center px-2">
-                            <p className="text-base font-bold text-[#0a0a0a] tabular-nums tracking-tight">{countAll}</p>
-                            <p className="text-[10px] text-[#717784] font-medium uppercase">Total</p>
+                            <p className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">{countAll}</p>
+                            <p className="text-[10px] text-[#717784] dark:text-zinc-400 font-medium uppercase">Total</p>
                           </div>
-                          <div className="w-px h-6 bg-[#e6e8ec]" />
+                          <div className="w-px h-6 bg-[#e6e8ec] dark:bg-zinc-800" />
                           <div className="text-center px-2">
-                            <p className="text-base font-bold text-amber-600 tabular-nums tracking-tight">{countPending}</p>
-                            <p className="text-[10px] text-[#717784] font-medium uppercase">Review</p>
+                            <p className="text-base font-bold text-amber-600 dark:text-amber-400 tabular-nums tracking-tight">{countPending}</p>
+                            <p className="text-[10px] text-[#717784] dark:text-zinc-400 font-medium uppercase">Review</p>
                           </div>
-                          <div className="w-px h-6 bg-[#e6e8ec]" />
+                          <div className="w-px h-6 bg-[#e6e8ec] dark:bg-zinc-800" />
                           <div className="text-center px-2">
-                            <p className="text-base font-bold text-emerald-600 tabular-nums tracking-tight">{countAccepted}</p>
-                            <p className="text-[10px] text-[#717784] font-medium uppercase">Hired</p>
+                            <p className="text-base font-bold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">{countAccepted}</p>
+                            <p className="text-[10px] text-[#717784] dark:text-zinc-400 font-medium uppercase">Hired</p>
                           </div>
                         </div>
                       </div>
@@ -548,16 +548,16 @@ export default function ApplicationManagementPage() {
                   </div>
 
                   {isSelectedJobExpired && (
-                    <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                    <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-rose-700 shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center text-rose-700 dark:text-rose-300 shrink-0">
                           <Clock className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-rose-950 uppercase tracking-wide">
+                          <h4 className="text-xs font-bold text-rose-950 dark:text-rose-200 uppercase tracking-wide">
                             Job Requisition Closed • Auto-Expired
                           </h4>
-                          <p className="text-xs text-rose-800 mt-0.5">
+                          <p className="text-xs text-rose-800 dark:text-rose-300 mt-0.5">
                             This opening expired on {selectedJob?.expiresAt ? `${new Date(selectedJob.expiresAt).toLocaleDateString('en-IN', { dateStyle: 'medium' })} at ${new Date(selectedJob.expiresAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : 'the scheduled deadline'}. Applications from new workers are closed. You can review and process all existing applicants below.
                           </p>
                         </div>
@@ -575,7 +575,7 @@ export default function ApplicationManagementPage() {
             })()}
 
             {/* Status Filter Tabs Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-[#fbfbfb] p-3 rounded-2xl border border-[#e6e8ec]">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-[#fbfbfb] dark:bg-[#09090b] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800">
               <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
                 {[
                   { id: 'ALL', label: 'All Applicants', count: countAll },
@@ -593,7 +593,7 @@ export default function ApplicationManagementPage() {
                     className={`px-3.5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                       statusFilter === tab.id
                         ? 'bg-[#0f2f63] text-white shadow-xs'
-                        : 'bg-white text-[#717784] hover:text-[#0a0a0a] border border-[#e6e8ec]'
+                        : 'bg-white dark:bg-[#121215] text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-zinc-100 border border-[#e6e8ec] dark:border-zinc-800'
                     }`}
                   >
                     {tab.pulse && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />}
@@ -638,7 +638,7 @@ export default function ApplicationManagementPage() {
                   return (
                     <div
                       key={app.id}
-                      className="bg-white rounded-2xl p-5 border border-[#e6e8ec] hover:border-[#0f2f63]/40 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-2xs group"
+                      className="bg-white dark:bg-[#121215] rounded-2xl p-5 border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/40 dark:hover:border-zinc-700 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-2xs group"
                     >
                       <div className="flex items-start gap-3.5 flex-1 min-w-0">
                         <UserAvatar
@@ -649,33 +649,35 @@ export default function ApplicationManagementPage() {
 
                         <div className="space-y-1.5 min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h4 className="text-base font-bold text-[#0a0a0a]">
+                            <h4 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">
                               {candidateName}
                             </h4>
                             <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              isVerified ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-[#717784]'
+                              isVerified 
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50' 
+                                : 'bg-slate-100 dark:bg-zinc-800 text-[#717784] dark:text-zinc-400'
                             }`}>
-                              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                              <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                               <span>{isVerified ? 'Biometric Verified' : 'ID Pending'}</span>
                             </span>
                             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                               isApproved 
-                                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50' 
                                 : isOfferSent 
-                                ? 'bg-amber-50 text-amber-800 border border-amber-200 animate-pulse' 
+                                ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50 animate-pulse' 
                                 : isDeclined 
-                                ? 'bg-rose-50 text-rose-800 border border-rose-200' 
-                                : 'bg-blue-50 text-[#0f2f63] border border-blue-200'
+                                ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-900/50' 
+                                : 'bg-blue-50 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-300 border border-blue-200 dark:border-sky-900/50'
                             }`}>
                               {app.status}
                             </span>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-[#717784]">
-                            <span className="font-semibold text-[#0a0a0a]">{candidateRole}</span>
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-[#717784] dark:text-zinc-400">
+                            <span className="font-semibold text-[#0a0a0a] dark:text-zinc-200">{candidateRole}</span>
                             <span>•</span>
                             <span className="flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5 text-[#0f2f63]" />
+                              <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
                               <span>{worker?.city || worker?.location || 'Local Zone'}</span>
                             </span>
                             <span>•</span>
@@ -683,16 +685,16 @@ export default function ApplicationManagementPage() {
                           </div>
 
                           {app.coverLetter && (
-                            <p className="text-xs text-[#717784] bg-[#fbfbfb] p-2.5 rounded-xl border border-[#e6e8ec] italic max-w-xl">
+                            <p className="text-xs text-[#717784] dark:text-zinc-300 bg-[#fbfbfb] dark:bg-[#1C1C21] p-2.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 italic max-w-xl">
                               "{app.coverLetter}"
                             </p>
                           )}
 
                           {(app.voiceNoteUrl || (app as any).voice_note_url) && (
-                            <div className="flex items-center gap-3 bg-sky-50 border border-sky-200 rounded-xl p-2.5 max-w-md">
+                            <div className="flex items-center gap-3 bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 rounded-xl p-2.5 max-w-md">
                               <span className="text-base">🎙️</span>
                               <div className="flex-1">
-                                <span className="text-[11px] font-bold text-sky-950 block">Candidate Voice Introduction</span>
+                                <span className="text-[11px] font-bold text-sky-950 dark:text-sky-200 block">Candidate Voice Introduction</span>
                                 <audio 
                                   controls 
                                   src={app.voiceNoteUrl || (app as any).voice_note_url} 
@@ -705,7 +707,7 @@ export default function ApplicationManagementPage() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex flex-wrap items-center gap-2 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-[#e6e8ec]">
+                      <div className="flex flex-wrap items-center gap-2 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-[#e6e8ec] dark:border-zinc-800">
                         {/* 💬 Quick WhatsApp Outreach / Call Modal */}
                         <button
                           type="button"
@@ -731,7 +733,7 @@ export default function ApplicationManagementPage() {
 
                         <Link
                           to={`/worker/${app.workerId}`}
-                          className="px-4 py-2 bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] rounded-full text-xs font-semibold uppercase transition-all"
+                          className="px-4 py-2 bg-[#f4f4f4] dark:bg-[#1C1C21] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-transparent dark:border-zinc-800 rounded-full text-xs font-semibold uppercase transition-all"
                         >
                           View CV
                         </Link>
@@ -755,7 +757,7 @@ export default function ApplicationManagementPage() {
                             <button
                               onClick={() => mutation.mutate({ id: app.id, status: 'DECLINED' })}
                               disabled={mutation.isPending}
-                              className="px-3 py-2 bg-white border border-[#e6e8ec] text-rose-600 hover:bg-rose-50 rounded-full text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-1 disabled:opacity-60"
+                              className="px-3 py-2 bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-full text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-1 disabled:opacity-60"
                             >
                               {mutation.isPending && (mutation.variables as any)?.id === app.id && (mutation.variables as any)?.status === 'DECLINED' && (
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -766,15 +768,15 @@ export default function ApplicationManagementPage() {
                         )}
 
                         {isOfferSent && (
-                          <span className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
+                          <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-900/50">
                             Awaiting Candidate Confirmation
                           </span>
                         )}
 
                         {isApproved && (
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                               <span>Confirmed for Shift</span>
                             </span>
                             <button
@@ -785,7 +787,7 @@ export default function ApplicationManagementPage() {
                                 rateeName: candidateName,
                                 jobTitle: selectedJob?.title || 'Verified Job Shift'
                               })}
-                              className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+                              className="px-3.5 py-1.5 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50 rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95"
                             >
                               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
                               <span>Rate Worker</span>
@@ -794,7 +796,7 @@ export default function ApplicationManagementPage() {
                         )}
 
                         {isDeclined && (
-                          <span className="text-xs font-bold text-rose-700 bg-rose-50 px-3 py-1.5 rounded-full border border-rose-200">
+                          <span className="text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 rounded-full border border-rose-200 dark:border-rose-900/50">
                             Offer Declined
                           </span>
                         )}

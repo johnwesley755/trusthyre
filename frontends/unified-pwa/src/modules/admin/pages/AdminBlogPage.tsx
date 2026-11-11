@@ -93,15 +93,15 @@ export const AdminBlogPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 font-['Onest',system-ui,sans-serif]">
+    <div className="space-y-6 font-['Onest',system-ui,sans-serif] w-full max-w-full min-w-0">
       {/* Top Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-[#e6e8ec] shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#09090b] p-5 sm:p-6 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs transition-colors">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-[#0a0a0a] flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-[#0f2f63]" />
+          <h1 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-[#0a0a0a] dark:text-white flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-[#0f2f63] dark:text-sky-400" />
             <span>Blog & SEO Editorial Suite</span>
           </h1>
-          <p className="text-xs text-[#717784] mt-1">
+          <p className="text-xs text-[#717784] dark:text-zinc-400 mt-1">
             Author, publish, and optimize blue-collar trade articles to dominate Google organic search across India.
           </p>
         </div>
@@ -111,15 +111,15 @@ export const AdminBlogPage: React.FC = () => {
             to="/blog"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-full border border-[#e6e8ec] text-[#5a6270] hover:text-[#0a0a0a] hover:bg-[#f4f4f4] text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5"
+            className="px-4 py-2 rounded-full border border-[#e6e8ec] dark:border-zinc-700 text-[#5a6270] dark:text-zinc-300 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5"
           >
-            <Globe className="w-3.5 h-3.5 text-[#0f2f63]" />
+            <Globe className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
             <span>View Public Blog</span>
           </Link>
 
           <Link
             to="/admin/blog/new"
-            className="px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
+            className="px-4 py-2 bg-[#0f2f63] dark:bg-sky-600 hover:bg-[#2563c9] dark:hover:bg-sky-500 text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>New Article</span>
@@ -128,15 +128,15 @@ export const AdminBlogPage: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-[#e6e8ec] shadow-xs">
-        <form onSubmit={handleSearchSubmit} className="w-full md:w-96 flex items-center bg-[#f4f4f4] px-3.5 py-2 rounded-full border border-[#e6e8ec] focus-within:border-[#0f2f63] transition-all">
-          <Search className="w-4 h-4 text-[#717784] mr-2 shrink-0" />
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-[#09090b] p-4 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs transition-colors">
+        <form onSubmit={handleSearchSubmit} className="w-full md:w-96 flex items-center bg-[#f4f4f4] dark:bg-[#121215] px-3.5 py-2 rounded-full border border-[#e6e8ec] dark:border-zinc-800 focus-within:border-[#0f2f63] dark:focus-within:border-sky-500 transition-all">
+          <Search className="w-4 h-4 text-[#717784] dark:text-zinc-400 mr-2 shrink-0" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by title, slug, or author..."
-            className="w-full bg-transparent text-xs text-[#0a0a0a] placeholder:text-[#717784] focus:outline-none"
+            className="w-full bg-transparent text-xs text-[#0a0a0a] dark:text-white placeholder:text-[#717784] dark:placeholder:text-zinc-500 focus:outline-none"
           />
         </form>
 
@@ -147,8 +147,8 @@ export const AdminBlogPage: React.FC = () => {
               onClick={() => setStatusFilter(status)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider whitespace-nowrap transition-colors cursor-pointer ${
                 statusFilter === status
-                  ? 'bg-[#0f2f63] text-white shadow-xs'
-                  : 'bg-[#f4f4f4] text-[#5a6270] hover:text-[#0a0a0a] hover:bg-[#e6e8ec]'
+                  ? 'bg-[#0f2f63] dark:bg-sky-500 text-white shadow-xs'
+                  : 'bg-[#f4f4f4] dark:bg-[#121215] text-[#5a6270] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-[#e6e8ec] dark:hover:bg-zinc-800'
               }`}
             >
               {status}
@@ -158,21 +158,21 @@ export const AdminBlogPage: React.FC = () => {
       </div>
 
       {/* Articles Table */}
-      <div className="bg-white rounded-2xl border border-[#e6e8ec] shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-[#09090b] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs overflow-hidden transition-colors">
         {loading ? (
-          <div className="p-12 text-center text-[#717784] text-xs animate-pulse">
+          <div className="p-12 text-center text-[#717784] dark:text-zinc-400 text-xs animate-pulse">
             Loading editorial database...
           </div>
         ) : posts.length === 0 ? (
           <div className="p-12 text-center space-y-3">
-            <BookOpen className="w-12 h-12 text-[#717784] mx-auto opacity-40" />
-            <p className="text-sm font-bold text-[#0a0a0a]">No articles found</p>
-            <p className="text-xs text-[#717784] max-w-sm mx-auto">
+            <BookOpen className="w-12 h-12 text-[#717784] dark:text-zinc-600 mx-auto opacity-40" />
+            <p className="text-sm font-bold text-[#0a0a0a] dark:text-white">No articles found</p>
+            <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-sm mx-auto">
               You haven't created any articles matching the current filter. Write your first blue-collar hiring guide now.
             </p>
             <Link
               to="/admin/blog/new"
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-semibold uppercase tracking-wider shadow-xs"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0f2f63] dark:bg-sky-600 hover:bg-[#2563c9] dark:hover:bg-sky-500 text-white rounded-full text-xs font-semibold uppercase tracking-wider shadow-xs"
             >
               <Plus className="w-4 h-4" />
               <span>Create Article</span>
@@ -182,7 +182,7 @@ export const AdminBlogPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#e6e8ec] bg-[#f4f4f4]/60 text-[11px] font-bold uppercase tracking-wider text-[#717784]">
+                <tr className="border-b border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4]/60 dark:bg-[#121215] text-[11px] font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400">
                   <th className="py-3.5 px-4">Article</th>
                   <th className="py-3.5 px-4">Trade & Location</th>
                   <th className="py-3.5 px-4">Status</th>
@@ -191,28 +191,28 @@ export const AdminBlogPage: React.FC = () => {
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e6e8ec] text-xs">
+              <tbody className="divide-y divide-[#e6e8ec] dark:divide-zinc-800 text-xs">
                 {posts.map((post) => {
                   const isPub = post.status === 'PUBLISHED';
                   const isActionLoading = actionLoadingId === post.id;
 
                   return (
-                    <tr key={post.id} className="hover:bg-[#f4f4f4]/40 transition-colors">
+                    <tr key={post.id} className="hover:bg-[#f4f4f4]/40 dark:hover:bg-[#121215]/60 transition-colors">
                       <td className="py-3.5 px-4 max-w-sm">
-                        <div className="font-semibold text-[#0a0a0a] line-clamp-1">{post.title}</div>
-                        <div className="text-[11px] text-[#717784] font-mono mt-0.5 truncate">/blog/{post.slug}</div>
+                        <div className="font-semibold text-[#0a0a0a] dark:text-zinc-100 line-clamp-1">{post.title}</div>
+                        <div className="text-[11px] text-[#717784] dark:text-zinc-400 font-mono mt-0.5 truncate">/blog/{post.slug}</div>
                       </td>
 
                       <td className="py-3.5 px-4">
                         <div className="flex flex-wrap gap-1">
                           {post.targetTrade && (
-                            <span className="px-2 py-0.5 bg-[#0f2f63]/10 text-[#0f2f63] rounded-full text-[10px] font-semibold flex items-center gap-1">
+                            <span className="px-2 py-0.5 bg-[#0f2f63]/10 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-400 rounded-full text-[10px] font-semibold flex items-center gap-1 border border-transparent dark:border-sky-900/40">
                               <Briefcase className="w-3 h-3" />
                               <span>{post.targetTrade}</span>
                             </span>
                           )}
                           {post.targetCity && (
-                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-semibold flex items-center gap-1 border border-emerald-100">
+                            <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-full text-[10px] font-semibold flex items-center gap-1 border border-emerald-100 dark:border-emerald-900/40">
                               <MapPin className="w-3 h-3" />
                               <span>{post.targetCity}</span>
                             </span>
@@ -226,23 +226,23 @@ export const AdminBlogPage: React.FC = () => {
                           disabled={isActionLoading}
                           className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-all cursor-pointer ${
                             isPub
-                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
-                              : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'
+                              : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40 hover:bg-amber-100 dark:hover:bg-amber-900/50'
                           }`}
                         >
-                          {isPub ? <CheckCircle className="w-3 h-3 text-emerald-600" /> : <AlertCircle className="w-3 h-3 text-amber-600" />}
+                          {isPub ? <CheckCircle className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> : <AlertCircle className="w-3 h-3 text-amber-600 dark:text-amber-400" />}
                           <span>{post.status}</span>
                         </button>
                       </td>
 
-                      <td className="py-3.5 px-4 text-[#5a6270]">
+                      <td className="py-3.5 px-4 text-[#5a6270] dark:text-zinc-400">
                         <div className="flex items-center gap-3 text-[11px]">
                           <span className="flex items-center gap-1" title="Views">
-                            <Eye className="w-3.5 h-3.5 text-[#717784]" />
+                            <Eye className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-400" />
                             <span>{post.viewCount}</span>
                           </span>
                           <span className="flex items-center gap-1" title="Reading time">
-                            <Clock className="w-3.5 h-3.5 text-[#717784]" />
+                            <Clock className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-400" />
                             <span>{post.readTimeMinutes}m</span>
                           </span>
                         </div>

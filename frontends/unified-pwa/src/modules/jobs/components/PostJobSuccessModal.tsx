@@ -51,13 +51,13 @@ export const PostJobSuccessModal: React.FC<PostJobSuccessModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm font-['Onest',system-ui,sans-serif]">
-      <div className="w-full max-w-lg bg-white rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative border border-[#e6e8ec] animate-[fadeRise_0.3s_ease-out]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm font-['Onest',system-ui,sans-serif]">
+      <div className="w-full max-w-lg bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-white dark:text-zinc-100 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative border border-slate-200 dark:border-zinc-800 border-[#e6e8ec] animate-[fadeRise_0.3s_ease-out]">
         
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-[#717784] hover:text-[#0a0a0a] hover:bg-slate-100 transition cursor-pointer"
+          className="absolute top-5 right-5 p-2 rounded-full text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] hover:bg-slate-100 transition cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -89,7 +89,7 @@ export const PostJobSuccessModal: React.FC<PostJobSuccessModalProps> = ({
           <h2 className="text-2xl font-extrabold text-[#0a0a0a] tracking-tight">
             {job.title}
           </h2>
-          <p className="text-xs text-[#717784] flex items-center justify-center gap-2">
+          <p className="text-xs text-[#717784] dark:text-zinc-400 flex items-center justify-center gap-2">
             <span>{job.companyName || 'Verified Employer'}</span>
             <span>•</span>
             <span className="flex items-center gap-0.5">
@@ -134,7 +134,7 @@ export const PostJobSuccessModal: React.FC<PostJobSuccessModalProps> = ({
             onClick={handleCopyLink}
             className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0a0a0a] font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-2"
           >
-            <Copy className="w-3.5 h-3.5 text-[#717784]" />
+            <Copy className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-400" />
             <span>{copied ? 'Link Copied!' : 'Copy Direct Link'}</span>
           </button>
 

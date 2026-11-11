@@ -267,7 +267,7 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
   }, [jobs, pageTitle, metaDesc, cityMeta]);
 
   return (
-    <div className="min-h-screen bg-[#fcfcfc] pb-20">
+    <div className="min-h-screen bg-[#fcfcfc] dark:bg-[#000000] pb-20 text-[#0a0a0a] dark:text-white">
       <SeoHead
         title={pageTitle}
         description={metaDesc}
@@ -284,10 +284,10 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
       />
 
       {/* Hero Content Section */}
-      <div className="bg-[#0f2f63] text-white pt-10 pb-14 px-4 sm:px-6 lg:px-8 border-b border-[#1b3d7a]">
+      <div className="bg-[#0f2f63] dark:bg-[#09090B] text-white pt-10 pb-14 px-4 sm:px-6 lg:px-8 border-b border-[#1b3d7a] dark:border-zinc-800">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Breadcrumbs */}
-          <nav className="flex items-center gap-2 text-xs text-blue-200">
+          <nav className="flex items-center gap-2 text-xs text-blue-200 dark:text-zinc-400">
             <Link to="/" className="hover:text-white transition">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <Link to="/search" className="hover:text-white transition">Jobs</Link>
@@ -313,27 +313,27 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
                 <span>Verified Skilled &amp; Frontline Jobs in <span className="text-[#38bdf8]">{cityMeta.name}</span></span>
               )}
             </h1>
-            <p className="text-sm sm:text-base text-blue-100/90 leading-relaxed">
+            <p className="text-sm sm:text-base text-blue-100/90 dark:text-zinc-300 leading-relaxed">
               {tradeMeta ? tradeMeta.description : `Discover vetted opportunities with direct employers across ${cityMeta.name}. Verified worksites, no agency middlemen, and transparent wage listings.`}
             </p>
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-blue-900/40 text-xs">
-            <div className="bg-white/5 backdrop-blur-xs p-3 rounded-xl border border-white/10">
-              <span className="text-blue-200 block">Verified Openings</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-blue-900/40 dark:border-zinc-800 text-xs">
+            <div className="bg-white/5 dark:bg-[#121215] backdrop-blur-xs p-3 rounded-xl border border-white/10 dark:border-zinc-800">
+              <span className="text-blue-200 dark:text-zinc-400 block">Verified Openings</span>
               <span className="text-lg font-bold text-white">{jobs.length} Active</span>
             </div>
-            <div className="bg-white/5 backdrop-blur-xs p-3 rounded-xl border border-white/10">
-              <span className="text-blue-200 block">{salaryStats.isLive ? 'Current Pay Range' : 'Estimated Pay Range'}</span>
+            <div className="bg-white/5 dark:bg-[#121215] backdrop-blur-xs p-3 rounded-xl border border-white/10 dark:border-zinc-800">
+              <span className="text-blue-200 dark:text-zinc-400 block">{salaryStats.isLive ? 'Current Pay Range' : 'Estimated Pay Range'}</span>
               <span className="text-lg font-bold text-white">{salaryStats.label}</span>
             </div>
-            <div className="bg-white/5 backdrop-blur-xs p-3 rounded-xl border border-white/10">
-              <span className="text-blue-200 block">Locality Hubs</span>
+            <div className="bg-white/5 dark:bg-[#121215] backdrop-blur-xs p-3 rounded-xl border border-white/10 dark:border-zinc-800">
+              <span className="text-blue-200 dark:text-zinc-400 block">Locality Hubs</span>
               <span className="text-lg font-bold text-white">{cityMeta.popularLocalities.length} Areas</span>
             </div>
-            <div className="bg-white/5 backdrop-blur-xs p-3 rounded-xl border border-white/10">
-              <span className="text-blue-200 block">Worksite Audit</span>
+            <div className="bg-white/5 dark:bg-[#121215] backdrop-blur-xs p-3 rounded-xl border border-white/10 dark:border-zinc-800">
+              <span className="text-blue-200 dark:text-zinc-400 block">Worksite Audit</span>
               <span className="text-lg font-bold text-emerald-400">Location Verified</span>
             </div>
           </div>
@@ -344,11 +344,11 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
         {/* Main Job Listing Stream */}
         <div className="lg:col-span-3 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[#0a0a0a] flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-[#0f2f63]" />
+            <h2 className="text-lg font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2">
+              <Briefcase className="w-5 h-5 text-[#0f2f63] dark:text-sky-400" />
               Active Verified Vacancies in {cityMeta.name} {tradeMeta ? `(${tradeMeta.title})` : ''}
             </h2>
-            <span className="text-xs text-[#5a6270] font-medium">Showing {jobs.length} jobs</span>
+            <span className="text-xs text-[#5a6270] dark:text-zinc-400 font-medium">Showing {jobs.length} jobs</span>
           </div>
 
           {isLoading ? (
@@ -356,15 +356,15 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
               <AppLoader message={`Loading active verified jobs in ${cityMeta.name}...`} />
             </div>
           ) : jobs.length === 0 ? (
-            <div className="bg-white border border-[#e2e4e9] rounded-2xl p-10 text-center space-y-4">
-              <MapPin className="w-12 h-12 text-[#99a0ae] mx-auto" />
-              <h3 className="text-base font-bold text-[#0a0a0a]">No direct vacancies right now</h3>
-              <p className="text-sm text-[#5a6270] max-w-md mx-auto">
+            <div className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 rounded-2xl p-10 text-center space-y-4">
+              <MapPin className="w-12 h-12 text-[#99a0ae] dark:text-zinc-600 mx-auto" />
+              <h3 className="text-base font-bold text-[#0a0a0a] dark:text-white">No direct vacancies right now</h3>
+              <p className="text-sm text-[#5a6270] dark:text-zinc-400 max-w-md mx-auto">
                 We are currently auditing new employers in {cityMeta.name}. You can explore all open positions across the platform or set a free job alert.
               </p>
               <Link
                 to="/search"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0f2f63] text-white rounded-full text-xs font-bold hover:bg-[#0c254e] transition"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0f2f63] dark:bg-[#0066FF] text-white rounded-full text-xs font-bold hover:bg-[#0c254e] dark:hover:bg-[#0052cc] transition"
               >
                 Browse All Openings <ArrowRight className="w-4 h-4" />
               </Link>
@@ -381,9 +381,9 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
         {/* SEO Sidebar: Internal Linking Clusters & Localities */}
         <div className="space-y-6">
           {/* Popular Localities in City */}
-          <div className="bg-white border border-[#e2e4e9] rounded-2xl p-5 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-[#0a0a0a] flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#0f2f63]" />
+          <div className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 rounded-2xl p-5 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
               Key Localities in {cityMeta.name}
             </h3>
             <div className="flex flex-wrap gap-1.5">
@@ -391,7 +391,7 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
                 <Link
                   key={loc}
                   to={`/search?city=${encodeURIComponent(cityMeta.name)}&q=${encodeURIComponent(loc)}`}
-                  className="px-2.5 py-1 bg-[#f4f5f7] hover:bg-[#e2e4e9] text-[#2e333d] rounded-full text-xs font-medium transition"
+                  className="px-2.5 py-1 bg-[#f4f5f7] dark:bg-[#1C1C21] hover:bg-[#e2e4e9] dark:hover:bg-zinc-800 text-[#2e333d] dark:text-zinc-300 rounded-full text-xs font-medium transition"
                 >
                   {loc}
                 </Link>
@@ -400,9 +400,9 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
           </div>
 
           {/* Top Trade Categories in City */}
-          <div className="bg-white border border-[#e2e4e9] rounded-2xl p-5 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-[#0a0a0a] flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-[#0f2f63]" />
+          <div className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 rounded-2xl p-5 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
               Explore Trades in {cityMeta.name}
             </h3>
             <div className="space-y-2">
@@ -414,12 +414,12 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
                     to={`/jobs-in-${citySlug}/${slug}`}
                     className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium transition ${
                       isActive 
-                        ? 'bg-[#0f2f63] text-white font-bold' 
-                        : 'text-[#2e333d] hover:bg-[#f4f5f7]'
+                        ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white font-bold' 
+                        : 'text-[#2e333d] dark:text-zinc-300 hover:bg-[#f4f5f7] dark:hover:bg-[#1C1C21]'
                     }`}
                   >
                     <span>{meta.title}</span>
-                    <span className={isActive ? 'text-blue-200 text-[10px]' : 'text-[#868c98] text-[10px]'}>
+                    <span className={isActive ? 'text-blue-200 text-[10px]' : 'text-[#868c98] dark:text-zinc-500 text-[10px]'}>
                       {meta.avgSalary.split('/')[0]}
                     </span>
                   </Link>
@@ -429,9 +429,9 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
           </div>
 
           {/* Other Metros */}
-          <div className="bg-white border border-[#e2e4e9] rounded-2xl p-5 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-[#0a0a0a] flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-[#0f2f63]" />
+          <div className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 rounded-2xl p-5 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
               Other Major Hubs
             </h3>
             <div className="space-y-1.5">
@@ -442,7 +442,7 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
                   <Link
                     key={c}
                     to={`/jobs-in-${c}`}
-                    className="block text-xs text-[#5a6270] hover:text-[#0f2f63] hover:underline py-1"
+                    className="block text-xs text-[#5a6270] dark:text-zinc-400 hover:text-[#0f2f63] dark:hover:text-sky-400 hover:underline py-1"
                   >
                     Jobs in {meta.name}, {meta.state}
                   </Link>

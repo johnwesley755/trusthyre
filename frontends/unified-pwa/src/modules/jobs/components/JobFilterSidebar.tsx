@@ -109,17 +109,17 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
     <aside className="w-full space-y-6 font-['Onest',system-ui,sans-serif]">
       
       {/* Filters Title Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec]">
+      <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec] dark:border-zinc-800">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-[#0f2f63]" />
-          <h2 className="text-sm font-medium uppercase text-[#0a0a0a]">
+          <SlidersHorizontal className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
+          <h2 className="text-sm font-medium uppercase text-[#0a0a0a] dark:text-zinc-100">
             Job Filters
           </h2>
         </div>
         {hasActiveFilters && (
           <button
             onClick={onClearAll}
-            className="text-xs font-medium text-[#2563c9] hover:underline flex items-center gap-1 cursor-pointer"
+            className="text-xs font-medium text-[#2563c9] dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer"
           >
             <RotateCcw className="w-3 h-3" />
             <span>Clear All</span>
@@ -130,7 +130,7 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
       {/* 0. OPPORTUNITY SOURCE SECTION */}
       {onSelectSource && (
         <div className="space-y-2">
-          <span className="text-[10px] font-medium uppercase text-[#717784]">
+          <span className="text-[10px] font-medium uppercase text-[#717784] dark:text-zinc-400">
             Hiring Channel
           </span>
           <div className="grid grid-cols-1 gap-1">
@@ -143,8 +143,8 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
                   onClick={() => onSelectSource(opt.value)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
                     isSelected
-                      ? 'bg-[#0f2f63] text-white shadow-xs'
-                      : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80 hover:border-[#0f2f63]/30'
+                      ? 'bg-[#0f2f63] dark:bg-sky-600 text-white shadow-xs'
+                      : 'bg-white/80 dark:bg-[#121215] hover:bg-white dark:hover:bg-[#1C1C21] text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec]/80 dark:border-zinc-800 hover:border-[#0f2f63]/30 dark:hover:border-zinc-700'
                   }`}
                 >
                   <span>{opt.label}</span>
@@ -159,13 +159,13 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
       {/* 1. JOB TYPE SECTION */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-medium uppercase text-[#717784]">
+          <span className="text-[10px] font-medium uppercase text-[#717784] dark:text-zinc-400">
             Job Type
           </span>
           {selectedJobType !== 'All' && (
             <button
               onClick={() => onSelectJobType('All')}
-              className="text-[10px] font-medium text-[#2563c9] hover:underline cursor-pointer"
+              className="text-[10px] font-medium text-[#2563c9] dark:text-sky-400 hover:underline cursor-pointer"
             >
               Reset
             </button>
@@ -182,14 +182,14 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
                 onClick={() => onSelectJobType(type)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
                   isSelected
-                    ? 'bg-[#0f2f63] text-white shadow-xs'
-                    : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80 hover:border-[#0f2f63]/30'
+                    ? 'bg-[#0f2f63] dark:bg-sky-600 text-white shadow-xs'
+                    : 'bg-white/80 dark:bg-[#121215] hover:bg-white dark:hover:bg-[#1C1C21] text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec]/80 dark:border-zinc-800 hover:border-[#0f2f63]/30 dark:hover:border-zinc-700'
                 }`}
               >
                 <span>{type}</span>
                 <div className="flex items-center gap-1.5">
                   {count !== undefined && (
-                    <span className={`text-[11px] tabular-nums ${isSelected ? 'text-white/80' : 'text-[#717784]'}`}>
+                    <span className={`text-[11px] tabular-nums ${isSelected ? 'text-white/80' : 'text-[#717784] dark:text-zinc-400'}`}>
                       ({count})
                     </span>
                   )}
@@ -202,15 +202,15 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
       </div>
 
       {/* 2. LOCATION SECTION */}
-      <div className="space-y-2 pt-4 border-t border-[#e6e8ec]">
+      <div className="space-y-2 pt-4 border-t border-[#e6e8ec] dark:border-zinc-800">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-medium uppercase text-[#717784]">
+          <span className="text-[10px] font-medium uppercase text-[#717784] dark:text-zinc-400">
             Location
           </span>
           {selectedLocation && (
             <button
               onClick={() => onSelectLocation('')}
-              className="text-[10px] font-medium text-[#2563c9] hover:underline cursor-pointer"
+              className="text-[10px] font-medium text-[#2563c9] dark:text-sky-400 hover:underline cursor-pointer"
             >
               Reset
             </button>
@@ -221,14 +221,14 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
             onClick={() => onSelectLocation('')}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
               !selectedLocation
-                ? 'bg-[#0f2f63] text-white shadow-xs'
-                : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80 hover:border-[#0f2f63]/30'
+                ? 'bg-[#0f2f63] dark:bg-sky-600 text-white shadow-xs'
+                : 'bg-white/80 dark:bg-[#121215] hover:bg-white dark:hover:bg-[#1C1C21] text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec]/80 dark:border-zinc-800 hover:border-[#0f2f63]/30 dark:hover:border-zinc-700'
             }`}
           >
             <span>All Locations</span>
             <div className="flex items-center gap-1.5">
               {counts?.total !== undefined && (
-                <span className={`text-[11px] tabular-nums ${!selectedLocation ? 'text-white/80' : 'text-[#717784]'}`}>
+                <span className={`text-[11px] tabular-nums ${!selectedLocation ? 'text-white/80' : 'text-[#717784] dark:text-zinc-400'}`}>
                   ({counts.total})
                 </span>
               )}
@@ -243,13 +243,13 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
                 onClick={() => onSelectLocation(city)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
                   isSelected
-                    ? 'bg-[#0f2f63] text-white shadow-xs'
-                    : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80 hover:border-[#0f2f63]/30'
+                    ? 'bg-[#0f2f63] dark:bg-sky-600 text-white shadow-xs'
+                    : 'bg-white/80 dark:bg-[#121215] hover:bg-white dark:hover:bg-[#1C1C21] text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec]/80 dark:border-zinc-800 hover:border-[#0f2f63]/30 dark:hover:border-zinc-700'
                 }`}
               >
                 <span>{city}</span>
                 <div className="flex items-center gap-1.5">
-                  <span className={`text-[11px] tabular-nums ${isSelected ? 'text-white/80' : 'text-[#717784]'}`}>
+                  <span className={`text-[11px] tabular-nums ${isSelected ? 'text-white/80' : 'text-[#717784] dark:text-zinc-400'}`}>
                     ({count})
                   </span>
                   {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
@@ -262,16 +262,16 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
 
       {/* 2B. DYNAMIC TALUKS / SUB-AREAS SECTION (Shown only when city has mapped taluks) */}
       {selectedLocation && dynamicTaluks.length > 0 && onSelectTaluk && (
-        <div className="space-y-2 pt-4 border-t border-[#e6e8ec]">
+        <div className="space-y-2 pt-4 border-t border-[#e6e8ec] dark:border-zinc-800">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase text-[#0f2f63] flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-blue-600" />
+            <span className="text-[10px] font-bold uppercase text-[#0f2f63] dark:text-sky-400 flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-blue-600 dark:text-sky-400" />
               <span>Taluks in {selectedLocation}</span>
             </span>
             {selectedTaluk && (
               <button
                 onClick={() => onSelectTaluk('')}
-                className="text-[10px] font-medium text-[#2563c9] hover:underline cursor-pointer"
+                className="text-[10px] font-medium text-[#2563c9] dark:text-sky-400 hover:underline cursor-pointer"
               >
                 Reset
               </button>
@@ -282,8 +282,8 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
               onClick={() => onSelectTaluk('')}
               className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
                 !selectedTaluk
-                  ? 'bg-[#0f2f63] text-white shadow-xs'
-                  : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80'
+                  ? 'bg-[#0f2f63] dark:bg-sky-600 text-white shadow-xs'
+                  : 'bg-white/80 dark:bg-[#121215] hover:bg-white dark:hover:bg-[#1C1C21] text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec]/80 dark:border-zinc-800'
               }`}
             >
               <span>All {selectedLocation} Areas</span>
@@ -297,8 +297,8 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
                   onClick={() => onSelectTaluk(tName)}
                   className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
                     isSelected
-                      ? 'bg-[#0f2f63] text-white shadow-xs'
-                      : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80 hover:border-[#0f2f63]/30'
+                      ? 'bg-[#0f2f63] dark:bg-sky-600 text-white shadow-xs'
+                      : 'bg-white/80 dark:bg-[#121215] hover:bg-white dark:hover:bg-[#1C1C21] text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec]/80 dark:border-zinc-800 hover:border-[#0f2f63]/30 dark:hover:border-zinc-700'
                   }`}
                 >
                   <span>{tName}</span>
@@ -311,15 +311,15 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
       )}
 
       {/* 3. EXPERIENCE SECTION */}
-      <div className="space-y-2 pt-4 border-t border-[#e6e8ec]">
+      <div className="space-y-2 pt-4 border-t border-[#e6e8ec] dark:border-zinc-800">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-medium uppercase text-[#717784]">
+          <span className="text-[10px] font-medium uppercase text-[#717784] dark:text-zinc-400">
             Experience
           </span>
           {selectedExperience !== 'all' && (
             <button
               onClick={() => onSelectExperience('all')}
-              className="text-[10px] font-medium text-[#2563c9] hover:underline cursor-pointer"
+              className="text-[10px] font-medium text-[#2563c9] dark:text-sky-400 hover:underline cursor-pointer"
             >
               Reset
             </button>
@@ -334,8 +334,8 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
                 onClick={() => onSelectExperience(opt.value)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
                   isSelected
-                    ? 'bg-[#0f2f63] text-white shadow-xs'
-                    : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80 hover:border-[#0f2f63]/30'
+                    ? 'bg-[#0f2f63] dark:bg-sky-600 text-white shadow-xs'
+                    : 'bg-white/80 dark:bg-[#121215] hover:bg-white dark:hover:bg-[#1C1C21] text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec]/80 dark:border-zinc-800 hover:border-[#0f2f63]/30 dark:hover:border-zinc-700'
                 }`}
               >
                 <span>{opt.label}</span>
@@ -347,15 +347,15 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
       </div>
 
       {/* 4. PAY / SALARY SECTION */}
-      <div className="space-y-2 pt-4 border-t border-[#e6e8ec]">
+      <div className="space-y-2 pt-4 border-t border-[#e6e8ec] dark:border-zinc-800">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-medium uppercase text-[#717784]">
+          <span className="text-[10px] font-medium uppercase text-[#717784] dark:text-zinc-400">
             Salary / Pay
           </span>
           {selectedBudget !== 'all' && (
             <button
               onClick={() => onSelectBudget('all')}
-              className="text-[10px] font-medium text-[#2563c9] hover:underline cursor-pointer"
+              className="text-[10px] font-medium text-[#2563c9] dark:text-sky-400 hover:underline cursor-pointer"
             >
               Reset
             </button>
@@ -370,8 +370,8 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
                 onClick={() => onSelectBudget(opt.value)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
                   isSelected
-                    ? 'bg-[#0f2f63] text-white shadow-xs'
-                    : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80 hover:border-[#0f2f63]/30'
+                    ? 'bg-[#0f2f63] dark:bg-sky-600 text-white shadow-xs'
+                    : 'bg-white/80 dark:bg-[#121215] hover:bg-white dark:hover:bg-[#1C1C21] text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec]/80 dark:border-zinc-800 hover:border-[#0f2f63]/30 dark:hover:border-zinc-700'
                 }`}
               >
                 <span>{opt.label}</span>
@@ -383,15 +383,15 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
       </div>
 
       {/* 5. INDUSTRY & CATEGORY SECTION */}
-      <div className="space-y-2 pt-4 border-t border-[#e6e8ec]">
+      <div className="space-y-2 pt-4 border-t border-[#e6e8ec] dark:border-zinc-800">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-medium uppercase text-[#717784]">
+          <span className="text-[10px] font-medium uppercase text-[#717784] dark:text-zinc-400">
             Industry & Category
           </span>
           {selectedTrade !== 'All' && (
             <button
               onClick={() => onSelectTrade('All')}
-              className="text-[10px] font-medium text-[#2563c9] hover:underline cursor-pointer"
+              className="text-[10px] font-medium text-[#2563c9] dark:text-sky-400 hover:underline cursor-pointer"
             >
               Reset
             </button>
@@ -406,8 +406,8 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
                 onClick={() => onSelectTrade(trade)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
                   isSelected
-                    ? 'bg-[#0f2f63] text-white shadow-xs'
-                    : 'bg-white/80 hover:bg-white text-[#0a0a0a] border border-[#e6e8ec]/80 hover:border-[#0f2f63]/30'
+                    ? 'bg-[#0f2f63] dark:bg-sky-600 text-white shadow-xs'
+                    : 'bg-white/80 dark:bg-[#121215] hover:bg-white dark:hover:bg-[#1C1C21] text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec]/80 dark:border-zinc-800 hover:border-[#0f2f63]/30 dark:hover:border-zinc-700'
                 }`}
               >
                 <span>{trade}</span>
@@ -419,20 +419,20 @@ export const JobFilterSidebar: React.FC<JobFilterSidebarProps> = ({
       </div>
 
       {/* 6. REAL-TIME WAGE BENCHMARK CALLOUT (Apna & Snagajob Viral Tool) */}
-      <div className="pt-4 border-t border-[#e6e8ec]">
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2 shadow-2xs">
+      <div className="pt-4 border-t border-[#e6e8ec] dark:border-zinc-800">
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200/80 dark:border-emerald-800/50 rounded-2xl p-3.5 space-y-2 shadow-2xs">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
               <IndianRupee className="w-4 h-4" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-emerald-950 leading-tight">
+              <h4 className="text-xs font-bold text-emerald-950 dark:text-emerald-200 leading-tight">
                 Market Wage Calculator
               </h4>
-              <p className="text-[10px] text-emerald-700">Check real take-home rates</p>
+              <p className="text-[10px] text-emerald-700 dark:text-emerald-400">Check real take-home rates</p>
             </div>
           </div>
-          <p className="text-[11px] text-slate-600 leading-snug">
+          <p className="text-[11px] text-slate-600 dark:text-zinc-400 leading-snug">
             Compare base salaries, overtime rates, and food allowances for your trade in {selectedLocation || 'your area'}.
           </p>
           <button

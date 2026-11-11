@@ -358,7 +358,7 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
   return createPortal(
     <AnimatePresence>
       <div 
-        className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-900/60 backdrop-blur-xs font-['Onest',system-ui,sans-serif] overflow-y-auto select-none"
+        className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs font-['Onest',system-ui,sans-serif] overflow-y-auto select-none"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
@@ -372,19 +372,19 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
           exit={{ opacity: 0, scale: 0.96, y: 10 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-3xl md:rounded-[2rem] w-full max-w-2xl max-h-[88vh] flex flex-col border border-[#e6e8ec] shadow-2xl overflow-hidden my-auto select-text"
+          className="bg-white dark:bg-[#1C1C21] rounded-3xl md:rounded-[2rem] w-full max-w-2xl max-h-[88vh] flex flex-col border border-[#e6e8ec] dark:border-zinc-800 shadow-2xl overflow-hidden my-auto select-text"
         >
           {/* PINNED HEADER (Current App Theme) */}
-          <div className="flex items-center justify-between px-6 py-4.5 border-b border-[#e6e8ec] shrink-0 bg-white z-10">
+          <div className="flex items-center justify-between px-6 py-4.5 border-b border-[#e6e8ec] dark:border-zinc-800 shrink-0 bg-white dark:bg-[#1C1C21] z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#0f2f63]/10 border border-[#0f2f63]/15 flex items-center justify-center text-[#0f2f63] shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-[#0f2f63]/10 dark:bg-zinc-800 border border-[#0f2f63]/15 dark:border-zinc-700 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0">
                 <User className="w-5 h-5" />
               </div>
               <div>
-                <h2 id="edit-profile-title" className="text-base sm:text-lg font-bold text-[#0A1931]">
+                <h2 id="edit-profile-title" className="text-base sm:text-lg font-bold text-[#0A1931] dark:text-zinc-100">
                   Edit Candidate Profile
                 </h2>
-                <p className="text-xs text-[#717784]">
+                <p className="text-xs text-[#717784] dark:text-zinc-400">
                   Update your credentials, experience, skills, and professional bio
                 </p>
               </div>
@@ -392,7 +392,7 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-[#0A1931] hover:bg-slate-100 transition-all cursor-pointer"
+              className="p-2 rounded-xl text-slate-400 dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
               title="Close"
             >
               <X className="w-5 h-5" />
@@ -403,13 +403,13 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
           <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1 overflow-hidden">
             <div className="p-6 space-y-6 overflow-y-auto flex-1">
               {errorMsg && (
-                <div className="p-3 text-xs font-semibold text-rose-700 bg-rose-50 rounded-xl border border-rose-200">
+                <div className="p-3 text-xs font-semibold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900/50">
                   {errorMsg}
                 </div>
               )}
 
               {/* 1. Profile Photo Section */}
-              <div className="p-4 bg-[#f8f9fa] rounded-2xl border border-[#e6e8ec] flex items-center gap-4">
+              <div className="p-4 bg-[#f8f9fa] dark:bg-[#121215] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 flex items-center gap-4">
                 <input 
                   type="file"
                   ref={fileInputRef}
@@ -427,8 +427,8 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                 </div>
 
                 <div className="flex-1 space-y-1.5">
-                  <label className="text-xs font-bold text-[#0A1931] flex items-center gap-1.5">
-                    <Camera className="w-3.5 h-3.5 text-[#0f2f63]" />
+                  <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-100 flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
                     <span>Profile Photo</span>
                   </label>
                   <div className="flex items-center gap-2">
@@ -436,7 +436,7 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isProcessingPhoto}
-                      className="px-3.5 py-1.5 bg-[#0f2f63] hover:bg-[#0c244c] text-white rounded-xl text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-1.5 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#0c244c] dark:hover:bg-[#0052cc] text-white rounded-xl text-xs font-bold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
                     >
                       {isProcessingPhoto ? (
                         <>
@@ -451,7 +451,7 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                       )}
                     </button>
                     {profileImageUrl && (
-                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg flex items-center gap-1 border border-emerald-200">
+                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-lg flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/50">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Attached
                       </span>
                     )}
@@ -461,38 +461,38 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
 
               {/* 2. Personal Details */}
               <div className="space-y-3.5">
-                <div className="flex items-center gap-2 pb-1 border-b border-[#e6e8ec]">
-                  <User className="w-3.5 h-3.5 text-[#0f2f63]" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931]">Personal Details</h3>
+                <div className="flex items-center gap-2 pb-1 border-b border-[#e6e8ec] dark:border-zinc-800">
+                  <User className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-100">Personal Details</h3>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0A1931]">Full Name *</label>
+                    <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">Full Name *</label>
                     <input
                       type="text"
                       required
                       value={formData.fullName}
                       onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all placeholder:text-slate-400"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                       placeholder="e.g. Ramesh Kumar"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0A1931]">Date of Birth</label>
+                    <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">Date of Birth</label>
                     <input
                       type="date"
                       value={formData.dob}
                       onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0A1931]">Gender</label>
+                    <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">Gender</label>
                     <Select
                       value={formData.gender}
                       onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
@@ -504,45 +504,45 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0A1931]">City / Town *</label>
+                    <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">City / Town *</label>
                     <input
                       type="text"
                       required
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all placeholder:text-slate-400"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                       placeholder="e.g. Chennai, TN"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#0A1931]">Address / Locality</label>
+                  <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">Address / Locality</label>
                   <input
                     type="text"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all placeholder:text-slate-400"
+                    className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                     placeholder="e.g. Royapuram, Near High Court"
                   />
                 </div>
               </div>
 
               {/* 3. Work Experience & Preferred Trades */}
-              <div className="space-y-3.5 pt-2 border-t border-[#e6e8ec]">
-                <div className="flex items-center justify-between pb-1 border-b border-[#e6e8ec]">
+              <div className="space-y-3.5 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
+                <div className="flex items-center justify-between pb-1 border-b border-[#e6e8ec] dark:border-zinc-800">
                   <div className="flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-[#0f2f63]" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931]">Work Experience & Trades</h3>
+                    <Clock className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-100">Work Experience & Trades</h3>
                   </div>
-                  <span className="text-xs font-bold text-[#0f2f63]">
+                  <span className="text-xs font-bold text-[#0f2f63] dark:text-[#38BDF8]">
                     {formData.experienceYears === 0 ? "Fresher (0 yrs)" : `${formData.experienceYears} Years Experience`}
                   </span>
                 </div>
 
                 {/* Experience Chip Selector */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#0A1931]">Total Work Experience *</label>
+                  <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">Total Work Experience *</label>
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                     {[
                       { val: 0, label: "Fresher" },
@@ -558,8 +558,8 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                         onClick={() => setFormData(prev => ({ ...prev, experienceYears: item.val }))}
                         className={`py-2 px-1 text-xs font-bold rounded-xl border text-center transition-all cursor-pointer ${
                           formData.experienceYears === item.val
-                            ? "bg-[#0f2f63] text-white border-[#0f2f63] shadow-xs"
-                            : "bg-[#f8f9fa] text-[#717784] border-[#e6e8ec] hover:border-slate-300 hover:text-[#0A1931]"
+                            ? "bg-[#0f2f63] dark:bg-[#0066FF] text-white border-[#0f2f63] dark:border-[#0066FF] shadow-xs"
+                            : "bg-[#f8f9fa] dark:bg-[#121215] text-[#717784] dark:text-zinc-400 border-[#e6e8ec] dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 hover:text-[#0A1931] dark:hover:text-zinc-200"
                         }`}
                       >
                         {item.label}
@@ -570,12 +570,12 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
 
                 {/* Preferred Roles */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-[#0A1931]">Preferred Job Roles (comma-separated)</label>
+                  <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">Preferred Job Roles (comma-separated)</label>
                   <input
                     type="text"
                     value={formData.preferredRoles}
                     onChange={(e) => setFormData({ ...formData, preferredRoles: e.target.value })}
-                    className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all placeholder:text-slate-400"
+                    className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                     placeholder="e.g. Electrician, Customer Support, Retail Executive"
                   />
                   <div className="flex flex-wrap gap-1.5 pt-0.5 max-h-24 overflow-y-auto">
@@ -588,8 +588,8 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                           onClick={() => handleToggleRole(role)}
                           className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer border ${
                             isSelected
-                              ? "bg-[#0f2f63] text-white border-[#0f2f63]"
-                              : "bg-[#f8f9fa] text-[#717784] border-[#e6e8ec] hover:text-[#0A1931]"
+                              ? "bg-[#0f2f63] dark:bg-[#0066FF] text-white border-[#0f2f63] dark:border-[#0066FF]"
+                              : "bg-[#f8f9fa] dark:bg-[#121215] text-[#717784] dark:text-zinc-400 border-[#e6e8ec] dark:border-zinc-800 hover:text-[#0A1931] dark:hover:text-zinc-200"
                           }`}
                         >
                           {role} {isSelected ? "✓" : "+"}
@@ -601,13 +601,13 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
               </div>
 
               {/* 4. Core Skills & Technical Strengths */}
-              <div className="space-y-3.5 pt-2 border-t border-[#e6e8ec]">
-                <div className="flex items-center justify-between pb-1 border-b border-[#e6e8ec]">
+              <div className="space-y-3.5 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
+                <div className="flex items-center justify-between pb-1 border-b border-[#e6e8ec] dark:border-zinc-800">
                   <div className="flex items-center gap-2">
-                    <Wrench className="w-3.5 h-3.5 text-[#0f2f63]" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931]">Skills & Specialties</h3>
+                    <Wrench className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-100">Skills & Specialties</h3>
                   </div>
-                  <span className="text-[11px] text-[#717784]">
+                  <span className="text-[11px] text-[#717784] dark:text-zinc-400">
                     {skillsList.length} skills listed
                   </span>
                 </div>
@@ -624,13 +624,13 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                       }
                     }}
                     placeholder="Add a skill (e.g. Three-Phase Wiring, Tally) & press Enter..."
-                    className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all placeholder:text-slate-400"
+                    className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                   />
                   <button
                     type="button"
                     onClick={() => handleAddSkill()}
                     disabled={!skillInput.trim()}
-                    className="px-4 py-2.5 bg-[#0f2f63] text-white text-xs font-bold rounded-xl disabled:opacity-40 hover:bg-[#0c244c] cursor-pointer shrink-0 transition-all"
+                    className="px-4 py-2.5 bg-[#0f2f63] dark:bg-[#0066FF] text-white text-xs font-bold rounded-xl disabled:opacity-40 hover:bg-[#0c244c] dark:hover:bg-[#0052cc] cursor-pointer shrink-0 transition-all"
                   >
                     Add
                   </button>
@@ -642,13 +642,13 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                     {skillsList.map((skill) => (
                       <span
                         key={skill}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-[#0f2f63] border border-blue-200"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-[#0f2f63] dark:text-[#38BDF8] border border-blue-200 dark:border-blue-900/50"
                       >
                         <span>{skill}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveSkill(skill)}
-                          className="hover:text-rose-600 cursor-pointer"
+                          className="hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -659,7 +659,7 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
 
                 {/* Suggested Trade Skills */}
                 <div className="space-y-1.5 pt-1">
-                  <p className="text-[11px] font-semibold text-[#717784]">Popular skills:</p>
+                  <p className="text-[11px] font-semibold text-[#717784] dark:text-zinc-400">Popular skills:</p>
                   <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                     {POPULAR_SKILLS.map((sk) => {
                       const isAdded = skillsList.includes(sk);
@@ -670,8 +670,8 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                           onClick={() => isAdded ? handleRemoveSkill(sk) : handleAddSkill(sk)}
                           className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer border ${
                             isAdded
-                              ? "bg-[#0f2f63] text-white border-[#0f2f63]"
-                              : "bg-[#f8f9fa] text-[#717784] border-slate-200 hover:text-[#0A1931]"
+                              ? "bg-[#0f2f63] dark:bg-[#0066FF] text-white border-[#0f2f63] dark:border-[#0066FF]"
+                              : "bg-[#f8f9fa] dark:bg-[#121215] text-[#717784] dark:text-zinc-400 border-slate-200 dark:border-zinc-800 hover:text-[#0A1931] dark:hover:text-zinc-200"
                           }`}
                         >
                           {sk} {isAdded ? "✓" : "+"}
@@ -682,10 +682,10 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                 </div>
 
                 {/* 10-Second Readiness & Equipment Chips (WorkIndia / Apna Pattern) */}
-                <div className="space-y-1.5 pt-2 border-t border-slate-200/60">
+                <div className="space-y-1.5 pt-2 border-t border-slate-200/60 dark:border-zinc-800">
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <p className="text-[11px] font-bold text-[#0a0a0a]">Readiness & Trade Equipment (1-Tap):</p>
+                    <p className="text-[11px] font-bold text-[#0a0a0a] dark:text-zinc-200">Readiness & Trade Equipment (1-Tap):</p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {READINESS_EQUIPMENT_BADGES.map((b) => {
@@ -697,8 +697,8 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                           onClick={() => isAdded ? handleRemoveSkill(b.id) : handleAddSkill(b.id)}
                           className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer border shadow-2xs ${
                             isAdded
-                              ? "bg-emerald-700 text-white border-emerald-800"
-                              : "bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100"
+                              ? "bg-emerald-700 dark:bg-emerald-600 text-white border-emerald-800 dark:border-emerald-500"
+                              : "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-950/50"
                           }`}
                         >
                           {b.label} {isAdded ? "✓" : "+"}
@@ -710,18 +710,18 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
               </div>
 
               {/* 5. Professional Bio / Candidate Summary */}
-              <div className="space-y-2.5 pt-2 border-t border-[#e6e8ec]">
-                <div className="flex items-center justify-between pb-1 border-b border-[#e6e8ec]">
+              <div className="space-y-2.5 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
+                <div className="flex items-center justify-between pb-1 border-b border-[#e6e8ec] dark:border-zinc-800">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-3.5 h-3.5 text-[#0f2f63]" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931]">Candidate Bio & Summary *</h3>
+                    <FileText className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-100">Candidate Bio & Summary *</h3>
                   </div>
                   <button
                     type="button"
                     onClick={handleAutoGenerateBio}
-                    className="text-[11px] font-bold text-[#0f2f63] hover:text-[#0c244c] flex items-center gap-1 cursor-pointer bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-all"
+                    className="text-[11px] font-bold text-[#0f2f63] dark:text-[#38BDF8] hover:text-[#0c244c] dark:hover:text-blue-300 flex items-center gap-1 cursor-pointer bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-2.5 py-1 rounded-lg transition-all"
                   >
-                    <Sparkles className="w-3 h-3 text-[#0f2f63]" />
+                    <Sparkles className="w-3 h-3 text-[#0f2f63] dark:text-[#38BDF8]" />
                     <span>Auto-Generate</span>
                   </button>
                 </div>
@@ -730,23 +730,23 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   placeholder="Introduce your work experience, strengths, and reliability to potential employers..."
-                  className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl p-3 text-xs text-[#0A1931] font-semibold outline-none resize-none leading-relaxed transition-all placeholder:text-slate-400"
+                  className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl p-3 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none resize-none leading-relaxed transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                 />
-                <p className="text-[11px] text-[#717784]">
+                <p className="text-[11px] text-[#717784] dark:text-zinc-400">
                   This summary is visible on your profile and verified resume when applying for jobs.
                 </p>
               </div>
 
               {/* 6. Academic Background */}
-              <div className="space-y-3.5 pt-2 border-t border-[#e6e8ec]">
-                <div className="flex items-center gap-2 pb-1 border-b border-[#e6e8ec]">
-                  <GraduationCap className="w-3.5 h-3.5 text-[#0f2f63]" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931]">Academic Background</h3>
+              <div className="space-y-3.5 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
+                <div className="flex items-center gap-2 pb-1 border-b border-[#e6e8ec] dark:border-zinc-800">
+                  <GraduationCap className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-100">Academic Background</h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0A1931]">Highest Education</label>
+                    <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">Highest Education</label>
                     <Select
                       value={formData.highestEducation}
                       onChange={(e) => setFormData({ ...formData, highestEducation: e.target.value })}
@@ -758,12 +758,12 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0A1931]">College / Institution</label>
+                    <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">College / Institution</label>
                     <input
                       type="text"
                       value={formData.collegeName}
                       onChange={(e) => setFormData({ ...formData, collegeName: e.target.value })}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all placeholder:text-slate-400"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                       placeholder="e.g. Loyola College / Govt ITI"
                     />
                   </div>
@@ -771,23 +771,23 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0A1931]">Degree / Certificate</label>
+                    <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">Degree / Certificate</label>
                     <input
                       type="text"
                       value={formData.degree}
                       onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all placeholder:text-slate-400"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                       placeholder="e.g. B.Sc, B.Com, ITI Electrician"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0A1931]">Specialization / Stream</label>
+                    <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">Specialization / Stream</label>
                     <input
                       type="text"
                       value={formData.specialization}
                       onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all placeholder:text-slate-400"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                       placeholder="e.g. Computer Science, Electrical"
                     />
                   </div>
@@ -795,15 +795,15 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
               </div>
 
               {/* 7. Languages & Relocation */}
-              <div className="space-y-3.5 pt-2 border-t border-[#e6e8ec]">
-                <div className="flex items-center gap-2 pb-1 border-b border-[#e6e8ec]">
-                  <Languages className="w-3.5 h-3.5 text-[#0f2f63]" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931]">Languages & Relocation</h3>
+              <div className="space-y-3.5 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
+                <div className="flex items-center gap-2 pb-1 border-b border-[#e6e8ec] dark:border-zinc-800">
+                  <Languages className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-100">Languages & Relocation</h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0A1931]">English Proficiency</label>
+                    <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">English Proficiency</label>
                     <Select
                       value={formData.englishProficiency}
                       onChange={(e) => setFormData({ ...formData, englishProficiency: e.target.value })}
@@ -815,45 +815,45 @@ export const EditWorkerProfileModal: React.FC<EditWorkerProfileModalProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0A1931]">Languages Known (comma-separated)</label>
+                    <label className="text-xs font-bold text-[#0A1931] dark:text-zinc-300">Languages Known (comma-separated)</label>
                     <input
                       type="text"
                       value={formData.languagesKnown}
                       onChange={(e) => setFormData({ ...formData, languagesKnown: e.target.value })}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none transition-all placeholder:text-slate-400"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#0066FF] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#0066FF]/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-zinc-100 font-semibold outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                       placeholder="e.g. Tamil, English, Hindi"
                     />
                   </div>
                 </div>
 
-                <div className="pt-1 flex items-center justify-between p-3.5 bg-[#f8f9fa] rounded-2xl border border-[#e6e8ec]">
+                <div className="pt-1 flex items-center justify-between p-3.5 bg-[#f8f9fa] dark:bg-[#121215] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800">
                   <div>
-                    <p className="text-xs font-bold text-[#0A1931]">Willing to Relocate</p>
-                    <p className="text-[11px] text-[#717784]">Allow employers outside your current city to reach out</p>
+                    <p className="text-xs font-bold text-[#0A1931] dark:text-zinc-100">Willing to Relocate</p>
+                    <p className="text-[11px] text-[#717784] dark:text-zinc-400">Allow employers outside your current city to reach out</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={formData.willingToRelocate}
                     onChange={(e) => setFormData({ ...formData, willingToRelocate: e.target.checked })}
-                    className="w-4 h-4 rounded text-[#0f2f63] focus:ring-[#0f2f63] cursor-pointer"
+                    className="w-4 h-4 rounded text-[#0f2f63] dark:text-[#0066FF] focus:ring-[#0f2f63] dark:focus:ring-[#0066FF] cursor-pointer"
                   />
                 </div>
               </div>
             </div>
 
             {/* PINNED FOOTER ACTIONS */}
-            <div className="px-6 py-4 border-t border-[#e6e8ec] flex items-center justify-end gap-3 shrink-0 bg-white">
+            <div className="px-6 py-4 border-t border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-end gap-3 shrink-0 bg-white dark:bg-[#1C1C21]">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 text-xs font-bold text-slate-600 hover:text-[#0A1931] hover:bg-slate-100 rounded-full transition-all cursor-pointer uppercase tracking-wider"
+                className="px-5 py-2.5 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full transition-all cursor-pointer uppercase tracking-wider"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={mutation.isPending}
-                className="px-6 py-2.5 bg-[#0f2f63] hover:bg-[#0c244c] active:bg-[#081a38] text-white text-xs font-bold rounded-full shadow-sm hover:shadow-md transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer uppercase tracking-wider"
+                className="px-6 py-2.5 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#0c244c] dark:hover:bg-[#0052cc] active:bg-[#081a38] text-white text-xs font-bold rounded-full shadow-sm hover:shadow-md transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer uppercase tracking-wider"
               >
                 {mutation.isPending ? (
                   <>

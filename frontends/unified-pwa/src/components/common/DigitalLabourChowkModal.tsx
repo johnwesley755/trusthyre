@@ -166,19 +166,19 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
       title="Instant Spot Hire & Standby Pool"
       subtitle={`Live verified standby workers ready for immediate emergency duty in ${currentCity}`}
       icon={<Zap className="w-5 h-5 text-amber-500 fill-amber-500" />}
-      iconBgColor="bg-amber-50 text-amber-700 border border-amber-200"
+      iconBgColor="bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60"
       maxWidth="xl"
-      bodyClassName="p-0 flex flex-col bg-white"
+      bodyClassName="p-0 flex flex-col bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100"
       footer={
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-[#717784] flex items-center gap-1.5">
+          <div className="text-xs text-[#717784] dark:text-zinc-400 flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-[#10b981]" />
             <span>Zero contractor commission • 100% direct worker payment</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 rounded-full font-bold text-xs bg-[#F8FAFC] border border-[#e6e8ec] text-[#0A1931] hover:bg-slate-100 transition-all cursor-pointer"
+            className="px-5 py-2 rounded-full font-bold text-xs bg-[#F8FAFC] dark:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-700 text-[#0A1931] dark:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all cursor-pointer"
           >
             Close
           </button>
@@ -187,22 +187,22 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
     >
       {/* Mode Navigation Tabs: Only show tab toggle if user is BOTH or explicitly testing; default to employer-only for hiring */}
       {isEmployerRole ? (
-        <div className="px-5 py-3 border-b border-[#e6e8ec] bg-[#F8FAFC] flex items-center justify-between">
+        <div className="px-5 py-3 border-b border-[#e6e8ec] dark:border-zinc-800 bg-[#F8FAFC] dark:bg-[#121215] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-[#0066ff]" />
-            <span className="text-xs font-bold text-[#0A1931]">Standby Worker Spot-Hiring Radar</span>
+            <Building2 className="w-4 h-4 text-[#0066ff] dark:text-[#38BDF8]" />
+            <span className="text-xs font-bold text-[#0A1931] dark:text-white">Standby Worker Spot-Hiring Radar</span>
           </div>
-          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
             🟢 Ready Today
           </span>
         </div>
       ) : (
-        <div className="px-5 py-3 border-b border-[#e6e8ec] bg-[#F8FAFC] flex items-center justify-between">
+        <div className="px-5 py-3 border-b border-[#e6e8ec] dark:border-zinc-800 bg-[#F8FAFC] dark:bg-[#121215] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-[#0066ff]" />
-            <span className="text-xs font-bold text-[#0A1931]">Worker Daily Standby Broadcast</span>
+            <Users className="w-4 h-4 text-[#0066ff] dark:text-[#38BDF8]" />
+            <span className="text-xs font-bold text-[#0A1931] dark:text-white">Worker Daily Standby Broadcast</span>
           </div>
-          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-[#38BDF8] border border-blue-200 dark:border-blue-800/60">
             PostgreSQL Live
           </span>
         </div>
@@ -212,13 +212,13 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
         {activeTab === 'hire_standby' ? (
           <div className="space-y-4">
             {/* Filter controls */}
-            <div className="p-3 bg-[#F8FAFC] rounded-2xl border border-[#e6e8ec] space-y-2.5">
+            <div className="p-3 bg-[#F8FAFC] dark:bg-[#121215] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 space-y-2.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-[#0A1931] flex items-center gap-1.5">
+                <span className="font-bold text-[#0A1931] dark:text-white flex items-center gap-1.5">
                   <Filter className="w-3.5 h-3.5 text-[#0066ff]" />
                   Filter by Trade:
                 </span>
-                <span className="text-[#717784]">
+                <span className="text-[#717784] dark:text-zinc-400">
                   Max Daily Wage: <strong>₹{maxBudget}</strong>
                 </span>
               </div>
@@ -239,7 +239,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                     className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                       selectedTrade === trade
                         ? 'bg-[#0066ff] text-white shadow-xs'
-                        : 'bg-white text-[#717784] border border-[#e6e8ec] hover:border-[#0066ff]'
+                        : 'bg-white dark:bg-zinc-800 text-[#717784] dark:text-zinc-300 border border-[#e6e8ec] dark:border-zinc-700 hover:border-[#0066ff]'
                     }`}
                   >
                     {trade}
@@ -250,29 +250,29 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
 
             {/* Live Standby Worker List from PostgreSQL */}
             {isLoading ? (
-              <div className="py-12 flex flex-col items-center justify-center gap-2 text-slate-500">
-                <Loader2 className="w-6 h-6 animate-spin text-[#0066ff]" />
+              <div className="py-12 flex flex-col items-center justify-center gap-2 text-slate-500 dark:text-zinc-400">
+                <Loader2 className="w-6 h-6 animate-spin text-[#0066ff] dark:text-[#38BDF8]" />
                 <span className="text-xs font-medium">Scanning live database for standby workers...</span>
               </div>
             ) : isError ? (
               <div className="py-8 text-center space-y-2">
                 <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
-                <p className="text-xs text-rose-600 font-semibold">Failed to fetch standby pool workers.</p>
+                <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold">Failed to fetch standby pool workers.</p>
                 <button
                   type="button"
                   onClick={() => refetch()}
-                  className="px-4 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-800"
+                  className="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-bold text-slate-800 dark:text-zinc-200"
                 >
                   Retry
                 </button>
               </div>
             ) : liveWorkers.length > 0 ? (
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-[#717784] px-1">
+                <div className="flex items-center justify-between text-xs text-[#717784] dark:text-zinc-400 px-1">
                   <span>
-                    Showing <strong className="text-[#0A1931]">{liveWorkers.length}</strong> active standby workers
+                    Showing <strong className="text-[#0A1931] dark:text-white">{liveWorkers.length}</strong> active standby workers
                   </span>
-                  <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+                  <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-semibold">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     Live Database Radar
                   </span>
@@ -281,51 +281,51 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                 {liveWorkers.map((w: StandbyWorker) => (
                   <div
                     key={w.id}
-                    className="p-4 rounded-2xl border border-[#e6e8ec] hover:border-blue-300 hover:shadow-xs transition-all space-y-3 bg-white"
+                    className="p-4 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 hover:border-blue-300 dark:hover:border-zinc-700 hover:shadow-xs transition-all space-y-3 bg-white dark:bg-[#16161A]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-sm text-[#0A1931]">{w.name}</h4>
+                          <h4 className="font-bold text-sm text-[#0A1931] dark:text-white">{w.name}</h4>
                           {w.isBiometricVerified && (
                             <span title="Biometric Verified" className="inline-flex items-center">
                               <ShieldCheck className="w-4 h-4 text-[#10b981]" />
                             </span>
                           )}
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
                             🟢 Ready Today
                           </span>
                         </div>
-                        <p className="text-xs font-medium text-[#717784] mt-0.5">{w.trade}</p>
+                        <p className="text-xs font-medium text-[#717784] dark:text-zinc-400 mt-0.5">{w.trade}</p>
                       </div>
 
                       <div className="text-right">
-                        <div className="font-extrabold text-sm text-[#0066ff] flex items-center justify-end">
+                        <div className="font-extrabold text-sm text-[#0066ff] dark:text-[#38BDF8] flex items-center justify-end">
                           <IndianRupee className="w-3.5 h-3.5" />
                           <span>{w.expectedDailyWage}</span>
-                          <span className="text-[10px] font-medium text-[#717784]">/day</span>
+                          <span className="text-[10px] font-medium text-[#717784] dark:text-zinc-400">/day</span>
                         </div>
-                        <span className="text-[10px] text-emerald-700 font-semibold">Spot Cash Settlement</span>
+                        <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">Spot Cash Settlement</span>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-[#717784]">
-                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F8FAFC] border border-[#e6e8ec]">
-                        <MapPin className="w-3 h-3 text-[#0066ff]" />
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-[#717784] dark:text-zinc-400">
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F8FAFC] dark:bg-zinc-800/80 border border-[#e6e8ec] dark:border-zinc-700 text-[#717784] dark:text-zinc-300">
+                        <MapPin className="w-3 h-3 text-[#0066ff] dark:text-[#38BDF8]" />
                         <span>{w.taluk}</span>
                       </div>
-                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200">
-                        <Clock className="w-3 h-3 text-emerald-600" />
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold border border-emerald-200 dark:border-emerald-800/60">
+                        <Clock className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                         <span>{w.availabilityWindow || 'Ready Now'}</span>
                       </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-2">
                       {w.phone && (
                         <a
                           href={`tel:${w.phone.replace(/\D/g, '')}`}
-                          className="p-2 rounded-full bg-slate-50 hover:bg-slate-100 text-[#0A1931] border border-[#e6e8ec] transition-colors"
+                          className="p-2 rounded-full bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-[#0A1931] dark:text-white border border-[#e6e8ec] dark:border-zinc-700 transition-colors"
                           title="Call Worker Directly"
                         >
                           <Phone className="w-3.5 h-3.5 text-[#10b981]" />
@@ -344,10 +344,10 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                 ))}
               </div>
             ) : (
-              <div className="p-8 text-center space-y-2 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                <Users className="w-8 h-8 text-slate-400 mx-auto" />
-                <h4 className="text-sm font-bold text-[#0A1931]">No Standby Workers Live Currently</h4>
-                <p className="text-xs text-[#717784] max-w-sm mx-auto">
+              <div className="p-8 text-center space-y-2 border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl bg-slate-50/50 dark:bg-zinc-900/40">
+                <Users className="w-8 h-8 text-slate-400 dark:text-zinc-500 mx-auto" />
+                <h4 className="text-sm font-bold text-[#0A1931] dark:text-white">No Standby Workers Live Currently</h4>
+                <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-sm mx-auto">
                   Workers broadcast themselves between 6:00 AM and 10:00 AM for same-day emergency shifts in {currentCity}.
                 </p>
                 <button
@@ -356,7 +356,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                     setSelectedTrade('All');
                     setMaxBudget(2000);
                   }}
-                  className="mt-2 px-4 py-1.5 rounded-full text-xs font-bold text-[#0066ff] bg-blue-50 border border-blue-200 hover:bg-blue-100 cursor-pointer"
+                  className="mt-2 px-4 py-1.5 rounded-full text-xs font-bold text-[#0066ff] dark:text-[#38BDF8] bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60 hover:bg-blue-100 dark:hover:bg-blue-900/80 cursor-pointer"
                 >
                   Reset Trade & Wage Filters
                 </button>
@@ -365,32 +365,32 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-[#eff6ff] border border-[#dbeafe] text-xs text-[#0f2f63] space-y-1">
-              <h4 className="font-bold text-sm text-[#0A1931] flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[#0066ff]" />
+            <div className="p-4 rounded-2xl bg-[#eff6ff] dark:bg-blue-950/30 border border-[#dbeafe] dark:border-blue-900/40 text-xs text-[#0f2f63] dark:text-blue-200 space-y-1">
+              <h4 className="font-bold text-sm text-[#0A1931] dark:text-white flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#0066ff] dark:text-[#38BDF8]" />
                 Get Dispatched for Immediate Daily Shifts
               </h4>
-              <p className="leading-relaxed text-[#717784]">
+              <p className="leading-relaxed text-[#717784] dark:text-zinc-300">
                 Marking yourself available registers your profile in the live database <strong>Instant Spot Hire Radar</strong> for {currentCity}. Nearby factories, warehouses, and shops looking for emergency replacements will contact you directly.
               </p>
             </div>
 
             {isJoined ? (
-              <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-3">
-                <div className="w-12 h-12 bg-emerald-100 text-[#10b981] rounded-full flex items-center justify-center mx-auto">
+              <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-center space-y-3">
+                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/60 text-[#10b981] rounded-full flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
-                <h4 className="text-base font-bold text-emerald-950">
+                <h4 className="text-base font-bold text-emerald-950 dark:text-emerald-200">
                   You are Live on Standby Radar!
                 </h4>
-                <p className="text-xs text-emerald-800 max-w-sm mx-auto">
+                <p className="text-xs text-emerald-800 dark:text-emerald-300 max-w-sm mx-auto">
                   Broadcasted in PostgreSQL database as <strong>{candidateTrade}</strong> in <strong>{candidateTaluk}</strong> at <strong>₹{candidateWage}/day</strong>. Keep your phone on loud.
                 </p>
                 <div className="flex items-center justify-center gap-2 pt-2">
                   <button
                     type="button"
                     onClick={() => setIsJoined(false)}
-                    className="px-4 py-1.5 rounded-full bg-white border border-emerald-300 text-emerald-900 text-xs font-bold hover:bg-emerald-100 cursor-pointer"
+                    className="px-4 py-1.5 rounded-full bg-white dark:bg-zinc-800 border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-zinc-700 cursor-pointer"
                   >
                     Edit Details
                   </button>
@@ -398,7 +398,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                     type="button"
                     onClick={() => leaveMutation.mutate()}
                     disabled={leaveMutation.isPending}
-                    className="px-4 py-1.5 rounded-full bg-rose-50 border border-rose-300 text-rose-700 text-xs font-bold hover:bg-rose-100 cursor-pointer"
+                    className="px-4 py-1.5 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-900/60 cursor-pointer"
                   >
                     {leaveMutation.isPending ? 'Leaving...' : 'Turn Off Standby'}
                   </button>
@@ -407,7 +407,7 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
             ) : (
               <form onSubmit={handleJoinChowk} className="space-y-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
                     Your Primary Trade:
                   </label>
                   <input
@@ -415,14 +415,14 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                     value={candidateTrade}
                     onChange={(e) => setCandidateTrade(e.target.value)}
                     required
-                    className="w-full p-2.5 rounded-xl border border-[#e6e8ec] bg-[#F8FAFC] text-xs sm:text-sm font-semibold text-[#0A1931] focus:ring-2 focus:ring-[#0066ff] outline-none"
+                    className="w-full p-2.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-700 bg-[#F8FAFC] dark:bg-[#121215] text-xs sm:text-sm font-semibold text-[#0A1931] dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-[#0066ff] outline-none"
                     placeholder="e.g. Electrician, Warehouse Loader, Driver"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
+                    <label className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
                       Expected Daily Wage (₹):
                     </label>
                     <input
@@ -432,12 +432,12 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                       required
                       min="500"
                       max="3000"
-                      className="w-full p-2.5 rounded-xl border border-[#e6e8ec] bg-[#F8FAFC] text-xs sm:text-sm font-semibold text-[#0A1931] focus:ring-2 focus:ring-[#0066ff] outline-none"
+                      className="w-full p-2.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-700 bg-[#F8FAFC] dark:bg-[#121215] text-xs sm:text-sm font-semibold text-[#0A1931] dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-[#0066ff] outline-none"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
+                    <label className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
                       Your Taluk / Area:
                     </label>
                     <input
@@ -445,21 +445,21 @@ export const DigitalLabourChowkModal: React.FC<DigitalLabourChowkModalProps> = (
                       value={candidateTaluk}
                       onChange={(e) => setCandidateTaluk(e.target.value)}
                       required
-                      className="w-full p-2.5 rounded-xl border border-[#e6e8ec] bg-[#F8FAFC] text-xs sm:text-sm font-semibold text-[#0A1931] focus:ring-2 focus:ring-[#0066ff] outline-none"
+                      className="w-full p-2.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-700 bg-[#F8FAFC] dark:bg-[#121215] text-xs sm:text-sm font-semibold text-[#0A1931] dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-[#0066ff] outline-none"
                       placeholder="e.g. Guindy, Ambattur"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
                     Readiness Notes (Optional):
                   </label>
                   <input
                     type="text"
                     value={candidateNotes}
                     onChange={(e) => setCandidateNotes(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-[#e6e8ec] bg-[#F8FAFC] text-xs sm:text-sm font-semibold text-[#0A1931] focus:ring-2 focus:ring-[#0066ff] outline-none"
+                    className="w-full p-2.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-700 bg-[#F8FAFC] dark:bg-[#121215] text-xs sm:text-sm font-semibold text-[#0A1931] dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-[#0066ff] outline-none"
                     placeholder="e.g. Have own tools, ready within 30 mins"
                   />
                 </div>

@@ -398,14 +398,14 @@ export const AdminJobsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] mb-1.5">
+          <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] dark:text-zinc-400 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9]" />
             <span>Marketplace Quality & Moderation</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-medium text-[#0a0a0a] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-medium text-[#0a0a0a] dark:text-white tracking-tight">
             Job Postings & Discovery
           </h1>
-          <p className="text-xs sm:text-sm text-[#717784] mt-1 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 mt-1 leading-relaxed">
             Review blue-collar job openings, moderate external vacancies into the live market, and inspect source compliance.
           </p>
         </div>
@@ -415,10 +415,10 @@ export const AdminJobsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowSourcesModal(true)}
-            className="px-3.5 py-2 rounded-full bg-white hover:bg-[#f4f4f4] border border-[#e6e8ec] text-[#0a0a0a] text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
+            className="px-3.5 py-2 rounded-full bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 text-[#0a0a0a] dark:text-zinc-100 text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
             title="Inspect registered source adapters and compliance states"
           >
-            <Database className="w-3.5 h-3.5 text-[#2563c9]" />
+            <Database className="w-3.5 h-3.5 text-[#2563c9] dark:text-sky-400" />
             <span>Source Registry</span>
           </button>
 
@@ -426,7 +426,7 @@ export const AdminJobsPage: React.FC = () => {
             type="button"
             onClick={() => setShowDiscoveryModal(true)}
             disabled={syncExternalMutation.isPending || (scanStatus?.status === 'RUNNING')}
-            className="px-3.5 py-2 rounded-full bg-[#0f2f63] hover:bg-[#1a4487] text-white text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-2 shadow-xs active:scale-95 cursor-pointer disabled:opacity-60"
+            className="px-3.5 py-2 rounded-full bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#1a4487] text-white text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-2 shadow-xs active:scale-95 cursor-pointer disabled:opacity-60"
             title="Configure and trigger dynamic multi-source blue-collar discovery scan"
           >
             {syncExternalMutation.isPending || (scanStatus?.status === 'RUNNING') ? (
@@ -444,13 +444,13 @@ export const AdminJobsPage: React.FC = () => {
             type="button"
             onClick={() => freshnessMutation.mutate()}
             disabled={freshnessMutation.isPending}
-            className="px-3.5 py-2 rounded-full bg-white hover:bg-[#f4f4f4] border border-[#e6e8ec] text-[#0a0a0a] text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer disabled:opacity-60"
+            className="px-3.5 py-2 rounded-full bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 text-[#0a0a0a] dark:text-zinc-100 text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer disabled:opacity-60"
             title="Scan existing external postings for expired/dead vacancy links"
           >
             {freshnessMutation.isPending ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             )}
             <span>{freshnessMutation.isPending ? 'Checking...' : 'Check Freshness'}</span>
           </button>
@@ -461,26 +461,26 @@ export const AdminJobsPage: React.FC = () => {
       {scanStatus && (
         <div className={`p-4 rounded-2xl border transition-all ${
           scanStatus.status === 'RUNNING'
-            ? 'bg-blue-50/50 border-blue-200'
+            ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/50'
             : scanStatus.status === 'COMPLETED'
-            ? 'bg-emerald-50/50 border-emerald-200'
-            : 'bg-rose-50/50 border-rose-200'
+            ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
+            : 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/50'
         }`}>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               {scanStatus.status === 'RUNNING' ? (
-                <Loader2 className="w-4 h-4 text-[#2563c9] animate-spin" />
+                <Loader2 className="w-4 h-4 text-[#2563c9] dark:text-sky-400 animate-spin" />
               ) : scanStatus.status === 'COMPLETED' ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               ) : (
-                <AlertCircle className="w-4 h-4 text-rose-600" />
+                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
               )}
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a]">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] dark:text-white">
                   Discovery Session: {scanStatus.status}
                 </h4>
-                <p className="text-xs text-[#717784]">
-                  Found: <span className="font-medium text-[#0a0a0a]">{scanStatus.total_found}</span> | Valid (Pending Review): <span className="font-semibold text-emerald-600">{scanStatus.valid_count}</span> | Duplicates Merged: <span className="font-medium text-[#0a0a0a]">{scanStatus.duplicate_count}</span> | Rejected: <span className="font-medium text-[#717784]">{scanStatus.rejected_count}</span>
+                <p className="text-xs text-[#717784] dark:text-zinc-400">
+                  Found: <span className="font-medium text-[#0a0a0a] dark:text-white">{scanStatus.total_found}</span> | Valid (Pending Review): <span className="font-semibold text-emerald-600 dark:text-emerald-400">{scanStatus.valid_count}</span> | Duplicates Merged: <span className="font-medium text-[#0a0a0a] dark:text-white">{scanStatus.duplicate_count}</span> | Rejected: <span className="font-medium text-[#717784] dark:text-zinc-400">{scanStatus.rejected_count}</span>
                 </p>
               </div>
             </div>
@@ -492,7 +492,7 @@ export const AdminJobsPage: React.FC = () => {
                   setScanStatus(null);
                   setSelectedStatus('PENDING_REVIEW');
                 }}
-                className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-medium uppercase tracking-wider hover:bg-emerald-700 transition-all cursor-pointer"
+                className="px-3 py-1 rounded-full bg-emerald-600 dark:bg-emerald-500 text-white text-xs font-medium uppercase tracking-wider hover:bg-emerald-700 transition-all cursor-pointer"
               >
                 View Pending Jobs
               </button>
@@ -503,15 +503,15 @@ export const AdminJobsPage: React.FC = () => {
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
-        <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] border border-[#e6e8ec] overflow-x-auto max-w-full">
+        <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 overflow-x-auto max-w-full">
           {statusTabs.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setSelectedStatus(tab.value)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                 selectedStatus === tab.value
-                  ? 'bg-[#0f2f63] text-white shadow-xs'
-                  : 'text-[#717784] hover:text-[#0a0a0a]'
+                  ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-xs'
+                  : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
               }`}
             >
               {tab.label}
@@ -525,9 +525,9 @@ export const AdminJobsPage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by title, employer, city..."
-            className="w-full bg-[#f4f4f4]/60 hover:bg-[#f4f4f4] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3.5 py-2 pl-9 text-xs text-[#0a0a0a] placeholder:text-[#9ea3ae] outline-hidden shadow-2xs transition-all"
+            className="w-full bg-[#f4f4f4]/60 dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 focus:bg-white dark:focus:bg-[#000000] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-sky-500 rounded-xl px-3.5 py-2 pl-9 text-xs text-[#0a0a0a] dark:text-white placeholder:text-[#9ea3ae] dark:placeholder:text-zinc-500 outline-hidden shadow-2xs transition-all"
           />
-          <Search className="w-4 h-4 text-[#9ea3ae] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#9ea3ae] dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
       </div>
 
@@ -535,10 +535,10 @@ export const AdminJobsPage: React.FC = () => {
       {isLoading ? (
         <AppLoader variant="page" message="Loading job openings..." />
       ) : jobs.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-[#e6e8ec] shadow-xs">
-          <Briefcase className="w-10 h-10 text-[#9ea3ae] mx-auto mb-3" />
-          <h3 className="text-sm font-semibold text-[#0a0a0a]">No jobs found</h3>
-          <p className="text-xs text-[#717784] mt-1">
+        <div className="text-center py-20 bg-white dark:bg-[#121215] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs">
+          <Briefcase className="w-10 h-10 text-[#9ea3ae] dark:text-zinc-600 mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-[#0a0a0a] dark:text-white">No jobs found</h3>
+          <p className="text-xs text-[#717784] dark:text-zinc-400 mt-1">
             {selectedStatus === 'PENDING_REVIEW'
               ? 'No newly scraped jobs waiting for moderation.'
               : 'No jobs matched your filters.'}
@@ -561,17 +561,17 @@ export const AdminJobsPage: React.FC = () => {
             return (
               <div 
                 key={job.id}
-                className={`bg-white border rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-xs hover:border-[#0f2f63]/30 transition-all relative overflow-hidden ${
+                className={`bg-white dark:bg-[#121215] border rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-xs hover:border-[#0f2f63]/30 dark:hover:border-zinc-700 transition-all relative overflow-hidden ${
                   job.status === 'PENDING_REVIEW'
-                    ? 'border-amber-200 bg-amber-50/15'
+                    ? 'border-amber-200 dark:border-amber-900/50 bg-amber-50/15 dark:bg-amber-950/10'
                     : isExpired
-                    ? 'border-rose-200 bg-rose-50/10'
-                    : 'border-[#e6e8ec]'
+                    ? 'border-rose-200 dark:border-rose-900/50 bg-rose-50/10 dark:bg-rose-950/10'
+                    : 'border-[#e6e8ec] dark:border-zinc-800'
                 }`}
               >
                 <div>
                   {/* Job Cover Banner with Direct Edit Button */}
-                  <div className="w-full h-28 -mx-5 -mt-5 mb-3 relative overflow-hidden bg-slate-100 border-b border-[#e6e8ec] group">
+                  <div className="w-full h-28 -mx-5 -mt-5 mb-3 relative overflow-hidden bg-slate-100 dark:bg-zinc-800 border-b border-[#e6e8ec] dark:border-zinc-800 group">
                     <img 
                       src={job.cover_image_url || job.coverImageUrl || resolveTradeCover(job.title, job.industry)} 
                       alt={job.title} 
@@ -605,35 +605,35 @@ export const AdminJobsPage: React.FC = () => {
                           ? 'bg-rose-50 text-rose-800 border border-rose-200'
                           : job.status === 'OPEN' 
                           ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
-                          : 'bg-[#f4f4f4] text-[#717784] border border-[#e6e8ec]'
+                          : 'bg-[#f4f4f4] dark:bg-zinc-800 text-[#717784] dark:text-zinc-400 border border-[#e6e8ec] dark:border-zinc-700'
                       }`}>
                         {job.status === 'PENDING_REVIEW' ? 'Pending Review' : (isExpired ? 'EXPIRED' : job.status)}
                       </span>
                       {(job.is_external || job.isExternal) && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-sky-950/30 text-blue-700 dark:text-sky-400 border border-blue-200 dark:border-sky-900/50">
                           {job.source_name || job.sourceName || 'External Partner'}
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] text-[#717784] font-mono">
+                    <span className="text-[10px] text-[#717784] dark:text-zinc-500 font-mono">
                       {job.created_at ? new Date(job.created_at).toLocaleDateString() : ''}
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-semibold text-[#0a0a0a] leading-tight mb-1">{job.title}</h3>
-                  <p className="text-xs text-[#717784] font-medium">{job.employer_name || 'Verified Employer'}</p>
+                  <h3 className="text-sm font-semibold text-[#0a0a0a] dark:text-white leading-tight mb-1">{job.title}</h3>
+                  <p className="text-xs text-[#717784] dark:text-zinc-400 font-medium">{job.employer_name || 'Verified Employer'}</p>
 
-                  <div className="mt-3 pt-3 border-t border-[#e6e8ec] space-y-1.5 text-xs text-[#717784]">
-                    <div className="flex items-center gap-1.5 text-[#0a0a0a]">
-                      <MapPin className="w-3.5 h-3.5 text-[#9ea3ae]" />
+                  <div className="mt-3 pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 space-y-1.5 text-xs text-[#717784] dark:text-zinc-400">
+                    <div className="flex items-center gap-1.5 text-[#0a0a0a] dark:text-zinc-200">
+                      <MapPin className="w-3.5 h-3.5 text-[#9ea3ae] dark:text-zinc-500" />
                       <span>{job.city || job.location || 'Location unverified'}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[#0a0a0a]">
-                      <IndianRupee className="w-3.5 h-3.5 text-[#9ea3ae]" />
+                    <div className="flex items-center gap-1.5 text-[#0a0a0a] dark:text-zinc-200">
+                      <IndianRupee className="w-3.5 h-3.5 text-[#9ea3ae] dark:text-zinc-500" />
                       <span>₹{job.budget?.toLocaleString() || 0} Budget</span>
                     </div>
                     {job.source_url && (
-                      <div className="flex items-center gap-1.5 text-[#2563c9] text-[11px] truncate">
+                      <div className="flex items-center gap-1.5 text-[#2563c9] dark:text-sky-400 text-[11px] truncate">
                         <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                         <a href={job.source_url} target="_blank" rel="noopener noreferrer" className="hover:underline truncate">
                           {job.source_url}
@@ -644,7 +644,7 @@ export const AdminJobsPage: React.FC = () => {
                 </div>
 
                 {/* Moderation & Delete Controls */}
-                <div className="pt-3 border-t border-[#e6e8ec] flex items-center justify-between gap-2 flex-wrap">
+                <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between gap-2 flex-wrap">
                   {job.status === 'PENDING_REVIEW' ? (
                     <div className="flex items-center gap-1.5">
                       <button
@@ -659,7 +659,7 @@ export const AdminJobsPage: React.FC = () => {
                       <button
                         onClick={() => moderateMutation.mutate({ id: job.id, action: 'reject' })}
                         disabled={moderateMutation.isPending}
-                        className="px-3 py-1.5 bg-white hover:bg-rose-50 border border-[#e6e8ec] text-rose-600 rounded-full text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                        className="px-3 py-1.5 bg-white dark:bg-zinc-800 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-[#e6e8ec] dark:border-zinc-700 text-rose-600 dark:text-rose-400 rounded-full text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer shadow-xs"
                         title="Reject listing from marketplace"
                       >
                         <XCircle className="w-3.5 h-3.5" />
@@ -667,7 +667,7 @@ export const AdminJobsPage: React.FC = () => {
                       </button>
                     </div>
                   ) : (
-                    <span className="text-[11px] text-[#717784] font-medium">
+                    <span className="text-[11px] text-[#717784] dark:text-zinc-400 font-medium">
                       {job.city || 'Pan India'}
                     </span>
                   )}
@@ -677,7 +677,7 @@ export const AdminJobsPage: React.FC = () => {
                       to={`/jobs/${job.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-2.5 py-1 text-xs font-semibold text-[#0f2f63] hover:text-white bg-[#0f2f63]/5 hover:bg-[#0f2f63] rounded-full transition-all cursor-pointer flex items-center gap-1"
+                      className="px-2.5 py-1 text-xs font-semibold text-[#0f2f63] dark:text-sky-400 hover:text-white bg-[#0f2f63]/5 dark:bg-sky-400/10 hover:bg-[#0f2f63] dark:hover:bg-sky-600 rounded-full transition-all cursor-pointer flex items-center gap-1"
                       title="View full job details page with candidate view and edit controls"
                     >
                       <Eye className="w-3 h-3" />
@@ -724,7 +724,7 @@ export const AdminJobsPage: React.FC = () => {
                           gender: rawExtra.gender || ''
                         });
                       }}
-                      className="px-2.5 py-1 text-xs font-semibold text-[#0f2f63] hover:text-white bg-[#0f2f63]/5 hover:bg-[#0f2f63] rounded-full transition-all cursor-pointer flex items-center gap-1"
+                      className="px-2.5 py-1 text-xs font-semibold text-[#0f2f63] dark:text-sky-400 hover:text-white bg-[#0f2f63]/5 dark:bg-sky-400/10 hover:bg-[#0f2f63] dark:hover:bg-sky-600 rounded-full transition-all cursor-pointer flex items-center gap-1"
                       title="Edit job description and details"
                     >
                       <Edit3 className="w-3 h-3" />
@@ -733,7 +733,7 @@ export const AdminJobsPage: React.FC = () => {
                     <button
                       onClick={() => handleDelete(job.id, job.title)}
                       disabled={deleteMutation.isPending}
-                      className="p-1.5 text-[#717784] hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
+                      className="p-1.5 text-[#717784] dark:text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer"
                       title="Delete permanently"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -748,16 +748,16 @@ export const AdminJobsPage: React.FC = () => {
 
       {/* Source Registry Modal */}
       {showSourcesModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-[#e6e8ec] space-y-4 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#1C1C21] rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-[#e6e8ec] dark:border-zinc-800 space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec] dark:border-zinc-800">
               <div className="flex items-center gap-2">
-                <Database className="w-5 h-5 text-[#2563c9]" />
-                <h3 className="text-base font-semibold text-[#0a0a0a]">Job Sources & Compliance Registry</h3>
+                <Database className="w-5 h-5 text-[#2563c9] dark:text-sky-400" />
+                <h3 className="text-base font-semibold text-[#0a0a0a] dark:text-white">Job Sources & Compliance Registry</h3>
               </div>
               <button
                 onClick={() => setShowSourcesModal(false)}
-                className="p-1.5 text-[#717784] hover:text-[#0a0a0a] rounded-lg cursor-pointer"
+                className="p-1.5 text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white rounded-lg cursor-pointer"
               >
                 ✕
               </button>
@@ -768,18 +768,18 @@ export const AdminJobsPage: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {sources.map((source: AdminSourceItem) => (
-                  <div key={source.source_id} className="p-3.5 rounded-xl border border-[#e6e8ec] bg-[#f9fafb] space-y-1.5">
+                  <div key={source.source_id} className="p-3.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-[#f9fafb] dark:bg-[#121215] space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-semibold text-[#0a0a0a]">{source.name}</span>
+                      <span className="text-xs font-semibold text-[#0a0a0a] dark:text-white">{source.name}</span>
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${getStatusBadge(source.status)}`}>
                         {source.status}
                       </span>
                     </div>
-                    <p className="text-[11px] text-[#717784] leading-relaxed">
+                    <p className="text-[11px] text-[#717784] dark:text-zinc-400 leading-relaxed">
                       {source.compliance_note}
                     </p>
                     {source.error_message && (
-                      <p className="text-[11px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                      <p className="text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 p-2 rounded-lg border border-amber-200 dark:border-amber-900/50">
                         {source.error_message}
                       </p>
                     )}
@@ -788,10 +788,10 @@ export const AdminJobsPage: React.FC = () => {
               </div>
             )}
 
-            <div className="pt-3 border-t border-[#e6e8ec] flex justify-end">
+            <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 flex justify-end">
               <button
                 onClick={() => setShowSourcesModal(false)}
-                className="px-4 py-2 rounded-full bg-[#0f2f63] text-white text-xs font-medium uppercase tracking-wider cursor-pointer"
+                className="px-4 py-2 rounded-full bg-[#0f2f63] dark:bg-[#0066FF] text-white text-xs font-medium uppercase tracking-wider cursor-pointer"
               >
                 Close
               </button>
@@ -802,21 +802,21 @@ export const AdminJobsPage: React.FC = () => {
 
       {/* Dynamic Scraper Command Center Modal */}
       {showDiscoveryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-[#e6e8ec] space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#1C1C21] rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-[#e6e8ec] dark:border-zinc-800 space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec] dark:border-zinc-800">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-blue-50 text-[#2563c9] rounded-xl border border-blue-100">
+                <div className="p-2 bg-blue-50 dark:bg-sky-950/30 text-[#2563c9] dark:text-sky-400 rounded-xl border border-blue-100 dark:border-sky-900/50">
                   <SlidersHorizontal className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-[#0a0a0a]">Discovery Command Center</h3>
-                  <p className="text-xs text-[#717784]">Multi-source blue-collar discovery with vernacular ontology ($0.00 Free Stack)</p>
+                  <h3 className="text-base font-semibold text-[#0a0a0a] dark:text-white">Discovery Command Center</h3>
+                  <p className="text-xs text-[#717784] dark:text-zinc-400">Multi-source blue-collar discovery with vernacular ontology ($0.00 Free Stack)</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowDiscoveryModal(false)}
-                className="p-1.5 text-[#717784] hover:text-[#0a0a0a] rounded-lg cursor-pointer text-lg font-medium"
+                className="p-1.5 text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white rounded-lg cursor-pointer text-lg font-medium"
               >
                 ✕
               </button>
@@ -824,8 +824,8 @@ export const AdminJobsPage: React.FC = () => {
 
             {/* Target City Selector (Tamil Nadu focus) */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-[#2563c9]" />
+              <label className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] dark:text-white flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#2563c9] dark:text-sky-400" />
                 <span>Target City (Tamil Nadu Focus)</span>
               </label>
               <div className="flex flex-wrap gap-2">
@@ -839,8 +839,8 @@ export const AdminJobsPage: React.FC = () => {
                     }}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer border ${
                       selectedCity === c.name && !customCity
-                        ? 'bg-[#0f2f63] text-white border-[#0f2f63] shadow-xs'
-                        : 'bg-white text-[#717784] hover:text-[#0a0a0a] border-[#e6e8ec] hover:border-gray-300'
+                        ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white border-[#0f2f63] dark:border-[#0066FF] shadow-xs'
+                        : 'bg-white dark:bg-[#121215] text-[#717784] dark:text-zinc-300 hover:text-[#0a0a0a] dark:hover:text-white border-[#e6e8ec] dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700'
                     }`}
                   >
                     {c.label}
@@ -855,20 +855,20 @@ export const AdminJobsPage: React.FC = () => {
                   setCustomCity(e.target.value);
                   if (e.target.value) setSelectedCity(e.target.value);
                 }}
-                className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#e6e8ec] bg-white text-[#0a0a0a] focus:outline-hidden focus:border-[#2563c9] transition-all"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-white focus:outline-hidden focus:border-[#2563c9] dark:focus:border-sky-500 transition-all"
               />
             </div>
 
             {/* Vernacular Trade Term Quick-Chips & Search */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] flex items-center gap-1.5">
-                  <Languages className="w-3.5 h-3.5 text-[#2563c9]" />
+                <label className="text-xs font-semibold uppercase tracking-wider text-[#0a0a0a] dark:text-white flex items-center gap-1.5">
+                  <Languages className="w-3.5 h-3.5 text-[#2563c9] dark:text-sky-400" />
                   <span>Trade / Vernacular Query (Tamil / English / Hindi)</span>
                 </label>
-                <span className="text-[11px] text-[#2563c9] font-medium">Sahayak-RAG Trade Mapper Active</span>
+                <span className="text-[11px] text-[#2563c9] dark:text-sky-400 font-medium">Sahayak-RAG Trade Mapper Active</span>
               </div>
-              <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1.5 bg-[#f9fafb] rounded-xl border border-[#e6e8ec]">
+              <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1.5 bg-[#f9fafb] dark:bg-[#09090b] rounded-xl border border-[#e6e8ec] dark:border-zinc-800">
                 {VERNACULAR_TRADE_CHIPS.map((chip) => (
                   <button
                     key={chip.id}
@@ -877,7 +877,7 @@ export const AdminJobsPage: React.FC = () => {
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
                       discoveryQuery.toLowerCase().includes(chip.query.toLowerCase())
                         ? 'bg-[#2563c9] text-white border-[#2563c9]'
-                        : 'bg-white text-[#4b5563] border-[#e5e7eb] hover:border-[#2563c9]'
+                        : 'bg-white dark:bg-[#121215] text-[#4b5563] dark:text-zinc-300 border-[#e5e7eb] dark:border-zinc-800 hover:border-[#2563c9]'
                     }`}
                   >
                     <span>{chip.ta}</span>
@@ -890,7 +890,7 @@ export const AdminJobsPage: React.FC = () => {
                 placeholder="Search term (e.g. ஓட்டுநர், Electrician, Warehouse Packer, செக்யூரிட்டி)..."
                 value={discoveryQuery}
                 onChange={(e) => setDiscoveryQuery(e.target.value)}
-                className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#e6e8ec] bg-white text-[#0a0a0a] focus:outline-hidden focus:border-[#2563c9] transition-all"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-white focus:outline-hidden focus:border-[#2563c9] dark:focus:border-sky-500 transition-all"
               />
             </div>
 
@@ -1023,22 +1023,22 @@ export const AdminJobsPage: React.FC = () => {
 
       {/* Edit Job Description & Details Modal */}
       {editingJob && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-[#e6e8ec] space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#1C1C21] rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-[#e6e8ec] dark:border-zinc-800 space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec] dark:border-zinc-800">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[#0f2f63]/10 text-[#0f2f63] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-[#0f2f63]/10 dark:bg-sky-400/20 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center">
                   <FileText className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#0a0a0a]">Edit Job Requisition</h3>
-                  <p className="text-xs text-[#717784]">{editingJob.employer_name || 'Verified Employer'} • ID: {editingJob.id.slice(0, 8)}...</p>
+                  <h3 className="text-base font-bold text-[#0a0a0a] dark:text-white">Edit Job Requisition</h3>
+                  <p className="text-xs text-[#717784] dark:text-zinc-400">{editingJob.employer_name || 'Verified Employer'} • ID: {editingJob.id.slice(0, 8)}...</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingJob(null)}
-                className="p-1.5 text-[#717784] hover:text-[#0a0a0a] rounded-lg cursor-pointer"
+                className="p-1.5 text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white rounded-lg cursor-pointer"
               >
                 ✕
               </button>
@@ -1046,11 +1046,11 @@ export const AdminJobsPage: React.FC = () => {
 
             <div className="space-y-4 text-xs">
               {/* Cover Image Uploader & Presets for Scraped/Admin Job */}
-              <div className="bg-[#f8f9fa] p-3.5 rounded-2xl border border-[#e6e8ec] space-y-3">
+              <div className="bg-[#f8f9fa] dark:bg-[#121215] p-3.5 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-[#0f2f63]" />
-                    <span className="text-[11px] font-bold text-[#0a0a0a] uppercase tracking-wide">Worksite Photo & Cover Banner</span>
+                    <ImageIcon className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
+                    <span className="text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase tracking-wide">Worksite Photo & Cover Banner</span>
                   </div>
                   {editJobForm.coverImageUrl && (
                     <button
@@ -1064,7 +1064,7 @@ export const AdminJobsPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <div className="w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-slate-200 border border-[#e2e4e9] relative shrink-0">
+                  <div className="w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-slate-200 dark:bg-zinc-800 border border-[#e2e4e9] dark:border-zinc-700 relative shrink-0">
                     <img
                       src={editJobForm.coverImageUrl || resolveTradeCover(editJobForm.title, editJobForm.industry)}
                       alt="Job cover"
@@ -1109,7 +1109,7 @@ export const AdminJobsPage: React.FC = () => {
                         type="button"
                         onClick={() => editModalFileInputRef.current?.click()}
                         disabled={isAdminUploading}
-                        className="px-3 py-1.5 rounded-lg bg-[#0f2f63] hover:bg-[#1a4487] text-white text-[11px] font-semibold cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-lg bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#1a4487] text-white text-[11px] font-semibold cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                       >
                         {isAdminUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UploadCloud className="w-3.5 h-3.5" />}
                         <span>Upload Custom Photo</span>
@@ -1124,8 +1124,8 @@ export const AdminJobsPage: React.FC = () => {
                           onClick={() => setEditJobForm({ ...editJobForm, coverImageUrl: preset.url })}
                           className={`text-[10px] px-2 py-0.5 rounded-md border font-medium cursor-pointer transition-all ${
                             editJobForm.coverImageUrl === preset.url 
-                              ? 'bg-[#0f2f63] text-white border-[#0f2f63]' 
-                              : 'bg-white text-[#717784] border-[#e6e8ec] hover:border-[#0f2f63]'
+                              ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white border-[#0f2f63] dark:border-[#0066FF]' 
+                              : 'bg-white dark:bg-[#121215] text-[#717784] dark:text-zinc-300 border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]'
                           }`}
                         >
                           {preset.label}
@@ -1137,18 +1137,18 @@ export const AdminJobsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Title *</label>
+                <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-zinc-200 uppercase mb-1">Job Title *</label>
                 <input
                   type="text"
                   value={editJobForm.title}
                   onChange={(e) => setEditJobForm({ ...editJobForm, title: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-semibold focus:outline-none focus:border-[#0f2f63]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-semibold text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Trade / Industry Category *</label>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-zinc-200 uppercase mb-1">Trade / Industry Category *</label>
                   <Select
                     value={editJobForm.industry}
                     onChange={(e) => setEditJobForm({ ...editJobForm, industry: e.target.value })}
@@ -1173,7 +1173,7 @@ export const AdminJobsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">City / Region *</label>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-zinc-200 uppercase mb-1">City / Region *</label>
                   <input
                     type="text"
                     value={editJobForm.city}
@@ -1598,17 +1598,17 @@ export const AdminJobsPage: React.FC = () => {
 
       {/* Cover Image Editor Modal with Direct Upload */}
       {editingCoverJob && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 border border-[#e6e8ec] shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center justify-between border-b border-[#e6e8ec] pb-3">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#1C1C21] rounded-3xl max-w-lg w-full p-6 border border-[#e6e8ec] dark:border-zinc-800 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-[#0a0a0a]">Manage Job Cover Photo</h3>
-                <p className="text-xs text-[#717784] truncate max-w-xs">{editingCoverJob.title}</p>
+                <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-white">Manage Job Cover Photo</h3>
+                <p className="text-xs text-[#717784] dark:text-zinc-400 truncate max-w-xs">{editingCoverJob.title}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingCoverJob(null)}
-                className="p-1 rounded-full text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f4f4] cursor-pointer"
+                className="p-1 rounded-full text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 cursor-pointer"
               >
                 <XCircle className="w-5 h-5" />
               </button>
@@ -1616,8 +1616,8 @@ export const AdminJobsPage: React.FC = () => {
 
             {/* Current Active Preview */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#0a0a0a]">Current Preview</label>
-              <div className="w-full h-36 rounded-2xl overflow-hidden bg-slate-100 relative border border-[#e6e8ec]">
+              <label className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">Current Preview</label>
+              <div className="w-full h-36 rounded-2xl overflow-hidden bg-slate-100 dark:bg-zinc-800 relative border border-[#e6e8ec] dark:border-zinc-800">
                 <img
                   src={customCoverInput || editingCoverJob.cover_image_url || editingCoverJob.coverImageUrl || resolveAutoCover(editingCoverJob.title, editingCoverJob.industry)}
                   alt="Preview"
@@ -1635,7 +1635,7 @@ export const AdminJobsPage: React.FC = () => {
             {/* Direct Device Upload Box */}
             <div
               onClick={() => adminFileInputRef.current?.click()}
-              className="p-4 border-2 border-dashed border-[#c5c8d0] hover:border-[#0f2f63] hover:bg-slate-50/80 rounded-2xl text-center cursor-pointer transition-all flex items-center justify-center gap-3 bg-white"
+              className="p-4 border-2 border-dashed border-[#c5c8d0] dark:border-zinc-700 hover:border-[#0f2f63] dark:hover:border-sky-500 hover:bg-slate-50/80 dark:hover:bg-zinc-800/50 rounded-2xl text-center cursor-pointer transition-all flex items-center justify-center gap-3 bg-white dark:bg-[#121215]"
             >
               <input
                 ref={adminFileInputRef}
@@ -1647,18 +1647,18 @@ export const AdminJobsPage: React.FC = () => {
                   if (file) handleAdminFileUpload(file);
                 }}
               />
-              <div className="w-10 h-10 rounded-xl bg-[#0f2f63]/5 text-[#0f2f63] flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#0f2f63]/5 dark:bg-sky-400/10 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center shrink-0">
                 <UploadCloud className="w-5 h-5" />
               </div>
               <div className="text-left">
-                <span className="block text-xs font-bold text-[#0a0a0a]">Upload Your Own Image</span>
-                <span className="block text-[11px] text-[#717784]">Click to browse photo from computer or phone</span>
+                <span className="block text-xs font-bold text-[#0a0a0a] dark:text-white">Upload Your Own Image</span>
+                <span className="block text-[11px] text-[#717784] dark:text-zinc-400">Click to browse photo from computer or phone</span>
               </div>
             </div>
 
             {/* Quick Presets */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#0a0a0a]">Or Choose a Free Trade Preset</label>
+              <label className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">Or Choose a Free Trade Preset</label>
               <div className="grid grid-cols-3 gap-2">
                 {TRADE_PRESETS.map((preset) => (
                   <button
@@ -1667,19 +1667,19 @@ export const AdminJobsPage: React.FC = () => {
                     onClick={() => setCustomCoverInput(preset.url)}
                     className={`p-1.5 rounded-xl border text-left cursor-pointer transition-all ${
                       customCoverInput === preset.url
-                        ? 'border-[#0f2f63] bg-[#0f2f63]/5 font-bold shadow-xs'
-                        : 'border-[#e6e8ec] hover:border-slate-400'
+                        ? 'border-[#0f2f63] dark:border-sky-500 bg-[#0f2f63]/5 dark:bg-sky-500/10 font-bold shadow-xs'
+                        : 'border-[#e6e8ec] dark:border-zinc-800 hover:border-slate-400 dark:hover:border-zinc-700'
                     }`}
                   >
                     <img src={preset.url} alt={preset.label} className="w-full h-10 rounded-lg object-cover mb-1" />
-                    <span className="block text-[10px] text-[#0a0a0a] truncate">{preset.label}</span>
+                    <span className="block text-[10px] text-[#0a0a0a] dark:text-zinc-200 truncate">{preset.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#e6e8ec]">
+            <div className="flex items-center justify-between pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => {
@@ -1690,7 +1690,7 @@ export const AdminJobsPage: React.FC = () => {
                   });
                   setEditingCoverJob(null);
                 }}
-                className="text-xs text-rose-600 hover:underline cursor-pointer"
+                className="text-xs text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
               >
                 Clear Cover
               </button>
@@ -1699,7 +1699,7 @@ export const AdminJobsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setEditingCoverJob(null)}
-                  className="px-4 py-2 rounded-full border border-[#e6e8ec] text-xs font-medium cursor-pointer hover:bg-[#f4f4f4]"
+                  className="px-4 py-2 rounded-full border border-[#e6e8ec] dark:border-zinc-700 text-xs font-medium cursor-pointer hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-300"
                 >
                   Cancel
                 </button>
@@ -1714,7 +1714,7 @@ export const AdminJobsPage: React.FC = () => {
                     });
                     setEditingCoverJob(null);
                   }}
-                  className="px-4 py-2 rounded-full bg-[#0f2f63] hover:bg-[#1a4487] text-white text-xs font-semibold cursor-pointer shadow-xs disabled:opacity-50"
+                  className="px-4 py-2 rounded-full bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#1a4487] text-white text-xs font-semibold cursor-pointer shadow-xs disabled:opacity-50"
                 >
                   Save Cover Photo
                 </button>

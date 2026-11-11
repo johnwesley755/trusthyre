@@ -410,7 +410,7 @@ export default function JobSearchPage() {
   }, [displayJobs, safeCurrentPage, pageSize]);
 
   return (
-    <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
+    <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <SeoHead
         title="Search Verified Job Vacancies in India 2026"
         description="Apply for verified trade and blue-collar jobs in India on TrustHyre. Filter by preferred salary, daily wage, trade, experience, and location. Call employers directly with zero consultant commission."
@@ -458,7 +458,7 @@ export default function JobSearchPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
           
           {/* DESKTOP LEFT COLUMN: Filters Sidebar (Hidden on mobile) */}
-          <div className="hidden lg:block lg:col-span-3 bg-[#f4f4f4] rounded-[1.75rem] p-5 sm:p-6 border border-[#e6e8ec] lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto no-scrollbar">
+          <div className="hidden lg:block lg:col-span-3 bg-[#f4f4f4] dark:bg-[#09090b] rounded-[1.75rem] p-5 sm:p-6 border border-[#e6e8ec] dark:border-zinc-800 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto no-scrollbar">
             <JobFilterSidebar
               selectedJobType={jobType}
               onSelectJobType={(t) => {
@@ -510,7 +510,7 @@ export default function JobSearchPage() {
           <div className="col-span-1 lg:col-span-6 space-y-3">
             
             {/* ⚡ High-Conversion Smart Transit & Frontline Quick Action Bar */}
-            <div className="bg-white border border-[#e6e8ec] rounded-2xl p-2.5 sm:p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div className="bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-2xl p-2.5 sm:p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                 {/* 1-Tap Instant Spot Hire Button */}
                 <button
@@ -532,8 +532,8 @@ export default function JobSearchPage() {
                   }}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                     nearTransit
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-blue-50/70 hover:bg-blue-100 text-blue-900 border border-blue-200'
+                      ? 'bg-blue-600 dark:bg-sky-600 text-white shadow-xs'
+                      : 'bg-blue-50/70 dark:bg-sky-950/30 hover:bg-blue-100 dark:hover:bg-sky-900/40 text-blue-900 dark:text-sky-300 border border-blue-200 dark:border-sky-800/60'
                   }`}
                   title="Filter jobs located near Metro stations or major bus stands"
                 >
@@ -551,8 +551,8 @@ export default function JobSearchPage() {
                   }}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                     transportProvided
-                      ? 'bg-purple-600 text-white shadow-xs'
-                      : 'bg-purple-50/70 hover:bg-purple-100 text-purple-900 border border-purple-200'
+                      ? 'bg-purple-600 dark:bg-purple-600 text-white shadow-xs'
+                      : 'bg-purple-50/70 dark:bg-purple-950/30 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60'
                   }`}
                   title="Filter jobs with company van/cab transport provided"
                 >
@@ -574,8 +574,8 @@ export default function JobSearchPage() {
                     onClick={() => setSelectedPerkFilter(perk.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                       selectedPerkFilter === perk.id
-                        ? 'bg-[#0f2f63] text-white shadow-xs'
-                        : 'bg-[#F8FAFC] hover:bg-slate-100 text-[#475467] border border-[#e6e8ec]'
+                        ? 'bg-[#0f2f63] dark:bg-[#2563EB] text-white shadow-xs'
+                        : 'bg-[#F8FAFC] dark:bg-[#1C1C21] hover:bg-slate-100 dark:hover:bg-zinc-800 text-[#475467] dark:text-zinc-300 border border-[#e6e8ec] dark:border-zinc-800'
                     }`}
                   >
                     {perk.label}
@@ -584,8 +584,8 @@ export default function JobSearchPage() {
               </div>
 
               {/* 100% Free Guarantee Pill */}
-              <div className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200 shrink-0">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <div className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-xl border border-emerald-200 dark:border-emerald-800/80 shrink-0">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>Zero Fee / 100% Free</span>
               </div>
             </div>
@@ -593,8 +593,8 @@ export default function JobSearchPage() {
             {/* Results Count & Sort Row */}
             <div className="flex items-center justify-between px-1 flex-wrap gap-2 pt-0.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-medium text-[#717784]">
-                  Showing <strong className="text-[#0a0a0a] font-bold">{totalItems === 0 ? 0 : `${(safeCurrentPage - 1) * pageSize + 1}-${Math.min(safeCurrentPage * pageSize, totalItems)}`}</strong> of <strong className="text-[#0a0a0a] font-bold">{totalItems}</strong> verified jobs
+                <span className="text-xs font-medium text-[#717784] dark:text-zinc-400">
+                  Showing <strong className="text-[#0a0a0a] dark:text-white font-bold">{totalItems === 0 ? 0 : `${(safeCurrentPage - 1) * pageSize + 1}-${Math.min(safeCurrentPage * pageSize, totalItems)}`}</strong> of <strong className="text-[#0a0a0a] dark:text-white font-bold">{totalItems}</strong> verified jobs
                 </span>
 
                 {/* Hide / Show Expired Toggle */}
@@ -603,8 +603,8 @@ export default function JobSearchPage() {
                   onClick={() => setHideExpired(!hideExpired)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition-all cursor-pointer ${
                     hideExpired
-                      ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 shadow-2xs'
-                      : 'bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] border-[#e6e8ec]'
+                      ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/80 hover:bg-rose-100 dark:hover:bg-rose-900/60 shadow-2xs'
+                      : 'bg-[#f4f4f4] dark:bg-[#121215] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-white border-[#e6e8ec] dark:border-zinc-800'
                   }`}
                   title={hideExpired ? "Currently hiding expired jobs. Click to show all." : "Currently showing all jobs. Click to hide expired."}
                 >
@@ -615,7 +615,7 @@ export default function JobSearchPage() {
                 <button
                   type="button"
                   onClick={() => setIsBulletinOpen(true)}
-                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border border-[#25D366]/40 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] shadow-2xs transition-all cursor-pointer active:scale-95"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border border-[#25D366]/40 dark:border-[#25D366]/30 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] dark:text-[#25D366] shadow-2xs transition-all cursor-pointer active:scale-95"
                   title="Generate shareable WhatsApp bulletin of today's verified jobs"
                 >
                   <svg className="w-3.5 h-3.5 fill-current text-[#25D366]" viewBox="0 0 24 24">
@@ -629,19 +629,19 @@ export default function JobSearchPage() {
                   onClick={handleOpenAlertModal}
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border transition-all cursor-pointer ${
                     isMatchingAlertActive
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs hover:bg-emerald-100'
-                      : 'bg-white hover:bg-[#0f2f63] text-[#0f2f63] hover:text-white border-[#0f2f63]/30 shadow-2xs'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/80 shadow-2xs hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
+                      : 'bg-white dark:bg-[#121215] hover:bg-[#0f2f63] dark:hover:bg-[#2563EB] text-[#0f2f63] dark:text-[#38BDF8] hover:text-white dark:hover:text-white border-[#0f2f63]/30 dark:border-zinc-800 shadow-2xs'
                   }`}
                   title={isMatchingAlertActive ? "Job alert active! Tap to manage or modify criteria." : "Configure alert for new job postings"}
                 >
                   {isMatchingAlertActive ? (
                     <>
-                      <Check className="w-3 h-3 text-emerald-600" />
+                      <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                       <span>Alert Active</span>
                     </>
                   ) : (
                     <>
-                      <Bell className="w-3 h-3 text-[#2563c9]" />
+                      <Bell className="w-3.5 h-3.5 text-[#2563c9] dark:text-[#38BDF8]" />
                       <span>Alert Me</span>
                     </>
                   )}
@@ -650,7 +650,7 @@ export default function JobSearchPage() {
 
               {/* Wage Display Toggle (Monthly vs Daily) & Sort Dropdown */}
               <div className="flex items-center gap-2">
-                <div className="inline-flex items-center bg-[#f4f4f4] border border-[#e6e8ec] rounded-full p-0.5 text-[11px] font-bold">
+                <div className="inline-flex items-center bg-[#f4f4f4] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-full p-0.5 text-[11px] font-bold">
                   <button
                     type="button"
                     onClick={() => {
@@ -659,8 +659,8 @@ export default function JobSearchPage() {
                     }}
                     className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
                       wageViewMode === 'monthly'
-                        ? 'bg-[#0f2f63] text-white shadow-2xs'
-                        : 'text-[#717784] hover:text-[#0a0a0a]'
+                        ? 'bg-[#0f2f63] dark:bg-[#2563EB] text-white shadow-2xs'
+                        : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
                     }`}
                   >
                     Monthly
@@ -673,8 +673,8 @@ export default function JobSearchPage() {
                     }}
                     className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
                       wageViewMode === 'daily'
-                        ? 'bg-[#0f2f63] text-white shadow-2xs'
-                        : 'text-[#717784] hover:text-[#0a0a0a]'
+                        ? 'bg-[#0f2f63] dark:bg-[#2563EB] text-white shadow-2xs'
+                        : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
                     }`}
                   >
                     Daily
@@ -727,20 +727,20 @@ export default function JobSearchPage() {
                     setCurrentPage(1);
                   }}
                   itemName="job postings"
-                  className="rounded-[1.5rem] border border-[#e6e8ec] bg-white p-3 shadow-xs mt-6"
+                  className="rounded-[1.5rem] border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-3 shadow-xs mt-6"
                 />
               </div>
             ) : (
               /* Empty State */
-              <div className="bg-[#f4f4f4] rounded-[1.75rem] p-10 border border-[#e6e8ec] text-center space-y-4">
-                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mx-auto text-[#717784] border border-[#e6e8ec] shadow-2xs">
-                  <Briefcase className="w-7 h-7 text-[#0f2f63]" />
+              <div className="bg-[#f4f4f4] dark:bg-[#0a0a0a] rounded-[1.75rem] p-10 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-4">
+                <div className="w-14 h-14 bg-white dark:bg-black rounded-2xl flex items-center justify-center mx-auto text-[#717784] dark:text-zinc-400 border border-[#e6e8ec] dark:border-zinc-800 shadow-2xs">
+                  <Briefcase className="w-7 h-7 text-[#0f2f63] dark:text-[#38BDF8]" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-base font-bold text-[#0a0a0a]">
+                  <h3 className="text-base font-bold text-[#0a0a0a] dark:text-white">
                     No matching jobs found
                   </h3>
-                  <p className="text-xs text-[#717784] max-w-sm mx-auto">
+                  <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-sm mx-auto">
                     Try adjusting your filters, searching for a different trade or city, or resetting active filters to view all available verified positions.
                   </p>
                 </div>
@@ -777,14 +777,14 @@ export default function JobSearchPage() {
 
       {/* 4. Mobile Filter Bottom-Sheet / Drawer Modal */}
       {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4">
-          <div className="bg-white w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] max-h-[88vh] flex flex-col shadow-2xl border border-[#e6e8ec] overflow-hidden animate-in slide-in-from-bottom duration-200">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4">
+          <div className="bg-white dark:bg-[#1C1C21] w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] max-h-[88vh] flex flex-col shadow-2xl border border-[#e6e8ec] dark:border-zinc-800 overflow-hidden animate-in slide-in-from-bottom duration-200">
             
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-[#e6e8ec] flex items-center justify-between shrink-0 bg-[#fbfbfb]">
+            <div className="px-6 py-4 border-b border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between shrink-0 bg-[#fbfbfb] dark:bg-[#16161A]">
               <div className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-[#0f2f63]" />
-                <h3 className="text-base font-bold text-[#0a0a0a]">
+                <Briefcase className="w-4 h-4 text-[#0f2f63] dark:text-[#38BDF8]" />
+                <h3 className="text-base font-bold text-[#0a0a0a] dark:text-white">
                   Filter Job Openings
                 </h3>
               </div>
@@ -792,7 +792,7 @@ export default function JobSearchPage() {
                 {hasActiveFilters && (
                   <button
                     onClick={handleClearAll}
-                    className="text-xs font-medium text-[#717784] hover:text-[#0f2f63] flex items-center gap-1 cursor-pointer transition-colors"
+                    className="text-xs font-medium text-[#717784] dark:text-zinc-400 hover:text-[#0f2f63] dark:hover:text-[#38BDF8] flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     Reset
@@ -800,7 +800,7 @@ export default function JobSearchPage() {
                 )}
                 <button
                   onClick={() => setIsMobileFilterOpen(false)}
-                  className="p-1.5 text-[#717784] hover:text-[#0a0a0a] rounded-full hover:bg-[#e6e8ec] transition-colors cursor-pointer"
+                  className="p-1.5 text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white rounded-full hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <span className="text-base font-bold leading-none">✕</span>
                 </button>

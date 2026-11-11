@@ -108,12 +108,12 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
       icon={<Sparkles className="w-5 h-5 text-[#0066ff]" />}
       iconBgColor="bg-[#eff6ff] text-[#0066ff] border border-[#dbeafe]"
       maxWidth="lg"
-      bodyClassName="p-4 sm:p-5 space-y-4 bg-white"
+      bodyClassName="p-4 sm:p-5 space-y-4 bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100"
       footer={
         <div className="flex flex-wrap items-center justify-between gap-3">
           <a
             href={`tel:${cleanPhone}`}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold bg-white border border-[#e6e8ec] text-[#0A1931] hover:bg-[#F8FAFC] transition-all shadow-2xs cursor-pointer active:scale-95"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 text-[#0A1931] dark:text-white hover:bg-[#F8FAFC] dark:hover:bg-zinc-800 transition-all shadow-2xs cursor-pointer active:scale-95"
           >
             <Phone className="w-4 h-4 text-[#10b981]" />
             <span>Call Candidate</span>
@@ -136,7 +136,7 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
       }
     >
       {/* Candidate Snapshot */}
-      <div className="p-3.5 bg-[#F8FAFC] rounded-2xl border border-[#e6e8ec] flex items-center justify-between gap-3">
+      <div className="p-3.5 bg-[#F8FAFC] dark:bg-[#121215] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 rounded-full bg-[#eff6ff] border border-[#dbeafe] text-[#0066ff] flex items-center justify-center font-bold text-base shrink-0">
             {candidate.fullName.charAt(0).toUpperCase()}
@@ -145,7 +145,7 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
             <h4 className="text-sm font-bold text-[#0A1931] truncate">
               {candidate.fullName}
             </h4>
-            <div className="flex items-center gap-2 text-xs text-[#717784] mt-0.5">
+            <div className="flex items-center gap-2 text-xs text-[#717784] dark:text-zinc-400 mt-0.5">
               <span>{candidate.experienceYears ? `${candidate.experienceYears} Yrs Exp` : 'Verified Worker'}</span>
               <span>•</span>
               <span className="flex items-center gap-1 text-[#10b981] font-semibold">
@@ -165,7 +165,7 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
       {/* Active Job Assignment */}
       {activeJobs.length > 0 ? (
         <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
+          <label className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
             Assign to Your Active Job Vacancy:
           </label>
           <Dropdown
@@ -189,7 +189,7 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
       {/* Interview Details Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
+          <label className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
             Interview Time Slot:
           </label>
           <div className="relative">
@@ -198,14 +198,14 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
               value={interviewTime}
               onChange={(e) => setInterviewTime(e.target.value)}
               placeholder="e.g. Tomorrow at 10:30 AM"
-              className="w-full pl-8 pr-3 py-2 rounded-xl border border-[#e6e8ec] bg-[#F8FAFC] text-xs sm:text-sm font-medium text-[#0A1931] focus:ring-2 focus:ring-[#0066ff] outline-none"
+              className="w-full pl-8 pr-3 py-2 rounded-xl border border-[#e6e8ec] dark:border-zinc-700 bg-[#F8FAFC] dark:bg-[#121215] text-xs sm:text-sm font-medium text-[#0A1931] dark:text-white focus:ring-2 focus:ring-[#0066ff] outline-none"
             />
             <Clock className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
+          <label className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
             Worksite / Interview Venue:
           </label>
           <div className="relative">
@@ -214,7 +214,7 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
               value={interviewVenue}
               onChange={(e) => setInterviewVenue(e.target.value)}
               placeholder="e.g. Guindy Industrial Estate"
-              className="w-full pl-8 pr-3 py-2 rounded-xl border border-[#e6e8ec] bg-[#F8FAFC] text-xs sm:text-sm font-medium text-[#0A1931] focus:ring-2 focus:ring-[#0066ff] outline-none"
+              className="w-full pl-8 pr-3 py-2 rounded-xl border border-[#e6e8ec] dark:border-zinc-700 bg-[#F8FAFC] dark:bg-[#121215] text-xs sm:text-sm font-medium text-[#0A1931] dark:text-white focus:ring-2 focus:ring-[#0066ff] outline-none"
             />
             <MapPin className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
           </div>
@@ -224,7 +224,7 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
       {/* Generated WhatsApp Invitation Preview */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold uppercase tracking-wider text-[#717784]">
+          <label className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400">
             Generated WhatsApp Invite Message:
           </label>
           <button
@@ -252,7 +252,7 @@ Please reply YES to confirm.`}
       <div className="p-3 rounded-2xl bg-[#F8FAFC] border border-[#e6e8ec] flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           <Phone className="w-4 h-4 text-[#10b981]" />
-          <span className="font-semibold text-[#717784]">
+          <span className="font-semibold text-[#717784] dark:text-zinc-400">
             Candidate Phone:
           </span>
           <span className="font-bold font-mono text-[#0A1931]">

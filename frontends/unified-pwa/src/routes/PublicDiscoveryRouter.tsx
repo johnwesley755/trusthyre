@@ -20,7 +20,13 @@ export const PublicDiscoveryRouter: React.FC = () => {
     trade?: string;
   }>();
 
-  const slug = (cityOrSlug || '').toLowerCase().trim();
+  let rawSlug = '';
+  try {
+    rawSlug = decodeURIComponent(cityOrSlug || '').toLowerCase().trim();
+  } catch {
+    rawSlug = (cityOrSlug || '').toLowerCase().trim();
+  }
+  const slug = rawSlug;
 
   // 1. Single Segment Routes (e.g. /jobs-in-sriperumbudur, /jobs-in-chennai, /hire-workers-in-chennai)
   if (!tradeOrNeighborhood) {

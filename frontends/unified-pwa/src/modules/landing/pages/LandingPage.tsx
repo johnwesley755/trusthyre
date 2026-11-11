@@ -22,6 +22,7 @@ import { BlogService } from "../../../services/blog.service";
 import { LandingJobSearchBar } from "../components/LandingJobSearchBar";
 import { AppLoader } from "../../../components/common/AppLoader";
 import { Dropdown } from "../../../components/ui/dropdown";
+import { ThemeToggle } from "../../../components/common/ThemeToggle";
 
 // Trust Carousel Slide Data (Sourced from LANDING_IMAGES.specialists)
 const TRUST_SLIDES = LANDING_IMAGES.specialists;
@@ -461,7 +462,7 @@ export default function LandingPage() {
   const currentSlide = TRUST_SLIDES[activeTrustSlide];
 
   return (
-    <div className="baseline-root bg-white text-[#0a0a0a] min-h-screen selection:bg-[#2563c9] selection:text-white font-['Onest',system-ui,sans-serif]">
+    <div className="baseline-root bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-zinc-100 min-h-screen selection:bg-[#2563c9] selection:text-white font-['Onest',system-ui,sans-serif] transition-colors duration-200">
       <SeoHead
         title="Verified Job Vacancies & Walk-In Openings in India 2026"
         description="Explore active verified job openings in India for November 2026. Direct hiring for Electricians, Chefs, Drivers, Warehouse Logistics & Technicians with verified pay and zero consultant fees."
@@ -557,7 +558,7 @@ export default function LandingPage() {
               ))}
             </div>
 
-            {/* Bottom Row */}
+            {/* Bottom Row: CTA + Theme Mode */}
             <div className="border-t border-white/15 pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <Link
                 to="/find-workers"
@@ -567,6 +568,11 @@ export default function LandingPage() {
                 <span>{t("Explore Candidates", "Explore Candidates")}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
+
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-white/70 font-semibold uppercase tracking-wider">Theme:</span>
+                <ThemeToggle variant="pill" showLabel={true} />
+              </div>
 
               <div className="flex items-center gap-6 text-sm text-white/70">
                 <Link to="/sign-in?role=worker" className="hover:text-white transition-colors">{t("Candidate Login", "Candidate Login")}</Link>
@@ -580,14 +586,14 @@ export default function LandingPage() {
       )}
 
       {/* ===================================================================== */}
-      {/* MAIN CONTENT WRAPPER WITH INSET PAGE FRAME (p-2 sm:p-3) */}
+      {/* MAIN CONTENT WRAPPER */}
       {/* ===================================================================== */}
-      <main className="w-full p-2 sm:p-3 overflow-x-clip bg-white">
+      <main className="w-full overflow-x-clip bg-white dark:bg-[#000000] transition-colors duration-200">
         
         {/* =================================================================== */}
         {/* 1. HERO SECTION */}
         {/* =================================================================== */}
-        <section className="relative isolate overflow-hidden rounded-2xl sm:rounded-[2rem] bg-[#0f2f63] text-white min-h-[46rem] lg:min-h-[calc(100svh-1.5rem)] h-auto flex flex-col justify-between">
+        <section className="relative isolate overflow-hidden bg-[#0f2f63] text-white min-h-[46rem] lg:min-h-screen h-auto flex flex-col justify-between">
           
           {/* Parallax Background Plate with Multi-Sector Crossfade Transitions */}
           <div 
@@ -704,13 +710,13 @@ export default function LandingPage() {
                 </>
               )}
 
-              {/* Language Switcher Pill */}
+              {/* Language Switcher Pill (Light Theme) */}
               <div className="relative shrink-0">
                 <Dropdown
-                  variant="dark"
+                  variant="pill"
                   size="sm"
                   fullWidth={false}
-                  icon={<Globe className="w-3.5 h-3.5 text-white shrink-0" />}
+                  icon={<Globe className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8] shrink-0" />}
                   value={language}
                   onChange={(val) => setLanguage(val as any)}
                   options={SUPPORTED_LANGUAGES.map((lang) => ({
@@ -718,10 +724,13 @@ export default function LandingPage() {
                     label: lang.native,
                     sublabel: lang.name,
                   }))}
-                  triggerClassName="rounded-full px-3 py-1.5"
-                  menuClassName="w-48 right-0 text-[#0a0a0a]"
+                  triggerClassName="rounded-full px-3.5 py-1.5 bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100 border border-slate-200/90 dark:border-zinc-700 shadow-2xs font-semibold hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors"
+                  menuClassName="w-48 right-0"
                 />
               </div>
+
+              {/* Theme Mode Toggle (Pill) */}
+              <ThemeToggle variant="pill" className="shrink-0" />
 
               {/* Hamburger Button */}
               <button
@@ -884,31 +893,31 @@ export default function LandingPage() {
         {/* =================================================================== */}
         <section 
           ref={trustSectionRef}
-          className="relative isolate overflow-hidden bg-white px-6 py-8 sm:px-10 sm:py-12 text-[#0a0a0a]"
+          className="relative isolate overflow-hidden bg-white dark:bg-[#000000] px-6 py-8 sm:px-10 sm:py-12 text-[#0a0a0a] dark:text-white transition-colors duration-200"
         >
           {/* Top Badges Row - Tight Spacing */}
           <div className="relative z-20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-6 sm:mb-8">
             
             {/* Direct Verification Seal */}
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#f4f4f4] border border-[#e6e8ec] flex flex-col items-center justify-center p-2.5 text-center shrink-0 shadow-xs">
-              <ShieldCheck className="w-6 h-6 text-[#2563c9] mb-1" />
-              <span className="text-xs font-semibold tracking-tight text-[#0a0a0a] uppercase">{t("Direct", "Direct")}</span>
-              <span className="text-[0.65rem] text-[#717784] max-w-[9em] leading-tight uppercase tracking-wider">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#f4f4f4] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 flex flex-col items-center justify-center p-2.5 text-center shrink-0 shadow-xs">
+              <ShieldCheck className="w-6 h-6 text-[#2563c9] dark:text-[#38BDF8] mb-1" />
+              <span className="text-xs font-semibold tracking-tight text-[#0a0a0a] dark:text-white uppercase">{t("Direct", "Direct")}</span>
+              <span className="text-[0.65rem] text-[#717784] dark:text-zinc-400 max-w-[9em] leading-tight uppercase tracking-wider">
                 {t("Verified Pay", "Verified Pay")}
               </span>
             </div>
 
             {/* Badge Card */}
-            <article className="max-w-md bg-[#f4f4f4] rounded-[1.5rem] p-4 sm:p-5 flex flex-col gap-2 shadow-xs">
+            <article className="max-w-md bg-[#f4f4f4] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-[1.5rem] p-4 sm:p-5 flex flex-col gap-2 shadow-xs">
               <div className="flex items-center gap-3">
-                <span className="rounded-xl bg-white px-3 py-1 text-xs font-medium text-[#0a0a0a] shadow-xs">
+                <span className="rounded-xl bg-white dark:bg-black border border-slate-200/80 dark:border-zinc-800 px-3 py-1 text-xs font-medium text-[#0a0a0a] dark:text-white shadow-xs">
                   #01
                 </span>
-                <h3 className="text-base sm:text-lg font-medium text-[#0a0a0a] tracking-tight">
+                <h3 className="text-base sm:text-lg font-medium text-[#0a0a0a] dark:text-white tracking-tight">
                   {t("Direct Work & Verified Hiring", "Direct Work & Verified Hiring")}
                 </h3>
               </div>
-              <p className="text-sm text-[#717784] leading-relaxed">
+              <p className="text-sm text-[#717784] dark:text-zinc-400 leading-relaxed">
                 {t("Built for cooks, electricians, drivers, helpers, and local businesses. GPS check-ins and direct connections ensure reliable attendance and transparent hiring.", "Built for cooks, electricians, drivers, helpers, and local businesses. GPS check-ins and direct connections ensure reliable attendance and transparent hiring.")}
               </p>
             </article>
@@ -924,12 +933,12 @@ export default function LandingPage() {
                 style={{ transform: `translateX(${ghostParallax}%)` }}
               >
                 <span className="overflow-hidden inline-block pb-[0.08em]">
-                  <span className="inline-block text-[#d7dae1] animate-[ghostSlideUp_700ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
+                  <span className="inline-block text-[#d7dae1] dark:text-zinc-800/80 animate-[ghostSlideUp_700ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
                     {t(currentSlide.headline[0], currentSlide.headline[0])}
                   </span>
                 </span>
                 <span className="overflow-hidden inline-block pb-[0.08em]">
-                  <span className="inline-block text-[#d7dae1] animate-[ghostSlideUp_700ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
+                  <span className="inline-block text-[#d7dae1] dark:text-zinc-800/80 animate-[ghostSlideUp_700ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
                     {t(currentSlide.headline[1], currentSlide.headline[1])}
                   </span>
                 </span>
@@ -941,12 +950,12 @@ export default function LandingPage() {
                 style={{ transform: `translateX(${-ghostParallax}%)` }}
               >
                 <span className="overflow-hidden inline-block pb-[0.08em]">
-                  <span className="inline-block text-[#0a0a0a] animate-[ghostSlideUp_700ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
+                  <span className="inline-block text-[#0a0a0a] dark:text-white animate-[ghostSlideUp_700ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
                     {t(currentSlide.headline[2], currentSlide.headline[2])}
                   </span>
                 </span>
                 <span className="overflow-hidden inline-block pb-[0.08em]">
-                  <span className="inline-block text-[#d7dae1] animate-[ghostSlideUp_700ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
+                  <span className="inline-block text-[#d7dae1] dark:text-zinc-800/80 animate-[ghostSlideUp_700ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
                     {t(currentSlide.headline[3], currentSlide.headline[3])}
                   </span>
                 </span>
@@ -978,7 +987,7 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={handleTrustPrev}
-              className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#e6e8ec] hover:border-[#0a0a0a] text-[#0a0a0a] flex items-center justify-center transition-colors cursor-pointer group"
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0a0a0a] dark:hover:border-zinc-500 text-[#0a0a0a] dark:text-white flex items-center justify-center transition-colors cursor-pointer group"
               aria-label="Previous slide"
             >
               <ArrowRight className="w-4 h-4 rotate-180 transition-transform group-hover:scale-115" />
@@ -992,7 +1001,7 @@ export default function LandingPage() {
                   type="button"
                   onClick={() => handleTrustDot(sIdx)}
                   className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    activeTrustSlide === sIdx ? "w-6 bg-[#0a0a0a]" : "w-1.5 bg-[#d7dae1]"
+                    activeTrustSlide === sIdx ? "w-6 bg-[#0a0a0a] dark:bg-white" : "w-1.5 bg-[#d7dae1] dark:bg-zinc-800"
                   }`}
                   aria-label={`Slide ${sIdx + 1}`}
                 />
@@ -1003,7 +1012,7 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={handleTrustNext}
-              className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#0a0a0a] hover:bg-[#0f2f63] text-white flex items-center justify-center transition-colors cursor-pointer group"
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#0a0a0a] dark:bg-white hover:bg-[#0f2f63] dark:hover:bg-zinc-200 text-white dark:text-black flex items-center justify-center transition-colors cursor-pointer group"
               aria-label="Next slide"
             >
               <ArrowRight className="w-4 h-4 transition-transform group-hover:scale-115" />
@@ -1015,7 +1024,7 @@ export default function LandingPage() {
         {/* =================================================================== */}
         {/* 3. PROGRAMS / WORKFORCE TRACKS SECTION (Tight Spacing) */}
         {/* =================================================================== */}
-        <section id="categories" className="bg-[#f4f4f4] py-12 sm:py-16 px-6 sm:px-10 text-[#0a0a0a]">
+        <section id="categories" className="bg-[#f4f4f4] dark:bg-[#09090b] py-12 sm:py-16 px-6 sm:px-10 text-[#0a0a0a] dark:text-white transition-colors duration-200">
           <div className="max-w-6xl mx-auto">
             {/* Section Header */}
             <div>
@@ -1023,36 +1032,36 @@ export default function LandingPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9]" />
                 <span>{t("Enterprise Sectors", "Enterprise Sectors")}</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-[#0a0a0a] leading-[0.96]">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-[#0a0a0a] dark:text-white leading-[0.96]">
                 {t("Every industry", "Every industry")} <br /> {t("on demand", "on demand")}
               </h2>
             </div>
 
             {/* Core Sector Rows (Tighter Spacing) */}
-            <ul className="mt-8 divide-y divide-[#e6e8ec] border-y border-[#e6e8ec]">
+            <ul className="mt-8 divide-y divide-[#e6e8ec] dark:divide-zinc-800 border-y border-[#e6e8ec] dark:border-zinc-800">
               {WORKFORCE_TRACKS.map((track) => (
                 <li key={track.index}>
                   <Link
                     to={track.href}
-                    className="group py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 transition-colors hover:bg-white/70 px-3 sm:px-4 rounded-xl cursor-pointer"
+                    className="group py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 transition-colors hover:bg-white/70 dark:hover:bg-zinc-900/60 px-3 sm:px-4 rounded-xl cursor-pointer"
                   >
                     <div className="flex items-baseline sm:items-center gap-4 sm:gap-6 flex-1">
-                      <span className="w-8 sm:w-10 text-sm font-medium text-[#717784]">
+                      <span className="w-8 sm:w-10 text-sm font-medium text-[#717784] dark:text-zinc-500">
                         {track.index}
                       </span>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6 flex-1">
-                        <h3 className="text-xl sm:text-2xl font-medium tracking-tight text-[#0a0a0a] min-w-[16rem]">
+                        <h3 className="text-xl sm:text-2xl font-medium tracking-tight text-[#0a0a0a] dark:text-white min-w-[16rem]">
                           {t(track.name, track.name)}
                         </h3>
-                        <p className="text-sm sm:text-[15px] text-[#717784] max-w-lg leading-relaxed">
+                        <p className="text-sm sm:text-[15px] text-[#717784] dark:text-zinc-400 max-w-lg leading-relaxed">
                           {t(track.description, track.description)}
                         </p>
                       </div>
                     </div>
 
                     {/* Trailing Arrow Circle (Spring on Hover) */}
-                    <div className="w-9 h-9 rounded-full border border-[#e6e8ec] flex items-center justify-center shrink-0 self-end sm:self-center group-hover:border-[#0a0a0a] transition-colors">
-                      <ArrowRight className="w-3.5 h-3.5 text-[#0a0a0a] opacity-55 group-hover:opacity-100 group-hover:translate-x-1.5 transition-all duration-300" />
+                    <div className="w-9 h-9 rounded-full border border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-center shrink-0 self-end sm:self-center group-hover:border-[#0a0a0a] dark:group-hover:border-white transition-colors">
+                      <ArrowRight className="w-3.5 h-3.5 text-[#0a0a0a] dark:text-white opacity-55 group-hover:opacity-100 group-hover:translate-x-1.5 transition-all duration-300" />
                     </div>
                   </Link>
                 </li>
@@ -1062,11 +1071,11 @@ export default function LandingPage() {
         </section>
 
         {/* =================================================================== */}
-        {/* 4. FACILITIES / VERIFICATION TECH SECTION (-mt-6 Overlap) */}
+        {/* 4. FACILITIES / VERIFICATION TECH SECTION */}
         {/* =================================================================== */}
         <section 
           id="technology" 
-          className="relative z-10 -mt-6 sm:-mt-8 rounded-[2rem] bg-white pt-10 pb-12 px-6 sm:px-10 text-[#0a0a0a] shadow-sm"
+          className="relative z-10 py-12 sm:py-16 px-6 sm:px-10 bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-white transition-colors duration-200"
         >
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             
@@ -1080,11 +1089,11 @@ export default function LandingPage() {
                 />
               </div>
 
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-[#0a0a0a] leading-[0.96]">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-[#0a0a0a] dark:text-white leading-[0.96]">
                 {t("Real Attendance & Verified Work Experience", "Real Attendance & Verified Work Experience")}
               </h2>
 
-              <p className="text-sm sm:text-base text-[#717784] mt-4 leading-relaxed max-w-md">
+              <p className="text-sm sm:text-base text-[#717784] dark:text-zinc-400 mt-4 leading-relaxed max-w-md">
                 {t("Every worker completes a quick photo and location check-in on arrival, building a permanent, verified work history that employers can trust.", "Every worker completes a quick photo and location check-in on arrival, building a permanent, verified work history that employers can trust.")}
               </p>
             </div>
@@ -1093,8 +1102,8 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
               {/* Tile 1: Photo & Location Check-in */}
-              <div className="group rounded-[1.5rem] bg-[#f8fafc] border border-slate-200/80 p-3 sm:p-3.5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
-                <div className="w-full aspect-[16/10] sm:aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 relative">
+              <div className="group rounded-[1.5rem] bg-[#f8fafc] dark:bg-[#121215] border border-slate-200/80 dark:border-zinc-800 p-3 sm:p-3.5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
+                <div className="w-full aspect-[16/10] sm:aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 dark:bg-zinc-800 relative">
                   <img 
                     src={LANDING_IMAGES.biometricGeofence.src} 
                     alt={LANDING_IMAGES.biometricGeofence.alt}
@@ -1109,10 +1118,10 @@ export default function LandingPage() {
 
                 <div className="pt-3 pb-1 px-1 flex-1 flex flex-col justify-between text-left">
                   <div>
-                    <h3 className="text-base font-semibold tracking-tight text-[#0a0a0a]">
+                    <h3 className="text-base font-semibold tracking-tight text-[#0a0a0a] dark:text-white">
                       {t("Photo & Location Check-in", "Photo & Location Check-in")}
                     </h3>
-                    <p className="text-xs sm:text-sm text-[#717784] mt-1.5 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 mt-1.5 leading-relaxed">
                       {t("Quick photo check-in confirms the right worker arrived at the site.", "Quick photo check-in confirms the right worker arrived at the site.")}
                     </p>
                   </div>
@@ -1120,8 +1129,8 @@ export default function LandingPage() {
               </div>
 
               {/* Tile 2: Verified Skill Credential */}
-              <div className="group rounded-[1.5rem] bg-[#f8fafc] border border-slate-200/80 p-3 sm:p-3.5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
-                <div className="w-full aspect-[16/10] sm:aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 relative">
+              <div className="group rounded-[1.5rem] bg-[#f8fafc] dark:bg-[#121215] border border-slate-200/80 dark:border-zinc-800 p-3 sm:p-3.5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
+                <div className="w-full aspect-[16/10] sm:aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 dark:bg-zinc-800 relative">
                   <img 
                     src={LANDING_IMAGES.skillVerificationBadge.src} 
                     alt={LANDING_IMAGES.skillVerificationBadge.alt}
@@ -1136,10 +1145,10 @@ export default function LandingPage() {
 
                 <div className="pt-3 pb-1 px-1 flex-1 flex flex-col justify-between text-left">
                   <div>
-                    <h3 className="text-base font-semibold tracking-tight text-[#0a0a0a]">
+                    <h3 className="text-base font-semibold tracking-tight text-[#0a0a0a] dark:text-white">
                       {t("Verified Skill Credential", "Verified Skill Credential")}
                     </h3>
-                    <p className="text-xs sm:text-sm text-[#717784] mt-1.5 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 mt-1.5 leading-relaxed">
                       {t("Candidates undergo verified skill assessments and work experience authentication before job placement.", "Candidates undergo verified skill assessments and work experience authentication before job placement.")}
                     </p>
                   </div>
@@ -1155,7 +1164,7 @@ export default function LandingPage() {
         {/* =================================================================== */}
         <section 
           id="standards" 
-          className="mt-3 rounded-[2rem] bg-[#0f2f63] text-white py-12 sm:py-14 px-6 sm:px-10"
+          className="bg-[#0f2f63] text-white py-12 sm:py-16 px-6 sm:px-10"
         >
           <div className="max-w-6xl mx-auto">
             {/* Header */}
@@ -1199,18 +1208,18 @@ export default function LandingPage() {
         {/* =================================================================== */}
         {/* 6. PLATFORM COMMITMENTS SECTION (Tight Spacing) */}
         {/* =================================================================== */}
-        <section id="commitments" className="py-10 sm:py-14 px-6 sm:px-10 bg-white text-[#0a0a0a]">
+        <section id="commitments" className="py-10 sm:py-14 px-6 sm:px-10 bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-white transition-colors duration-200">
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div>
-              <div className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.22em] text-[#717784] mb-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9]" />
+              <div className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.22em] text-[#717784] dark:text-zinc-400 mb-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9] dark:bg-[#38BDF8]" />
                 <span>{t("Platform Commitments", "Platform Commitments")}</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-[#0a0a0a] leading-[0.96]">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-[#0a0a0a] dark:text-white leading-[0.96]">
                 {t("Clear rules for both sides", "Clear rules for both sides")}
               </h2>
-              <p className="text-sm sm:text-base text-[#717784] mt-3 max-w-xl leading-relaxed">
+              <p className="text-sm sm:text-base text-[#717784] dark:text-zinc-400 mt-3 max-w-xl leading-relaxed">
                 {t("TrustHyre replaces verbal agreements and contractor middle-men with transparent hiring protections for employers and workers alike.", "TrustHyre replaces verbal agreements and contractor middle-men with transparent hiring protections for employers and workers alike.")}
               </p>
             </div>
@@ -1219,23 +1228,23 @@ export default function LandingPage() {
             <ul className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-5">
               {PLATFORM_COMMITMENTS.map((card, idx) => (
                 <li key={idx}>
-                  <div className="flex flex-col justify-between h-full rounded-[1.5rem] bg-[#f4f4f4] p-6 sm:p-7 transition-transform duration-300 hover:-translate-y-1.5 shadow-xs">
+                  <div className="flex flex-col justify-between h-full rounded-[1.5rem] bg-[#f4f4f4] dark:bg-[#0a0a0a] border border-transparent dark:border-zinc-800 p-6 sm:p-7 transition-transform duration-300 hover:-translate-y-1.5 shadow-xs">
                     <div>
                       <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-4 ${card.badgeColor}`}>
                         {t(card.badge, card.badge)}
                       </span>
-                      <h3 className="text-xl sm:text-2xl font-medium text-[#0a0a0a] tracking-tight leading-snug">
+                      <h3 className="text-xl sm:text-2xl font-medium text-[#0a0a0a] dark:text-white tracking-tight leading-snug">
                         {t(card.title, card.title)}
                       </h3>
-                      <p className="text-sm text-[#717784] mt-2 leading-relaxed">
+                      <p className="text-sm text-[#717784] dark:text-zinc-400 mt-2 leading-relaxed">
                         {t(card.desc, card.desc)}
                       </p>
                     </div>
 
-                    <ul className="border-t border-[#e6e8ec] pt-4 mt-5 space-y-2.5">
+                    <ul className="border-t border-[#e6e8ec] dark:border-zinc-800 pt-4 mt-5 space-y-2.5">
                       {card.points.map((pt, pIdx) => (
-                        <li key={pIdx} className="flex items-start gap-2.5 text-sm text-[#0a0a0a] leading-relaxed">
-                          <CheckCircle2 className="w-4 h-4 text-[#2563c9] shrink-0 mt-0.5" />
+                        <li key={pIdx} className="flex items-start gap-2.5 text-sm text-[#0a0a0a] dark:text-zinc-200 leading-relaxed">
+                          <CheckCircle2 className="w-4 h-4 text-[#2563c9] dark:text-[#38BDF8] shrink-0 mt-0.5" />
                           <span>{t(pt, pt)}</span>
                         </li>
                       ))}
@@ -1250,21 +1259,21 @@ export default function LandingPage() {
         {/* =================================================================== */}
         {/* 7. LATEST HIRING ARTICLES & GUIDES SECTION */}
         {/* =================================================================== */}
-        <section id="blog-insights" className="py-12 sm:py-16 px-6 sm:px-10 bg-[#fafbfc] text-[#0a0a0a] border-t border-[#e6e8ec]">
+        <section id="blog-insights" className="py-12 sm:py-16 px-6 sm:px-10 bg-[#fafbfc] dark:bg-[#000000] text-[#0a0a0a] dark:text-white border-t border-[#e6e8ec] dark:border-zinc-800 transition-colors duration-200">
           <div className="max-w-6xl mx-auto">
             
             {/* Header with Title and "Explore All Articles" CTA */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
               <div className="space-y-3 max-w-2xl">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#0f2f63]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] animate-pulse" />
-                  <BookOpen className="w-3.5 h-3.5 text-[#0f2f63]" />
+                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#0f2f63] dark:text-[#38BDF8]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] dark:bg-[#38BDF8] animate-pulse" />
+                  <BookOpen className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
                   <span>{t("Industry Articles & Career Guides", "Industry Articles & Career Guides")}</span>
                 </div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-[#0a0a0a] leading-[0.96]">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-[#0a0a0a] dark:text-white leading-[0.96]">
                   {t("Verified hiring insights for businesses and workers", "Verified hiring insights for businesses and workers")}
                 </h2>
-                <p className="text-sm sm:text-base text-[#717784] leading-relaxed">
+                <p className="text-sm sm:text-base text-[#717784] dark:text-zinc-400 leading-relaxed">
                   {t("Practical salary benchmarks, trade skill requirements, and compliance checklists designed for India's blue-collar ecosystem.", "Practical salary benchmarks, trade skill requirements, and compliance checklists designed for India's blue-collar ecosystem.")}
                 </p>
               </div>
@@ -1284,35 +1293,35 @@ export default function LandingPage() {
                 <Link
                   key={post.id || post.slug}
                   to={`/blog/${post.slug}`}
-                  className="bg-white rounded-[1.75rem] border border-[#e6e8ec] p-6 shadow-xs hover:shadow-md hover:border-[#0f2f63]/30 transition-all flex flex-col justify-between group"
+                  className="bg-white dark:bg-[#121215] rounded-[1.75rem] border border-[#e6e8ec] dark:border-zinc-800 p-6 shadow-xs hover:shadow-md hover:border-[#0f2f63]/30 dark:hover:border-zinc-700 transition-all flex flex-col justify-between group"
                 >
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-[#0f2f63]/10 text-[#0f2f63]">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-[#0f2f63]/10 dark:bg-sky-500/15 text-[#0f2f63] dark:text-[#38BDF8]">
                         {post.category?.name || post.categoryName || 'Article'}
                       </span>
                       {post.targetCity && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#717784] bg-[#f4f4f4] px-2 py-0.5 rounded-full border border-[#e6e8ec]">
-                          <MapPin className="w-2.5 h-2.5 text-[#0f2f63]" />
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#717784] dark:text-zinc-400 bg-[#f4f4f4] dark:bg-zinc-900 px-2 py-0.5 rounded-full border border-[#e6e8ec] dark:border-zinc-800">
+                          <MapPin className="w-2.5 h-2.5 text-[#0f2f63] dark:text-[#38BDF8]" />
                           {post.targetCity}
                         </span>
                       )}
-                      <span className="text-[10px] text-[#717784] flex items-center gap-1 ml-auto">
+                      <span className="text-[10px] text-[#717784] dark:text-zinc-400 flex items-center gap-1 ml-auto">
                         <Clock className="w-2.5 h-2.5" />
                         {post.readTimeMinutes}m read
                       </span>
                     </div>
 
-                    <h3 className="text-base sm:text-lg font-semibold text-[#0a0a0a] group-hover:text-[#0f2f63] transition-colors leading-snug line-clamp-2">
+                    <h3 className="text-base sm:text-lg font-semibold text-[#0a0a0a] dark:text-white group-hover:text-[#0f2f63] dark:group-hover:text-sky-300 transition-colors leading-snug line-clamp-2">
                       {post.title}
                     </h3>
 
-                    <p className="text-xs text-[#717784] leading-relaxed line-clamp-3">
+                    <p className="text-xs text-[#717784] dark:text-zinc-400 leading-relaxed line-clamp-3">
                       {post.excerpt}
                     </p>
                   </div>
 
-                  <div className="pt-4 mt-4 border-t border-[#e6e8ec] flex items-center justify-between text-xs font-semibold text-[#0f2f63]">
+                  <div className="pt-4 mt-4 border-t border-[#e6e8ec] dark:border-zinc-800/80 flex items-center justify-between text-xs font-semibold text-[#0f2f63] dark:text-[#38BDF8]">
                     <span>{t("Read Article", "Read Article")}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -1321,24 +1330,24 @@ export default function LandingPage() {
             </div>
 
             {/* Quick Filter Tag Capsules */}
-            <div className="mt-8 pt-6 border-t border-[#e6e8ec] flex flex-wrap items-center justify-between gap-4">
+            <div className="mt-8 pt-6 border-t border-[#e6e8ec] dark:border-zinc-800 flex flex-wrap items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-[#717784] mr-1">Popular Topics:</span>
+                <span className="text-xs font-semibold text-[#717784] dark:text-zinc-400 mr-1">Popular Topics:</span>
                 <Link
                   to="/blog?category=hiring-guides"
-                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                 >
                   Hiring Blue-Collar Crew
                 </Link>
                 <Link
                   to="/blog?category=salary-benchmarks"
-                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                 >
                   Wage & Salary Benchmarks
                 </Link>
                 <Link
                   to="/blog?category=verification-standards"
-                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                 >
                   Government ID Verification
                 </Link>

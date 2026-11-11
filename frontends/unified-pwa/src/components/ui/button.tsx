@@ -13,11 +13,11 @@ const buttonVariants = cva(
         destructive:
           "bg-rose-600 text-white shadow-xs hover:bg-rose-700 focus-visible:ring-rose-500",
         outline:
-          "border border-slate-200 bg-white text-slate-700 shadow-2xs hover:bg-slate-50 hover:text-slate-900",
+          "border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-slate-700 dark:text-zinc-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-white",
         secondary:
-          "bg-slate-100 text-slate-800 hover:bg-slate-200",
+          "bg-slate-100 dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-800",
         ghost:
-          "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+          "text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-900 hover:text-slate-900 dark:hover:text-white",
         link:
           "text-[#0066FF] underline-offset-4 hover:underline",
         success:

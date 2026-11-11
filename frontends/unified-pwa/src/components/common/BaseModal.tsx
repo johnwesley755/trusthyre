@@ -38,12 +38,12 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   title,
   subtitle,
   icon,
-  iconBgColor = 'bg-[#eff6ff] text-[#0066ff] border border-[#dbeafe]',
+  iconBgColor = 'bg-[#eff6ff] dark:bg-blue-950/40 text-[#0066ff] dark:text-[#38BDF8] border border-[#dbeafe] dark:border-blue-900/40',
   maxWidth = 'md',
   children,
   footer,
   headerRight,
-  bodyClassName = 'p-5 sm:p-6 space-y-4 bg-white',
+  bodyClassName = 'p-5 sm:p-6 space-y-4 bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100',
   className = '',
   showCloseButton = true,
 }) => {
@@ -70,7 +70,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   const modalContent = (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/65 backdrop-blur-xs font-['Plus_Jakarta_Sans',sans-serif]"
+        className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/70 backdrop-blur-xs font-['Plus_Jakarta_Sans',sans-serif]"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
@@ -83,11 +83,11 @@ export const BaseModal: React.FC<BaseModalProps> = ({
           exit={{ opacity: 0, scale: 0.96, y: 8 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
           onClick={(e) => e.stopPropagation()}
-          className={`bg-white rounded-2xl sm:rounded-3xl border border-[#e6e8ec] shadow-2xl w-full ${MAX_WIDTH_CLASSES[maxWidth]} max-h-[90vh] flex flex-col overflow-hidden my-auto ${className}`}
+          className={`bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100 rounded-2xl sm:rounded-3xl border border-[#e6e8ec] dark:border-zinc-800 shadow-2xl w-full ${MAX_WIDTH_CLASSES[maxWidth]} max-h-[90vh] flex flex-col overflow-hidden my-auto ${className}`}
         >
           {/* Header */}
           {(title || icon || showCloseButton) && (
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#e6e8ec] bg-white shrink-0">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#1C1C21] shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 {icon && (
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBgColor}`}>
@@ -96,14 +96,14 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                 )}
                 <div className="min-w-0">
                   {typeof title === 'string' ? (
-                    <h3 className="text-sm sm:text-base font-bold text-[#0A1931] truncate tracking-tight">
+                    <h3 className="text-sm sm:text-base font-bold text-[#0A1931] dark:text-white truncate tracking-tight">
                       {title}
                     </h3>
                   ) : (
                     title
                   )}
                   {subtitle && (
-                    <p className="text-[11px] text-[#717784] truncate mt-0.5">
+                    <p className="text-[11px] text-[#717784] dark:text-zinc-400 truncate mt-0.5">
                       {subtitle}
                     </p>
                   )}
@@ -116,7 +116,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-xl text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                     aria-label="Close modal"
                   >
                     <X className="w-4 h-4" />
@@ -133,7 +133,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
 
           {/* Modal Footer */}
           {footer && (
-            <div className="px-5 py-3.5 bg-[#F8FAFC] border-t border-[#e6e8ec] shrink-0">
+            <div className="px-5 py-3.5 bg-[#F8FAFC] dark:bg-[#16161A] border-t border-[#e6e8ec] dark:border-zinc-800 shrink-0">
               {footer}
             </div>
           )}

@@ -151,17 +151,17 @@ export const BlogPostPage: React.FC = () => {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-[#fafbfc] font-['Onest',system-ui,sans-serif] flex flex-col justify-between">
+      <div className="min-h-screen bg-[#fafbfc] dark:bg-[#000000] text-[#0a0a0a] dark:text-zinc-100 font-['Onest',system-ui,sans-serif] flex flex-col justify-between transition-colors duration-200">
         <AppTopNavbar />
         <div className="max-w-lg mx-auto py-20 px-4 text-center space-y-4">
-          <BookOpen className="w-16 h-16 text-[#717784] mx-auto opacity-50" />
-          <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0a0a0a]">Article Not Found</h1>
-          <p className="text-xs text-[#717784]">
+          <BookOpen className="w-16 h-16 text-[#717784] dark:text-zinc-500 mx-auto opacity-50" />
+          <h1 className="text-2xl font-bold uppercase tracking-tight text-[#0a0a0a] dark:text-white">Article Not Found</h1>
+          <p className="text-xs text-[#717784] dark:text-zinc-400">
             The article you are looking for has been moved, unpublished, or does not exist.
           </p>
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-all"
+            className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#2563c9] dark:hover:bg-[#0052cc] text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-all shadow-xs"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to All Articles</span>
@@ -173,7 +173,7 @@ export const BlogPostPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] text-[#0a0a0a] font-['Onest',system-ui,sans-serif] flex flex-col justify-between selection:bg-[#0f2f63] selection:text-white">
+    <div className="min-h-screen bg-[#fafbfc] dark:bg-[#000000] text-[#0a0a0a] dark:text-zinc-100 font-['Onest',system-ui,sans-serif] flex flex-col justify-between selection:bg-[#0f2f63] selection:text-white transition-colors duration-200">
       <SeoHead
         title={post.metaTitle || `${post.title} | TrustHyre`}
         description={post.metaDescription || post.excerpt}
@@ -196,27 +196,27 @@ export const BlogPostPage: React.FC = () => {
 
       {/* Sticky Scroll Reading Indicator */}
       <div
-        className="fixed top-16 sm:top-18 left-0 right-0 h-1 bg-[#0f2f63] z-50 transition-all duration-150"
+        className="fixed top-16 sm:top-18 left-0 right-0 h-1 bg-[#0f2f63] dark:bg-[#0066FF] z-50 transition-all duration-150"
         style={{ width: `${scrollProgress}%` }}
       />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full space-y-10">
         
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-1.5 text-xs text-[#717784] overflow-x-auto scrollbar-none">
-          <Link to="/" className="hover:text-[#0f2f63] transition-colors whitespace-nowrap">Home</Link>
+        <nav className="flex items-center gap-1.5 text-xs text-[#717784] dark:text-zinc-400 overflow-x-auto scrollbar-none">
+          <Link to="/" className="hover:text-[#0f2f63] dark:hover:text-[#38BDF8] transition-colors whitespace-nowrap">Home</Link>
           <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-40" />
-          <Link to="/blog" className="hover:text-[#0f2f63] transition-colors whitespace-nowrap">Blog</Link>
+          <Link to="/blog" className="hover:text-[#0f2f63] dark:hover:text-[#38BDF8] transition-colors whitespace-nowrap">Blog</Link>
           {post.category && (
             <>
               <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-40" />
-              <Link to={`/blog?category=${post.category.slug}`} className="hover:text-[#0f2f63] transition-colors whitespace-nowrap">
+              <Link to={`/blog?category=${post.category.slug}`} className="hover:text-[#0f2f63] dark:hover:text-[#38BDF8] transition-colors whitespace-nowrap">
                 {post.category.name}
               </Link>
             </>
           )}
           <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-40" />
-          <span className="text-[#0a0a0a] font-medium truncate max-w-[200px] sm:max-w-md">{post.title}</span>
+          <span className="text-[#0a0a0a] dark:text-white font-medium truncate max-w-[200px] sm:max-w-md">{post.title}</span>
         </nav>
 
         {/* 12-Column Desktop Grid */}
@@ -228,31 +228,31 @@ export const BlogPostPage: React.FC = () => {
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 {post.category && (
-                  <span className="px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-[#0f2f63]/10 text-[#0f2f63]">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-[#0f2f63]/10 dark:bg-sky-500/15 text-[#0f2f63] dark:text-[#38BDF8]">
                     {tText(post.category.name)}
                   </span>
                 )}
                 {post.targetCity && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#717784] bg-[#f4f4f4] px-2.5 py-1 rounded-full border border-[#e6e8ec]">
-                    <MapPin className="w-3 h-3 text-[#0f2f63]" />
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#717784] dark:text-zinc-400 bg-[#f4f4f4] dark:bg-zinc-900 px-2.5 py-1 rounded-full border border-[#e6e8ec] dark:border-zinc-800">
+                    <MapPin className="w-3 h-3 text-[#0f2f63] dark:text-[#38BDF8]" />
                     {tText(post.targetCity)}
                   </span>
                 )}
                 {post.targetTrade && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#717784] bg-[#f4f4f4] px-2.5 py-1 rounded-full border border-[#e6e8ec]">
-                    <Briefcase className="w-3 h-3 text-[#0f2f63]" />
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#717784] dark:text-zinc-400 bg-[#f4f4f4] dark:bg-zinc-900 px-2.5 py-1 rounded-full border border-[#e6e8ec] dark:border-zinc-800">
+                    <Briefcase className="w-3 h-3 text-[#0f2f63] dark:text-[#38BDF8]" />
                     {tText(post.targetTrade)}
                   </span>
                 )}
-                <span className="text-[10px] text-[#717784] flex items-center gap-1">
+                <span className="text-[10px] text-[#717784] dark:text-zinc-400 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {post.readTimeMinutes} min read
                 </span>
 
                 {/* Multilingual Switcher Bar */}
-                <div className="flex items-center gap-1.5 py-1 px-2.5 bg-slate-50 border border-[#e6e8ec] rounded-full text-xs ml-auto">
-                  <Globe className="w-3.5 h-3.5 text-[#0f2f63] shrink-0" />
-                  <span className="text-[10px] font-bold text-[#717784] uppercase tracking-wider hidden sm:inline">Translate:</span>
+                <div className="flex items-center gap-1.5 py-1 px-2.5 bg-slate-50 dark:bg-zinc-900 border border-[#e6e8ec] dark:border-zinc-800 rounded-full text-xs ml-auto">
+                  <Globe className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8] shrink-0" />
+                  <span className="text-[10px] font-bold text-[#717784] dark:text-zinc-400 uppercase tracking-wider hidden sm:inline">Translate:</span>
                   <div className="flex items-center gap-1">
                     {SUPPORTED_LANGUAGES.map((lang) => (
                       <button
@@ -261,8 +261,8 @@ export const BlogPostPage: React.FC = () => {
                         onClick={() => setLanguage(lang.code)}
                         className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                           language === lang.code
-                            ? 'bg-[#0f2f63] text-white shadow-2xs'
-                            : 'bg-white hover:bg-slate-100 text-[#0a0a0a] border border-slate-200'
+                            ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-2xs'
+                            : 'bg-white dark:bg-black hover:bg-slate-100 dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-300 border border-slate-200 dark:border-zinc-800'
                         }`}
                       >
                         {lang.native}
@@ -272,24 +272,24 @@ export const BlogPostPage: React.FC = () => {
                 </div>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-[#0a0a0a] leading-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-[#0a0a0a] dark:text-white leading-tight">
                 {tText(post.title)}
               </h1>
 
-              <p className="text-sm sm:text-base text-[#717784] font-normal leading-relaxed">
+              <p className="text-sm sm:text-base text-[#717784] dark:text-zinc-400 font-normal leading-relaxed">
                 {tText(post.excerpt)}
               </p>
             </div>
 
             {/* Author Capsule & Social Sharing Row */}
-            <div className="p-4 sm:p-5 bg-[#f4f4f4] rounded-2xl border border-[#e6e8ec] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-4 sm:p-5 bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <UserAvatar name={post.authorName} size="md" />
                 <div>
-                  <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-none">
+                  <p className="text-xs sm:text-sm font-semibold text-[#0a0a0a] dark:text-white leading-none">
                     {post.authorName}
                   </p>
-                  <p className="text-[11px] text-[#717784] mt-0.5">
+                  <p className="text-[11px] text-[#717784] dark:text-zinc-400 mt-0.5">
                     {tText(post.authorRole || 'Industry Specialist')} • Published {new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
                 </div>
@@ -301,7 +301,7 @@ export const BlogPostPage: React.FC = () => {
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareTitle} - ${shareUrl}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-full bg-white hover:bg-emerald-50 text-[#717784] hover:text-emerald-600 border border-[#e6e8ec] transition-colors"
+                  className="p-2 rounded-full bg-white dark:bg-[#121215] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-[#717784] dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                   title="Share on WhatsApp"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
@@ -310,7 +310,7 @@ export const BlogPostPage: React.FC = () => {
                   href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-full bg-white hover:bg-blue-50 text-[#717784] hover:text-[#0f2f63] border border-[#e6e8ec] transition-colors"
+                  className="p-2 rounded-full bg-white dark:bg-[#121215] hover:bg-blue-50 dark:hover:bg-blue-950/40 text-[#717784] dark:text-zinc-400 hover:text-[#0f2f63] dark:hover:text-[#38BDF8] border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                   title="Share on LinkedIn"
                 >
                   <Linkedin className="w-3.5 h-3.5" />
@@ -319,16 +319,16 @@ export const BlogPostPage: React.FC = () => {
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-full bg-white hover:bg-slate-100 text-[#717784] hover:text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                  className="p-2 rounded-full bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                   title="Share on X"
                 >
                   <Twitter className="w-3.5 h-3.5" />
                 </a>
                 <button
                   onClick={handleCopyLink}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] text-xs font-medium transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-white border border-[#e6e8ec] dark:border-zinc-800 text-xs font-medium transition-colors cursor-pointer"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-[#717784]" />}
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-400" />}
                   <span>{copied ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
@@ -338,7 +338,7 @@ export const BlogPostPage: React.FC = () => {
             {(() => {
               const sanitizedCover = sanitizeUrl(post.coverImageUrl || '');
               return sanitizedCover ? (
-                <div className="overflow-hidden rounded-[1.75rem] border border-[#e6e8ec] shadow-xs aspect-[16/9] w-full bg-[#f4f4f4]">
+                <div className="overflow-hidden rounded-[1.75rem] border border-[#e6e8ec] dark:border-zinc-800 shadow-xs aspect-[16/9] w-full bg-[#f4f4f4] dark:bg-zinc-900">
                   <img
                     src={sanitizedCover}
                     alt={post.title}
@@ -349,25 +349,25 @@ export const BlogPostPage: React.FC = () => {
             })()}
 
             {/* Article Body Content */}
-            <article className="bg-white rounded-[1.75rem] border border-[#e6e8ec] p-6 sm:p-10 shadow-xs">
+            <article className="bg-white dark:bg-[#121215] rounded-[1.75rem] border border-[#e6e8ec] dark:border-zinc-800 p-6 sm:p-10 shadow-xs">
               {/* GEO & AI Search Key Takeaways Box (Perplexity & Gemini Citation Anchor) */}
               {post.excerpt && (
-                <div className="mb-8 p-5 sm:p-6 bg-[#f4f7fb] border border-[#d2dff0] rounded-2xl space-y-2.5">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0f2f63]">
-                    <Sparkles className="w-4 h-4 text-[#0f2f63]" />
+                <div className="mb-8 p-5 sm:p-6 bg-[#f4f7fb] dark:bg-[#1C1C21] border border-[#d2dff0] dark:border-zinc-800 rounded-2xl space-y-2.5">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0f2f63] dark:text-[#38BDF8]">
+                    <Sparkles className="w-4 h-4 text-[#0f2f63] dark:text-[#38BDF8]" />
                     <span>Key Takeaways &amp; Executive Summary</span>
                   </div>
-                  <p className="text-sm text-[#1e293b] leading-relaxed font-medium">
+                  <p className="text-sm text-[#1e293b] dark:text-zinc-200 leading-relaxed font-medium">
                     {tText(post.excerpt)}
                   </p>
-                  <div className="flex items-center gap-2 pt-2 border-t border-[#e2e8f0] text-[11px] text-[#64748b]">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <div className="flex items-center gap-2 pt-2 border-t border-[#e2e8f0] dark:border-zinc-800 text-[11px] text-[#64748b] dark:text-zinc-400">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span>Verified by TrustHyre Workforce Research &amp; Industry Benchmarks (2026)</span>
                   </div>
                 </div>
               )}
 
-              <div className="prose max-w-none text-[#0a0a0a]">
+              <div className="prose max-w-none text-[#0a0a0a] dark:text-zinc-200 dark:prose-invert">
                 <MarkdownContent content={post.content} />
               </div>
             </article>
@@ -375,11 +375,11 @@ export const BlogPostPage: React.FC = () => {
             {/* Article Tags */}
             {post.tags && post.tags.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-[#717784] font-medium mr-1">Related Tags:</span>
+                <span className="text-xs text-[#717784] dark:text-zinc-400 font-medium mr-1">Related Tags:</span>
                 {post.tags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 rounded-full bg-white border border-[#e6e8ec] text-xs text-[#5a6270] shadow-2xs font-medium"
+                    className="px-3 py-1 rounded-full bg-white dark:bg-[#1C1C21] border border-[#e6e8ec] dark:border-zinc-800 text-xs text-[#5a6270] dark:text-zinc-300 shadow-2xs font-medium"
                   >
                     #{tag}
                   </span>
@@ -388,22 +388,22 @@ export const BlogPostPage: React.FC = () => {
             )}
 
             {/* High-Converting TrustHyre Conversion Card */}
-            <div className="bg-[#0f2f63] text-white rounded-[1.75rem] p-6 sm:p-8 md:p-10 shadow-md relative overflow-hidden">
+            <div className="bg-[#0f2f63] dark:bg-[#09090b] text-white rounded-[1.75rem] p-6 sm:p-8 md:p-10 shadow-md relative overflow-hidden border border-transparent dark:border-zinc-800">
               <div className="relative z-10 space-y-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[10px] font-semibold uppercase tracking-wider">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 dark:bg-white/5 text-white text-[10px] font-semibold uppercase tracking-wider border border-white/10">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   <span>{tText("Direct Verified Hiring")}</span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-medium uppercase tracking-tight text-white">
                   {tText(`Need Verified ${post.targetTrade || 'Trade'} Workers in ${post.targetCity || 'India'}?`)}
                 </h3>
-                <p className="text-xs sm:text-sm text-white/80 leading-relaxed font-normal">
+                <p className="text-xs sm:text-sm text-white/80 dark:text-zinc-300 leading-relaxed font-normal">
                   {tText("TrustHyre connects businesses directly with government ID-verified, trade-tested technicians, delivery executives, and facility crew with zero contractor commissions.")}
                 </p>
                 <div className="pt-2 flex flex-wrap items-center gap-3">
                   <Link
                     to="/find-workers"
-                    className="px-5 py-2.5 rounded-full bg-white hover:bg-slate-100 text-[#0f2f63] text-xs font-semibold uppercase tracking-wider shadow-xs transition-all active:scale-95"
+                    className="px-5 py-2.5 rounded-full bg-white dark:bg-[#0066FF] hover:bg-slate-100 dark:hover:bg-[#0052cc] text-[#0f2f63] dark:text-white text-xs font-semibold uppercase tracking-wider shadow-xs transition-all active:scale-95"
                   >
                     {tText("Browse Verified Talent")}
                   </Link>
@@ -421,32 +421,32 @@ export const BlogPostPage: React.FC = () => {
           {/* Desktop Sticky Sidebar (4 Cols) */}
           <aside className="hidden lg:flex lg:col-span-4 flex-col gap-6 sticky top-24">
             {/* Quick Action Hiring Card */}
-            <div className="bg-white rounded-3xl border border-[#e6e8ec] p-6 shadow-xs space-y-4">
+            <div className="bg-white dark:bg-[#121215] rounded-3xl border border-[#e6e8ec] dark:border-zinc-800 p-6 shadow-xs space-y-4">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-[#0f2f63]/10 text-[#0f2f63]">
+                <div className="p-2 rounded-xl bg-[#0f2f63]/10 dark:bg-sky-500/15 text-[#0f2f63] dark:text-[#38BDF8]">
                   <Briefcase className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold uppercase tracking-wider text-[#0a0a0a]">
+                  <h4 className="text-sm font-semibold uppercase tracking-wider text-[#0a0a0a] dark:text-white">
                     {tText("Verified Hiring")}
                   </h4>
-                  <p className="text-[11px] text-[#717784]">
+                  <p className="text-[11px] text-[#717784] dark:text-zinc-400">
                     {tText(`Direct to ${post.targetTrade || 'Talent'} in ${post.targetCity || 'All India'}`)}
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-2 py-2 border-y border-[#e6e8ec]">
-                <div className="flex items-center gap-2 text-xs text-[#0a0a0a]">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <div className="space-y-2 py-2 border-y border-[#e6e8ec] dark:border-zinc-800">
+                <div className="flex items-center gap-2 text-xs text-[#0a0a0a] dark:text-zinc-200">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>{tText("Govt ID & Background Checked")}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[#0a0a0a]">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-2 text-xs text-[#0a0a0a] dark:text-zinc-200">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>{tText("Direct phone connect, zero middlemen")}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[#0a0a0a]">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-2 text-xs text-[#0a0a0a] dark:text-zinc-200">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>{tText("Fair compensation benchmarking")}</span>
                 </div>
               </div>
@@ -454,14 +454,14 @@ export const BlogPostPage: React.FC = () => {
               <div className="space-y-2 pt-1">
                 <Link
                   to="/find-workers"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-semibold uppercase tracking-wider transition-all shadow-xs"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#2563c9] dark:hover:bg-[#0052cc] text-white text-xs font-semibold uppercase tracking-wider transition-all shadow-xs"
                 >
                   <span>{tText(`Browse ${post.targetTrade || 'Specialists'}`)}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
                 <Link
                   to="/post-job"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] border border-[#e6e8ec] text-xs font-semibold uppercase tracking-wider transition-all"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-white border border-[#e6e8ec] dark:border-zinc-800 text-xs font-semibold uppercase tracking-wider transition-all"
                 >
                   <span>{tText("Post Hiring Need")}</span>
                 </Link>
@@ -469,7 +469,7 @@ export const BlogPostPage: React.FC = () => {
             </div>
 
             {/* Internal Equity Funnel: Direct Links to Verified Openings & City Hubs */}
-            <div className="bg-[#0f2f63] text-white rounded-3xl p-6 shadow-sm space-y-4">
+            <div className="bg-[#0f2f63] dark:bg-[#09090b] text-white rounded-3xl p-6 shadow-sm space-y-4 border border-transparent dark:border-zinc-800">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
                   Live Hiring Portal
@@ -478,34 +478,34 @@ export const BlogPostPage: React.FC = () => {
                   Explore Verified Trade Openings
                 </h4>
               </div>
-              <p className="text-xs text-blue-100/90 leading-relaxed">
+              <p className="text-xs text-blue-100/90 dark:text-zinc-400 leading-relaxed">
                 Connect directly with background-checked employers offering guaranteed minimum wages and photo-verified worksites.
               </p>
               <div className="space-y-2 pt-1 text-xs font-semibold">
                 <Link
                   to="/jobs-in-chennai"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-white"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 dark:bg-zinc-900 hover:bg-white/20 dark:hover:bg-zinc-800 transition text-white border border-transparent dark:border-zinc-800"
                 >
                   <span>Jobs in Chennai</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-blue-200" />
+                  <ArrowRight className="w-3.5 h-3.5 text-blue-200 dark:text-[#38BDF8]" />
                 </Link>
                 <Link
                   to="/jobs-in-chennai/electrician"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-white"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 dark:bg-zinc-900 hover:bg-white/20 dark:hover:bg-zinc-800 transition text-white border border-transparent dark:border-zinc-800"
                 >
                   <span>Electrician Jobs</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-blue-200" />
+                  <ArrowRight className="w-3.5 h-3.5 text-blue-200 dark:text-[#38BDF8]" />
                 </Link>
                 <Link
                   to="/jobs-in-chennai/driver"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-white"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 dark:bg-zinc-900 hover:bg-white/20 dark:hover:bg-zinc-800 transition text-white border border-transparent dark:border-zinc-800"
                 >
                   <span>Commercial Drivers</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-blue-200" />
+                  <ArrowRight className="w-3.5 h-3.5 text-blue-200 dark:text-[#38BDF8]" />
                 </Link>
                 <Link
                   to="/jobs-in-chennai/cook"
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-white"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-white/10 dark:bg-zinc-900 hover:bg-white/20 dark:hover:bg-zinc-800 transition text-white border border-transparent dark:border-zinc-800"
                 >
                   <span>Cooks &amp; Kitchen Chefs</span>
                   <ArrowRight className="w-3.5 h-3.5 text-blue-200" />
@@ -515,14 +515,14 @@ export const BlogPostPage: React.FC = () => {
 
             {/* Sidebar Related Articles (Compact List) */}
             {relatedPosts.length > 0 && (
-              <div className="bg-white rounded-3xl border border-[#e6e8ec] p-6 shadow-xs space-y-4">
+              <div className="bg-white dark:bg-[#121215] rounded-3xl border border-[#e6e8ec] dark:border-zinc-800 p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#0a0a0a]">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#0a0a0a] dark:text-white">
                     Top Related Reads
                   </h4>
                   <Link
                     to="/blog"
-                    className="text-[11px] font-semibold text-[#0f2f63] hover:underline"
+                    className="text-[11px] font-semibold text-[#0f2f63] dark:text-[#38BDF8] hover:underline"
                   >
                     See all
                   </Link>
@@ -533,17 +533,17 @@ export const BlogPostPage: React.FC = () => {
                     <Link
                       key={rel.id}
                       to={`/blog/${rel.slug}`}
-                      className="group block p-3 rounded-2xl bg-[#f4f4f4] hover:bg-[#e6e8ec] transition-colors border border-[#e6e8ec]"
+                      className="group block p-3 rounded-2xl bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 transition-colors border border-[#e6e8ec] dark:border-zinc-800"
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#0f2f63] bg-[#0f2f63]/10 px-2 py-0.5 rounded-full">
+                        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#0f2f63] dark:text-[#38BDF8] bg-[#0f2f63]/10 dark:bg-blue-950/60 px-2 py-0.5 rounded-full">
                           {rel.targetTrade || 'Article'}
                         </span>
-                        <span className="text-[10px] text-[#717784] ml-auto">
+                        <span className="text-[10px] text-[#717784] dark:text-zinc-400 ml-auto">
                           {rel.readTimeMinutes}m
                         </span>
                       </div>
-                      <h5 className="text-xs font-semibold text-[#0a0a0a] group-hover:text-[#0f2f63] transition-colors line-clamp-2">
+                      <h5 className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-100 group-hover:text-[#0f2f63] dark:group-hover:text-[#38BDF8] transition-colors line-clamp-2">
                         {rel.title}
                       </h5>
                     </Link>
@@ -553,8 +553,8 @@ export const BlogPostPage: React.FC = () => {
             )}
 
             {/* Share Widget */}
-            <div className="bg-white rounded-3xl border border-[#e6e8ec] p-5 shadow-xs text-center space-y-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#717784] block">
+            <div className="bg-white dark:bg-[#121215] rounded-3xl border border-[#e6e8ec] dark:border-zinc-800 p-5 shadow-xs text-center space-y-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
                 Share this Article
               </span>
               <div className="flex items-center justify-center gap-2">
@@ -562,7 +562,7 @@ export const BlogPostPage: React.FC = () => {
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareTitle} - ${shareUrl}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2.5 rounded-full bg-[#f4f4f4] hover:bg-emerald-50 text-[#717784] hover:text-emerald-600 border border-[#e6e8ec] transition-colors"
+                  className="p-2.5 rounded-full bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-[#717784] dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-300 border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                   title="Share on WhatsApp"
                 >
                   <MessageCircle className="w-4 h-4" />
@@ -571,7 +571,7 @@ export const BlogPostPage: React.FC = () => {
                   href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2.5 rounded-full bg-[#f4f4f4] hover:bg-blue-50 text-[#717784] hover:text-[#0f2f63] border border-[#e6e8ec] transition-colors"
+                  className="p-2.5 rounded-full bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-[#717784] dark:text-zinc-400 hover:text-[#0f2f63] dark:hover:text-[#38BDF8] border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                   title="Share on LinkedIn"
                 >
                   <Linkedin className="w-4 h-4" />
@@ -580,17 +580,17 @@ export const BlogPostPage: React.FC = () => {
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2.5 rounded-full bg-[#f4f4f4] hover:bg-slate-100 text-[#717784] hover:text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                  className="p-2.5 rounded-full bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                   title="Share on X"
                 >
                   <Twitter className="w-4 h-4" />
                 </a>
                 <button
                   onClick={handleCopyLink}
-                  className="p-2.5 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] border border-[#e6e8ec] transition-colors cursor-pointer"
+                  className="p-2.5 rounded-full bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 transition-colors cursor-pointer"
                   title="Copy link"
                 >
-                  {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4 text-[#717784]" />}
+                  {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4 text-[#717784] dark:text-zinc-400" />}
                 </button>
               </div>
             </div>
@@ -599,19 +599,19 @@ export const BlogPostPage: React.FC = () => {
 
         {/* Related Articles Carousel / Grid */}
         {relatedPosts.length > 0 && (
-          <div className="space-y-6 pt-6 border-t border-[#e6e8ec]">
+          <div className="space-y-6 pt-6 border-t border-[#e6e8ec] dark:border-zinc-800">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h3 className="text-lg sm:text-xl font-medium uppercase tracking-tight text-[#0a0a0a]">
+                <h3 className="text-lg sm:text-xl font-medium uppercase tracking-tight text-[#0a0a0a] dark:text-white">
                   Related Articles
                 </h3>
-                <p className="text-xs text-[#717784]">
+                <p className="text-xs text-[#717784] dark:text-zinc-400">
                   More insights in {post.category?.name || 'Skilled Workforce Management'}
                 </p>
               </div>
               <Link
                 to="/blog"
-                className="text-xs font-semibold uppercase tracking-wider text-[#0f2f63] hover:text-[#2563c9] transition-colors"
+                className="text-xs font-semibold uppercase tracking-wider text-[#0f2f63] dark:text-[#38BDF8] hover:text-[#2563c9] transition-colors"
               >
                 View All
               </Link>
@@ -622,29 +622,29 @@ export const BlogPostPage: React.FC = () => {
                 <Link
                   key={rel.id}
                   to={`/blog/${rel.slug}`}
-                  className="bg-white rounded-[1.5rem] border border-[#e6e8ec] hover:border-[#0f2f63]/30 transition-all p-5 shadow-xs hover:shadow-md group flex flex-col justify-between"
+                  className="bg-white dark:bg-[#121215] rounded-[1.5rem] border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/30 dark:hover:border-zinc-700 transition-all p-5 shadow-xs hover:shadow-md group flex flex-col justify-between"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#0f2f63] bg-[#0f2f63]/10 px-2.5 py-0.5 rounded-full">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#0f2f63] dark:text-[#38BDF8] bg-[#0f2f63]/10 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full">
                         {rel.targetTrade || 'Article'}
                       </span>
-                      <span className="text-[10px] text-[#717784] flex items-center gap-1 ml-auto">
+                      <span className="text-[10px] text-[#717784] dark:text-zinc-400 flex items-center gap-1 ml-auto">
                         <Clock className="w-2.5 h-2.5" />
                         {rel.readTimeMinutes}m read
                       </span>
                     </div>
 
-                    <h4 className="text-sm sm:text-base font-semibold text-[#0a0a0a] group-hover:text-[#2563c9] transition-colors line-clamp-2 leading-snug">
+                    <h4 className="text-sm sm:text-base font-semibold text-[#0a0a0a] dark:text-zinc-100 group-hover:text-[#2563c9] dark:group-hover:text-[#38BDF8] transition-colors line-clamp-2 leading-snug">
                       {rel.title}
                     </h4>
 
-                    <p className="text-xs text-[#717784] font-normal leading-relaxed line-clamp-2">
+                    <p className="text-xs text-[#717784] dark:text-zinc-400 font-normal leading-relaxed line-clamp-2">
                       {rel.excerpt}
                     </p>
                   </div>
 
-                  <div className="pt-3 mt-3 border-t border-[#e6e8ec] flex items-center justify-between text-xs font-semibold text-[#0f2f63]">
+                  <div className="pt-3 mt-3 border-t border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between text-xs font-semibold text-[#0f2f63] dark:text-[#38BDF8]">
                     <span>Read Article</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -658,9 +658,9 @@ export const BlogPostPage: React.FC = () => {
         <div className="pt-4 text-center">
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] text-xs font-semibold uppercase tracking-wider transition-all shadow-2xs"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 text-xs font-semibold uppercase tracking-wider transition-all shadow-2xs"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-[#717784]" />
+            <ArrowLeft className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-400" />
             <span>Back to All Insights</span>
           </Link>
         </div>

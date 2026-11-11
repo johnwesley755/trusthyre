@@ -188,7 +188,7 @@ export const WorkerSearchPage = () => {
   const hasActiveFilters = Boolean(searchQuery || city || experience !== 'all' || selectedTrade !== 'All');
 
   return (
-    <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0A1931]">
+    <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0A1931] dark:text-zinc-100 transition-colors duration-200">
       <SeoHead
         title="Find Verified Skilled Workers"
         description="Search and hire verified electricians, plumbers, drivers, logistics workers, and tradespeople across India on TrustHyre."
@@ -216,14 +216,14 @@ export const WorkerSearchPage = () => {
         {/* 2. Mobile Quick Filter Action Row (Visible on Mobile Only) */}
         <div className="lg:hidden px-1">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs font-medium text-slate-500">
-              <strong className="text-[#0A1931] font-bold tabular-nums">{results.length}</strong> {t("verified specialists", "verified specialists")}
+            <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">
+              <strong className="text-[#0A1931] dark:text-white font-bold tabular-nums">{results.length}</strong> {t("verified specialists", "verified specialists")}
             </span>
             <button
               onClick={() => setIsMobileFilterOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-full text-xs font-medium uppercase text-slate-700 shadow-xs active:scale-95 transition-all cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#121215] hover:bg-slate-50 dark:hover:bg-zinc-800 border border-slate-200/80 dark:border-zinc-800 rounded-full text-xs font-medium uppercase text-slate-700 dark:text-zinc-200 shadow-xs active:scale-95 transition-all cursor-pointer"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#0f2f63]" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
               <span>{t("Filters", "Filters")}</span>
               {activeFilterCount > 0 && (
                 <span className="w-4 h-4 rounded-full bg-[#0f2f63] text-white text-[10px] font-bold flex items-center justify-center">
@@ -238,18 +238,18 @@ export const WorkerSearchPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           {/* DESKTOP LEFT COLUMN: Talent Filter Sidebar (Hidden on mobile) */}
-          <div className="hidden lg:block lg:col-span-3 bg-white rounded-[1.5rem] p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-6 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto no-scrollbar">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div className="hidden lg:block lg:col-span-3 bg-white dark:bg-[#09090b] rounded-[1.5rem] p-5 sm:p-6 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-6 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto no-scrollbar">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-[#0f2f63]" />
-                <h2 className="text-sm font-medium uppercase text-[#0A1931]">
+                <SlidersHorizontal className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
+                <h2 className="text-sm font-medium uppercase text-[#0A1931] dark:text-white">
                   {t("Talent Filters", "Talent Filters")}
                 </h2>
               </div>
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
-                  className="text-xs font-medium text-[#2563c9] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-medium text-[#2563c9] dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <RotateCcw className="w-3 h-3" />
                   {t("Clear", "Clear")}
@@ -259,7 +259,7 @@ export const WorkerSearchPage = () => {
 
             {/* Job Category */}
             <div className="space-y-2">
-              <span className="text-[10px] font-medium uppercase text-slate-500">
+              <span className="text-[10px] font-medium uppercase text-slate-500 dark:text-zinc-400">
                 {t("Industry & Category", "Industry & Category")}
               </span>
               <div className="space-y-1">
@@ -274,8 +274,8 @@ export const WorkerSearchPage = () => {
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
                         isSelected
-                          ? 'bg-[#0f2f63] text-white shadow-xs'
-                          : 'bg-slate-50/80 hover:bg-slate-100/80 text-slate-700 border border-slate-200/60 hover:border-slate-300'
+                          ? 'bg-[#0f2f63] dark:bg-blue-600 text-white shadow-xs'
+                          : 'bg-slate-50/80 dark:bg-[#121215] hover:bg-slate-100/80 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
                       }`}
                     >
                       <span>{t(cat, cat)}</span>
@@ -287,8 +287,8 @@ export const WorkerSearchPage = () => {
             </div>
 
             {/* Experience Level Filter */}
-            <div className="space-y-2 pt-4 border-t border-slate-100">
-              <span className="text-[10px] font-medium uppercase text-slate-500">
+            <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-zinc-800">
+              <span className="text-[10px] font-medium uppercase text-slate-500 dark:text-zinc-400">
                 {t("Experience Level", "Experience Level")}
               </span>
               <div className="space-y-1">
@@ -303,8 +303,8 @@ export const WorkerSearchPage = () => {
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
                         isSelected
-                          ? 'bg-[#0f2f63] text-white shadow-xs'
-                          : 'bg-slate-50/80 hover:bg-slate-100/80 text-slate-700 border border-slate-200/60 hover:border-slate-300'
+                          ? 'bg-[#0f2f63] dark:bg-blue-600 text-white shadow-xs'
+                          : 'bg-slate-50/80 dark:bg-[#121215] hover:bg-slate-100/80 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
                       }`}
                     >
                       <span>{t(el.label, el.label)}</span>
@@ -350,27 +350,27 @@ export const WorkerSearchPage = () => {
             {/* Header Result Count */}
             <div className="flex items-center justify-between px-1 gap-2 flex-wrap">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-medium text-slate-500">
-                  <strong className="text-[#0A1931] font-bold">{results.length}</strong> {t("verified specialists available", "verified specialists available")}
+                <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">
+                  <strong className="text-[#0A1931] dark:text-white font-bold">{results.length}</strong> {t("verified specialists available", "verified specialists available")}
                 </span>
                 <button
                   type="button"
                   onClick={handleOpenTalentAlertModal}
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border transition-all cursor-pointer ${
                     isMatchingAlertActive
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs hover:bg-emerald-100/70'
-                      : 'bg-white hover:bg-[#0f2f63] text-[#0f2f63] hover:text-white border-[#0f2f63]/30 shadow-2xs'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 shadow-2xs hover:bg-emerald-100/70'
+                      : 'bg-white dark:bg-[#121215] hover:bg-[#0f2f63] dark:hover:bg-blue-600 text-[#0f2f63] dark:text-sky-400 hover:text-white border-[#0f2f63]/30 dark:border-zinc-800 shadow-2xs'
                   }`}
                   title={isMatchingAlertActive ? t('Talent Alert Active - Click to view or manage', 'Talent Alert Active - Click to view or manage') : t('Configure talent alert', 'Configure talent alert')}
                 >
                   {isMatchingAlertActive ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                       <span>{t("Talent Alert Active", "Talent Alert Active")}</span>
                     </>
                   ) : (
                     <>
-                      <Bell className="w-3.5 h-3.5 text-[#2563c9]" />
+                      <Bell className="w-3.5 h-3.5 text-[#2563c9] dark:text-sky-400" />
                       <span>{t("Alert Me on New Talent", "Alert Me on New Talent")}</span>
                     </>
                   )}
@@ -379,7 +379,7 @@ export const WorkerSearchPage = () => {
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
-                  className="text-xs font-medium text-[#2563c9] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-medium text-[#2563c9] dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <RotateCcw className="w-3 h-3" />
                   {t("Reset filters", "Reset filters")}
@@ -408,7 +408,7 @@ export const WorkerSearchPage = () => {
                       <div
                         key={worker.userId}
                         onClick={() => navigate(`/worker/${worker.userId}`)}
-                        className="bg-white rounded-[1.75rem] p-5 sm:p-6 border border-slate-200/80 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer space-y-4 shadow-xs relative overflow-hidden"
+                        className="bg-white dark:bg-[#121215] rounded-[1.75rem] p-5 sm:p-6 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer space-y-4 shadow-xs relative overflow-hidden"
                       >
                         {/* Card Header Cluster */}
                         <div className="flex items-start justify-between gap-3">
@@ -420,7 +420,7 @@ export const WorkerSearchPage = () => {
                                 size="lg"
                               />
                               {worker.isVerified && (
-                                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white text-[8px]" title={t("ID & Skills Verified", "ID & Skills Verified")}>
+                                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-white text-[8px]" title={t("ID & Skills Verified", "ID & Skills Verified")}>
                                   ✓
                                 </span>
                               )}
@@ -428,24 +428,24 @@ export const WorkerSearchPage = () => {
 
                             <div className="min-w-0 space-y-0.5">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="text-base sm:text-lg font-semibold text-[#0A1931] group-hover:text-blue-600 transition-colors truncate">
+                                <h3 className="text-base sm:text-lg font-semibold text-[#0A1931] dark:text-white group-hover:text-blue-600 dark:group-hover:text-sky-400 transition-colors truncate">
                                   {worker.name}
                                 </h3>
                                 {worker.isVerified && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-medium border border-emerald-100">
-                                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium border border-emerald-100 dark:border-emerald-800">
+                                    <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                     <span>{t("Verified", "Verified")}</span>
                                   </span>
                                 )}
                               </div>
 
-                              <div className="flex items-center gap-2 text-xs text-slate-500 font-medium flex-wrap">
-                                <span className="inline-flex items-center gap-1 text-slate-700 font-medium">
-                                  <MapPin className="w-3.5 h-3.5 text-[#2563c9]" />
+                              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 font-medium flex-wrap">
+                                <span className="inline-flex items-center gap-1 text-slate-700 dark:text-zinc-300 font-medium">
+                                  <MapPin className="w-3.5 h-3.5 text-[#2563c9] dark:text-sky-400" />
                                   <span>{worker.city || worker.location || 'Local Area'}</span>
                                 </span>
-                                <span className="text-slate-300">•</span>
-                                <span className="px-2.5 py-0.5 bg-blue-50 text-[#0f2f63] border border-blue-100/60 rounded-full font-medium text-[11px]">
+                                <span className="text-slate-300 dark:text-zinc-600">•</span>
+                                <span className="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/40 text-[#0f2f63] dark:text-sky-300 border border-blue-100/60 dark:border-blue-900/40 rounded-full font-medium text-[11px]">
                                   {displayRole}
                                 </span>
                               </div>
@@ -474,8 +474,8 @@ export const WorkerSearchPage = () => {
                               }}
                               className={`p-2.5 rounded-full border transition-all cursor-pointer ${
                                 (isWorkerSaved(worker.userId) || worker.isSaved)
-                                  ? 'bg-[#0f2f63] border-[#0f2f63] text-white shadow-xs'
-                                  : 'bg-slate-50 border-slate-200/80 text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                                  ? 'bg-[#0f2f63] border-[#0f2f63] dark:bg-blue-600 dark:border-blue-500 text-white shadow-xs'
+                                  : 'bg-slate-50 dark:bg-[#1C1C21] border-slate-200/80 dark:border-zinc-800 text-slate-400 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800'
                               }`}
                               title={(isWorkerSaved(worker.userId) || worker.isSaved) ? t('Remove from Saved', 'Remove from Saved') : t('Save Profile', 'Save Profile')}
                             >
@@ -486,7 +486,7 @@ export const WorkerSearchPage = () => {
 
                         {/* Bio Snippet */}
                         {worker.bio && (
-                          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed font-normal">
+                          <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2 leading-relaxed font-normal">
                             {worker.bio}
                           </p>
                         )}
@@ -497,13 +497,13 @@ export const WorkerSearchPage = () => {
                             {skillList.slice(0, 5).map((skill: string, idx: number) => (
                               <span
                                 key={idx}
-                                className="px-3 py-1 bg-slate-100/90 hover:bg-slate-200/80 text-slate-700 text-xs font-medium rounded-full border border-slate-200/60 transition-colors"
+                                className="px-3 py-1 bg-slate-100/90 dark:bg-[#1C1C21] hover:bg-slate-200/80 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-medium rounded-full border border-slate-200/60 dark:border-zinc-800 transition-colors"
                               >
                                 {t(skill, skill)}
                               </span>
                             ))}
                             {skillList.length > 5 && (
-                              <span className="px-2.5 py-1 text-slate-500 text-xs font-medium">
+                              <span className="px-2.5 py-1 text-slate-500 dark:text-zinc-400 text-xs font-medium">
                                 +{skillList.length - 5} {t("more", "more")}
                               </span>
                             )}
@@ -511,16 +511,16 @@ export const WorkerSearchPage = () => {
                         )}
 
                         {/* Card Footer: Live Status & View Profile CTA */}
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs flex-wrap gap-2">
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-800 text-xs flex-wrap gap-2">
                           <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium border border-emerald-100/60">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-medium border border-emerald-100/60 dark:border-emerald-800">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                               <span>{t("Available for Direct Hire", "Available for Direct Hire")}</span>
                             </span>
 
                             {/* 🎯 AI Match Score Badge (Apna & WorkIndia model) */}
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-200 shadow-2xs">
-                              <SparklesIcon className="w-3 h-3 text-amber-600" />
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-[11px] font-bold border border-amber-200 dark:border-amber-800 shadow-2xs">
+                              <SparklesIcon className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                               <span>{worker.trustScore ? `${Math.min(99, Math.max(88, Number(worker.trustScore)))}% Match` : '95% Match'}</span>
                             </span>
                           </div>
@@ -555,7 +555,7 @@ export const WorkerSearchPage = () => {
                                 e.stopPropagation();
                                 navigate(`/worker/${worker.userId}`);
                               }}
-                              className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-medium uppercase px-4 py-2 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer shrink-0"
+                              className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-medium uppercase px-4 py-2 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer shrink-0"
                             >
                               <span>{t("View Profile", "View Profile")}</span>
                               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -579,26 +579,26 @@ export const WorkerSearchPage = () => {
                     setCurrentPage(1);
                   }}
                   itemName={t("specialists", "specialists")}
-                  className="rounded-[1.5rem] border border-slate-200/80 bg-white p-3 shadow-xs"
+                  className="rounded-[1.5rem] border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-[#121215] p-3 shadow-xs"
                 />
               </div>
             ) : (
-              <div className="bg-white rounded-[1.5rem] p-10 border border-slate-200/80 text-center space-y-4 shadow-xs">
-                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto text-slate-400 border border-slate-200/60 shadow-xs">
+              <div className="bg-white dark:bg-[#121215] rounded-[1.5rem] p-10 border border-slate-200/80 dark:border-zinc-800 text-center space-y-4 shadow-xs">
+                <div className="w-14 h-14 bg-slate-50 dark:bg-[#1C1C21] rounded-2xl flex items-center justify-center mx-auto text-slate-400 dark:text-zinc-400 border border-slate-200/60 dark:border-zinc-800 shadow-xs">
                   <Users className="w-7 h-7" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-base font-medium uppercase text-[#0A1931]">
+                  <h3 className="text-base font-medium uppercase text-[#0A1931] dark:text-white">
                     {t("No verified workers found", "No verified workers found")}
                   </h3>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto leading-relaxed">
                     {t("Try loosening your criteria or search across different cities to see available technicians.", "Try loosening your criteria or search across different cities to see available technicians.")}
                   </p>
                 </div>
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className="px-5 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full font-medium text-xs uppercase transition-all cursor-pointer inline-flex items-center gap-2 shadow-sm"
+                    className="px-5 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-full font-medium text-xs uppercase transition-all cursor-pointer inline-flex items-center gap-2 shadow-sm"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>{t("Reset All Filters", "Reset All Filters")}</span>
@@ -639,26 +639,26 @@ export const WorkerSearchPage = () => {
             </div>
 
             {/* Hiring Verification Info Card */}
-            <div className="rounded-[1.5rem] bg-white p-5 sm:p-6 border border-slate-200/80 space-y-4 shadow-xs">
-              <div className="flex items-center gap-2 text-[#0A1931] font-medium text-xs uppercase">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <div className="rounded-[1.5rem] bg-white dark:bg-[#121215] p-5 sm:p-6 border border-slate-200/80 dark:border-zinc-800 space-y-4 shadow-xs">
+              <div className="flex items-center gap-2 text-[#0A1931] dark:text-white font-medium text-xs uppercase">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>{t("TrustHyre Verification Standard", "TrustHyre Verification Standard")}</span>
               </div>
-              <ul className="text-xs text-slate-500 space-y-2.5 font-medium">
+              <ul className="text-xs text-slate-500 dark:text-zinc-400 space-y-2.5 font-medium">
                 <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 shrink-0" />
                   <span>{t("Skill certified & profile verified", "Skill certified & profile verified")}</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 shrink-0" />
                   <span>{t("Practical skill assessment validated", "Practical skill assessment validated")}</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 shrink-0" />
                   <span>{t("Direct employer communication", "Direct employer communication")}</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 shrink-0" />
                   <span>{t("Geofenced on-site attendance tracking", "Geofenced on-site attendance tracking")}</span>
                 </li>
               </ul>
@@ -672,19 +672,19 @@ export const WorkerSearchPage = () => {
       {/* MOBILE FILTER MODAL / BOTTOM SHEET */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4">
-          <div className="bg-white w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] p-6 space-y-6 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-200 shadow-2xl border border-slate-200/80">
+          <div className="bg-white dark:bg-[#1C1C21] w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] p-6 space-y-6 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-200 shadow-2xl border border-slate-200/80 dark:border-zinc-800">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-[#0f2f63]" />
-                <h3 className="text-base font-medium uppercase text-[#0A1931]">
+                <SlidersHorizontal className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
+                <h3 className="text-base font-medium uppercase text-[#0A1931] dark:text-white">
                   Filter Talent
                 </h3>
               </div>
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 flex items-center justify-center text-slate-500 dark:text-zinc-400 transition-colors cursor-pointer"
                 aria-label="Close filters"
               >
                 <X className="w-4 h-4" />
@@ -693,7 +693,7 @@ export const WorkerSearchPage = () => {
 
             {/* Job Categories */}
             <div className="space-y-2.5">
-              <span className="text-[10px] font-medium uppercase text-slate-500">
+              <span className="text-[10px] font-medium uppercase text-slate-500 dark:text-zinc-400">
                 Industry & Category
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -705,8 +705,8 @@ export const WorkerSearchPage = () => {
                       onClick={() => setSelectedTrade(cat)}
                       className={`px-3 py-2.5 rounded-xl text-xs font-medium text-left transition-all flex items-center justify-between cursor-pointer ${
                         isSelected
-                          ? 'bg-[#0f2f63] text-white shadow-xs'
-                          : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60'
+                          ? 'bg-[#0f2f63] dark:bg-blue-600 text-white shadow-xs'
+                          : 'bg-slate-50 dark:bg-[#121215] text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200/60 dark:border-zinc-800'
                       }`}
                     >
                       <span>{cat}</span>
@@ -718,8 +718,8 @@ export const WorkerSearchPage = () => {
             </div>
 
             {/* Experience Levels */}
-            <div className="space-y-2.5 pt-3 border-t border-slate-100">
-              <span className="text-[10px] font-medium uppercase text-slate-500">
+            <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-zinc-800">
+              <span className="text-[10px] font-medium uppercase text-slate-500 dark:text-zinc-400">
                 Experience Level
               </span>
               <div className="space-y-1.5">
@@ -731,8 +731,8 @@ export const WorkerSearchPage = () => {
                       onClick={() => setExperience(el.value)}
                       className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-medium text-left transition-all flex items-center justify-between cursor-pointer ${
                         isSelected
-                          ? 'bg-[#0f2f63] text-white shadow-xs'
-                          : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60'
+                          ? 'bg-[#0f2f63] dark:bg-blue-600 text-white shadow-xs'
+                          : 'bg-slate-50 dark:bg-[#121215] text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200/60 dark:border-zinc-800'
                       }`}
                     >
                       <span>{el.label}</span>
@@ -744,7 +744,7 @@ export const WorkerSearchPage = () => {
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-4 border-t border-slate-100 flex items-center gap-3">
+            <div className="pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => {

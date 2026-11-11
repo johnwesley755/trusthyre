@@ -103,14 +103,14 @@ export const JobSearchRightSidebar: React.FC<JobSearchRightSidebarProps> = ({
                 <button
                   type="button"
                   onClick={onOpenAlertModal || (() => setIsManageModalOpen(true))}
-                  className="py-2 px-3 bg-white text-[#0f2f63] hover:bg-slate-100 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 text-center"
+                  className="py-2 px-3 bg-white dark:bg-[#121215] text-[#0f2f63] dark:text-[#38BDF8] hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 text-center"
                 >
                   Configure
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsManageModalOpen(true)}
-                  className="py-2 px-3 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer text-center"
+                  className="py-2 px-3 bg-white/20 dark:bg-white/10 hover:bg-white/30 dark:hover:bg-white/20 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer text-center"
                 >
                   <Settings className="w-3.5 h-3.5 text-white/80" />
                   <span>Manage</span>
@@ -122,9 +122,9 @@ export const JobSearchRightSidebar: React.FC<JobSearchRightSidebarProps> = ({
               <button
                 type="button"
                 onClick={onOpenAlertModal || (() => setIsManageModalOpen(true))}
-                className="w-full py-2.5 px-4 bg-white text-[#0f2f63] hover:bg-[#f4f4f4] rounded-full font-bold uppercase text-xs flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer"
+                className="w-full py-2.5 px-4 bg-white dark:bg-[#0066FF] text-[#0f2f63] dark:text-white hover:bg-[#f4f4f4] dark:hover:bg-[#0052cc] rounded-full font-bold uppercase text-xs flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer"
               >
-                <BellRing className="w-3.5 h-3.5 text-[#0f2f63]" />
+                <BellRing className="w-3.5 h-3.5 text-[#0f2f63] dark:text-white" />
                 <span>Configure Job Alert</span>
               </button>
 
@@ -150,10 +150,10 @@ export const JobSearchRightSidebar: React.FC<JobSearchRightSidebarProps> = ({
       )}
 
       {/* 2. Popular Companies in Location Widget */}
-      <div className="bg-[#f4f4f4] rounded-[1.75rem] p-5 sm:p-6 border border-[#e6e8ec] shadow-xs space-y-4">
+      <div className="bg-[#f4f4f4] dark:bg-[#121215] rounded-[1.75rem] p-5 sm:p-6 border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-medium uppercase text-[#0a0a0a]">
-            Top Hiring in <span className="text-[#0f2f63] font-semibold">{displayLocation}</span>
+          <h3 className="text-xs font-medium uppercase text-[#0a0a0a] dark:text-white">
+            Top Hiring in <span className="text-[#0f2f63] dark:text-[#38BDF8] font-semibold">{displayLocation}</span>
           </h3>
         </div>
 
@@ -170,36 +170,36 @@ export const JobSearchRightSidebar: React.FC<JobSearchRightSidebarProps> = ({
                 <div
                   key={employer.id}
                   onClick={() => onSelectCompany?.(employer.companyName)}
-                  className="flex items-center justify-between p-2 rounded-xl hover:bg-white border border-transparent hover:border-[#e6e8ec] transition-all cursor-pointer group"
+                  className="flex items-center justify-between p-2 rounded-xl hover:bg-white dark:hover:bg-zinc-900/70 border border-transparent hover:border-[#e6e8ec] dark:hover:border-zinc-800 transition-all cursor-pointer group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-white border border-[#e6e8ec] flex items-center justify-center text-xs font-semibold text-[#0a0a0a] shrink-0 group-hover:border-[#0f2f63]/30 transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-white dark:bg-[#1C1C21] border border-[#e6e8ec] dark:border-zinc-700 flex items-center justify-center text-xs font-semibold text-[#0a0a0a] dark:text-white shrink-0 group-hover:border-[#0f2f63]/30 dark:group-hover:border-[#0066FF]/50 transition-colors">
                       {initial}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-[#0a0a0a] group-hover:text-[#0f2f63] transition-colors truncate">
+                      <p className="text-xs font-semibold text-[#0a0a0a] dark:text-white group-hover:text-[#0f2f63] dark:group-hover:text-[#38BDF8] transition-colors truncate">
                         {employer.companyName}
                       </p>
-                      <p className="text-[10px] text-[#717784] font-normal">
+                      <p className="text-[10px] text-[#717784] dark:text-zinc-400 font-normal">
                         {employer.activeJobsCount} Active Jobs
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-[#717784] group-hover:text-[#0f2f63] transition-colors shrink-0" />
+                  <ChevronRight className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-400 group-hover:text-[#0f2f63] dark:group-hover:text-[#38BDF8] transition-colors shrink-0" />
                 </div>
               );
             })}
           </div>
         ) : (
-          <p className="text-xs text-[#717784] font-normal py-2">
+          <p className="text-xs text-[#717784] dark:text-zinc-400 font-normal py-2">
             No company profiles listed in this region yet.
           </p>
         )}
 
-        <div className="pt-2 border-t border-[#e6e8ec]">
+        <div className="pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
           <button
             onClick={() => onSelectCompany?.('')}
-            className="text-xs font-medium text-[#2563c9] hover:underline flex items-center gap-1 cursor-pointer"
+            className="text-xs font-medium text-[#2563c9] dark:text-[#38BDF8] hover:underline flex items-center gap-1 cursor-pointer"
           >
             <span>View all companies</span>
             <ChevronRight className="w-3 h-3" />
@@ -208,24 +208,24 @@ export const JobSearchRightSidebar: React.FC<JobSearchRightSidebarProps> = ({
       </div>
 
       {/* 3. Career Articles & Wage Guides Card */}
-      <div className="rounded-[1.75rem] border border-[#e6e8ec] bg-[#f4f4f4] p-5 shadow-xs space-y-3">
+      <div className="rounded-[1.75rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#121215] p-5 shadow-xs space-y-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-[#0f2f63]/10 text-[#0f2f63]">
+          <div className="p-2 rounded-xl bg-[#0f2f63]/10 dark:bg-blue-950/60 text-[#0f2f63] dark:text-[#38BDF8]">
             <BookOpen className="w-4 h-4" />
           </div>
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#0a0a0a]">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#0a0a0a] dark:text-white">
               Career Guides & Wages
             </h4>
-            <p className="text-[11px] text-[#717784]">Trade salary insights & interview prep</p>
+            <p className="text-[11px] text-[#717784] dark:text-zinc-400">Trade salary insights & interview prep</p>
           </div>
         </div>
-        <p className="text-xs text-[#5a6270] leading-relaxed">
+        <p className="text-xs text-[#5a6270] dark:text-zinc-400 leading-relaxed">
           Learn how to get trade verified, negotiate fair market wages, and connect directly with hiring companies.
         </p>
         <Link
           to="/blog"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f2f63] hover:text-[#2563c9] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f2f63] dark:text-[#38BDF8] hover:text-[#2563c9] dark:hover:text-blue-400 transition-colors"
         >
           <span>Explore Articles & Guides</span>
           <ArrowRight className="w-3.5 h-3.5" />

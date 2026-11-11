@@ -107,37 +107,37 @@ export default function AppliedJobsPage() {
 
   if (isLoading || jobsLoading) {
     return (
-      <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] flex items-center justify-center">
+      <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] flex items-center justify-center transition-colors duration-200">
         <AppLoader variant="page" message="Loading your active job applications..." />
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
+    <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <main className="max-w-7xl mx-auto space-y-6 pb-20">
         
         {/* 1. Header Hero Card */}
-        <div className="bg-[#f4f4f4] rounded-[2rem] p-6 sm:p-8 border border-[#e6e8ec]">
+        <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-8 border border-[#e6e8ec] dark:border-zinc-800">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] animate-pulse" />
-                <span className="text-[10px] font-semibold uppercase text-[#0f2f63]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] dark:bg-[#38BDF8] animate-pulse" />
+                <span className="text-[10px] font-semibold uppercase text-[#0f2f63] dark:text-[#38BDF8]">
                   Candidate Pipeline
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a]">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a] dark:text-white">
                 My Active Job Applications
               </h1>
-              <p className="text-xs text-[#717784] font-medium leading-relaxed max-w-xl">
+              <p className="text-xs text-[#717784] dark:text-zinc-400 font-medium leading-relaxed max-w-xl">
                 Tracking <span className="tabular-nums font-semibold">{applications.length}</span> submitted applications with real-time status updates and direct hiring pipeline.
               </p>
             </div>
 
             <Link
               to="/search"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full font-medium text-xs uppercase shadow-xs transition-all active:scale-95"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#2563c9] dark:hover:bg-[#0052cc] text-white rounded-full font-medium text-xs uppercase shadow-xs transition-all active:scale-95"
             >
               <span>Explore More Jobs</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -146,29 +146,29 @@ export default function AppliedJobsPage() {
         </div>
 
         {/* 2. Hallmark 4-Point Trust Proof Ribbon */}
-        <div className="bg-[#fbfbfb] rounded-[1.5rem] p-3 sm:p-4 border border-[#e6e8ec] shadow-2xs">
+        <div className="bg-[#fbfbfb] dark:bg-[#09090b] rounded-[1.5rem] p-3 sm:p-4 border border-[#e6e8ec] dark:border-zinc-800 shadow-2xs">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-[#e6e8ec]/80">
+            <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-[#121215] rounded-xl border border-[#e6e8ec]/80 dark:border-zinc-800">
               <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></div>
-              <span className="font-medium text-[#0a0a0a]">Direct Employer Access</span>
+              <span className="font-medium text-[#0a0a0a] dark:text-zinc-200">Direct Employer Access</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-[#e6e8ec]/80">
+            <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-[#121215] rounded-xl border border-[#e6e8ec]/80 dark:border-zinc-800">
               <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></div>
-              <span className="font-medium text-[#0a0a0a]">Real-Time Status Pipeline</span>
+              <span className="font-medium text-[#0a0a0a] dark:text-zinc-200">Real-Time Status Pipeline</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-[#e6e8ec]/80">
+            <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-[#121215] rounded-xl border border-[#e6e8ec]/80 dark:border-zinc-800">
               <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></div>
-              <span className="font-medium text-[#0a0a0a]">Direct Employer Contact</span>
+              <span className="font-medium text-[#0a0a0a] dark:text-zinc-200">Direct Employer Contact</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-[#e6e8ec]/80">
+            <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-[#121215] rounded-xl border border-[#e6e8ec]/80 dark:border-zinc-800">
               <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></div>
-              <span className="font-medium text-[#0a0a0a]">Zero Recruiter Fees</span>
+              <span className="font-medium text-[#0a0a0a] dark:text-zinc-200">Zero Recruiter Fees</span>
             </div>
           </div>
         </div>
 
         {/* 3. Filter Controls & View Switcher Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#fbfbfb] p-3 rounded-2xl border border-[#e6e8ec]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#fbfbfb] dark:bg-[#09090b] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800">
           {/* Status Filter Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
             {[
@@ -185,14 +185,14 @@ export default function AppliedJobsPage() {
                 }}
                 className={`px-3.5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                   activeFilter === tab.id
-                    ? 'bg-[#0f2f63] text-white shadow-xs'
-                    : 'bg-white text-[#717784] hover:text-[#0a0a0a] border border-[#e6e8ec]'
+                    ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-xs'
+                    : 'bg-white dark:bg-[#121215] text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white border border-[#e6e8ec] dark:border-zinc-800'
                 }`}
               >
                 {tab.pulse && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />}
                 <span>{tab.label}</span>
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] tabular-nums font-medium ${
-                  activeFilter === tab.id ? 'bg-white/20 text-white' : 'bg-[#f4f4f4] text-[#717784]'
+                  activeFilter === tab.id ? 'bg-white/20 text-white' : 'bg-[#f4f4f4] dark:bg-zinc-800 text-[#717784] dark:text-zinc-300'
                 }`}>
                   {tab.count}
                 </span>
@@ -201,13 +201,13 @@ export default function AppliedJobsPage() {
           </div>
 
           {/* View Toggle (Cards vs Table) */}
-          <div className="flex items-center self-end sm:self-auto bg-white p-1 rounded-xl border border-[#e6e8ec] shrink-0">
+          <div className="flex items-center self-end sm:self-auto bg-white dark:bg-[#121215] p-1 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 shrink-0">
             <button
               onClick={() => setViewMode('cards')}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 viewMode === 'cards'
-                  ? 'bg-[#0f2f63] text-white shadow-xs'
-                  : 'text-[#717784] hover:text-[#0a0a0a]'
+                  ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-xs'
+                  : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
@@ -217,8 +217,8 @@ export default function AppliedJobsPage() {
               onClick={() => setViewMode('table')}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 viewMode === 'table'
-                  ? 'bg-[#0f2f63] text-white shadow-xs'
-                  : 'text-[#717784] hover:text-[#0a0a0a]'
+                  ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-xs'
+                  : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
               }`}
             >
               <TableIcon className="w-3.5 h-3.5" />
@@ -229,17 +229,17 @@ export default function AppliedJobsPage() {
 
         {/* 4. Applications List / Grid */}
         {filteredApplications.length === 0 ? (
-          <div className="bg-[#f4f4f4] rounded-[1.75rem] p-10 border border-[#e6e8ec] text-center space-y-3">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto text-[#717784] border border-[#e6e8ec]">
+          <div className="bg-[#f4f4f4] dark:bg-[#121215] rounded-[1.75rem] p-10 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-3">
+            <div className="w-12 h-12 bg-white dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto text-[#717784] dark:text-zinc-400 border border-[#e6e8ec] dark:border-zinc-700">
               <Briefcase className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-[#0a0a0a]">No Applications in this Category</h3>
-            <p className="text-xs text-[#717784] max-w-sm mx-auto">
+            <h3 className="text-base font-bold text-[#0a0a0a] dark:text-white">No Applications in this Category</h3>
+            <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-sm mx-auto">
               Discover open jobs matching your verified skills and apply with one click.
             </p>
             <Link
               to="/search"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#0f2f63] text-white rounded-full text-xs font-semibold uppercase active:scale-95 transition-all"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#2563c9] dark:hover:bg-[#0052cc] text-white rounded-full text-xs font-semibold uppercase active:scale-95 transition-all shadow-xs"
             >
               Browse Open Jobs
             </Link>
@@ -257,13 +257,13 @@ export default function AppliedJobsPage() {
               return (
                 <div
                   key={app.id}
-                  className="bg-white rounded-2xl p-5 border border-[#e6e8ec] hover:border-[#0f2f63]/40 transition-all space-y-4 shadow-2xs group flex flex-col justify-between"
+                  className="bg-white dark:bg-[#121215] rounded-2xl p-5 border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/40 dark:hover:border-zinc-600 transition-all space-y-4 shadow-2xs group flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     {/* Header Row: Company Logo & Status Badge */}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-11 h-11 rounded-xl bg-[#f4f4f4] border border-[#e6e8ec] flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="w-11 h-11 rounded-xl bg-[#f4f4f4] dark:bg-[#1C1C21] border border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                           {(job as any)?.employerProfile?.profileImageUrl || (job as any)?.logoUrl ? (
                             <img 
                               src={(job as any)?.employerProfile?.profileImageUrl || (job as any)?.logoUrl} 
@@ -271,55 +271,55 @@ export default function AppliedJobsPage() {
                               className="w-full h-full object-cover" 
                             />
                           ) : (
-                            <Building2 className="w-5 h-5 text-[#0f2f63]" />
+                            <Building2 className="w-5 h-5 text-[#0f2f63] dark:text-[#38BDF8]" />
                           )}
                         </div>
                         <div className="min-w-0">
                           <h3 
                             onClick={() => navigate(`/job/${app.jobId}`)}
-                            className="text-base font-bold text-[#0a0a0a] group-hover:text-[#0f2f63] transition-colors truncate cursor-pointer"
+                            className="text-base font-bold text-[#0a0a0a] dark:text-white group-hover:text-[#0f2f63] dark:group-hover:text-[#38BDF8] transition-colors truncate cursor-pointer"
                           >
                             {job?.title || 'Job Opening'}
                           </h3>
-                          <p className="text-xs text-[#717784] font-medium truncate">{employerName}</p>
+                          <p className="text-xs text-[#717784] dark:text-zinc-400 font-medium truncate">{employerName}</p>
                         </div>
                       </div>
 
                       <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 ${
                         isHired 
-                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' 
                           : isOffer 
-                          ? 'bg-amber-50 text-amber-800 border border-amber-200 animate-pulse' 
+                          ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 animate-pulse' 
                           : isDeclined 
-                          ? 'bg-rose-50 text-rose-800 border border-rose-200' 
-                          : 'bg-blue-50 text-[#0f2f63] border border-blue-200'
+                          ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800' 
+                          : 'bg-blue-50 dark:bg-blue-950/60 text-[#0f2f63] dark:text-[#38BDF8] border border-blue-200 dark:border-blue-800'
                       }`}>
                         {isHired ? 'Confirmed & Hired' : isOffer ? 'Offer Received' : isDeclined ? 'Declined' : 'Under Review'}
                       </span>
                     </div>
 
                     {/* Metadata Pills */}
-                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-[#717784]">
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-[#717784] dark:text-zinc-400">
                       <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-[#0f2f63]" />
+                        <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
                         <span>{job?.location || job?.city || 'Pan India'}</span>
                       </span>
                       <span>•</span>
-                      <span className="font-semibold text-emerald-700">
+                      <span className="font-semibold text-emerald-700 dark:text-emerald-400">
                         {job?.budget ? `₹${Number(job.budget).toLocaleString('en-IN')}` : 'Standard Market Rate'}
                       </span>
                       <span>•</span>
                       <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-[#717784]" />
+                        <Clock className="w-3 h-3 text-[#717784] dark:text-zinc-400" />
                         <span>Applied {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recent'}</span>
                       </span>
                     </div>
 
                     {/* 🚦 Live 3-Step Hiring Pipeline Stepper (JobToday & WorkIndia Pattern) */}
-                    <div className="bg-[#f8f9fa] rounded-xl p-3 border border-[#e6e8ec] space-y-2">
+                    <div className="bg-[#f8f9fa] dark:bg-[#1C1C21] rounded-xl p-3 border border-[#e6e8ec] dark:border-zinc-800/80 space-y-2">
                       <div className="flex items-center justify-between text-[11px] font-bold">
-                        <span className="text-[#0a0a0a]">Application Progress</span>
-                        <span className="text-[10px] text-slate-500 font-normal">
+                        <span className="text-[#0a0a0a] dark:text-white">Application Progress</span>
+                        <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-normal">
                           {isHired 
                             ? 'Confirmed Hired' 
                             : isOffer 
@@ -334,20 +334,20 @@ export default function AppliedJobsPage() {
                         {/* Step 1: Applied */}
                         <div className="flex flex-col items-center gap-1 text-center">
                           <div className="w-full h-1.5 rounded-full bg-emerald-500" />
-                          <span className="text-[10px] font-bold text-emerald-800">1. Applied</span>
+                          <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300">1. Applied</span>
                         </div>
 
                         {/* Step 2: Under Review / Profile Opened */}
                         <div className="flex flex-col items-center gap-1 text-center">
                           <div className={`w-full h-1.5 rounded-full ${
                             isDeclined 
-                              ? 'bg-slate-300' 
+                              ? 'bg-slate-300 dark:bg-zinc-700' 
                               : isHired || isOffer 
                               ? 'bg-emerald-500' 
                               : 'bg-blue-600 animate-pulse'
                           }`} />
                           <span className={`text-[10px] font-bold ${
-                            isHired || isOffer ? 'text-emerald-800' : isDeclined ? 'text-slate-400' : 'text-blue-700'
+                            isHired || isOffer ? 'text-emerald-800 dark:text-emerald-300' : isDeclined ? 'text-slate-400 dark:text-zinc-500' : 'text-blue-700 dark:text-sky-300'
                           }`}>
                             2. HR Review
                           </span>
@@ -362,16 +362,16 @@ export default function AppliedJobsPage() {
                               ? 'bg-amber-500 animate-pulse' 
                               : isDeclined 
                               ? 'bg-rose-400' 
-                              : 'bg-slate-200'
+                              : 'bg-slate-200 dark:bg-zinc-800'
                           }`} />
                           <span className={`text-[10px] font-bold ${
                             isHired 
-                              ? 'text-emerald-800' 
+                              ? 'text-emerald-800 dark:text-emerald-300' 
                               : isOffer 
-                              ? 'text-amber-800' 
+                              ? 'text-amber-800 dark:text-amber-300' 
                               : isDeclined 
-                              ? 'text-rose-700' 
-                              : 'text-slate-400'
+                              ? 'text-rose-700 dark:text-rose-400' 
+                              : 'text-slate-400 dark:text-zinc-500'
                           }`}>
                             {isHired ? '3. Hired' : isOffer ? '3. Offer Sent' : isDeclined ? '3. Declined' : '3. Interview'}
                           </span>
@@ -381,22 +381,22 @@ export default function AppliedJobsPage() {
 
                     {/* Offer Sent Alert Box if present */}
                     {isOffer && (
-                      <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 space-y-2">
-                        <p className="text-xs font-bold text-amber-900">
+                      <div className="bg-amber-50 dark:bg-amber-950/60 p-3 rounded-xl border border-amber-200 dark:border-amber-800 space-y-2">
+                        <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
                           🎉 Offer received from employer!
                         </p>
                         <div className="flex gap-2">
                           <button
                             onClick={() => statusMutation.mutate({ id: app.id, status: 'ACCEPTED' })}
                             disabled={statusMutation.isPending}
-                            className="flex-1 py-1.5 px-3 bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-semibold rounded-full uppercase transition-all cursor-pointer text-center"
+                            className="flex-1 py-1.5 px-3 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#2563c9] dark:hover:bg-[#0052cc] text-white text-xs font-semibold rounded-full uppercase transition-all cursor-pointer text-center"
                           >
                             Accept Offer
                           </button>
                           <button
                             onClick={() => statusMutation.mutate({ id: app.id, status: 'DECLINED' })}
                             disabled={statusMutation.isPending}
-                            className="flex-1 py-1.5 px-3 bg-white border border-[#e6e8ec] text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-full uppercase transition-all cursor-pointer text-center"
+                            className="flex-1 py-1.5 px-3 bg-white dark:bg-black border border-[#e6e8ec] dark:border-zinc-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold rounded-full uppercase transition-all cursor-pointer text-center"
                           >
                             Decline
                           </button>
@@ -406,9 +406,9 @@ export default function AppliedJobsPage() {
                   </div>
 
                   {/* Footer Row */}
-                  <div className="pt-3 border-t border-[#e6e8ec] flex items-center justify-between flex-wrap gap-2">
-                    <span className="text-[11px] text-[#717784] font-medium flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-[11px] text-[#717784] dark:text-zinc-400 font-medium flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                       <span>Verified Application</span>
                     </span>
 
@@ -425,7 +425,7 @@ export default function AppliedJobsPage() {
                               jobTitle: job?.title
                             });
                           }}
-                          className="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-xs font-bold transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-2xs"
+                          className="px-3 py-1 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 rounded-full text-xs font-bold transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-2xs"
                         >
                           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
                           <span>Rate Employer</span>
@@ -434,7 +434,7 @@ export default function AppliedJobsPage() {
 
                       <button
                         onClick={() => navigate(`/job/${app.jobId}`)}
-                        className="text-xs font-semibold text-[#0f2f63] hover:underline flex items-center gap-1 cursor-pointer"
+                        className="text-xs font-semibold text-[#0f2f63] dark:text-[#38BDF8] hover:underline flex items-center gap-1 cursor-pointer"
                       >
                         <span>View Opening Details</span>
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -446,7 +446,7 @@ export default function AppliedJobsPage() {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-[#e6e8ec] overflow-hidden shadow-2xs">
+          <div className="bg-white dark:bg-[#121215] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 overflow-hidden shadow-2xs">
             <Table>
               <TableHeader className="bg-[#fbfbfb]">
                 <TableRow>

@@ -5,7 +5,8 @@ import { UserAvatar } from '../components/common/UserAvatar';
 import { NotificationCenter } from '../modules/dashboard/features/notifications/NotificationCenter';
 import { NavbarSearchInput } from '../modules/search/components/NavbarSearchInput';
 import { useAppNotifications } from '../hooks/useAppNotifications';
-import trustHyreLogo from '../assets/TrustHyre Skills and Opportunities Logo.png';
+import trustHyreLogoLight from '../assets/TrustHyre Skills and Opportunities Logo.png';
+import trustHyreLogoDark from '../assets/TrustHyre Logo with Skills Tagline.png';
 import { 
   Upload, 
   PlusCircle, 
@@ -33,10 +34,14 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../providers/TranslationContext';
+import { useTheme } from '../providers/ThemeContext';
+import { ThemeToggle } from '../components/common/ThemeToggle';
 
 export const AppTopNavbar = () => {
   const { user } = useUser();
   const { logout } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const { language, setLanguage, t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -90,16 +95,17 @@ export const AppTopNavbar = () => {
     : (user?.email?.split('@')[0] || 'My Account');
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-[#e6e8ec] shadow-xs text-[#0a0a0a] select-none font-['Onest',system-ui,sans-serif]">
+    <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-black/90 backdrop-blur-md border-b border-[#e6e8ec] dark:border-zinc-800 shadow-xs text-[#0a0a0a] dark:text-white select-none font-['Onest',system-ui,sans-serif] transition-colors duration-200">
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-2 sm:gap-4 overflow-visible">
         
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-4 shrink-0">
           <Link to={logoDestination} className="flex items-center group py-1 shrink-0" aria-label="TrustHyre Home">
+            {/* Dynamic theme-aware logo */}
             <img 
-              src={trustHyreLogo} 
+              src={isDark ? trustHyreLogoDark : trustHyreLogoLight} 
               alt="TrustHyre" 
-              className="h-9 sm:h-10 md:h-12 w-auto object-contain block select-none mix-blend-multiply group-hover:opacity-90 transition-opacity" 
+              className="h-9 sm:h-10 md:h-12 w-auto object-contain select-none group-hover:opacity-90 transition-opacity" 
             />
           </Link>
         </div>
@@ -118,23 +124,26 @@ export const AppTopNavbar = () => {
           />
         </div>
 
-        {/* Right Actions: CTA + Notifications + Profile Menu / Guest Buttons */}
+        {/* Right Actions: CTA + Notifications + ThemeToggle + Profile Menu / Guest Buttons */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
           {isAdmin && (
             <div className={`hidden sm:inline-flex items-center px-3 py-1 rounded-full border shrink-0 mr-1 text-xs font-semibold ${
               isSuperAdmin 
-                ? 'bg-amber-50 border-amber-200 text-amber-900' 
-                : 'bg-blue-50 border-blue-200 text-[#0f2f63]'
+                ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-300' 
+                : 'bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800 text-[#0f2f63] dark:text-[#38BDF8]'
             }`}>
               <span>{isSuperAdmin ? 'Super Admin' : 'Admin'}</span>
             </div>
           )}
 
+          {/* Theme Mode Toggle (Pill) */}
+          <ThemeToggle variant="pill" className="shrink-0" />
+
           {/* Mobile Search Toggle Button */}
           <button
             type="button"
             onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-            className="md:hidden p-2 rounded-full text-[#717784] hover:text-[#0a0a0a] bg-[#f4f4f4] hover:bg-[#e6e8ec] transition-colors cursor-pointer"
+            className="md:hidden p-2 rounded-full text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 transition-colors cursor-pointer"
             aria-label="Toggle mobile search"
           >
             <Search className="w-4 h-4" />
@@ -147,7 +156,7 @@ export const AppTopNavbar = () => {
               {isEmployer ? (
                 <Link
                   to="/post-job"
-                  className="hidden xl:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-semibold uppercase tracking-wider shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 whitespace-nowrap h-9 leading-none"
+                  className="hidden xl:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#2563c9] dark:hover:bg-[#0052cc] text-white text-xs font-semibold uppercase tracking-wider shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 whitespace-nowrap h-9 leading-none"
                 >
                   <PlusCircle className="w-3.5 h-3.5 shrink-0" />
                   <span className="whitespace-nowrap">Post a Job</span>
@@ -155,7 +164,7 @@ export const AppTopNavbar = () => {
               ) : isWorker ? (
                 <Link
                   to="/profile"
-                  className="hidden xl:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0f2f63] border border-[#e6e8ec] text-xs font-semibold transition-all active:scale-95 cursor-pointer shrink-0 whitespace-nowrap h-9 leading-none"
+                  className="hidden xl:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0f2f63] dark:text-[#38BDF8] border border-[#e6e8ec] dark:border-zinc-800 text-xs font-semibold transition-all active:scale-95 cursor-pointer shrink-0 whitespace-nowrap h-9 leading-none"
                 >
                   {/* <Upload className="w-3.5 h-3.5 shrink-0" /> */}
                   <span className="whitespace-nowrap">View Profile</span>
@@ -171,7 +180,7 @@ export const AppTopNavbar = () => {
               <div className="relative shrink-0" ref={profileMenuRef}>
                 <button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full bg-[#f4f4f4] hover:bg-[#e6e8ec] border border-[#e6e8ec] transition-all cursor-pointer shrink-0 whitespace-nowrap h-9"
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 transition-all cursor-pointer shrink-0 whitespace-nowrap h-9"
                   aria-expanded={isProfileMenuOpen}
                   aria-label="User navigation menu"
                 >
@@ -180,10 +189,10 @@ export const AppTopNavbar = () => {
                     name={displayName}
                     size="sm"
                   />
-                  <span className="hidden lg:block text-xs font-medium text-[#0a0a0a] max-w-[100px] truncate">
+                  <span className="hidden lg:block text-xs font-medium text-[#0a0a0a] dark:text-white max-w-[100px] truncate">
                     {displayName}
                   </span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-[#717784] shrink-0 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-[#717784] dark:text-zinc-400 shrink-0 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {/* Dropdown Menu Modal */}
@@ -194,10 +203,10 @@ export const AppTopNavbar = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.98 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-[#e6e8ec] py-2 text-[#0a0a0a] z-50 font-['Onest',system-ui,sans-serif] max-h-[calc(100vh-5rem)] overflow-y-auto"
+                      className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#1C1C21] rounded-2xl shadow-2xl border border-[#e6e8ec] dark:border-zinc-800 py-2 text-[#0a0a0a] dark:text-zinc-100 z-50 font-['Onest',system-ui,sans-serif] max-h-[calc(100vh-5rem)] overflow-y-auto"
                     >
                       {/* User Profile Card Header */}
-                      <div className="px-4 py-3 border-b border-[#e6e8ec]">
+                      <div className="px-4 py-3 border-b border-[#e6e8ec] dark:border-zinc-800">
                         <div className="flex items-center gap-2.5">
                           <UserAvatar
                             src={user?.profileImageUrl}
@@ -205,20 +214,20 @@ export const AppTopNavbar = () => {
                             size="md"
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-semibold text-[#0a0a0a] truncate">
+                            <p className="text-xs font-semibold text-[#0a0a0a] dark:text-white truncate">
                               {displayName}
                             </p>
-                            <p className="text-[10px] text-[#717784] font-normal truncate">
+                            <p className="text-[10px] text-[#717784] dark:text-zinc-400 font-normal truncate">
                               {user?.email}
                             </p>
                             <span className={`inline-block mt-1 px-2.5 py-0.5 text-[9px] font-bold rounded-full uppercase tracking-wider border ${
                               isSuperAdmin
-                                ? 'bg-amber-50 text-amber-900 border-amber-200'
+                                ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-800'
                                 : isAdmin
-                                ? 'bg-blue-50 text-[#0f2f63] border-blue-200'
+                                ? 'bg-blue-50 dark:bg-blue-950/60 text-[#0f2f63] dark:text-[#38BDF8] border-blue-200 dark:border-blue-800'
                                 : isEmployer
-                                ? 'bg-purple-50 text-purple-800 border-purple-200'
-                                : 'bg-[#e6eefc] text-[#0f2f63] border-blue-100'
+                                ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                                : 'bg-[#e6eefc] dark:bg-blue-950/40 text-[#0f2f63] dark:text-[#38BDF8] border-blue-100 dark:border-blue-900'
                             }`}>
                               {isSuperAdmin
                                 ? 'Super Admin'
@@ -233,9 +242,9 @@ export const AppTopNavbar = () => {
                       </div>
 
                       {/* Language Quick-Switch Bar inside Dropdown */}
-                      <div className="p-3 border-b border-[#e6e8ec] bg-slate-50/70">
-                        <div className="flex items-center gap-1.5 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          <Globe className="w-3.5 h-3.5 text-[#0f2f63]" />
+                      <div className="p-3 border-b border-[#e6e8ec] dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/70">
+                        <div className="flex items-center gap-1.5 mb-2 text-[10px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
+                          <Globe className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
                           <span>Language / மொழி / भाषा</span>
                         </div>
                         <div className="grid grid-cols-4 gap-1">
@@ -249,7 +258,7 @@ export const AppTopNavbar = () => {
                                 className={`py-1 px-1 rounded-lg text-center text-[11px] font-semibold transition-all cursor-pointer ${
                                   isSelected
                                     ? 'bg-[#0f2f63] text-white shadow-xs'
-                                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                                    : 'bg-white dark:bg-black hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-800'
                                 }`}
                               >
                                 <span className="truncate block">{lang.native}</span>
@@ -269,7 +278,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/admin/dashboard');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <LayoutDashboard className="w-4 h-4 text-[#717784]" />
                               <span>{isSuperAdmin ? 'Super Admin Command Center' : 'Admin Operations Hub'}</span>
@@ -279,7 +288,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/admin/analytics');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <BarChart3 className="w-4 h-4 text-[#717784]" />
                               <span>Visitor Analytics</span>
@@ -289,7 +298,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/admin/blog');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <BookOpen className="w-4 h-4 text-[#717784]" />
                               <span>Blog & SEO Manager</span>
@@ -299,7 +308,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/admin/leads');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Building2 className="w-4 h-4 text-[#717784]" />
                               <span>Hiring Companies</span>
@@ -309,7 +318,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/admin/verifications');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <CheckCircle2 className="w-4 h-4 text-[#717784]" />
                               <span>Identity Verifications</span>
@@ -320,7 +329,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/admin/users');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Users className="w-4 h-4 text-[#717784]" />
                               <span>User Directory</span>
@@ -331,7 +340,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/admin/jobs');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Briefcase className="w-4 h-4 text-[#717784]" />
                               <span>Job Moderation</span>
@@ -347,7 +356,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/profile');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <User className="w-4 h-4 text-[#717784]" />
                               <span>{t('Company Profile')}</span>
@@ -357,7 +366,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/dashboard');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <LayoutDashboard className="w-4 h-4 text-[#717784]" />
                               <span>{t('Employer Dashboard')}</span>
@@ -367,7 +376,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/find-workers');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Users className="w-4 h-4 text-[#717784]" />
                               <span>{t('Find Workers')}</span>
@@ -377,7 +386,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/post-job');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <PlusCircle className="w-4 h-4 text-[#717784]" />
                               <span>{t('Post a Job')}</span>
@@ -387,7 +396,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/jobs');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Briefcase className="w-4 h-4 text-[#717784]" />
                               <span>{t('Active Jobs & Applicants')}</span>
@@ -397,7 +406,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/saved-profiles');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Bookmark className="w-4 h-4 text-[#717784]" />
                               <span>{t('Saved Talent Profiles')}</span>
@@ -407,7 +416,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/blog');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <BookOpen className="w-4 h-4 text-[#717784]" />
                               <span>{t('Hiring Guides & Blog')}</span>
@@ -423,7 +432,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/profile');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <User className="w-4 h-4 text-[#717784]" />
                               <span>{t('My Profile & CV')}</span>
@@ -433,7 +442,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/search');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Briefcase className="w-4 h-4 text-[#717784]" />
                               <span>{t('Find Jobs')}</span>
@@ -443,7 +452,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/applied-jobs');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <CheckCircle2 className="w-4 h-4 text-[#717784]" />
                               <span>{t('Applied Jobs')}</span>
@@ -453,7 +462,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/saved-jobs');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Bookmark className="w-4 h-4 text-[#717784]" />
                               <span>{t('Saved Jobs')}</span>
@@ -463,7 +472,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/tracker');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <Activity className="w-4 h-4 text-[#717784]" />
                               <span>{t('Activity Tracker')}</span>
@@ -473,7 +482,7 @@ export const AppTopNavbar = () => {
                                 setIsProfileMenuOpen(false);
                                 navigate('/blog');
                               }}
-                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                             >
                               <BookOpen className="w-4 h-4 text-[#717784]" />
                               <span>{t('Career Guides & Blog')}</span>
@@ -487,7 +496,7 @@ export const AppTopNavbar = () => {
                             setIsProfileMenuOpen(false);
                             navigate('/notifications');
                           }}
-                          className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center justify-between transition-colors cursor-pointer text-left"
+                          className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center justify-between transition-colors cursor-pointer text-left"
                         >
                           <div className="flex items-center gap-3">
                             <Bell className="w-4 h-4 text-[#717784]" />
@@ -505,7 +514,7 @@ export const AppTopNavbar = () => {
                             setIsProfileMenuOpen(false);
                             navigate('/settings');
                           }}
-                          className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] flex items-center gap-3 transition-colors cursor-pointer text-left"
+                          className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
                         >
                           <Settings className="w-4 h-4 text-[#717784]" />
                           <span>{t('Account Settings')}</span>
@@ -513,10 +522,10 @@ export const AppTopNavbar = () => {
                       </div>
 
                       {/* Divider & Sign Out */}
-                      <div className="pt-1 border-t border-[#e6e8ec]">
+                      <div className="pt-1 border-t border-[#e6e8ec] dark:border-zinc-800">
                         <button
                           onClick={handleLogout}
-                          className="w-full px-4 py-2.5 text-xs font-medium text-rose-600 hover:bg-rose-50 flex items-center gap-3 transition-colors cursor-pointer text-left"
+                          className="w-full px-4 py-2.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-3 transition-colors cursor-pointer text-left"
                         >
                           <LogOut className="w-4 h-4 text-rose-500" />
                           <span>{t('Sign Out')}</span>
@@ -532,13 +541,13 @@ export const AppTopNavbar = () => {
             <div className="flex items-center gap-2">
               <Link
                 to="/sign-in"
-                className="px-4 py-2 rounded-full text-xs font-medium text-[#0a0a0a] hover:bg-[#f4f4f4] transition-colors"
+                className="px-4 py-2 rounded-full text-xs font-medium text-[#0a0a0a] dark:text-white hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 border border-transparent dark:border-zinc-800 transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 to="/sign-up"
-                className="px-4 py-2 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-medium uppercase shadow-xs transition-all active:scale-95"
+                className="px-4 py-2 rounded-full bg-[#0f2f63] dark:bg-[#2563EB] hover:bg-[#2563c9] dark:hover:bg-[#1D4ED8] text-white text-xs font-medium uppercase shadow-xs transition-all active:scale-95"
               >
                 Get Started
               </Link>
@@ -549,7 +558,7 @@ export const AppTopNavbar = () => {
           {!isAuthenticated && (
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-[#0a0a0a] hover:bg-[#f4f4f4] rounded-full border border-[#e6e8ec] cursor-pointer"
+              className="lg:hidden p-2 text-[#0a0a0a] dark:text-white hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 rounded-full border border-[#e6e8ec] dark:border-zinc-800 cursor-pointer"
               aria-label="Toggle mobile menu"
             >
               {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -567,10 +576,10 @@ export const AppTopNavbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-[#e6e8ec] px-4 py-2.5 bg-[#f4f4f4]"
+            className="md:hidden border-t border-[#e6e8ec] dark:border-zinc-800 px-4 py-2.5 bg-[#f4f4f4] dark:bg-[#121215]"
           >
             <NavbarSearchInput 
-              className="w-full bg-white" 
+              className="w-full bg-white dark:bg-[#1C1C21]" 
               placeholder={
                 isAdmin 
                   ? "Search users, jobs, records..." 
@@ -590,12 +599,12 @@ export const AppTopNavbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-white border-t border-[#e6e8ec] px-4 py-4 space-y-3 shadow-xl max-h-[calc(100vh-4.5rem)] overflow-y-auto"
+            className="lg:hidden bg-white dark:bg-[#0a0a0a] border-t border-[#e6e8ec] dark:border-zinc-800 px-4 py-4 space-y-3 shadow-xl max-h-[calc(100vh-4.5rem)] overflow-y-auto"
           >
             {/* Mobile Regional Language Quick-Switch Bar */}
-            <div className="p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1.5">
-              <div className="flex items-center gap-1.5 px-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                <Globe className="w-3.5 h-3.5 text-[#0f2f63]" />
+            <div className="p-2.5 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 space-y-1.5">
+              <div className="flex items-center gap-1.5 px-1 text-[10px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider">
+                <Globe className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
                 <span>Language / மொழி / भाषा</span>
               </div>
               <div className="grid grid-cols-4 gap-1.5">
@@ -609,7 +618,7 @@ export const AppTopNavbar = () => {
                       className={`py-1.5 px-2 rounded-xl text-center text-xs font-bold transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#0f2f63] text-white shadow-2xs'
-                          : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                          : 'bg-white dark:bg-black hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-800'
                       }`}
                     >
                       <div className="truncate text-[11px]">{lang.native}</div>
@@ -619,9 +628,15 @@ export const AppTopNavbar = () => {
               </div>
             </div>
 
+            {/* Mobile Theme Switcher Row */}
+            <div className="p-2.5 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">Theme Mode</span>
+              <ThemeToggle variant="pill" showLabel={true} />
+            </div>
+
             {/* Guest Navigation Links */}
             <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase text-[#717784] px-3.5">
+              <span className="text-[10px] font-bold uppercase text-[#717784] dark:text-zinc-400 px-3.5">
                 Navigation
               </span>
               {guestNavLinks.map((link) => {
@@ -635,10 +650,10 @@ export const AppTopNavbar = () => {
                     className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all ${
                       isActive 
                         ? 'bg-[#0f2f63] text-white' 
-                        : 'text-[#0a0a0a] hover:bg-[#f4f4f4]'
+                        : 'text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-900'
                     }`}
                   >
-                    {Icon && <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[#717784]'}`} />}
+                    {Icon && <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[#717784] dark:text-zinc-400'}`} />}
                     <span>{link.name}</span>
                   </Link>
                 );
@@ -646,11 +661,11 @@ export const AppTopNavbar = () => {
             </div>
 
             {/* Guest Action Buttons */}
-            <div className="pt-3 border-t border-[#e6e8ec] flex flex-col gap-2">
+            <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 flex flex-col gap-2">
               <Link
                 to="/sign-in"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full py-2.5 px-4 bg-[#f4f4f4] hover:bg-[#e6e8ec] text-[#0a0a0a] border border-[#e6e8ec] rounded-full text-xs font-medium uppercase text-center"
+                className="w-full py-2.5 px-4 bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-white border border-[#e6e8ec] dark:border-zinc-800 rounded-full text-xs font-medium uppercase text-center"
               >
                 Sign In
               </Link>
