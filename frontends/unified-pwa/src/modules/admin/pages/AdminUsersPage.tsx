@@ -426,17 +426,17 @@ export const AdminUsersPage: React.FC = () => {
                           value={inviteForm.firstName}
                           onChange={(e) => setInviteForm({ ...inviteForm, firstName: e.target.value })}
                           placeholder="John"
-                          className="w-full bg-[#f8f9fa] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3.5 py-2 text-xs text-[#0a0a0a] outline-none"
+                          className="w-full bg-[#f8f9fa] dark:bg-[#121215] focus:bg-white dark:focus:bg-[#000000] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 rounded-xl px-3.5 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="block text-[11px] font-bold uppercase text-[#0a0a0a]">Last Name</label>
+                        <label className="block text-[11px] font-bold uppercase text-[#0a0a0a] dark:text-zinc-300">Last Name</label>
                         <input
                           type="text"
                           value={inviteForm.lastName}
                           onChange={(e) => setInviteForm({ ...inviteForm, lastName: e.target.value })}
                           placeholder="Doe"
-                          className="w-full bg-[#f8f9fa] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3.5 py-2 text-xs text-[#0a0a0a] outline-none"
+                          className="w-full bg-[#f8f9fa] dark:bg-[#121215] focus:bg-white dark:focus:bg-[#000000] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 rounded-xl px-3.5 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none"
                         />
                       </div>
                     </div>

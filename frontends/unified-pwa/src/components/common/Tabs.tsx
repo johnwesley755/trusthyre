@@ -25,7 +25,7 @@ export function Tabs<T extends string = string>({
   return (
     <div
       role="tablist"
-      className={`inline-flex items-center gap-1.5 p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/80 overflow-x-auto no-scrollbar max-w-full ${className}`}
+      className={`inline-flex items-center gap-1.5 p-1.5 bg-slate-100/90 dark:bg-[#121215] rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-x-auto no-scrollbar max-w-full ${className}`}
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
@@ -42,8 +42,8 @@ export function Tabs<T extends string = string>({
               size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-xs'
             } ${
               isActive
-                ? 'bg-white text-[#0066FF] font-black shadow-xs ring-1 ring-slate-200/60'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-bold'
+                ? 'bg-white dark:bg-[#1C1C21] text-[#0066FF] dark:text-sky-400 font-black shadow-xs ring-1 ring-slate-200/60 dark:ring-zinc-700'
+                : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-zinc-800/60 font-bold'
             }`}
           >
             {Icon && (

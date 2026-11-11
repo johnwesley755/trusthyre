@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService } from '../../../services/admin.service';
 import { Link } from 'react-router-dom';
@@ -65,7 +65,7 @@ export const AdminDashboardPage: React.FC = () => {
     {
       title: 'Total Users',
       value: stats?.totalUsers || 0,
-      sub: `${stats?.totalWorkers || 0} Candidates • ${stats?.totalEmployers || 0} Employers`,
+      sub: `${stats?.totalWorkers || 0} Candidates â€¢ ${stats?.totalEmployers || 0} Employers`,
       icon: Users,
       color: 'bg-blue-50 dark:bg-blue-950/40 text-[#0f2f63] dark:text-sky-400 border border-blue-100 dark:border-blue-900/40'
     },
@@ -188,7 +188,7 @@ export const AdminDashboardPage: React.FC = () => {
 
             <Link
               to="/admin/analytics"
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-blue-50 text-[#0f2f63] text-xs font-bold uppercase tracking-wider shadow-sm transition-all active:scale-95 whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white dark:bg-[#0066FF] hover:bg-blue-50 dark:hover:bg-[#0052cc] text-[#0f2f63] dark:text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all active:scale-95 whitespace-nowrap"
             >
               <BarChart3 className="w-4 h-4 text-[#0f2f63]" />
               <span>Full Analytics</span>

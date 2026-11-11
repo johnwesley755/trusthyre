@@ -18,9 +18,9 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-3 animate-pulse py-4">
-        <div className="h-20 bg-slate-100 rounded-2xl w-full" />
-        <div className="h-24 bg-slate-100 rounded-2xl w-full" />
-        <div className="h-24 bg-slate-100 rounded-2xl w-full" />
+        <div className="h-20 bg-slate-100 dark:bg-zinc-800 rounded-2xl w-full" />
+        <div className="h-24 bg-slate-100 dark:bg-zinc-800 rounded-2xl w-full" />
+        <div className="h-24 bg-slate-100 dark:bg-zinc-800 rounded-2xl w-full" />
       </div>
     );
   }
@@ -41,10 +41,10 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
     <div className="space-y-6">
       {/* Aggregate Score Card */}
       {totalReviews > 0 ? (
-        <div className="bg-gradient-to-br from-slate-50 to-blue-50/40 rounded-3xl p-6 border border-slate-200/60 shadow-sm flex flex-col md:flex-row items-center gap-6">
+        <div className="bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-[#09090B] dark:to-[#121215] rounded-3xl p-6 border border-slate-200/60 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row items-center gap-6">
           <div className="text-center md:text-left shrink-0 md:pr-6 md:border-r border-slate-200">
             <div className="flex items-center justify-center md:justify-start gap-2">
-              <span className="text-4xl font-extrabold text-[#0A1931]">
+              <span className="text-4xl font-extrabold text-[#0A1931] dark:text-white">
                 {avgScore.toFixed(1)}
               </span>
               <div className="space-y-0.5">
@@ -58,12 +58,12 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
                     />
                   ))}
                 </div>
-                <p className="text-[11px] font-medium text-slate-500">
+                <p className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
                   out of 5.0 stars
                 </p>
               </div>
             </div>
-            <p className="text-xs text-slate-600 mt-2 flex items-center justify-center md:justify-start gap-1 font-semibold">
+            <p className="text-xs text-slate-600 dark:text-zinc-300 mt-2 flex items-center justify-center md:justify-start gap-1 font-semibold">
               <ShieldCheck className="w-4 h-4 text-[#0066FF]" />
               {totalReviews} Verified Review{totalReviews === 1 ? '' : 's'}
             </p>
@@ -76,14 +76,14 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
               const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
               return (
                 <div key={stars} className="flex items-center gap-2 text-xs">
-                  <span className="w-7 font-bold text-slate-600 text-right">{stars}★</span>
-                  <div className="flex-1 h-2 rounded-full bg-slate-200 overflow-hidden">
+                  <span className="w-7 font-bold text-slate-600 dark:text-zinc-300 text-right">{stars}★</span>
+                  <div className="flex-1 h-2 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden">
                     <div
                       className="h-full bg-amber-400 rounded-full transition-all duration-500"
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
-                  <span className="w-8 text-[11px] font-medium text-slate-400 text-right">
+                  <span className="w-8 text-[11px] font-medium text-slate-400 dark:text-zinc-500 text-right">
                     {count}
                   </span>
                 </div>
@@ -95,12 +95,12 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
 
       {/* Review Cards List */}
       {totalReviews === 0 ? (
-        <div className="text-center py-10 px-4 bg-slate-50/60 rounded-3xl border border-dashed border-slate-200">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+        <div className="text-center py-10 px-4 bg-slate-50/60 dark:bg-[#09090B] rounded-3xl border border-dashed border-slate-200">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-400 dark:text-zinc-500 mb-3">
             <MessageSquare className="w-6 h-6" />
           </div>
-          <h4 className="text-sm font-bold text-[#0A1931]">{emptyTitle}</h4>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+          <h4 className="text-sm font-bold text-[#0A1931] dark:text-white">{emptyTitle}</h4>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto mt-1">
             {emptySubtitle}
           </p>
         </div>
@@ -118,11 +118,11 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
             return (
               <div
                 key={rating.id}
-                className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow space-y-2.5"
+                className="bg-white dark:bg-[#09090B] rounded-2xl p-5 border border-slate-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow space-y-2.5"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-700 overflow-hidden border border-slate-200">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-slate-700 dark:text-zinc-300 overflow-hidden border border-slate-200">
                       {rating.reviewerAvatar ? (
                         <img
                           src={rating.reviewerAvatar}
@@ -135,7 +135,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-bold text-[#0A1931]">
+                        <span className="text-sm font-bold text-[#0A1931] dark:text-white">
                           {rating.reviewerName || 'Verified Employer / Worker'}
                         </span>
                         <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -143,7 +143,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
                           Verified
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                         {rating.jobTitle ? `${rating.jobTitle} • ` : ''}{dateStr}
                       </p>
                     </div>
@@ -157,7 +157,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
                 </div>
 
                 {rating.comment ? (
-                  <p className="text-xs text-slate-700 leading-relaxed pl-13">
+                  <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed pl-13">
                     {rating.comment}
                   </p>
                 ) : null}

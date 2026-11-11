@@ -184,7 +184,7 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
 
       {/* Recording in Progress */}
       {isRecording && (
-        <div className="flex items-center justify-between bg-white border border-rose-200 rounded-xl p-3 shadow-xs">
+        <div className="flex items-center justify-between bg-white dark:bg-[#121215] border border-rose-200 dark:border-rose-900/50 rounded-xl p-3 shadow-xs">
           <div className="flex items-center gap-3">
             <span className="relative flex h-3.5 w-3.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
@@ -208,7 +208,7 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
 
       {/* Audio Recorded Preview */}
       {!isRecording && audioUrl && (
-        <div className="flex items-center justify-between bg-white border border-sky-200 rounded-xl p-3 shadow-xs">
+        <div className="flex items-center justify-between bg-white dark:bg-[#121215] border border-sky-200 dark:border-sky-900/50 rounded-xl p-3 shadow-xs">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -225,7 +225,7 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
               )}
             </button>
             <div>
-              <p className="text-xs font-bold text-slate-700">
+              <p className="text-xs font-bold text-slate-700 dark:text-zinc-200">
                 {isUploading ? "Uploading audio note..." : "Your voice note is ready"}
               </p>
               <p className="text-[11px] text-slate-400 font-mono">
@@ -251,7 +251,7 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
           <button
             type="button"
             onClick={startRecording}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white hover:bg-sky-50 border border-sky-300 text-sky-700 font-bold text-xs rounded-xl shadow-xs transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white dark:bg-[#121215] hover:bg-sky-50 dark:hover:bg-zinc-800 border border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-300 font-bold text-xs rounded-xl shadow-xs transition-all"
           >
             <Mic className="w-4 h-4 text-sky-600" />
             <span>Tap to Record Voice Intro (Optional)</span>

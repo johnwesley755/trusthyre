@@ -1069,7 +1069,7 @@ export const SettingsPage: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       <div className="p-3.5 bg-slate-50 dark:bg-[#121215] rounded-2xl border border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                         <span className="text-slate-500 dark:text-zinc-400 font-medium">Current Device:</span>
-                        <span className="font-bold text-slate-800 text-[11px] flex items-center gap-1.5">
+                        <span className="font-bold text-slate-800 dark:text-white text-[11px] flex items-center gap-1.5">
                           <Laptop className="w-3.5 h-3.5 text-slate-400" />
                           Web Browser (Current)
                         </span>
@@ -1350,7 +1350,7 @@ export const SettingsPage: React.FC = () => {
                               <p className={`text-xs font-bold ${isSelected ? 'text-[#0f2f63] dark:text-[#38BDF8]' : 'text-[#0A1931] dark:text-zinc-200'}`}>
                                 {lang.name}
                               </p>
-                              <p className="text-xs font-black text-slate-800">{lang.native}</p>
+                              <p className="text-xs font-black text-slate-800 dark:text-zinc-100">{lang.native}</p>
                               <p className="text-[10px] text-slate-400 font-medium">{lang.region}</p>
                             </div>
                             {isSelected ? (

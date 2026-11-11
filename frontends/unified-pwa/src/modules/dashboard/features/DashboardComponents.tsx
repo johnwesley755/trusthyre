@@ -1,4 +1,4 @@
-import { Loader2, Briefcase, Users, Video, Award, Bell, TrendingUp, CheckCircle2, Star, ArrowUpRight, ChevronRight, ShieldCheck } from 'lucide-react';
+﻿import { Loader2, Briefcase, Users, Video, Award, Bell, TrendingUp, CheckCircle2, Star, ArrowUpRight, ChevronRight, ShieldCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { jobService } from '../../../services/job.service';
 import { applicationService } from '../../../services/application.service';
@@ -28,7 +28,7 @@ export const StatsGrid = () => {
             label: 'Applicants', 
             value: stats?.totalApplicants || 0, 
             trend: 'Dispatch ready', 
-            trendColor: 'text-slate-600 bg-slate-100',
+            trendColor: 'text-slate-600 dark:text-zinc-400 bg-slate-100',
             icon: <Users className="w-5 h-5 text-indigo-600" />,
             bg: 'bg-indigo-50'
         },
@@ -61,11 +61,11 @@ export const StatsGrid = () => {
     return (
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 mb-8">
             {statsData.map((stat) => (
-                <div key={stat.label} className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md hover:border-blue-200 transition-all group">
+                <div key={stat.label} className="bg-white dark:bg-[#121215] p-5 rounded-2xl shadow-xs border border-slate-200 dark:border-zinc-800/80 flex flex-col justify-between hover:shadow-md hover:border-blue-200 dark:hover:border-zinc-700 transition-all group">
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{stat.label}</p>
-                            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{stat.value}</h3>
+                            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{stat.value}</h3>
                         </div>
                         <div className={`p-2.5 rounded-xl ${stat.bg} transition-colors`}>
                             {stat.icon}
@@ -104,7 +104,7 @@ export const ApplicationsTable = () => {
     if (isLoading) return <AppLoader variant="page" message="Loading applicant records..." />;
 
     if (isError) return (
-        <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 shadow-xs">
+        <div className="text-center py-20 bg-white dark:bg-[#09090B] border border-slate-200 dark:border-zinc-800 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-xs">
             <h4 className="text-lg font-bold text-slate-800 mb-1">Couldn't load applicants</h4>
             <p className="text-slate-400 text-xs max-w-xl mx-auto">
                 {String((error as any)?.response?.data?.message || (error as any)?.message || 'Request failed')}
@@ -113,7 +113,7 @@ export const ApplicationsTable = () => {
     );
 
     if (!applications?.length) return (
-        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-200 space-y-3">
+        <div className="text-center py-20 bg-white dark:bg-[#09090B] border border-slate-200 dark:border-zinc-800 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800 space-y-3">
             <Users className="w-10 h-10 text-slate-300 mx-auto" />
             <h4 className="text-base font-bold text-slate-800">No Applications Received Yet</h4>
             <p className="text-xs text-slate-400">Post a job or use Direct Hire to hire verified workers.</p>
@@ -128,11 +128,11 @@ export const ApplicationsTable = () => {
                     View All Applicants <ChevronRight className="w-3.5 h-3.5" />
                 </button>
             </div>
-            <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
+            <div className="bg-white dark:bg-[#09090B] border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xs border border-slate-200 dark:border-zinc-800/80 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100">
+                            <tr className="bg-slate-50 dark:bg-[#121215] border-b border-slate-100">
                                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Candidate</th>
                                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Position</th>
                                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Tier</th>
@@ -159,13 +159,13 @@ export const ApplicationsTable = () => {
                                                     statusOnline={true}
                                                 />
                                                 <div>
-                                                    <p className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">{worker?.fullName || 'Candidate'}</p>
+                                                    <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight">{worker?.fullName || 'Candidate'}</p>
                                                     <p className="text-[10px] text-slate-400 font-medium">Applied {new Date(app.appliedAt).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-5 py-4">
-                                            <p className="text-xs font-semibold text-slate-700">{jobsById.get(app.jobId)?.title || 'Trade Role'}</p>
+                                            <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">{jobsById.get(app.jobId)?.title || 'Trade Role'}</p>
                                         </td>
                                         <td className="px-5 py-4">
                                             <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-50 text-[#0066FF] border border-blue-200">

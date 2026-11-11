@@ -157,17 +157,17 @@ export const MobileNav = ({ onMenuClick }: { onMenuClick: () => void }) => {
   const navigate = useNavigate();
 
   return (
-    <header className="md:hidden fixed top-0 w-full z-40 bg-[#F8FAFC]/90 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.05)] border-b border-[#e2e8f0]">
+    <header className="md:hidden fixed top-0 w-full z-40 bg-[#F8FAFC] dark:bg-[#121215]/90 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.05)] border-b border-[#e2e8f0]">
       <div className="flex justify-between items-center px-6 py-4 w-full">
         <div className="flex items-center gap-4">
           <button
             onClick={onMenuClick}
             className="active:scale-95 duration-200 transition-transform w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5"
           >
-            <span className="material-symbols-outlined text-[#0A1931] text-2xl">menu</span>
+            <span className="material-symbols-outlined text-[#0A1931] dark:text-white text-2xl">menu</span>
           </button>
           <h1
-            className="text-xl font-black tracking-tight text-[#0A1931] cursor-pointer"
+            className="text-xl font-black tracking-tight text-[#0A1931] dark:text-white cursor-pointer"
             onClick={() => navigate('/')}
           >
             TrustHyre

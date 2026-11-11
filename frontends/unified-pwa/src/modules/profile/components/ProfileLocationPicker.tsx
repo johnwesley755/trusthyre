@@ -97,7 +97,7 @@ export function ProfileLocationPicker({ onLocationSelect, initialPos }: ProfileL
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
       <div className="flex justify-between items-center mb-2">
-        <label className="text-[10px] font-black uppercase tracking-widest text-[#0A1931]/40 flex items-center gap-2">
+        <label className="text-[10px] font-black uppercase tracking-widest text-[#0A1931] dark:text-white/40 flex items-center gap-2">
           <MapPin className="w-3.5 h-3.5 text-[#FACD15]" />
           Precise GPS Base
         </label>
@@ -105,7 +105,7 @@ export function ProfileLocationPicker({ onLocationSelect, initialPos }: ProfileL
           type="button"
           onClick={handleDetect}
           disabled={isDetecting}
-          className="flex items-center gap-2 bg-[#FACD15] text-[#0A1931] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+          className="flex items-center gap-2 bg-[#FACD15] text-[#0A1931] dark:text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
         >
           {isDetecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Navigation className="w-3 h-3" />}
           Detect Location
@@ -132,13 +132,13 @@ export function ProfileLocationPicker({ onLocationSelect, initialPos }: ProfileL
         {isDetecting && (
             <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] z-[1001] flex items-center justify-center">
                 <div className="bg-white p-4 rounded-3xl shadow-2xl flex items-center gap-3 border border-[#0A1931]/5">
-                    <Loader2 className="w-5 h-5 text-[#0A1931] animate-spin" />
-                    <span className="text-[10px] font-black text-[#0A1931] uppercase tracking-widest">Pinpointing...</span>
+                    <Loader2 className="w-5 h-5 text-[#0A1931] dark:text-white animate-spin" />
+                    <span className="text-[10px] font-black text-[#0A1931] dark:text-white uppercase tracking-widest">Pinpointing...</span>
                 </div>
             </div>
         )}
       </div>
-      <p className="text-[10px] font-bold text-[#0A1931]/40 italic px-2 leading-tight">
+      <p className="text-[10px] font-bold text-[#0A1931] dark:text-white/40 italic px-2 leading-tight">
         Click on the map to drag the pin or use the detect button for high-precision GPS synchronization.
       </p>
     </div>

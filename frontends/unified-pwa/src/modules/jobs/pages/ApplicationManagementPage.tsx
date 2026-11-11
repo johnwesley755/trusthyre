@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { applicationService, type JobApplication } from '../../../services/application.service';
 import { jobService } from '../../../services/job.service';
@@ -326,7 +326,7 @@ export default function ApplicationManagementPage() {
 
                             <div className="text-right shrink-0">
                               <span className="font-bold text-sm text-emerald-700 dark:text-emerald-400">
-                                ₹{(job.budget || 0).toLocaleString('en-IN')}
+                                â‚¹{(job.budget || 0).toLocaleString('en-IN')}
                               </span>
                               <span className="block text-[10px] text-[#717784] dark:text-zinc-400">Direct Posting</span>
                             </div>
@@ -337,14 +337,14 @@ export default function ApplicationManagementPage() {
                               <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
                               <span>{job.location || job.city || 'Pan India'}</span>
                             </span>
-                            <span>•</span>
+                            <span>â€¢</span>
                             <span className="flex items-center gap-1">
                               <Clock className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-500" />
                               <span>{job.createdAt ? new Date(job.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recent'}</span>
                             </span>
                             {job.expiresAt && (
                               <>
-                                <span>•</span>
+                                <span>â€¢</span>
                                 <span className={`flex items-center gap-1 ${isExpired ? 'text-rose-700 dark:text-rose-400 font-semibold' : 'text-[#717784] dark:text-zinc-400'}`}>
                                   <CalendarClock className={`w-3.5 h-3.5 ${isExpired ? 'text-rose-600 dark:text-rose-400' : 'text-[#0f2f63] dark:text-sky-400'}`} />
                                   <span>
@@ -487,14 +487,14 @@ export default function ApplicationManagementPage() {
 
                         <div className="flex flex-wrap items-center gap-3 text-xs text-[#717784] dark:text-zinc-400">
                           <span className="font-semibold text-emerald-700 dark:text-emerald-400">
-                            ₹{(selectedJob?.budget || 0).toLocaleString('en-IN')} / month
+                            â‚¹{(selectedJob?.budget || 0).toLocaleString('en-IN')} / month
                           </span>
-                          <span>•</span>
+                          <span>â€¢</span>
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
                             <span>{selectedJob?.location || selectedJob?.city || 'Worksite'}</span>
                           </span>
-                          <span>•</span>
+                          <span>â€¢</span>
                           <span>
                             {(() => {
                               const exp = selectedJob?.experienceYearsRequired ?? (selectedJob as any)?.experience_years_required;
@@ -505,7 +505,7 @@ export default function ApplicationManagementPage() {
                           </span>
                           {selectedJob?.expiresAt && (
                             <>
-                              <span>•</span>
+                              <span>â€¢</span>
                               <span className={`flex items-center gap-1 font-semibold ${isSelectedJobExpired ? 'text-rose-700 dark:text-rose-400' : 'text-[#717784]'}`}>
                                 <CalendarClock className={`w-3.5 h-3.5 ${isSelectedJobExpired ? 'text-rose-600 dark:text-rose-400' : 'text-[#0f2f63] dark:text-sky-400'}`} />
                                 <span>
@@ -555,7 +555,7 @@ export default function ApplicationManagementPage() {
                         </div>
                         <div>
                           <h4 className="text-xs font-bold text-rose-950 dark:text-rose-200 uppercase tracking-wide">
-                            Job Requisition Closed • Auto-Expired
+                            Job Requisition Closed â€¢ Auto-Expired
                           </h4>
                           <p className="text-xs text-rose-800 dark:text-rose-300 mt-0.5">
                             This opening expired on {selectedJob?.expiresAt ? `${new Date(selectedJob.expiresAt).toLocaleDateString('en-IN', { dateStyle: 'medium' })} at ${new Date(selectedJob.expiresAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : 'the scheduled deadline'}. Applications from new workers are closed. You can review and process all existing applicants below.
@@ -615,7 +615,7 @@ export default function ApplicationManagementPage() {
             {/* Applicants List */}
             {selectedJobApplications.length === 0 ? (
               <div className="bg-[#f4f4f4] rounded-[1.75rem] p-10 border border-[#e6e8ec] text-center space-y-3">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto text-[#717784] border border-[#e6e8ec]">
+                <div className="w-12 h-12 bg-white dark:bg-[#121215] rounded-full flex items-center justify-center mx-auto text-[#717784] dark:text-zinc-400 border border-[#e6e8ec] dark:border-zinc-800">
                   <Briefcase className="w-6 h-6" />
                 </div>
                 <h3 className="text-base font-bold text-[#0a0a0a]">No Applicants in this Stage</h3>
@@ -675,12 +675,12 @@ export default function ApplicationManagementPage() {
 
                           <div className="flex flex-wrap items-center gap-2 text-xs text-[#717784] dark:text-zinc-400">
                             <span className="font-semibold text-[#0a0a0a] dark:text-zinc-200">{candidateRole}</span>
-                            <span>•</span>
+                            <span>â€¢</span>
                             <span className="flex items-center gap-1">
                               <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
                               <span>{worker?.city || worker?.location || 'Local Zone'}</span>
                             </span>
-                            <span>•</span>
+                            <span>â€¢</span>
                             <span>{worker?.experienceYears ? `${worker.experienceYears}+ Years Exp` : 'Entry Level'}</span>
                           </div>
 
@@ -692,7 +692,7 @@ export default function ApplicationManagementPage() {
 
                           {(app.voiceNoteUrl || (app as any).voice_note_url) && (
                             <div className="flex items-center gap-3 bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 rounded-xl p-2.5 max-w-md">
-                              <span className="text-base">🎙️</span>
+                              <span className="text-base">ðŸŽ™ï¸</span>
                               <div className="flex-1">
                                 <span className="text-[11px] font-bold text-sky-950 dark:text-sky-200 block">Candidate Voice Introduction</span>
                                 <audio 
@@ -708,7 +708,7 @@ export default function ApplicationManagementPage() {
 
                       {/* Action Buttons */}
                       <div className="flex flex-wrap items-center gap-2 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-[#e6e8ec] dark:border-zinc-800">
-                        {/* 💬 Quick WhatsApp Outreach / Call Modal */}
+                        {/* ðŸ’¬ Quick WhatsApp Outreach / Call Modal */}
                         <button
                           type="button"
                           onClick={() => {
@@ -829,7 +829,7 @@ export default function ApplicationManagementPage() {
         />
       )}
 
-      {/* 🚀 1-Tap WhatsApp Interview Outreach Modal */}
+      {/* ðŸš€ 1-Tap WhatsApp Interview Outreach Modal */}
       {isOutreachModalOpen && outreachCandidate && (
         <CandidateOutreachModal
           isOpen={isOutreachModalOpen}

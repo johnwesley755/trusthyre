@@ -50,10 +50,10 @@ export default function ExpertiseStep({ formData, setFormData, onNext, onBack }:
             <div className="hidden md:block mb-2">
                 <span className="font-headline text-[10px] font-bold text-[#FACD15] uppercase tracking-[0.3em]">Step Two</span>
             </div>
-            <h1 className="font-headline text-[3.5rem] font-bold text-[#0A1931] leading-[1.1] tracking-tight mb-4">
+            <h1 className="font-headline text-[3.5rem] font-bold text-[#0A1931] dark:text-white leading-[1.1] tracking-tight mb-4">
                 Expertise
             </h1>
-            <p className="text-[#0A1931]/80 text-lg max-w-lg leading-relaxed">
+            <p className="text-[#0A1931] dark:text-white/80 text-lg max-w-lg leading-relaxed">
                 Highlight your core tactical skills and market value for the Trust Hire ecosystem.
             </p>
         </div>
@@ -76,8 +76,8 @@ export default function ExpertiseStep({ formData, setFormData, onNext, onBack }:
                     </div>
 
                     {/* Regional Insights Card directly to the right of the image */}
-                    <section className="bg-white rounded-3xl p-6 shadow-[0_20px_40px_-10px_rgba(31,63,52,0.05)] border border-[#F8FAFC] w-full md:w-2/5">
-                        <p className="font-headline text-[8px] font-bold text-[#0A1931]/30 uppercase tracking-[0.3em] mb-4">Regional Insights</p>
+                    <section className="bg-white dark:bg-[#09090B] border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 shadow-[0_20px_40px_-10px_rgba(31,63,52,0.05)] border border-[#F8FAFC] w-full md:w-2/5">
+                        <p className="font-headline text-[8px] font-bold text-[#0A1931] dark:text-white/30 uppercase tracking-[0.3em] mb-4">Regional Insights</p>
                         <div className="aspect-square rounded-2xl bg-[#F8FAFC] relative overflow-hidden mb-6">
                             <img 
                                 alt="Regional Map" 
@@ -89,7 +89,7 @@ export default function ExpertiseStep({ formData, setFormData, onNext, onBack }:
                             </div>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-sm font-black font-headline text-[#0A1931]">South Mumbai</p>
+                            <p className="text-sm font-black font-headline text-[#0A1931] dark:text-white">South Mumbai</p>
                             <p className="text-[10px] font-bold text-[#FACD15] uppercase tracking-wider">High Demand Sector</p>
                         </div>
                     </section>
@@ -97,7 +97,7 @@ export default function ExpertiseStep({ formData, setFormData, onNext, onBack }:
 
                 {/* Professional Tier Card below Image + Map */}
                 <div className="bg-white rounded-[2rem] p-8 shadow-[0_20px_40px_-10px_rgba(31,63,52,0.05)] border border-[#F8FAFC]/50">
-                    <h2 className="font-headline text-xl font-bold mb-6 tracking-tight text-[#0A1931]">Professional Tier</h2>
+                    <h2 className="font-headline text-xl font-bold mb-6 tracking-tight text-[#0A1931] dark:text-white">Professional Tier</h2>
                     <div className="grid grid-cols-1 gap-4">
                         {[
                             { id: "Foundational", label: "Foundational", sub: "Certified core competency", icon: "shield_with_heart" },
@@ -108,14 +108,14 @@ export default function ExpertiseStep({ formData, setFormData, onNext, onBack }:
                             <div 
                                 key={tier.id}
                                 onClick={() => setFormData({...formData, level: tier.id})}
-                                className={`p-4 rounded-3xl border-2 transition-all cursor-pointer flex items-center justify-between group ${formData.level === tier.id ? "border-[#0066FF] bg-blue-50/50" : "border-slate-100 bg-slate-50/50 hover:border-[#0066FF]/40"}`}
+                                className={`p-4 rounded-3xl border-2 transition-all cursor-pointer flex items-center justify-between group ${formData.level === tier.id ? "border-[#0066FF] bg-blue-50/50" : "border-slate-100 bg-slate-50 dark:bg-[#121215]/50 hover:border-[#0066FF]/40"}`}
                             >
                                 <div className="flex items-center gap-4">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${formData.level === tier.id ? "bg-[#0066FF] text-white shadow-md shadow-blue-500/20" : "bg-slate-100 text-slate-400"}`}>
                                         <span className="material-symbols-outlined font-black">{tier.icon}</span>
                                     </div>
                                     <div>
-                                        <p className={`font-bold text-sm transition-colors ${formData.level === tier.id ? "text-[#0A1931]" : "text-slate-500"}`}>{tier.label}</p>
+                                        <p className={`font-bold text-sm transition-colors ${formData.level === tier.id ? "text-[#0A1931] dark:text-white" : "text-slate-500"}`}>{tier.label}</p>
                                         <p className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${formData.level === tier.id ? "text-slate-500" : "text-slate-400"}`}>{tier.sub}</p>
                                     </div>
                                 </div>
@@ -132,7 +132,7 @@ export default function ExpertiseStep({ formData, setFormData, onNext, onBack }:
             <div className="lg:col-span-12 xl:col-span-7 space-y-8">
                 {/* Skill Matrix Card */}
                 <section className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_40px_-10px_rgba(31,63,52,0.05)] border border-[#F8FAFC]/50">
-                    <h2 className="font-headline text-xl font-bold mb-10 flex items-center gap-4 text-[#0A1931]">
+                    <h2 className="font-headline text-xl font-bold mb-10 flex items-center gap-4 text-[#0A1931] dark:text-white">
                         <span className="w-10 h-10 rounded-full bg-[#FACD15]/10 flex items-center justify-center">
                             <span className="material-symbols-outlined text-[#FACD15] font-black" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
                         </span>
@@ -146,17 +146,17 @@ export default function ExpertiseStep({ formData, setFormData, onNext, onBack }:
                                 className={`px-10 py-5 rounded-3xl font-bold font-headline text-[10px] tracking-widest transition-all ${
                                     formData.skills.includes(skill)
                                         ? "bg-[#FACD15] text-[#002117] shadow-lg scale-105"
-                                        : "bg-[#F8FAFC] text-[#0A1931]/30 hover:bg-[#e2e8f0]"
+                                        : "bg-[#F8FAFC] text-[#0A1931] dark:text-white/30 hover:bg-[#e2e8f0]"
                                 }`}
                             >
                                 {skill}
                             </button>
                         ))}
                         {ADDITIONAL_SKILLS.map(skill => (
-                            <button key={skill} className="bg-[#F8FAFC] text-[#0A1931]/30 px-10 py-5 rounded-3xl font-bold font-headline text-[10px] tracking-widest hover:bg-[#e2e8f0] transition-all">{skill}</button>
+                            <button key={skill} className="bg-[#F8FAFC] text-[#0A1931] dark:text-white/30 px-10 py-5 rounded-3xl font-bold font-headline text-[10px] tracking-widest hover:bg-[#e2e8f0] transition-all">{skill}</button>
                         ))}
                         
-                        <button className="border-2 border-dashed border-[#C1C8C3]/50 hover:border-[#FACD15] transition-colors px-10 py-5 rounded-3xl font-bold font-headline text-[10px] tracking-widest text-[#0A1931]/40 flex items-center gap-2">
+                        <button className="border-2 border-dashed border-[#C1C8C3]/50 hover:border-[#FACD15] transition-colors px-10 py-5 rounded-3xl font-bold font-headline text-[10px] tracking-widest text-[#0A1931] dark:text-white/40 flex items-center gap-2">
                             ADD SKILL +
                         </button>
                     </div>
@@ -166,7 +166,7 @@ export default function ExpertiseStep({ formData, setFormData, onNext, onBack }:
                 <div className="flex justify-between items-center pt-8">
                     <button 
                         onClick={onBack}
-                        className="font-headline font-bold text-xs uppercase tracking-[0.2em] text-[#0A1931]/40 hover:text-[#0A1931] transition-colors"
+                        className="font-headline font-bold text-xs uppercase tracking-[0.2em] text-[#0A1931] dark:text-white/40 hover:text-[#0A1931] dark:text-white transition-colors"
                     >
                         Back to Profile
                     </button>
