@@ -486,7 +486,7 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
+        <div className="p-4 sm:p-5 bg-slate-50 dark:bg-[#16161A] border-t border-slate-200 dark:border-zinc-800 flex items-center justify-between gap-3 shrink-0">
           <button
             type="button"
             onClick={() => {

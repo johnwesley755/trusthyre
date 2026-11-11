@@ -148,7 +148,7 @@ export const InterviewPrepKitModal: React.FC<InterviewPrepKitModalProps> = ({
       }
     >
       {/* Readiness Meter & Calling Window */}
-      <div className="px-5 py-3 bg-[#F8FAFC] border-b border-[#e6e8ec] flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div className="px-5 py-3 bg-[#F8FAFC] dark:bg-[#121215] border-b border-[#e6e8ec] dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="font-bold text-[#0A1931] dark:text-white">
             Document Readiness:
@@ -156,8 +156,8 @@ export const InterviewPrepKitModal: React.FC<InterviewPrepKitModalProps> = ({
           <span
             className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] ${
               isReady
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                : 'bg-amber-100 text-amber-900 border border-amber-300'
+                ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/60'
+                : 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60'
             }`}
           >
             {packedMandatoryCount}/{mandatoryCount} Required Ready

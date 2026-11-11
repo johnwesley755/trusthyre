@@ -54,7 +54,7 @@ export const SkillTestsPage = () => {
         </div>
 
         {/* 1. Header Hero Card */}
-        <div className="bg-[#f4f4f4] rounded-[2rem] p-6 sm:p-8 border border-[#e6e8ec] dark:border-zinc-800">
+        <div className="bg-[#f4f4f4] dark:bg-[#09090B] rounded-[2rem] p-6 sm:p-8 border border-[#e6e8ec] dark:border-zinc-800">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export const SkillTestsPage = () => {
             <AppLoader variant="page" message="Loading technical skill assessments..." />
           </div>
         ) : !tests || tests.length === 0 ? (
-          <div className="bg-[#f4f4f4] rounded-[1.75rem] p-10 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-3">
+          <div className="bg-[#f4f4f4] dark:bg-[#09090B] rounded-[1.75rem] p-10 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-3">
             <div className="w-12 h-12 bg-white dark:bg-[#121215] rounded-full flex items-center justify-center mx-auto text-[#717784] dark:text-zinc-400 border border-[#e6e8ec] dark:border-zinc-800">
               <Award className="w-6 h-6" />
             </div>

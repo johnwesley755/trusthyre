@@ -631,7 +631,7 @@ export const WorkerSearchPage = () => {
 
               <Link
                 to="/post-job"
-                className="relative z-10 w-full py-2.5 px-4 bg-white text-[#0f2f63] hover:bg-slate-100 rounded-full font-medium uppercase text-xs flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer"
+                className="relative z-10 w-full py-2.5 px-4 bg-white dark:bg-[#0066FF] text-[#0f2f63] dark:text-white hover:bg-slate-100 dark:hover:bg-[#0052cc] rounded-full font-medium uppercase text-xs flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4 text-[#0f2f63]" />
                 <span>{t("Post a Job Opening", "Post a Job Opening")}</span>
@@ -751,7 +751,7 @@ export const WorkerSearchPage = () => {
                   clearFilters();
                   setIsMobileFilterOpen(false);
                 }}
-                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-medium uppercase transition-colors cursor-pointer"
+                className="flex-1 py-3 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-full text-xs font-medium uppercase transition-colors cursor-pointer"
               >
                 Reset
               </button>

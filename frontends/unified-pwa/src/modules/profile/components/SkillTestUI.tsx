@@ -71,7 +71,7 @@ export const SkillTestUI: React.FC<SkillTestUIProps> = ({ testId, onClose, onCom
   if (testError) {
     return (
       <div className="fixed inset-0 bg-brand-secondary/40 backdrop-blur-3xl z-[100] p-6 flex items-center justify-center">
-        <div className="bg-white p-12 rounded-[3rem] text-center space-y-6 max-w-md shadow-2xl border border-brand-border">
+        <div className="bg-white dark:bg-[#09090B] p-12 rounded-[3rem] text-center space-y-6 max-w-md shadow-2xl border border-brand-border dark:border-zinc-800 text-[#0a0a0a] dark:text-white">
           <AlertCircle className="w-20 h-20 text-rose-500 mx-auto" />
           <h2 className="text-3xl font-bold tracking-tighter text-brand-secondary">{testError.message}</h2>
           <button onClick={onClose} className="w-full bg-brand-secondary text-brand-primary py-4 rounded-2xl font-bold uppercase tracking-widest text-xs">Return to profile</button>
