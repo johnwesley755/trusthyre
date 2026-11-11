@@ -39,7 +39,7 @@ export const SkillTestsPage = () => {
   const categories = ['All', 'Electrical', 'Plumbing', 'Logistics', 'Cooking', 'Security'];
 
   return (
-    <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
+    <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-white">
       <main className="max-w-6xl mx-auto space-y-6 pb-20">
         
         {/* Navigation Bar */}
@@ -54,7 +54,7 @@ export const SkillTestsPage = () => {
         </div>
 
         {/* 1. Header Hero Card */}
-        <div className="bg-[#f4f4f4] rounded-[2rem] p-6 sm:p-8 border border-[#e6e8ec]">
+        <div className="bg-[#f4f4f4] rounded-[2rem] p-6 sm:p-8 border border-[#e6e8ec] dark:border-zinc-800">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -66,7 +66,7 @@ export const SkillTestsPage = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-[#0a0a0a]">
                 Trade Certification Tests
               </h1>
-              <p className="text-xs text-[#717784] font-medium leading-relaxed max-w-xl">
+              <p className="text-xs text-[#717784] dark:text-zinc-400 font-medium leading-relaxed max-w-xl">
                 Take verified trade skill assessments to earn certification badges and increase your profile level for premium contracts.
               </p>
             </div>
@@ -84,7 +84,7 @@ export const SkillTestsPage = () => {
                 className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                   isSelected
                     ? 'bg-[#0f2f63] text-white shadow-xs'
-                    : 'bg-white text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f4f4] border border-[#e6e8ec]'
+                    : 'bg-white dark:bg-[#121215] text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] hover:bg-[#f4f4f4] border border-[#e6e8ec] dark:border-zinc-800'
                 }`}
               >
                 {cat}
@@ -99,12 +99,12 @@ export const SkillTestsPage = () => {
             <AppLoader variant="page" message="Loading technical skill assessments..." />
           </div>
         ) : !tests || tests.length === 0 ? (
-          <div className="bg-[#f4f4f4] rounded-[1.75rem] p-10 border border-[#e6e8ec] text-center space-y-3">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto text-[#717784] border border-[#e6e8ec]">
+          <div className="bg-[#f4f4f4] rounded-[1.75rem] p-10 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-3">
+            <div className="w-12 h-12 bg-white dark:bg-[#121215] rounded-full flex items-center justify-center mx-auto text-[#717784] dark:text-zinc-400 border border-[#e6e8ec] dark:border-zinc-800">
               <Award className="w-6 h-6" />
             </div>
             <h3 className="text-base font-bold text-[#0a0a0a]">No Tests Available</h3>
-            <p className="text-xs text-[#717784] max-w-sm mx-auto">
+            <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-sm mx-auto">
               No skill assessments currently scheduled for this trade category. Please check back soon or try another category.
             </p>
           </div>
@@ -120,7 +120,7 @@ export const SkillTestsPage = () => {
                 <div
                   key={test.id}
                   onClick={() => setActiveTest(test)}
-                  className="bg-white rounded-2xl p-5 border border-[#e6e8ec] hover:border-[#0f2f63]/40 shadow-2xs hover:shadow-sm transition-all group cursor-pointer flex flex-col justify-between space-y-4"
+                  className="bg-white dark:bg-[#09090B] border border-slate-200 dark:border-zinc-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/40 shadow-2xs hover:shadow-sm transition-all group cursor-pointer flex flex-col justify-between space-y-4"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
@@ -132,7 +132,7 @@ export const SkillTestsPage = () => {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs text-[#717784]">
+                    <div className="flex items-center gap-3 text-xs text-[#717784] dark:text-zinc-400">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5 text-[#0f2f63]" />
                         <span className="tabular-nums font-medium">{test.durationMinutes} min</span>
@@ -145,7 +145,7 @@ export const SkillTestsPage = () => {
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-[#e6e8ec] flex items-center justify-between text-xs font-semibold text-[#0f2f63]">
+                  <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between text-xs font-semibold text-[#0f2f63]">
                     <span>Start Assessment</span>
                     <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </div>

@@ -167,13 +167,13 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
     <div className="w-full max-w-4xl mx-auto font-sans">
       {/* Action Header Bar (No-Print) */}
       {showActions && (
-        <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+        <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 bg-white p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold shrink-0">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900">Verified Candidate Resume</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">Verified Candidate Resume</p>
               <p className="text-xs text-slate-500">Standard Executive ATS Format • Clean Printable Document</p>
             </div>
           </div>
@@ -181,10 +181,10 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
             <button
               type="button"
               onClick={handleDirectPrint}
-              className="px-3.5 py-2 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-300 shadow-xs"
+              className="px-3.5 py-2 bg-white hover:bg-slate-50 dark:bg-[#121215] active:bg-slate-100 text-slate-700 dark:text-zinc-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-300 shadow-xs"
               title="Print standard A4 copy"
             >
-              <Printer className="w-3.5 h-3.5 text-slate-600" />
+              <Printer className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400" />
               <span>Print Resume</span>
             </button>
             <button
@@ -212,7 +212,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
       {/* Main Executive Resume Sheet (Standard ATS Layout) */}
       <div 
         id="printable-candidate-cv" 
-        className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-lg p-6 sm:p-12 text-[#111827] relative print:border-none print:shadow-none print:p-0"
+        className="bg-white dark:bg-[#09090B] border border-slate-200 dark:border-zinc-800 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-lg p-6 sm:p-12 text-[#111827] relative print:border-none print:shadow-none print:p-0"
       >
         {/* RESUME HEADER */}
         <header className="flex flex-col sm:flex-row items-start justify-between gap-5 pb-5 border-b-2 border-[#111827]">
@@ -231,7 +231,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
             <div className="flex flex-wrap items-center gap-y-1 gap-x-2 text-xs text-[#4B5563] mt-2.5 font-medium">
               {data.phoneNumber && (
                 <div className="flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-slate-700 shrink-0" />
+                  <Phone className="w-3.5 h-3.5 text-slate-700 dark:text-zinc-300 shrink-0" />
                   <span>+91 {data.phoneNumber.slice(-10)}</span>
                 </div>
               )}
@@ -242,7 +242,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
 
               {data.email && (
                 <div className="flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-slate-700 shrink-0" />
+                  <Mail className="w-3.5 h-3.5 text-slate-700 dark:text-zinc-300 shrink-0" />
                   <span>{data.email}</span>
                 </div>
               )}
@@ -253,7 +253,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
 
               {locationString && (
                 <div className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-700 shrink-0" />
+                  <MapPin className="w-3.5 h-3.5 text-slate-700 dark:text-zinc-300 shrink-0" />
                   <span>{locationString}</span>
                 </div>
               )}
@@ -277,7 +277,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
                 src={data.profileImageUrl} 
                 alt={data.fullName}
                 onError={() => setImageError(true)}
-                className="w-20 h-20 rounded-md object-cover border border-slate-300 shadow-2xs bg-slate-50"
+                className="w-20 h-20 rounded-md object-cover border border-slate-300 shadow-2xs bg-slate-50 dark:bg-[#121215]"
               />
             </div>
           )}
@@ -307,7 +307,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-6 text-xs text-[#374151] font-medium">
                 {skillsList.map((skill, idx) => (
                   <div key={idx} className="flex items-start gap-2">
-                    <span className="text-slate-900 font-bold leading-none mt-0.5">•</span>
+                    <span className="text-slate-900 dark:text-white font-bold leading-none mt-0.5">•</span>
                     <span className="leading-tight">{skill}</span>
                   </div>
                 ))}
@@ -325,7 +325,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
                 {data.preferredRoles.map((role, idx) => (
                   <span 
                     key={idx}
-                    className="px-2.5 py-1 bg-slate-50 border border-slate-300 rounded font-medium text-slate-800"
+                    className="px-2.5 py-1 bg-slate-50 dark:bg-[#121215] border border-slate-300 rounded font-medium text-slate-800"
                   >
                     {role}
                   </span>
@@ -351,7 +351,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
                       : 'Entry-Level / Fresher — Trained & Prepared for Placement'}
                   </p>
                 </div>
-                <span className="text-[11px] font-semibold text-slate-600 sm:text-right">
+                <span className="text-[11px] font-semibold text-slate-600 dark:text-zinc-400 sm:text-right">
                   TrustHyre Verified Profile
                 </span>
               </div>
@@ -379,11 +379,11 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
                 )}
                 {data.schoolMedium && (
                   <p className="text-[11px] text-slate-500">
-                    Medium of Instruction: <span className="font-semibold text-slate-700">{data.schoolMedium}</span>
+                    Medium of Instruction: <span className="font-semibold text-slate-700 dark:text-zinc-300">{data.schoolMedium}</span>
                   </p>
                 )}
               </div>
-              <div className="text-[11px] font-semibold text-slate-600 sm:text-right">
+              <div className="text-[11px] font-semibold text-slate-600 dark:text-zinc-400 sm:text-right">
                 {data.isPursuingEducation ? 'In Progress' : 'Completed'}
               </div>
             </div>
@@ -396,14 +396,14 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#374151]">
               <div>
-                <span className="font-semibold text-slate-900 block">English Language Proficiency</span>
-                <span className="text-slate-600 mt-0.5 block">{getEnglishLabel(data.englishProficiency)}</span>
+                <span className="font-semibold text-slate-900 dark:text-white block">English Language Proficiency</span>
+                <span className="text-slate-600 dark:text-zinc-400 mt-0.5 block">{getEnglishLabel(data.englishProficiency)}</span>
               </div>
 
               {data.languagesKnown && data.languagesKnown.length > 0 && (
                 <div>
-                  <span className="font-semibold text-slate-900 block">Additional Languages Known</span>
-                  <span className="text-slate-600 mt-0.5 block">{data.languagesKnown.join(', ')}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white block">Additional Languages Known</span>
+                  <span className="text-slate-600 dark:text-zinc-400 mt-0.5 block">{data.languagesKnown.join(', ')}</span>
                 </div>
               )}
             </div>
@@ -416,21 +416,21 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[#374151]">
               <div>
-                <span className="font-semibold text-slate-900 block">Base Location</span>
-                <span className="text-slate-600 mt-0.5 block">{locationString}</span>
+                <span className="font-semibold text-slate-900 dark:text-white block">Base Location</span>
+                <span className="text-slate-600 dark:text-zinc-400 mt-0.5 block">{locationString}</span>
               </div>
 
               <div>
-                <span className="font-semibold text-slate-900 block">Relocation Readiness</span>
-                <span className="text-slate-600 mt-0.5 block">
+                <span className="font-semibold text-slate-900 dark:text-white block">Relocation Readiness</span>
+                <span className="text-slate-600 dark:text-zinc-400 mt-0.5 block">
                   {data.willingToRelocate ? 'Open to Relocation' : 'Local City Commute Only'}
                 </span>
               </div>
 
               {data.preferredCities && data.preferredCities.length > 0 && (
                 <div>
-                  <span className="font-semibold text-slate-900 block">Preferred Cities</span>
-                  <span className="text-slate-600 mt-0.5 block">{data.preferredCities.join(', ')}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white block">Preferred Cities</span>
+                  <span className="text-slate-600 dark:text-zinc-400 mt-0.5 block">{data.preferredCities.join(', ')}</span>
                 </div>
               )}
             </div>
@@ -440,7 +440,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
         {/* RESUME FOOTER */}
         <footer className="mt-10 pt-3 border-t border-slate-300 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 font-medium">
           <span>TrustHyre Candidate Network • Candidate Identity & Record Verified</span>
-          <span className="mt-1 sm:mt-0 font-semibold text-slate-600">trusthyre.com/candidate</span>
+          <span className="mt-1 sm:mt-0 font-semibold text-slate-600 dark:text-zinc-400">trusthyre.com/candidate</span>
         </footer>
       </div>
 

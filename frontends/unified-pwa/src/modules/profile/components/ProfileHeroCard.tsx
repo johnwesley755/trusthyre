@@ -31,7 +31,7 @@ export const ProfileHeroCard: React.FC<ProfileHeroCardProps> = ({
     <motion.div 
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200/80 relative overflow-hidden group"
+      className="bg-white dark:bg-[#09090B] border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200 dark:border-zinc-800/80 relative overflow-hidden group"
     >
       <div className="absolute top-0 right-0 w-64 h-64 bg-[#0066FF]/5 rounded-bl-full pointer-events-none" />
       
@@ -80,7 +80,7 @@ export const ProfileHeroCard: React.FC<ProfileHeroCardProps> = ({
 
         <div className="flex-1 text-center md:text-left space-y-3">
           <div className="space-y-1">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0A1931] tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0A1931] dark:text-white tracking-tight">
               {profile?.fullName || `${user?.first_name || ''} ${user?.last_name || ''}`.trim()}
             </h2>
             <div className="flex items-center justify-center md:justify-start gap-2.5 mt-1">
@@ -118,14 +118,14 @@ export const ProfileHeroCard: React.FC<ProfileHeroCardProps> = ({
                   </button>
                   <button 
                     onClick={useCurrentLocation}
-                    className="p-1.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-all cursor-pointer"
+                    className="p-1.5 bg-slate-100 text-slate-700 dark:text-zinc-300 rounded-xl hover:bg-slate-200 transition-all cursor-pointer"
                     title="Use Current GPS Location"
                   >
                     <Navigation className="w-4 h-4 text-[#0066FF]" />
                   </button>
                   <button 
                     onClick={() => setIsEditingLocation(false)}
-                    className="px-2.5 py-1.5 text-xs text-slate-500 font-bold hover:text-slate-700"
+                    className="px-2.5 py-1.5 text-xs text-slate-500 font-bold hover:text-slate-700 dark:text-zinc-300"
                   >
                     Cancel
                   </button>

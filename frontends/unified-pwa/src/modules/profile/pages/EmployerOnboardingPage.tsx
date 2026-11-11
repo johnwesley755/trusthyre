@@ -203,10 +203,10 @@ export default function EmployerOnboardingPage() {
   const progressPercentage = Math.round((step / 3) * 100);
 
   return (
-    <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] selection:bg-[#2563c9] selection:text-white flex flex-col">
+    <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] selection:bg-[#2563c9] selection:text-white flex flex-col">
       
       {/* Framed Full-Screen Canvas matching Landing & Auth Architecture */}
-      <div className="relative w-full flex-1 min-h-[calc(100svh-1rem)] sm:min-h-[calc(100svh-1.5rem)] lg:h-[calc(100svh-1.5rem)] rounded-2xl sm:rounded-[2rem] overflow-hidden border border-[#e6e8ec] bg-white shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all">
+      <div className="relative w-full flex-1 min-h-[calc(100svh-1rem)] sm:min-h-[calc(100svh-1.5rem)] lg:h-[calc(100svh-1.5rem)] rounded-2xl sm:rounded-[2rem] overflow-hidden border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#09090B] shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all">
         
         {/* Left Side: Full-Bleed Brand Visual Hero with Sector Photography */}
         <div className="lg:col-span-5 xl:col-span-5 hidden lg:block h-full">
@@ -218,7 +218,7 @@ export default function EmployerOnboardingPage() {
         </div>
 
         {/* Right Side: Clean Modern Form with Independent Smooth Scroll */}
-        <div className="lg:col-span-7 xl:col-span-7 p-4 sm:p-8 lg:p-10 flex flex-col justify-between relative bg-white h-full overflow-y-auto">
+        <div className="lg:col-span-7 xl:col-span-7 p-4 sm:p-8 lg:p-10 flex flex-col justify-between relative bg-white dark:bg-[#09090B] text-slate-900 dark:text-white h-full overflow-y-auto">
           
           {/* Mobile Banner with Sector Photography & Logo (Visible only on < lg screens) */}
           <div className="block lg:hidden mb-4">
@@ -238,30 +238,30 @@ export default function EmployerOnboardingPage() {
                   <button
                     type="button"
                     onClick={prevStep}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#717784] hover:text-[#0A1931] px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#717784] dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     <span>Back</span>
                   </button>
                 )}
                 <div>
-                  <h1 className="text-sm font-bold text-[#0A1931] leading-tight">
+                  <h1 className="text-sm font-bold text-[#0A1931] dark:text-white leading-tight">
                     {STEP_TITLES[step]}
                   </h1>
-                  <p className="text-[11px] text-[#717784] font-medium hidden sm:block">
+                  <p className="text-[11px] text-[#717784] dark:text-zinc-400 font-medium hidden sm:block">
                     Step {step} of 3 • Enterprise Onboarding & Verification
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-xs font-bold text-[#0f2f63]">
+                <span className="text-xs font-bold text-[#0f2f63] dark:text-sky-400">
                   Step {step} of 3
                 </span>
                 <button
                   type="button"
                   onClick={() => logout()}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#717784] hover:text-[#0A1931] px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#717784] dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Sign out</span>
@@ -270,17 +270,17 @@ export default function EmployerOnboardingPage() {
             </div>
 
             {/* Sleek Minimal Progress Bar */}
-            <div className="w-full bg-[#f4f4f4] h-1.5 rounded-full overflow-hidden mb-6">
+            <div className="w-full bg-[#f4f4f4] dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden mb-6">
               <div 
-                className="bg-[#0f2f63] h-full transition-all duration-300 rounded-full"
+                className="bg-[#0f2f63] dark:bg-sky-500 h-full transition-all duration-300 rounded-full"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>
 
             {/* Error Notification */}
             {errorMessage && (
-              <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold rounded-xl flex items-center gap-2.5">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <div className="mb-5 p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-semibold rounded-xl flex items-center gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
                 <span>{errorMessage}</span>
               </div>
             )}
@@ -293,36 +293,36 @@ export default function EmployerOnboardingPage() {
             {step === 1 && (
               <div className="space-y-5">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931]">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-200">
                     Company / Business Name *
                   </label>
                   <div className="relative">
                     <input 
-                      className="w-full bg-white border border-[#e6e8ec] hover:border-[#0f2f63]/50 focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-3 text-sm text-[#0A1931] outline-none transition-all placeholder:text-slate-400 font-medium" 
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/50 dark:hover:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20 rounded-xl px-4 py-3 text-sm text-[#0A1931] dark:text-white outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-600 font-medium" 
                       placeholder="e.g. Reliance Logistics / Apex Engineering" 
                       type="text"
                       value={formData.companyName}
                       onChange={(e) => setFormData({...formData, companyName: e.target.value})}
                       required
                     />
-                    <Building2 className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Building2 className="w-4 h-4 text-slate-400 dark:text-zinc-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931]">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-200">
                       Business Phone Number *
                     </label>
-                    <span className="text-[10px] text-[#717784] font-medium">10-Digit Mobile</span>
+                    <span className="text-[10px] text-[#717784] dark:text-zinc-400 font-medium">10-Digit Mobile</span>
                   </div>
                   <div className="relative flex items-center">
-                    <div className="absolute left-3.5 flex items-center gap-1.5 text-slate-700 font-bold text-xs pointer-events-none select-none border-r border-slate-200 pr-2.5 z-10">
-                      <span className="text-[10px] tracking-wider uppercase font-bold text-neutral-500">IN</span>
+                    <div className="absolute left-3.5 flex items-center gap-1.5 text-slate-700 dark:text-zinc-300 font-bold text-xs pointer-events-none select-none border-r border-slate-200 dark:border-zinc-800 pr-2.5 z-10">
+                      <span className="text-[10px] tracking-wider uppercase font-bold text-neutral-500 dark:text-zinc-400">IN</span>
                       <span>+91</span>
                     </div>
                     <input 
-                      className="w-full bg-white border border-[#e6e8ec] hover:border-[#0f2f63]/50 focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl pl-18 pr-4 py-3 text-sm text-[#0A1931] outline-none transition-all placeholder:text-slate-400 font-medium" 
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/50 dark:hover:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20 rounded-xl pl-18 pr-4 py-3 text-sm text-[#0A1931] dark:text-white outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-600 font-medium" 
                       placeholder="98765 43210" 
                       type="tel"
                       maxLength={10}
@@ -335,20 +335,20 @@ export default function EmployerOnboardingPage() {
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931]">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-200">
                       Company Website
                     </label>
-                    <span className="text-[10px] font-semibold text-[#717784] uppercase">Optional</span>
+                    <span className="text-[10px] font-semibold text-[#717784] dark:text-zinc-400 uppercase">Optional</span>
                   </div>
                   <div className="relative">
                     <input 
-                      className="w-full bg-white border border-[#e6e8ec] hover:border-[#0f2f63]/50 focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-3 text-sm text-[#0A1931] outline-none transition-all placeholder:text-slate-400 font-medium" 
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/50 dark:hover:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20 rounded-xl px-4 py-3 text-sm text-[#0A1931] dark:text-white outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-600 font-medium" 
                       placeholder="https://yourcompany.com" 
                       type="url"
                       value={formData.companyWebsite}
                       onChange={(e) => setFormData({...formData, companyWebsite: e.target.value})}
                     />
-                    <Globe className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Globe className="w-4 h-4 text-slate-400 dark:text-zinc-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
                 </div>
               </div>
@@ -358,7 +358,7 @@ export default function EmployerOnboardingPage() {
             {step === 2 && (
               <div className="space-y-5">
                 <div className="space-y-2.5">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931]">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-200">
                     Select Primary Industry Sector *
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto p-1">
@@ -372,11 +372,11 @@ export default function EmployerOnboardingPage() {
                           onClick={() => setFormData({...formData, industry: opt.id})}
                           className={`flex items-center gap-2.5 p-3 rounded-xl border transition-all text-left cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#0f2f63] ${
                             isSelected 
-                              ? 'bg-[#0f2f63] text-white border-[#0f2f63] shadow-xs' 
-                              : 'bg-white border-[#e6e8ec] text-neutral-700 hover:text-neutral-900 hover:border-neutral-300 hover:bg-neutral-50'
+                              ? 'bg-[#0f2f63] dark:bg-sky-600 text-white border-[#0f2f63] dark:border-sky-600 shadow-xs' 
+                              : 'bg-white dark:bg-[#121215] border-[#e6e8ec] dark:border-zinc-800 text-neutral-700 dark:text-zinc-300 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-300 dark:hover:border-zinc-700 hover:bg-neutral-50 dark:hover:bg-zinc-800'
                           }`}
                         >
-                          <Icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-neutral-500'}`} />
+                          <Icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-neutral-500 dark:text-zinc-400'}`} />
                           <span className="text-xs font-medium truncate">{opt.label}</span>
                         </button>
                       );
@@ -384,17 +384,17 @@ export default function EmployerOnboardingPage() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5 pt-2 border-t border-[#e6e8ec]">
+                <div className="space-y-1.5 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
                   <div className="flex justify-between items-center">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931]">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-zinc-200">
                       Company Overview & Hiring Requirements
                     </label>
-                    <span className="text-[10px] text-[#717784] font-medium">
+                    <span className="text-[10px] text-[#717784] dark:text-zinc-400 font-medium">
                       {formData.profileBio.length} / 500
                     </span>
                   </div>
                   <textarea 
-                    className="w-full bg-white border border-[#e6e8ec] hover:border-[#0f2f63]/50 focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl p-3.5 text-xs text-[#0A1931] placeholder:text-slate-400 outline-none transition-all resize-none font-medium h-28" 
+                    className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/50 dark:hover:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20 rounded-xl p-3.5 text-xs text-[#0A1931] dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 outline-none transition-all resize-none font-medium h-28" 
                     placeholder="Tell candidates about your operations, typical shifts, and hiring expectations..."
                     value={formData.profileBio}
                     onChange={(e) => setFormData({...formData, profileBio: e.target.value.slice(0, 500)})}
@@ -406,14 +406,14 @@ export default function EmployerOnboardingPage() {
             {/* Step 3: Location Details */}
             {step === 3 && (
               <div className="space-y-5">
-                <div className="p-4 sm:p-5 rounded-2xl bg-[#fbfbfb] border border-[#e6e8ec] space-y-3">
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#fbfbfb] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#0A1931]">Operating Base / City</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#0A1931] dark:text-white">Operating Base / City</span>
                     <button
                       type="button"
                       onClick={detectLocation}
                       disabled={isLocating}
-                      className="text-xs font-bold text-[#0f2f63] hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-xs font-bold text-[#0f2f63] dark:text-sky-400 hover:underline cursor-pointer flex items-center gap-1"
                     >
                       {isLocating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
                       <span>{isLocating ? "Detecting..." : "Auto-Detect"}</span>
@@ -426,7 +426,7 @@ export default function EmployerOnboardingPage() {
                       placeholder="City (e.g. Chennai / Bengaluru)"
                       value={formData.city}
                       onChange={(e) => setFormData({...formData, city: e.target.value})}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none"
+                      className="w-full bg-white dark:bg-[#000000] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-white font-semibold outline-none placeholder:text-slate-400 dark:placeholder:text-zinc-600"
                     />
 
                     <input 
@@ -434,16 +434,16 @@ export default function EmployerOnboardingPage() {
                       placeholder="Detailed Office / Facility Address"
                       value={formData.businessAddress}
                       onChange={(e) => setFormData({...formData, businessAddress: e.target.value})}
-                      className="w-full bg-white border border-[#e6e8ec] focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] font-semibold outline-none"
+                      className="w-full bg-white dark:bg-[#000000] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20 rounded-xl px-4 py-2.5 text-xs text-[#0A1931] dark:text-white font-semibold outline-none placeholder:text-slate-400 dark:placeholder:text-zinc-600"
                     />
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 flex items-start gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="p-4 rounded-xl bg-neutral-50 dark:bg-[#16161B] border border-neutral-200 dark:border-zinc-800 flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-semibold text-neutral-900">Direct Candidate Access</p>
-                    <p className="text-xs text-neutral-600 mt-0.5 leading-relaxed">
+                    <p className="text-xs font-semibold text-neutral-900 dark:text-white">Direct Candidate Access</p>
+                    <p className="text-xs text-neutral-600 dark:text-zinc-300 mt-0.5 leading-relaxed">
                       Your company profile will be verified on completion, enabling direct phone connections and photo attendance verification.
                     </p>
                   </div>
@@ -453,13 +453,13 @@ export default function EmployerOnboardingPage() {
           </div>
 
           {/* ANCHORED BOTTOM ACTION BAR */}
-          <div className="pt-4 border-t border-[#e6e8ec] shrink-0 mt-4">
+          <div className="pt-4 border-t border-[#e6e8ec] dark:border-zinc-800 shrink-0 mt-4">
             <div className="flex items-center justify-between gap-3">
               {step > 1 ? (
                 <button
                   type="button"
                   onClick={prevStep}
-                  className="px-4 py-3 bg-[#f4f4f4] hover:bg-slate-200/80 text-[#0A1931] text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-3 bg-[#f4f4f4] dark:bg-zinc-800 hover:bg-slate-200/80 dark:hover:bg-zinc-700 text-[#0A1931] dark:text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Previous</span>
@@ -472,7 +472,7 @@ export default function EmployerOnboardingPage() {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="bg-[#0f2f63] hover:bg-[#0c244c] active:bg-[#081a38] text-white py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ml-auto"
+                  className="bg-[#0f2f63] hover:bg-[#0c244c] dark:bg-sky-600 dark:hover:bg-sky-700 active:bg-[#081a38] text-white py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ml-auto"
                 >
                   <span>Continue</span>
                   <ArrowRight className="w-4 h-4" />
@@ -482,7 +482,7 @@ export default function EmployerOnboardingPage() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting || !formData.companyName}
-                  className="bg-[#0f2f63] hover:bg-[#0c244c] active:bg-[#081a38] disabled:opacity-50 text-white py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ml-auto"
+                  className="bg-[#0f2f63] hover:bg-[#0c244c] dark:bg-sky-600 dark:hover:bg-sky-700 active:bg-[#081a38] disabled:opacity-50 text-white py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ml-auto"
                 >
                   {isSubmitting ? (
                     <>

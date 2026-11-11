@@ -293,8 +293,8 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
                 onClick={() => setLocationType('all')}
                 className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between cursor-pointer ${
                   locationType === 'all'
-                    ? 'border-[#0f2f63] bg-blue-50/50 shadow-2xs ring-1 ring-[#0f2f63]'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ? 'border-[#0f2f63] dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-2xs ring-1 ring-[#0f2f63] dark:ring-blue-500'
+                    : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 bg-white dark:bg-[#121215]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
@@ -319,8 +319,8 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
                 onClick={() => setLocationType('specific')}
                 className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between cursor-pointer ${
                   locationType === 'specific'
-                    ? 'border-[#0f2f63] bg-blue-50/50 shadow-2xs ring-1 ring-[#0f2f63]'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ? 'border-[#0f2f63] dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-2xs ring-1 ring-[#0f2f63] dark:ring-blue-500'
+                    : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 bg-white dark:bg-[#121215]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
@@ -357,7 +357,7 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
                     type="button"
                     onClick={handleDetectLocation}
                     disabled={isLocating}
-                    className="absolute right-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                    className="absolute right-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#1C1C21] border border-slate-200 dark:border-zinc-700 text-[11px] font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <LocateFixed className={`w-3 h-3 text-[#2563c9] ${isLocating ? 'animate-spin' : ''}`} />
                     <span>{isLocating ? 'Detecting...' : 'Detect'}</span>
@@ -427,8 +427,8 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
                     onClick={() => setSelectedMinSalary(preset.value)}
                     className={`py-2 px-2.5 rounded-xl border text-center text-xs font-semibold transition-all cursor-pointer ${
                       isSelected
-                        ? 'border-[#0f2f63] bg-blue-50/70 text-[#0f2f63] shadow-2xs ring-1 ring-[#0f2f63]'
-                        : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
+                        ? 'border-[#0f2f63] dark:border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 text-[#0f2f63] dark:text-blue-300 shadow-2xs ring-1 ring-[#0f2f63] dark:ring-blue-500'
+                        : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 bg-white dark:bg-[#121215] text-slate-700 dark:text-zinc-300'
                     }`}
                   >
                     {preset.label}

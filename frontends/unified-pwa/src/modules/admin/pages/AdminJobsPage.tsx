@@ -927,8 +927,8 @@ export const AdminJobsPage: React.FC = () => {
                       key={source.id}
                       className={`flex items-start gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all ${
                         isChecked
-                          ? 'bg-blue-50/50 border-[#2563c9]/40'
-                          : 'bg-white border-[#e6e8ec] hover:border-gray-300'
+                          ? 'bg-blue-50/50 dark:bg-blue-950/30 border-[#2563c9]/40 dark:border-blue-500/50'
+                          : 'bg-white dark:bg-[#121215] border-[#e6e8ec] dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700'
                       }`}
                     >
                       <input
@@ -971,8 +971,8 @@ export const AdminJobsPage: React.FC = () => {
                     onClick={() => setScanLimit(num)}
                     className={`px-3 py-1 rounded-lg text-xs font-medium cursor-pointer border ${
                       scanLimit === num
-                        ? 'bg-[#0f2f63] text-white border-[#0f2f63]'
-                        : 'bg-white text-[#717784] border-[#e6e8ec]'
+                        ? 'bg-[#0f2f63] dark:bg-sky-600 text-white border-[#0f2f63] dark:border-sky-600'
+                        : 'bg-white dark:bg-[#121215] text-[#717784] dark:text-zinc-300 border-[#e6e8ec] dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700'
                     }`}
                   >
                     {num} jobs
@@ -1269,8 +1269,8 @@ export const AdminJobsPage: React.FC = () => {
                         }}
                         className={`p-2.5 rounded-xl border text-[11px] font-bold text-left transition-all cursor-pointer flex items-center justify-between ${
                           isSelected
-                            ? 'bg-[#0f2f63] text-white border-[#0f2f63]'
-                            : 'bg-white text-[#0a0a0a] border-[#e6e8ec] hover:border-[#0f2f63]/40'
+                            ? 'bg-[#0f2f63] dark:bg-sky-600 text-white border-[#0f2f63] dark:border-sky-600'
+                            : 'bg-white dark:bg-[#121215] text-[#0a0a0a] dark:text-zinc-200 border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/40 dark:hover:border-zinc-700'
                         }`}
                       >
                         <span>{perk.label}</span>
@@ -1282,14 +1282,14 @@ export const AdminJobsPage: React.FC = () => {
               </div>
 
               {/* Direct Calling & Contact Options */}
-              <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
-                <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider block">Candidate Contact Channels</span>
+              <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 space-y-3">
+                <span className="text-[11px] font-bold text-[#0f2f63] dark:text-sky-400 uppercase tracking-wider block">Candidate Contact Channels</span>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] bg-white">
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#121215]">
                     <div>
-                      <p className="text-xs font-bold text-[#0a0a0a]">Direct Phone Call</p>
-                      <p className="text-[10px] text-[#717784]">Enables Call HR button</p>
+                      <p className="text-xs font-bold text-[#0a0a0a] dark:text-white">Direct Phone Call</p>
+                      <p className="text-[10px] text-[#717784] dark:text-zinc-400">Enables Call HR button</p>
                     </div>
                     <input
                       type="checkbox"
@@ -1299,10 +1299,10 @@ export const AdminJobsPage: React.FC = () => {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] bg-white">
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#121215]">
                     <div>
-                      <p className="text-xs font-bold text-[#0a0a0a]">WhatsApp Chat</p>
-                      <p className="text-[10px] text-[#717784]">Enables WhatsApp button</p>
+                      <p className="text-xs font-bold text-[#0a0a0a] dark:text-white">WhatsApp Chat</p>
+                      <p className="text-[10px] text-[#717784] dark:text-zinc-400">Enables WhatsApp button</p>
                     </div>
                     <input
                       type="checkbox"
@@ -1314,22 +1314,22 @@ export const AdminJobsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Recruiter / Supervisor Phone Number</label>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-zinc-200 uppercase mb-1">Recruiter / Supervisor Phone Number</label>
                   <input
                     type="tel"
                     value={editJobForm.contactPhone}
                     onChange={(e) => setEditJobForm({ ...editJobForm, contactPhone: e.target.value })}
                     placeholder="e.g. +91 98765 43210"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-white text-xs font-medium focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                   />
                 </div>
               </div>
 
               {/* Walk-in Interview Details */}
-              <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
+              <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider">Walk-in Interview FastTrack</span>
-                  <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
+                  <span className="text-[11px] font-bold text-[#0f2f63] dark:text-sky-400 uppercase tracking-wider">Walk-in Interview FastTrack</span>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-zinc-200 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={editJobForm.isWalkInInterview}
@@ -1341,48 +1341,48 @@ export const AdminJobsPage: React.FC = () => {
                 </div>
 
                 {editJobForm.isWalkInInterview && (
-                  <div className="p-3.5 bg-amber-50/50 rounded-2xl border border-amber-200/60 space-y-3">
+                  <div className="p-3.5 bg-amber-50/50 dark:bg-amber-950/20 rounded-2xl border border-amber-200/60 dark:border-amber-800/40 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Walk-in Dates</label>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] dark:text-zinc-300 uppercase mb-1">Walk-in Dates</label>
                         <input
                           type="text"
                           value={editJobForm.walkInDates}
                           onChange={(e) => setEditJobForm({ ...editJobForm, walkInDates: e.target.value })}
                           placeholder="e.g. 06 Nov - 09 Nov (Mon to Fri)"
-                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs bg-white dark:bg-[#000000] text-slate-900 dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-amber-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Timing Slot</label>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] dark:text-zinc-300 uppercase mb-1">Timing Slot</label>
                         <input
                           type="text"
                           value={editJobForm.walkInTiming}
                           onChange={(e) => setEditJobForm({ ...editJobForm, walkInTiming: e.target.value })}
                           placeholder="e.g. 10:00 AM - 04:00 PM"
-                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs bg-white dark:bg-[#000000] text-slate-900 dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-amber-500"
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Venue / Landmark</label>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] dark:text-zinc-300 uppercase mb-1">Venue / Landmark</label>
                         <input
                           type="text"
                           value={editJobForm.walkInVenue}
                           onChange={(e) => setEditJobForm({ ...editJobForm, walkInVenue: e.target.value })}
                           placeholder="e.g. Near Metro Station, Opp. Police Station"
-                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs bg-white dark:bg-[#000000] text-slate-900 dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-amber-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Contact Person / HR</label>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] dark:text-zinc-300 uppercase mb-1">Contact Person / HR</label>
                         <input
                           type="text"
                           value={editJobForm.walkInContactPerson}
                           onChange={(e) => setEditJobForm({ ...editJobForm, walkInContactPerson: e.target.value })}
                           placeholder="e.g. Mr. Ramesh (HR Manager)"
-                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs bg-white dark:bg-[#000000] text-slate-900 dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-amber-500"
                         />
                       </div>
                     </div>

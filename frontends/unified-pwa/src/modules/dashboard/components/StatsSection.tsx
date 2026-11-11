@@ -10,10 +10,10 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = ({ label, value, suffix, icon, containerColor }) => (
-  <div className="bg-white p-5 rounded-2xl flex items-center justify-between shadow-xs border border-slate-200/80 hover:border-blue-200 hover:shadow-md transition-all group">
+  <div className="bg-white dark:bg-[#09090B] p-5 rounded-2xl flex items-center justify-between shadow-xs border border-slate-200 dark:border-zinc-800/80 hover:border-blue-200 hover:shadow-md transition-all group">
     <div>
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{label}</p>
-      <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+      <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
         {value}
         {suffix && <span className="text-xs font-semibold text-slate-400 ml-1">{suffix}</span>}
       </h3>

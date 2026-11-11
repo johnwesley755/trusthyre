@@ -61,14 +61,14 @@ export const OnboardingVisualHero: React.FC<OnboardingVisualHeroProps> = ({
   // Mobile compact banner rendering
   if (isMobileBanner) {
     return (
-      <div className={`relative w-full overflow-hidden bg-[#0f2f63] text-white p-4 sm:p-5 rounded-2xl ${className}`}>
+      <div className={`relative w-full overflow-hidden bg-[#0f2f63] dark:bg-[#000000] text-white p-4 sm:p-5 rounded-2xl border border-transparent dark:border-zinc-800 ${className}`}>
         <div className="absolute inset-0 z-0">
           <img
             src={activeImages[0]}
             alt="TrustHyre Workforce"
             className="w-full h-full object-cover filter brightness-[0.6] contrast-[1.1] scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0f2f63]/95 via-[#0f2f63]/85 to-[#0f2f63]/90" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0f2f63]/95 via-[#0f2f63]/85 to-[#0f2f63]/90 dark:from-black/95 dark:via-black/85 dark:to-black/90" />
         </div>
 
         <div className="relative z-10 flex items-center justify-between gap-3">
@@ -130,7 +130,7 @@ export const OnboardingVisualHero: React.FC<OnboardingVisualHeroProps> = ({
   ];
 
   return (
-    <div className={`relative w-full h-full min-h-[580px] lg:min-h-full overflow-hidden bg-[#0f2f63] text-white flex flex-col justify-between p-7 sm:p-10 lg:p-12 select-none font-['Onest',system-ui,sans-serif] ${className}`}>
+    <div className={`relative w-full h-full min-h-[580px] lg:min-h-full overflow-hidden bg-[#0f2f63] dark:bg-[#000000] text-white flex flex-col justify-between p-7 sm:p-10 lg:p-12 select-none font-['Onest',system-ui,sans-serif] ${className}`}>
       {/* Background Photography with Navy Scrim Overlay */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {activeImages.map((imgSrc, idx) => (

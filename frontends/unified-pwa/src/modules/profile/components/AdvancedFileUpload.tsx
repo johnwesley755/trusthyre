@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mediaService } from '../../../services/media.service';
 
@@ -126,7 +126,7 @@ export const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = ({
                     {files.length > 0 && files[0].status === 'uploading' && (
                         <motion.div 
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-white/60 backdrop-blur-[2px] rounded-full flex items-center justify-center z-20 pointer-events-none"
+                            className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-[2px] rounded-full flex items-center justify-center z-20 pointer-events-none"
                         >
                             <div className="w-12 h-12 rounded-full border-4 border-primary-fixed border-t-transparent animate-spin" />
                         </motion.div>
@@ -153,8 +153,8 @@ export const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = ({
             />
             
             <div className={`
-                w-24 h-24 rounded-full bg-surface-container-high flex items-center justify-center border-2 border-dashed transition-all
-                ${isDragging ? 'border-primary-fixed bg-primary-fixed/10' : 'border-outline-variant group-hover:border-primary-fixed'}
+                w-24 h-24 rounded-full bg-slate-100 dark:bg-[#121215] flex items-center justify-center border-2 border-dashed transition-all
+                ${isDragging ? 'border-primary-fixed bg-primary-fixed/10' : 'border-slate-300 dark:border-zinc-700 group-hover:border-[#0f2f63] dark:group-hover:border-[#38BDF8]'}
                 overflow-hidden
             `}>
                 {files.length > 0 && files[0].url ? (
@@ -164,7 +164,7 @@ export const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = ({
                 )}
             </div>
 
-            <div className="absolute -bottom-1 -right-1 bg-primary-fixed text-on-secondary-fixed p-1.5 rounded-full shadow-sm flex items-center justify-center">
+            <div className="absolute -bottom-1 -right-1 bg-[#0f2f63] dark:bg-[#0066FF] text-white p-1.5 rounded-full shadow-sm flex items-center justify-center">
                 <span className="material-symbols-outlined text-sm font-bold">edit</span>
             </div>
 

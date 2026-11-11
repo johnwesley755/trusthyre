@@ -15,13 +15,13 @@ const ActionCard: React.FC<ActionCardProps> = ({ title, description, icon, conta
   return (
     <div 
       onClick={() => navigate(path)}
-      className="bg-white p-4 rounded-2xl flex items-center gap-3.5 cursor-pointer group shadow-xs hover:shadow-md transition-all border border-slate-200/80 hover:border-blue-300"
+      className="bg-white dark:bg-[#09090B] p-4 rounded-2xl flex items-center gap-3.5 cursor-pointer group shadow-xs hover:shadow-md transition-all border border-slate-200 dark:border-zinc-800/80 hover:border-blue-300"
     >
       <div className={`w-11 h-11 ${containerColor} rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 shrink-0`}>
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h5 className="text-sm font-bold text-slate-900 truncate">{title}</h5>
+        <h5 className="text-sm font-bold text-slate-900 dark:text-white truncate">{title}</h5>
         <p className="text-xs text-slate-500 font-medium truncate">{description}</p>
       </div>
       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-[#0066FF] transition-all shrink-0" />

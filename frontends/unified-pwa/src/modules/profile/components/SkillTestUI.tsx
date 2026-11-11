@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, CheckCircle2, XCircle, AlertCircle, ChevronRight, Loader2, Trophy } from 'lucide-react';
@@ -94,7 +94,7 @@ export const SkillTestUI: React.FC<SkillTestUIProps> = ({ testId, onClose, onCom
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-2xl w-full bg-white border border-brand-border rounded-[3.5rem] p-16 text-center space-y-12 shadow-2xl relative overflow-hidden"
+          className="max-w-2xl w-full bg-white dark:bg-[#09090B] border border-brand-border dark:border-zinc-800 rounded-[3.5rem] p-16 text-center space-y-12 shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-48 h-48 bg-brand-primary opacity-[0.05] rounded-bl-full pointer-events-none" />
           
@@ -103,7 +103,7 @@ export const SkillTestUI: React.FC<SkillTestUIProps> = ({ testId, onClose, onCom
           </div>
           
           <div className="space-y-4">
-            <h2 className="text-5xl font-black tracking-tighter text-brand-secondary italic uppercase underline decoration-brand-primary decoration-8 underline-offset-8">
+            <h2 className="text-5xl font-black tracking-tighter text-brand-secondary dark:text-white italic uppercase underline decoration-brand-primary decoration-8 underline-offset-8">
               {result.passed ? 'Certified Operative' : 'Integration Halted'}
             </h2>
             <p className="text-brand-muted font-bold text-xl uppercase tracking-widest leading-relaxed opacity-60">
@@ -112,9 +112,9 @@ export const SkillTestUI: React.FC<SkillTestUIProps> = ({ testId, onClose, onCom
           </div>
 
           <div className="grid grid-cols-2 gap-8">
-            <div className="bg-brand-bg p-8 rounded-[2.5rem] border border-brand-border shadow-inner">
+            <div className="bg-brand-bg dark:bg-[#121215] p-8 rounded-[2.5rem] border border-brand-border dark:border-zinc-800 shadow-inner">
               <span className="block text-[10px] font-black text-brand-muted/40 tracking-[0.2em] uppercase mb-3">Assessment Grade</span>
-              <span className="text-5xl font-black text-brand-secondary tracking-tighter">{result.score}%</span>
+              <span className="text-5xl font-black text-brand-secondary dark:text-white tracking-tighter">{result.score}%</span>
             </div>
             <div className="bg-brand-secondary p-8 rounded-[2.5rem] border border-brand-secondary shadow-2xl shadow-brand-secondary/20">
               <span className="block text-[10px] font-black text-brand-primary/60 tracking-[0.2em] uppercase mb-3">Correct Entries</span>
@@ -138,12 +138,12 @@ export const SkillTestUI: React.FC<SkillTestUIProps> = ({ testId, onClose, onCom
   const currentQuestion = questionsList[currentIdx];
 
   return (
-    <div className="fixed inset-0 bg-brand-bg z-[100] flex flex-col md:overflow-hidden">
+    <div className="fixed inset-0 bg-brand-bg dark:bg-[#000000] z-[100] flex flex-col md:overflow-hidden text-[#0a0a0a] dark:text-white">
       {/* HUD Bar */}
-      <header className="px-12 py-10 border-b border-brand-border bg-white/80 backdrop-blur-3xl flex justify-between items-center shrink-0">
+      <header className="px-12 py-10 border-b border-brand-border dark:border-zinc-800 bg-white/80 dark:bg-[#000000]/80 backdrop-blur-3xl flex justify-between items-center shrink-0">
         <div className="space-y-1">
           <h1 className="text-xs font-black tracking-[0.3em] text-brand-muted/40 uppercase">Assessment sequence</h1>
-          <h2 className="text-2xl font-black tracking-tighter text-brand-secondary uppercase italic">{test.title}</h2>
+          <h2 className="text-2xl font-black tracking-tighter text-brand-secondary dark:text-white uppercase italic">{test.title}</h2>
         </div>
         <div className={`flex items-center gap-4 px-6 py-3 rounded-2xl border ${(timer || 0) < 60 ? 'bg-rose-500 text-white border-rose-600 animate-pulse' : 'bg-brand-secondary text-brand-primary border-brand-secondary'} shadow-xl transition-colors duration-500`}>
           <Clock className="w-5 h-5" />
@@ -152,7 +152,7 @@ export const SkillTestUI: React.FC<SkillTestUIProps> = ({ testId, onClose, onCom
       </header>
 
       {/* Progress Line */}
-      <div className="h-2 w-full bg-brand-border shrink-0">
+      <div className="h-2 w-full bg-brand-border dark:bg-zinc-800 shrink-0">
         <motion.div 
           className="h-full bg-brand-primary shadow-[0_0_20px_rgba(250,204,21,0.5)]"
           initial={{ width: 0 }}
@@ -172,7 +172,7 @@ export const SkillTestUI: React.FC<SkillTestUIProps> = ({ testId, onClose, onCom
             >
               <div className="space-y-6 text-center md:text-left">
                 <span className="text-xs font-black text-brand-primary bg-brand-secondary px-4 py-1.5 rounded-full inline-block tracking-[0.2em] uppercase">Module {currentIdx + 1} of {questionsList.length}</span>
-                <h3 className="text-4xl md:text-6xl font-black text-brand-secondary tracking-tighter leading-[0.9] lg:pr-20">
+                <h3 className="text-4xl md:text-6xl font-black text-brand-secondary dark:text-white tracking-tighter leading-[0.9] lg:pr-20">
                   {currentQuestion.questionText}
                 </h3>
               </div>
@@ -185,11 +185,11 @@ export const SkillTestUI: React.FC<SkillTestUIProps> = ({ testId, onClose, onCom
                     className={`p-8 rounded-[2.5rem] border-2 text-left transition-all relative group flex items-center gap-6 ${
                       answers[currentIdx] === i 
                         ? 'bg-brand-secondary border-brand-secondary text-brand-primary shadow-2xl transform scale-[1.02]' 
-                        : 'bg-white border-brand-border text-brand-secondary hover:border-brand-primary hover:shadow-xl'
+                        : 'bg-white dark:bg-[#121215] border-brand-border dark:border-zinc-800 text-brand-secondary dark:text-zinc-100 hover:border-brand-primary dark:hover:border-zinc-600 hover:shadow-xl'
                     }`}
                   >
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg transition-colors ${
-                      answers[currentIdx] === i ? 'bg-brand-primary text-brand-secondary' : 'bg-brand-bg text-brand-muted'
+                      answers[currentIdx] === i ? 'bg-brand-primary text-brand-secondary' : 'bg-brand-bg dark:bg-zinc-800 text-brand-muted dark:text-zinc-400'
                     }`}>
                       {String.fromCharCode(65 + i)}
                     </div>
