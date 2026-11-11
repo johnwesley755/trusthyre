@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../../providers/AuthContext";
-import trustHyreLogo from "../../../assets/TrustHyre Skills and Opportunities Logo.png";
+import { useTheme } from "../../../providers/ThemeContext";
+import trustHyreLogoLight from "../../../assets/TrustHyre Skills and Opportunities Logo.png";
+import trustHyreLogoDark from "../../../assets/TrustHyre Logo with Skills Tagline.png";
 import { 
   MapPin, 
   ChevronDown, 
@@ -17,22 +19,24 @@ import {
 
 export function LandingNavbar() {
   const { isSignedIn, user } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';
   const targetDashboard = isAdmin ? '/admin/dashboard' : user?.role === 'EMPLOYER' ? '/find-workers' : '/search';
 
   return (
-    <nav className="fixed top-0 w-full h-[72px] z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-[0_2px_12px_rgba(10,25,49,0.04)] transition-all duration-300 font-sans">
+    <nav className="fixed top-0 w-full h-[72px] z-50 bg-white/95 dark:bg-[#000000]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(10,25,49,0.04)] transition-all duration-300 font-sans">
       <div className="flex justify-between items-center px-4 sm:px-8 lg:px-12 h-full max-w-[1440px] mx-auto gap-4">
         
         {/* Brand & Hyperlocal Location */}
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center group py-1" aria-label="TrustHyre Home">
             <img 
-              src={trustHyreLogo} 
+              src={isDark ? trustHyreLogoDark : trustHyreLogoLight} 
               alt="TrustHyre" 
-              className="h-10 sm:h-12 md:h-14 w-auto object-contain block select-none mix-blend-multiply group-hover:opacity-90 transition-opacity" 
+              className="h-10 sm:h-12 md:h-14 w-auto object-contain select-none group-hover:opacity-90 transition-opacity" 
             />
           </Link>
 

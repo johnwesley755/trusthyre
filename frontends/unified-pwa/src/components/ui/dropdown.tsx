@@ -225,16 +225,16 @@ export function Dropdown<T extends string | number = string>({
     }
   }, [highlightedIndex]);
 
-  // Design Tokens & Aesthetics (Strictly Light Theme by Default)
+  // Design Tokens & Aesthetics (Light Theme by Default, Pitch Dark Black in Dark Mode)
   const variantStyles = {
     default:
-      'bg-white text-[#0A1931] border border-slate-200/90 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:border-slate-300 hover:shadow-xs focus-visible:border-[#0f2f63] focus-visible:ring-2 focus-visible:ring-[#0f2f63]/10',
+      'bg-white dark:bg-[#121215] text-[#0A1931] dark:text-zinc-100 border border-slate-200/90 dark:border-zinc-800 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:border-slate-300 dark:hover:border-zinc-700 hover:shadow-xs focus-visible:border-[#0f2f63] dark:focus-visible:border-[#38BDF8] focus-visible:ring-2 focus-visible:ring-[#0f2f63]/10 dark:focus-visible:ring-[#38BDF8]/20',
     outline:
-      'bg-white text-slate-800 border border-slate-300/80 hover:border-slate-400 hover:bg-slate-50/50 shadow-2xs focus-visible:border-[#0066FF] focus-visible:ring-2 focus-visible:ring-[#0066FF]/10',
+      'bg-white dark:bg-[#121215] text-slate-800 dark:text-zinc-200 border border-slate-300/80 dark:border-zinc-800 hover:border-slate-400 dark:hover:border-zinc-700 hover:bg-slate-50/50 dark:hover:bg-zinc-800/60 shadow-2xs focus-visible:border-[#0066FF] dark:focus-visible:border-[#38BDF8] focus-visible:ring-2 focus-visible:ring-[#0066FF]/10',
     pill:
-      'bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-[#0A1931] shadow-2xs focus-visible:ring-2 focus-visible:ring-[#0f2f63]/10',
+      'bg-white dark:bg-[#121215] hover:bg-slate-50 dark:hover:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-800 rounded-full text-[#0A1931] dark:text-zinc-100 shadow-2xs focus-visible:ring-2 focus-visible:ring-[#0f2f63]/10 dark:focus-visible:ring-[#38BDF8]/20',
     subtle:
-      'bg-[#f8fafc] hover:bg-slate-100/90 border border-slate-200/80 text-slate-800 focus-visible:border-[#0f2f63] focus-visible:ring-2 focus-visible:ring-[#0f2f63]/10',
+      'bg-[#f8fafc] dark:bg-[#121215] hover:bg-slate-100/90 dark:hover:bg-zinc-800 border border-slate-200/80 dark:border-zinc-800 text-slate-800 dark:text-zinc-200 focus-visible:border-[#0f2f63] dark:focus-visible:border-[#38BDF8] focus-visible:ring-2 focus-visible:ring-[#0f2f63]/10',
     dark:
       'bg-white/15 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md focus-visible:ring-2 focus-visible:ring-white/30',
   };
@@ -260,7 +260,7 @@ export function Dropdown<T extends string | number = string>({
       {label && (
         <label
           htmlFor={selectId}
-          className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5 select-none"
+          className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 mb-1.5 select-none"
         >
           {label} {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
@@ -304,8 +304,8 @@ export function Dropdown<T extends string | number = string>({
           <span
             className={cn(
               'truncate transition-colors',
-              !selectedOption && (isTriggerDark ? 'text-white/60 font-normal' : 'text-slate-400 font-normal'),
-              selectedOption && (isTriggerDark ? 'text-white font-medium' : 'text-[#0A1931]')
+              !selectedOption && (isTriggerDark ? 'text-white/60 font-normal' : 'text-slate-400 dark:text-zinc-500 font-normal'),
+              selectedOption && (isTriggerDark ? 'text-white font-medium' : 'text-[#0A1931] dark:text-zinc-100')
             )}
           >
             {selectedOption ? selectedOption.label : placeholder}
@@ -352,20 +352,20 @@ export function Dropdown<T extends string | number = string>({
         </div>
       </button>
 
-      {/* Floating Popover Menu (ALWAYS Crisp Light Theme) */}
+      {/* Floating Popover Menu (Light Theme by Default, Pitch Dark Black in Dark Mode) */}
       {isOpen && (
         <div
           className={cn(
-            'absolute z-50 mt-1.5 w-full min-w-[200px] rounded-2xl shadow-[0_12px_36px_-6px_rgba(15,47,99,0.18),0_4px_12px_-2px_rgba(0,0,0,0.06)] border border-slate-200/90 bg-white text-[#0A1931] overflow-hidden',
+            'absolute z-50 mt-1.5 w-full min-w-[200px] rounded-2xl shadow-[0_12px_36px_-6px_rgba(15,47,99,0.18),0_4px_12px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.85)] border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-white overflow-hidden',
             'animate-in fade-in-0 zoom-in-95 slide-in-from-top-1.5 duration-150 ease-out',
             menuClassName
           )}
           role="listbox"
         >
-          {/* Frosted Glass Sticky Search Input (Light Theme) */}
+          {/* Frosted Glass Sticky Search Input */}
           {isSearchEnabled && (
-            <div className="sticky top-0 z-10 px-3 py-2 border-b border-slate-100 bg-white/95 backdrop-blur-xs flex items-center gap-2">
-              <Search className="w-3.5 h-3.5 shrink-0 text-slate-400" />
+            <div className="sticky top-0 z-10 px-3 py-2 border-b border-slate-100 dark:border-zinc-800 bg-white/95 dark:bg-[#1C1C21]/95 backdrop-blur-xs flex items-center gap-2">
+              <Search className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-zinc-500" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -375,13 +375,13 @@ export function Dropdown<T extends string | number = string>({
                   setHighlightedIndex(0);
                 }}
                 placeholder="Search options..."
-                className="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400 placeholder:font-normal bg-transparent outline-none"
+                className="w-full text-xs font-medium text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 placeholder:font-normal bg-transparent outline-none"
               />
               {searchTerm && (
                 <button
                   type="button"
                   onClick={() => setSearchTerm('')}
-                  className="p-0.5 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                  className="p-0.5 rounded-full text-slate-400 dark:text-zinc-400 hover:text-slate-600 dark:hover:text-white transition-colors"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -389,10 +389,10 @@ export function Dropdown<T extends string | number = string>({
             </div>
           )}
 
-          {/* Options List (Light Theme with Smooth Rounded Highlights) */}
+          {/* Options List */}
           <div ref={menuListRef} className="max-h-64 overflow-y-auto no-scrollbar p-1.5 space-y-0.5">
             {filteredOptions.length === 0 ? (
-              <div className="px-3.5 py-6 text-xs text-slate-400 text-center font-medium">
+              <div className="px-3.5 py-6 text-xs text-slate-400 dark:text-zinc-500 text-center font-medium">
                 No matching options found
               </div>
             ) : (
@@ -410,9 +410,9 @@ export function Dropdown<T extends string | number = string>({
                     onMouseEnter={() => setHighlightedIndex(idx)}
                     className={cn(
                       'w-full px-3 py-2 rounded-xl text-left flex items-center justify-between text-xs transition-all duration-100 cursor-pointer select-none',
-                      isSelected && 'bg-[#0f2f63]/10 text-[#0f2f63] font-bold',
-                      !isSelected && isHighlighted && 'bg-slate-100 text-[#0A1931] font-semibold',
-                      !isSelected && !isHighlighted && 'text-slate-700 hover:bg-slate-50 font-medium',
+                      isSelected && 'bg-[#0f2f63]/10 dark:bg-[#0066FF]/20 text-[#0f2f63] dark:text-[#38BDF8] font-bold',
+                      !isSelected && isHighlighted && 'bg-slate-100 dark:bg-zinc-800/80 text-[#0A1931] dark:text-white font-semibold',
+                      !isSelected && !isHighlighted && 'text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-900 font-medium',
                       option.disabled && 'opacity-40 cursor-not-allowed pointer-events-none'
                     )}
                     role="option"
@@ -420,32 +420,32 @@ export function Dropdown<T extends string | number = string>({
                   >
                     <div className="flex items-center gap-2.5 truncate mr-2 min-w-0">
                       {option.icon && (
-                        <span className={cn('shrink-0 text-slate-400', isSelected && 'text-[#0f2f63]')}>
+                        <span className={cn('shrink-0 text-slate-400 dark:text-zinc-500', isSelected && 'text-[#0f2f63] dark:text-[#38BDF8]')}>
                           {option.icon}
                         </span>
                       )}
                       <div className="truncate flex flex-col">
                         <span className="truncate">{option.label}</span>
                         {option.description && (
-                          <span className="text-[10px] text-slate-500 truncate mt-0.5">
+                          <span className="text-[10px] text-slate-500 dark:text-zinc-400 truncate mt-0.5">
                             {option.description}
                           </span>
                         )}
                       </div>
                       {option.sublabel && (
-                        <span className="text-[10px] text-slate-400 shrink-0">
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 shrink-0">
                           {option.sublabel}
                         </span>
                       )}
                       {option.badge && (
-                        <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md shrink-0 uppercase tracking-wider bg-slate-200/70 text-slate-700">
+                        <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md shrink-0 uppercase tracking-wider bg-slate-200/70 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
                           {option.badge}
                         </span>
                       )}
                     </div>
 
                     {isSelected && (
-                      <Check className="w-3.5 h-3.5 shrink-0 ml-1.5 text-[#0f2f63]" />
+                      <Check className="w-3.5 h-3.5 shrink-0 ml-1.5 text-[#0f2f63] dark:text-[#38BDF8]" />
                     )}
                   </button>
                 );

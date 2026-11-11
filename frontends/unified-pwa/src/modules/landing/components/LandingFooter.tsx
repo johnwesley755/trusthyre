@@ -3,12 +3,13 @@ import trustHyreLightLogo from "../../../assets/TrustHyre Logo with Skills Tagli
 import { useTranslation, SUPPORTED_LANGUAGES } from "../../../providers/TranslationContext";
 import { Globe, Briefcase, Users } from "lucide-react";
 import { Dropdown } from "../../../components/ui/dropdown";
+import { ThemeToggle } from "../../../components/common/ThemeToggle";
 
 export function LandingFooter() {
   const { language, setLanguage } = useTranslation();
 
   return (
-    <footer className="bg-[#0f2f63] text-white rounded-t-[40px] mt-20 relative overflow-hidden font-['Onest',system-ui,sans-serif]">
+    <footer className="bg-[#0f2f63] dark:bg-black text-white border-t border-transparent dark:border-zinc-800 rounded-t-[40px] mt-20 relative overflow-hidden font-['Onest',system-ui,sans-serif] transition-colors duration-200">
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
       
       {/* Top Main Columns */}
@@ -56,7 +57,7 @@ export function LandingFooter() {
             <Globe className="w-3.5 h-3.5 text-blue-200" />
             Regional Language / மொழி
           </h5>
-          <div className="w-full max-w-[220px]">
+          <div className="w-full max-w-[220px] space-y-3">
             <Dropdown
               variant="default"
               value={language}
@@ -67,6 +68,10 @@ export function LandingFooter() {
               }))}
               className="w-full"
             />
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[11px] text-white/70 font-semibold uppercase tracking-wider">Theme Mode:</span>
+              <ThemeToggle variant="pill" showLabel={true} />
+            </div>
           </div>
           <p className="text-[11px] text-white/50 leading-relaxed">
             Switch UI to Tamil, Hindi, or Telugu for blue-collar staff & local contractors.

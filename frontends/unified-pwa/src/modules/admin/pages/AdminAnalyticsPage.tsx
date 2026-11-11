@@ -129,23 +129,23 @@ export const AdminAnalyticsPage: React.FC = () => {
     <div className="space-y-5 sm:space-y-6 font-['Onest',system-ui,sans-serif] w-full max-w-7xl mx-auto min-w-0">
       
       {/* Top Header Row with Navigation Breadcrumbs & Live Pulse */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] shadow-xs min-w-0">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white dark:bg-[#09090b] p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs min-w-0 transition-colors">
         <div className="space-y-1.5 min-w-0 w-full lg:w-auto">
-          <div className="flex items-center gap-2 text-xs text-[#717784]">
-            <Link to="/admin/dashboard" className="hover:text-[#0a0a0a] flex items-center gap-1 transition-colors">
+          <div className="flex items-center gap-2 text-xs text-[#717784] dark:text-zinc-400">
+            <Link to="/admin/dashboard" className="hover:text-[#0a0a0a] dark:hover:text-white flex items-center gap-1 transition-colors">
               <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
               <span>Command Center</span>
             </Link>
             <span>/</span>
-            <span className="text-[#0a0a0a] font-semibold truncate">Web Traffic & Analytics</span>
+            <span className="text-[#0a0a0a] dark:text-white font-semibold truncate">Web Traffic & Analytics</span>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-0.5">
-            <h1 className="text-xl sm:text-2xl font-bold text-[#0a0a0a] tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#0a0a0a] dark:text-white tracking-tight">
               Visitor Intelligence & GA4
             </h1>
 
             {/* Live Realtime Pulsing Status Pill */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold shadow-2xs shrink-0">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/40 text-xs font-semibold shadow-2xs shrink-0">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -161,10 +161,10 @@ export const AdminAnalyticsPage: React.FC = () => {
             type="button"
             onClick={handleManualRefresh}
             disabled={isFetching}
-            className="flex-1 lg:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white border border-[#e6e8ec] hover:bg-[#f4f4f4] text-xs font-semibold text-[#0a0a0a] shadow-2xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer whitespace-nowrap"
+            className="flex-1 lg:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 shadow-2xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer whitespace-nowrap"
             title="Refresh latest visitor counts"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#0f2f63] ${isFetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400 ${isFetching ? 'animate-spin' : ''}`} />
             <span>{isFetching ? 'Refreshing...' : 'Refresh'}</span>
           </button>
 
@@ -181,9 +181,9 @@ export const AdminAnalyticsPage: React.FC = () => {
       </div>
 
       {/* Google Analytics Interactive Filter Bar */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-[#e6e8ec] shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-[#0a0a0a]">
-          <Filter className="w-4 h-4 text-[#0f2f63]" />
+      <div className="bg-white dark:bg-[#09090b] p-3.5 sm:p-4 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs flex flex-wrap items-center justify-between gap-3 transition-colors">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#0a0a0a] dark:text-white">
+          <Filter className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
           <span>Analytics Filters:</span>
         </div>
 
@@ -255,98 +255,98 @@ export const AdminAnalyticsPage: React.FC = () => {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4 min-w-0">
         {/* Realtime Active */}
-        <div className="bg-white p-3 sm:p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-xs relative overflow-hidden min-w-0">
+        <div className="bg-white dark:bg-[#121215] p-3 sm:p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/20 dark:bg-emerald-950/20 shadow-xs relative overflow-hidden min-w-0 transition-colors">
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-800 uppercase tracking-wider truncate">Live Right Now</span>
-            <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
+            <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider truncate">Live Right Now</span>
+            <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-emerald-700 tracking-tight truncate">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-emerald-700 dark:text-emerald-400 tracking-tight truncate">
             {realtimeUsers}
           </div>
-          <p className="text-[10px] text-emerald-600 mt-1 font-medium truncate">
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium truncate">
             Active in last 30m
           </p>
         </div>
 
         {/* Today's Visitors */}
-        <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#e6e8ec] shadow-xs min-w-0">
+        <div className="bg-white dark:bg-[#121215] p-3 sm:p-5 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs min-w-0 transition-colors">
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <span className="text-[10px] sm:text-[11px] font-semibold text-[#717784] uppercase tracking-wider truncate">Today's Visitors</span>
-            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0f2f63] shrink-0" />
+            <span className="text-[10px] sm:text-[11px] font-semibold text-[#717784] dark:text-zinc-400 uppercase tracking-wider truncate">Today's Visitors</span>
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0f2f63] dark:text-sky-400 shrink-0" />
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0a0a0a] tracking-tight truncate">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0a0a0a] dark:text-white tracking-tight truncate">
             {metrics.todayUsers.toLocaleString('en-IN')}
           </div>
-          <p className="text-[10px] text-[#717784] mt-1 font-medium truncate">
+          <p className="text-[10px] text-[#717784] dark:text-zinc-400 mt-1 font-medium truncate">
             Unique visitors
           </p>
         </div>
 
         {/* 7-Day Active Users */}
-        <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#e6e8ec] shadow-xs min-w-0">
+        <div className="bg-white dark:bg-[#121215] p-3 sm:p-5 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs min-w-0 transition-colors">
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <span className="text-[10px] sm:text-[11px] font-semibold text-[#717784] uppercase tracking-wider truncate">Period Audience</span>
-            <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 shrink-0" />
+            <span className="text-[10px] sm:text-[11px] font-semibold text-[#717784] dark:text-zinc-400 uppercase tracking-wider truncate">Period Audience</span>
+            <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 shrink-0" />
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0a0a0a] tracking-tight truncate">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0a0a0a] dark:text-white tracking-tight truncate">
             {metrics.weeklyActiveUsers.toLocaleString('en-IN')}
           </div>
-          <p className="text-[10px] text-[#717784] mt-1 font-medium truncate">
+          <p className="text-[10px] text-[#717784] dark:text-zinc-400 mt-1 font-medium truncate">
             Active workforce
           </p>
         </div>
 
         {/* 30-Day Total Pageviews */}
-        <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#e6e8ec] shadow-xs min-w-0">
+        <div className="bg-white dark:bg-[#121215] p-3 sm:p-5 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs min-w-0 transition-colors">
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <span className="text-[10px] sm:text-[11px] font-semibold text-[#717784] uppercase tracking-wider truncate">Total Views</span>
-            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 shrink-0" />
+            <span className="text-[10px] sm:text-[11px] font-semibold text-[#717784] dark:text-zinc-400 uppercase tracking-wider truncate">Total Views</span>
+            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 dark:text-amber-400 shrink-0" />
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0a0a0a] tracking-tight truncate">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0a0a0a] dark:text-white tracking-tight truncate">
             {metrics.totalPageViews.toLocaleString('en-IN')}
           </div>
-          <p className="text-[10px] text-[#717784] mt-1 font-medium truncate">
+          <p className="text-[10px] text-[#717784] dark:text-zinc-400 mt-1 font-medium truncate">
             {metrics.monthlyActiveUsers.toLocaleString('en-IN')} visitors
           </p>
         </div>
 
         {/* Average Engagement Time */}
-        <div className="col-span-2 lg:col-span-1 bg-white p-3 sm:p-5 rounded-2xl border border-[#e6e8ec] shadow-xs min-w-0">
+        <div className="col-span-2 lg:col-span-1 bg-white dark:bg-[#121215] p-3 sm:p-5 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs min-w-0 transition-colors">
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <span className="text-[10px] sm:text-[11px] font-semibold text-[#717784] uppercase tracking-wider truncate">Avg. Session</span>
-            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-600 shrink-0" />
+            <span className="text-[10px] sm:text-[11px] font-semibold text-[#717784] dark:text-zinc-400 uppercase tracking-wider truncate">Avg. Session</span>
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-600 dark:text-purple-400 shrink-0" />
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0a0a0a] tracking-tight truncate">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0a0a0a] dark:text-white tracking-tight truncate">
             {formatDuration(metrics.averageSessionDurationSeconds)}
           </div>
-          <p className="text-[10px] text-[#717784] mt-1 font-medium truncate">
+          <p className="text-[10px] text-[#717784] dark:text-zinc-400 mt-1 font-medium truncate">
             Engagement time
           </p>
         </div>
       </div>
 
       {/* Main Interactive Visual Curve: Daily Visitor & Pageview Trends */}
-      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-4 min-w-0">
+      <div className="bg-white dark:bg-[#09090b] p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4 min-w-0 transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
           <div className="min-w-0">
-            <h2 className="text-base font-bold text-[#0a0a0a] flex items-center gap-2">
-              <BarChart2 className="w-4 h-4 text-[#0f2f63] shrink-0" />
+            <h2 className="text-base font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2">
+              <BarChart2 className="w-4 h-4 text-[#0f2f63] dark:text-sky-400 shrink-0" />
               <span className="truncate">Platform Traffic & Visitor Trends</span>
             </h2>
-            <p className="text-xs text-[#717784] mt-0.5">
+            <p className="text-xs text-[#717784] dark:text-zinc-400 mt-0.5">
               Day-by-day visitor volume and screen pageview distribution across TrustHyre ({dateRange}).
             </p>
           </div>
 
           {/* Toggle between Visitors and Pageviews */}
-          <div className="flex items-center bg-[#f4f4f4] p-1 rounded-xl w-full sm:w-auto shrink-0">
+          <div className="flex items-center bg-[#f4f4f4] dark:bg-[#121215] p-1 rounded-xl w-full sm:w-auto shrink-0 border border-transparent dark:border-zinc-800">
             <button
               type="button"
               onClick={() => setMetricTab('users')}
               className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center ${
                 metricTab === 'users'
-                  ? 'bg-white text-[#0f2f63] shadow-xs'
-                  : 'text-[#717784] hover:text-[#0a0a0a]'
+                  ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-400 shadow-xs'
+                  : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
               }`}
             >
               Unique Visitors
@@ -356,8 +356,8 @@ export const AdminAnalyticsPage: React.FC = () => {
               onClick={() => setMetricTab('pageViews')}
               className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center ${
                 metricTab === 'pageViews'
-                  ? 'bg-white text-[#0f2f63] shadow-xs'
-                  : 'text-[#717784] hover:text-[#0a0a0a]'
+                  ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-400 shadow-xs'
+                  : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
               }`}
             >
               Total Pageviews
@@ -367,10 +367,10 @@ export const AdminAnalyticsPage: React.FC = () => {
 
         {/* Responsive SVG Chart Container */}
         {points.length === 0 ? (
-          <div className="py-16 text-center bg-[#fafbfc] rounded-xl border border-dashed border-[#e6e8ec]">
-            <BarChart2 className="w-8 h-8 text-[#717784]/40 mx-auto mb-2" />
-            <p className="text-xs font-semibold text-[#0a0a0a]">No Historical Traffic Data Available</p>
-            <p className="text-[11px] text-[#717784] mt-1 max-w-sm mx-auto">
+          <div className="py-16 text-center bg-[#fafbfc] dark:bg-[#121215] rounded-xl border border-dashed border-[#e6e8ec] dark:border-zinc-800">
+            <BarChart2 className="w-8 h-8 text-[#717784]/40 dark:text-zinc-600 mx-auto mb-2" />
+            <p className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">No Historical Traffic Data Available</p>
+            <p className="text-[11px] text-[#717784] dark:text-zinc-400 mt-1 max-w-sm mx-auto">
               Real visitor trends will appear here once visitors browse the application and Google Analytics logs metrics.
             </p>
           </div>
@@ -396,14 +396,14 @@ export const AdminAnalyticsPage: React.FC = () => {
                         y1={y}
                         x2={svgWidth - paddingX}
                         y2={y}
-                        stroke="#e6e8ec"
+                        className="stroke-[#e6e8ec] dark:stroke-zinc-800"
                         strokeDasharray="4 4"
                       />
                       <text
                         x={paddingX - 10}
                         y={y + 3}
                         textAnchor="end"
-                        className="text-[10px] fill-[#717784] font-mono"
+                        className="text-[10px] fill-[#717784] dark:fill-zinc-500 font-mono"
                       >
                         {labelVal}
                       </text>
@@ -419,7 +419,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                   <path
                     d={pathD}
                     fill="none"
-                    stroke="#0f2f63"
+                    className="stroke-[#0f2f63] dark:stroke-sky-400"
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -433,13 +433,13 @@ export const AdminAnalyticsPage: React.FC = () => {
                       cx={pt.x}
                       cy={pt.y}
                       r="4"
-                      className="fill-white stroke-[#0f2f63] stroke-[2.5px] transition-all group-hover/point:r-6 group-hover/point:stroke-[#2563c9]"
+                      className="fill-white dark:fill-[#121215] stroke-[#0f2f63] dark:stroke-sky-400 stroke-[2.5px] transition-all group-hover/point:r-6 group-hover/point:stroke-[#2563c9] dark:group-hover/point:stroke-sky-300"
                     />
                     <text
                       x={pt.x}
                       y={svgHeight - 8}
                       textAnchor="middle"
-                      className="text-[9px] fill-[#717784] font-medium"
+                      className="text-[9px] fill-[#717784] dark:fill-zinc-400 font-medium"
                     >
                       {i % Math.max(Math.floor(points.length / 7), 1) === 0 ? pt.label : ''}
                     </text>
@@ -458,27 +458,27 @@ export const AdminAnalyticsPage: React.FC = () => {
         <div className="lg:col-span-7 space-y-5 sm:space-y-6 min-w-0">
           
           {/* Top Pages Table */}
-          <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-4 min-w-0">
-            <h3 className="text-sm font-bold text-[#0a0a0a] flex items-center gap-2">
-              <Eye className="w-4 h-4 text-[#0f2f63] shrink-0" />
+          <div className="bg-white dark:bg-[#09090b] p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4 min-w-0 transition-colors">
+            <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2">
+              <Eye className="w-4 h-4 text-[#0f2f63] dark:text-sky-400 shrink-0" />
               <span>Top Browsed Pages & Job Listings</span>
             </h3>
 
             {topPages.length === 0 ? (
-              <div className="py-12 text-center text-xs text-[#717784] bg-[#fafbfc] rounded-xl border border-dashed border-[#e6e8ec] px-4">
+              <div className="py-12 text-center text-xs text-[#717784] dark:text-zinc-400 bg-[#fafbfc] dark:bg-[#121215] rounded-xl border border-dashed border-[#e6e8ec] dark:border-zinc-800 px-4">
                 No page browsing events recorded yet for this filter.
               </div>
             ) : (
-              <div className="divide-y divide-[#e6e8ec] overflow-hidden">
+              <div className="divide-y divide-[#e6e8ec] dark:divide-zinc-800 overflow-hidden">
                 {topPages.map((page, idx) => (
                   <div key={idx} className="py-2.5 flex items-center justify-between text-xs gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-[#0a0a0a] truncate">{page.title || page.path}</p>
-                      <p className="text-[11px] text-[#717784] font-mono truncate">{page.path}</p>
+                      <p className="font-semibold text-[#0a0a0a] dark:text-zinc-100 truncate">{page.title || page.path}</p>
+                      <p className="text-[11px] text-[#717784] dark:text-zinc-400 font-mono truncate">{page.path}</p>
                     </div>
                     <div className="text-right shrink-0 whitespace-nowrap">
-                      <span className="font-bold text-[#0f2f63]">{page.views.toLocaleString('en-IN')} views</span>
-                      <span className="text-[10px] text-[#717784] block">{page.users} visitors</span>
+                      <span className="font-bold text-[#0f2f63] dark:text-sky-400">{page.views.toLocaleString('en-IN')} views</span>
+                      <span className="text-[10px] text-[#717784] dark:text-zinc-400 block">{page.users} visitors</span>
                     </div>
                   </div>
                 ))}
@@ -487,14 +487,14 @@ export const AdminAnalyticsPage: React.FC = () => {
           </div>
 
           {/* Top Cities */}
-          <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-4 min-w-0">
-            <h3 className="text-sm font-bold text-[#0a0a0a] flex items-center gap-2">
-              <Globe2 className="w-4 h-4 text-[#0f2f63] shrink-0" />
+          <div className="bg-white dark:bg-[#09090b] p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4 min-w-0 transition-colors">
+            <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2">
+              <Globe2 className="w-4 h-4 text-[#0f2f63] dark:text-sky-400 shrink-0" />
               <span>Geographic Visitor Hubs (India)</span>
             </h3>
 
             {topCities.length === 0 ? (
-              <div className="py-12 text-center text-xs text-[#717784] bg-[#fafbfc] rounded-xl border border-dashed border-[#e6e8ec] px-4">
+              <div className="py-12 text-center text-xs text-[#717784] dark:text-zinc-400 bg-[#fafbfc] dark:bg-[#121215] rounded-xl border border-dashed border-[#e6e8ec] dark:border-zinc-800 px-4">
                 No geographic visitor locations recorded yet in Google Analytics.
               </div>
             ) : (
@@ -502,17 +502,17 @@ export const AdminAnalyticsPage: React.FC = () => {
                 {topCities.map((city, idx) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between items-center text-xs gap-2">
-                      <span className="font-semibold text-[#0a0a0a] flex items-center gap-1.5 truncate min-w-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] shrink-0" />
+                      <span className="font-semibold text-[#0a0a0a] dark:text-zinc-100 flex items-center gap-1.5 truncate min-w-0">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] dark:bg-sky-400 shrink-0" />
                         <span className="truncate">{city.city}</span>
                       </span>
-                      <span className="font-medium text-[#717784] shrink-0 whitespace-nowrap">
-                        {city.users} visitors • <strong className="text-[#0a0a0a]">{city.percentage}%</strong>
+                      <span className="font-medium text-[#717784] dark:text-zinc-400 shrink-0 whitespace-nowrap">
+                        {city.users} visitors • <strong className="text-[#0a0a0a] dark:text-white">{city.percentage}%</strong>
                       </span>
                     </div>
-                    <div className="w-full bg-[#f4f4f4] h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-[#f4f4f4] dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
                       <div
-                        className="bg-[#0f2f63] h-full rounded-full transition-all duration-500"
+                        className="bg-[#0f2f63] dark:bg-sky-500 h-full rounded-full transition-all duration-500"
                         style={{ width: `${Math.max(city.percentage, 4)}%` }}
                       />
                     </div>
@@ -528,56 +528,56 @@ export const AdminAnalyticsPage: React.FC = () => {
         <div className="lg:col-span-5 space-y-5 sm:space-y-6 min-w-0">
 
           {/* Device Breakdown Card */}
-          <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-4 min-w-0">
-            <h3 className="text-sm font-bold text-[#0a0a0a] flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-[#0f2f63] shrink-0" />
+          <div className="bg-white dark:bg-[#09090b] p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4 min-w-0 transition-colors">
+            <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2">
+              <Smartphone className="w-4 h-4 text-[#0f2f63] dark:text-sky-400 shrink-0" />
               <span>Device Category Distribution</span>
             </h3>
 
             <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
-              <div className="p-2 sm:p-3.5 rounded-xl bg-blue-50/50 border border-blue-100 flex flex-col items-center min-w-0">
-                <Smartphone className="w-4 h-4 sm:w-5 sm:h-5 text-[#0f2f63] mb-1 sm:mb-1.5 shrink-0" />
-                <span className="text-[9px] sm:text-[10px] font-semibold text-[#717784] uppercase truncate w-full">Mobile</span>
-                <span className="text-base sm:text-lg font-extrabold text-[#0a0a0a] mt-0.5">{devices.mobile}%</span>
+              <div className="p-2 sm:p-3.5 rounded-xl bg-blue-50/50 dark:bg-sky-950/40 border border-blue-100 dark:border-sky-900/40 flex flex-col items-center min-w-0">
+                <Smartphone className="w-4 h-4 sm:w-5 sm:h-5 text-[#0f2f63] dark:text-sky-400 mb-1 sm:mb-1.5 shrink-0" />
+                <span className="text-[9px] sm:text-[10px] font-semibold text-[#717784] dark:text-zinc-400 uppercase truncate w-full">Mobile</span>
+                <span className="text-base sm:text-lg font-extrabold text-[#0a0a0a] dark:text-white mt-0.5">{devices.mobile}%</span>
               </div>
 
-              <div className="p-2 sm:p-3.5 rounded-xl bg-slate-50 border border-[#e6e8ec] flex flex-col items-center min-w-0">
-                <Monitor className="w-4 h-4 sm:w-5 sm:h-5 text-[#0f2f63] mb-1 sm:mb-1.5 shrink-0" />
-                <span className="text-[9px] sm:text-[10px] font-semibold text-[#717784] uppercase truncate w-full">Desktop</span>
-                <span className="text-base sm:text-lg font-extrabold text-[#0a0a0a] mt-0.5">{devices.desktop}%</span>
+              <div className="p-2 sm:p-3.5 rounded-xl bg-slate-50 dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 flex flex-col items-center min-w-0">
+                <Monitor className="w-4 h-4 sm:w-5 sm:h-5 text-[#0f2f63] dark:text-sky-400 mb-1 sm:mb-1.5 shrink-0" />
+                <span className="text-[9px] sm:text-[10px] font-semibold text-[#717784] dark:text-zinc-400 uppercase truncate w-full">Desktop</span>
+                <span className="text-base sm:text-lg font-extrabold text-[#0a0a0a] dark:text-white mt-0.5">{devices.desktop}%</span>
               </div>
 
-              <div className="p-2 sm:p-3.5 rounded-xl bg-slate-50 border border-[#e6e8ec] flex flex-col items-center min-w-0">
-                <Tablet className="w-4 h-4 sm:w-5 sm:h-5 text-[#0f2f63] mb-1 sm:mb-1.5 shrink-0" />
-                <span className="text-[9px] sm:text-[10px] font-semibold text-[#717784] uppercase truncate w-full">Tablet</span>
-                <span className="text-base sm:text-lg font-extrabold text-[#0a0a0a] mt-0.5">{devices.tablet}%</span>
+              <div className="p-2 sm:p-3.5 rounded-xl bg-slate-50 dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 flex flex-col items-center min-w-0">
+                <Tablet className="w-4 h-4 sm:w-5 sm:h-5 text-[#0f2f63] dark:text-sky-400 mb-1 sm:mb-1.5 shrink-0" />
+                <span className="text-[9px] sm:text-[10px] font-semibold text-[#717784] dark:text-zinc-400 uppercase truncate w-full">Tablet</span>
+                <span className="text-base sm:text-lg font-extrabold text-[#0a0a0a] dark:text-white mt-0.5">{devices.tablet}%</span>
               </div>
             </div>
 
-            <p className="text-[11px] text-[#717784] leading-relaxed">
+            <p className="text-[11px] text-[#717784] dark:text-zinc-400 leading-relaxed">
               Mobile traffic accounts for the vast majority of blue-collar skilled candidate traffic, powered by TrustHyre's offline-capable Progressive Web App (PWA).
             </p>
           </div>
 
           {/* Traffic Acquisition Channels */}
-          <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-4 min-w-0">
-            <h3 className="text-sm font-bold text-[#0a0a0a] flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-[#0f2f63] shrink-0" />
+          <div className="bg-white dark:bg-[#09090b] p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4 min-w-0 transition-colors">
+            <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-[#0f2f63] dark:text-sky-400 shrink-0" />
               <span>Traffic Acquisition Channels</span>
             </h3>
 
             {channels.length === 0 ? (
-              <div className="py-8 text-center text-xs text-[#717784] bg-[#fafbfc] rounded-xl border border-dashed border-[#e6e8ec] px-4">
+              <div className="py-8 text-center text-xs text-[#717784] dark:text-zinc-400 bg-[#fafbfc] dark:bg-[#121215] rounded-xl border border-dashed border-[#e6e8ec] dark:border-zinc-800 px-4">
                 No channel traffic recorded yet in Google Analytics.
               </div>
             ) : (
               <div className="space-y-2.5">
                 {channels.map((chan, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-[#fafbfc] border border-[#e6e8ec] gap-2">
-                    <span className="font-semibold text-[#0a0a0a] truncate min-w-0">{chan.channel}</span>
+                  <div key={idx} className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-[#fafbfc] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 gap-2">
+                    <span className="font-semibold text-[#0a0a0a] dark:text-zinc-100 truncate min-w-0">{chan.channel}</span>
                     <div className="text-right shrink-0 whitespace-nowrap">
-                      <span className="font-bold text-[#0f2f63]">{chan.percentage}%</span>
-                      <span className="text-[10px] text-[#717784] ml-1 sm:ml-1.5">({chan.sessions} sessions)</span>
+                      <span className="font-bold text-[#0f2f63] dark:text-sky-400">{chan.percentage}%</span>
+                      <span className="text-[10px] text-[#717784] dark:text-zinc-400 ml-1 sm:ml-1.5">({chan.sessions} sessions)</span>
                     </div>
                   </div>
                 ))}
@@ -586,42 +586,42 @@ export const AdminAnalyticsPage: React.FC = () => {
           </div>
 
           {/* GA4 Connection & Measurement ID Card */}
-          <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-4 min-w-0">
+          <div className="bg-white dark:bg-[#09090b] p-4 sm:p-6 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-4 min-w-0 transition-colors">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-bold text-[#0a0a0a] flex items-center gap-2 truncate min-w-0">
-                <Globe2 className="w-4 h-4 text-[#0f2f63] shrink-0" />
+              <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2 truncate min-w-0">
+                <Globe2 className="w-4 h-4 text-[#0f2f63] dark:text-sky-400 shrink-0" />
                 <span className="truncate">Google Tag (GA4) Status</span>
               </h3>
               <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 whitespace-nowrap ${
                 analytics?.status === 'connected'
-                  ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                  : 'text-blue-700 bg-blue-50 border-blue-200'
+                  ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/40'
+                  : 'text-blue-700 dark:text-sky-300 bg-blue-50 dark:bg-sky-950/40 border-blue-200 dark:border-sky-800/40'
               }`}>
-                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>Tracking Active</span>
               </span>
             </div>
 
-            <div className="p-3 bg-[#f8fafc] rounded-xl border border-[#e6e8ec] space-y-1.5 min-w-0">
-              <span className="text-[10px] font-semibold text-[#717784] uppercase tracking-wider block truncate">
+            <div className="p-3 bg-[#f8fafc] dark:bg-[#121215] rounded-xl border border-[#e6e8ec] dark:border-zinc-800 space-y-1.5 min-w-0">
+              <span className="text-[10px] font-semibold text-[#717784] dark:text-zinc-400 uppercase tracking-wider block truncate">
                 Active GA4 Measurement ID
               </span>
               <div className="flex items-center justify-between gap-2 min-w-0">
-                <code className="text-xs font-mono font-bold text-[#0f2f63] break-all">
+                <code className="text-xs font-mono font-bold text-[#0f2f63] dark:text-sky-400 break-all">
                   {analytics?.measurementId || 'G-NH3HTZ6XBB'}
                 </code>
                 <button
                   type="button"
                   onClick={handleCopyMeasurementId}
-                  className="p-1.5 rounded-lg hover:bg-white text-[#717784] hover:text-[#0a0a0a] transition-colors border border-transparent hover:border-[#e6e8ec] cursor-pointer shrink-0"
+                  className="p-1.5 rounded-lg hover:bg-white dark:hover:bg-zinc-800 text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white transition-colors border border-transparent hover:border-[#e6e8ec] dark:hover:border-zinc-700 cursor-pointer shrink-0"
                   title="Copy Measurement ID"
                 >
-                  {copiedId ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedId ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
 
-            <div className="space-y-2 text-[11px] text-[#717784] leading-relaxed">
+            <div className="space-y-2 text-[11px] text-[#717784] dark:text-zinc-400 leading-relaxed">
               <p>
                 • <strong>Client Tracking:</strong> Initialized via <code>gtag.js</code> in the TrustHyre PWA (<code>G-NH3HTZ6XBB</code>). Pageviews fire automatically on route transitions.
               </p>

@@ -33,12 +33,12 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 
     const variantStyles = {
       default:
-        "bg-white border-[#e6e8ec] text-[#0A1931] hover:border-slate-300 focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 shadow-2xs",
+        "bg-white dark:bg-[#121215] border-[#e6e8ec] dark:border-zinc-800 text-[#0A1931] dark:text-white hover:border-slate-300 dark:hover:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-[#38BDF8] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#38BDF8]/20 shadow-2xs",
       outline:
-        "bg-white border-slate-200 text-slate-800 hover:bg-slate-50 focus:border-[#0066FF] focus:ring-2 focus:ring-[#0066FF]/10 shadow-2xs",
-      pill: "bg-[#f4f4f4] hover:bg-[#e6e8ec] border border-[#e6e8ec] rounded-full text-[#0a0a0a]",
+        "bg-white dark:bg-[#121215] border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-900 focus:border-[#0066FF] dark:focus:border-[#38BDF8] focus:ring-2 focus:ring-[#0066FF]/10 shadow-2xs",
+      pill: "bg-[#f4f4f4] dark:bg-[#121215] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 rounded-full text-[#0a0a0a] dark:text-white",
       subtle:
-        "bg-[#f8fafc] hover:bg-slate-100 border border-[#e6e8ec] text-slate-800",
+        "bg-[#f8fafc] dark:bg-[#09090b] hover:bg-slate-100 dark:hover:bg-zinc-900 border border-[#e6e8ec] dark:border-zinc-800 text-slate-800 dark:text-zinc-200",
       dark: "bg-white/10 hover:bg-white/20 border border-white/20 text-white backdrop-blur-xs",
     };
 
@@ -53,7 +53,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5"
+            className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 mb-1.5"
           >
             {label}
             {props.required && <span className="text-red-500 ml-0.5">*</span>}

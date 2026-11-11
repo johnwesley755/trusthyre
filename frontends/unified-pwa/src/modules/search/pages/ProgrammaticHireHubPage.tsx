@@ -301,7 +301,7 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
   }, [pageTitle, metaDesc, workers, tradeMeta, cityMeta, canonicalPath]);
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
+    <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <SeoHead
         title={pageTitle}
         description={metaDesc}
@@ -310,32 +310,32 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
       />
 
       {/* Hero Header */}
-      <div className="bg-[#0f2f63] text-white pt-10 pb-16 px-4 sm:px-6 relative overflow-hidden">
+      <div className="bg-[#0f2f63] dark:bg-[#09090b] text-white pt-10 pb-16 px-4 sm:px-6 relative overflow-hidden border-b border-transparent dark:border-zinc-800">
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-6xl mx-auto space-y-4">
           {/* Breadcrumb pills */}
-          <div className="flex flex-wrap items-center gap-2 text-xs text-blue-200/80 font-medium">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-blue-200/80 dark:text-zinc-400 font-medium">
             <Link to="/" className="hover:text-white transition">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <Link to="/find-workers" className="hover:text-white transition">Hire Talent</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-white font-semibold">{cityMeta.name}</span>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-100 font-bold">{tradeMeta.title}</span>
+            <span className="text-blue-100 dark:text-sky-300 font-bold">{tradeMeta.title}</span>
           </div>
 
           <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-blue-200 text-xs font-semibold uppercase tracking-wider backdrop-blur-md border border-white/15">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 dark:bg-white/5 text-blue-200 dark:text-sky-300 text-xs font-semibold uppercase tracking-wider backdrop-blur-md border border-white/15 dark:border-white/10">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               Verified Employer Gateway · Zero Broker Commission
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
-              Hire Verified <span className="text-blue-300">{tradeMeta.title}</span> in {cityMeta.name}
+              Hire Verified <span className="text-blue-300 dark:text-sky-400">{tradeMeta.title}</span> in {cityMeta.name}
             </h1>
 
-            <p className="text-sm sm:text-base text-blue-100/90 leading-relaxed font-normal">
+            <p className="text-sm sm:text-base text-blue-100/90 dark:text-zinc-300 leading-relaxed font-normal">
               {tradeMeta.description} Connect directly with pre-screened talent across {cityMeta.popularLocalities.slice(0, 4).join(', ')}, and surrounding zones.
             </p>
           </div>
@@ -344,9 +344,9 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
           <div className="pt-4 flex flex-wrap items-center gap-3">
             <button
               onClick={() => navigate('/post-job')}
-              className="px-6 py-3 rounded-full bg-white hover:bg-slate-100 text-[#0f2f63] font-bold text-xs uppercase tracking-wider shadow-lg transition-all active:scale-95 cursor-pointer flex items-center gap-2"
+              className="px-6 py-3 rounded-full bg-white dark:bg-[#0066FF] hover:bg-slate-100 dark:hover:bg-[#0052cc] text-[#0f2f63] dark:text-white font-bold text-xs uppercase tracking-wider shadow-lg transition-all active:scale-95 cursor-pointer flex items-center gap-2"
             >
-              <Briefcase className="w-4 h-4 text-[#0f2f63]" />
+              <Briefcase className="w-4 h-4 text-[#0f2f63] dark:text-white" />
               Post Job to Hire in {cityMeta.name}
             </button>
 
@@ -358,12 +358,12 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
 
-            <div className="ml-auto hidden md:flex items-center gap-6 text-xs text-blue-200/90">
+            <div className="ml-auto hidden md:flex items-center gap-6 text-xs text-blue-200/90 dark:text-zinc-400">
               <div>
                 <span className="block font-bold text-white text-sm">{tradeMeta.avgSalary}</span>
                 <span>Benchmark Monthly Pay</span>
               </div>
-              <div className="h-6 w-px bg-white/20" />
+              <div className="h-6 w-px bg-white/20 dark:bg-zinc-800" />
               <div>
                 <span className="block font-bold text-white text-sm">Zero Fee</span>
                 <span>Direct Contact</span>
@@ -379,20 +379,20 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
           
           {/* Main Candidates Column (2 Cols) */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec] dark:border-zinc-800">
               <div>
-                <h2 className="text-xl font-bold text-[#0a0a0a] flex items-center gap-2">
-                  <Users className="w-5 h-5 text-[#0f2f63]" />
+                <h2 className="text-xl font-bold text-[#0a0a0a] dark:text-white flex items-center gap-2">
+                  <Users className="w-5 h-5 text-[#0f2f63] dark:text-[#38BDF8]" />
                   Available {tradeMeta.title} Candidates ({workers.length})
                 </h2>
-                <p className="text-xs text-[#717784] mt-0.5">
+                <p className="text-xs text-[#717784] dark:text-zinc-400 mt-0.5">
                   Verified profiles actively available for direct hire in {cityMeta.name}
                 </p>
               </div>
 
               <Link
                 to="/find-workers"
-                className="text-xs font-semibold text-[#0f2f63] hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-[#0f2f63] dark:text-[#38BDF8] hover:underline flex items-center gap-1"
               >
                 <span>Filter All</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -404,19 +404,19 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
                 <AppLoader variant="inline" size="lg" message="Loading verified candidates in your area..." />
               </div>
             ) : workers.length === 0 ? (
-              <div className="bg-white rounded-3xl p-8 border border-[#e6e8ec] text-center space-y-4">
-                <div className="w-14 h-14 rounded-full bg-blue-50 text-[#0f2f63] flex items-center justify-center mx-auto">
+              <div className="bg-white dark:bg-[#121215] rounded-3xl p-8 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-4">
+                <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-zinc-800 text-[#0f2f63] dark:text-[#38BDF8] flex items-center justify-center mx-auto">
                   <Search className="w-7 h-7" />
                 </div>
-                <h3 className="text-base font-bold text-[#0a0a0a]">
+                <h3 className="text-base font-bold text-[#0a0a0a] dark:text-white">
                   Candidate Pipeline Updating for {cityMeta.name}
                 </h3>
-                <p className="text-xs text-[#717784] max-w-md mx-auto leading-relaxed">
+                <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-md mx-auto leading-relaxed">
                   We are constantly verifying candidate trade evaluations in {cityMeta.name}. Post your requirements to automatically notify registered {tradeMeta.title.toLowerCase()} in your locality.
                 </p>
                 <button
                   onClick={() => navigate('/post-job')}
-                  className="px-6 py-2.5 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-bold uppercase transition"
+                  className="px-6 py-2.5 rounded-full bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#2563c9] dark:hover:bg-[#0052cc] text-white text-xs font-bold uppercase transition shadow-xs"
                 >
                   Post Job & Request Candidates
                 </button>
@@ -431,7 +431,7 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
                   return (
                     <div 
                       key={workerId}
-                      className="bg-white rounded-2xl p-5 border border-[#e6e8ec] hover:border-[#0f2f63]/40 transition shadow-2xs space-y-4"
+                      className="bg-white dark:bg-[#121215] rounded-2xl p-5 border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/40 dark:hover:border-zinc-600 transition shadow-2xs space-y-4"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3.5">
@@ -443,17 +443,17 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
                           />
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-sm text-[#0a0a0a]">
+                              <h3 className="font-bold text-sm text-[#0a0a0a] dark:text-white">
                                 {worker.name || 'Trade Specialist'}
                               </h3>
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
-                                <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800">
+                                <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                 Verified
                               </span>
                             </div>
 
-                            <p className="text-xs text-[#717784] flex items-center gap-2 mt-1">
-                              <span className="font-medium text-[#0a0a0a]">{worker.trade || tradeMeta.title.slice(0, -1)}</span>
+                            <p className="text-xs text-[#717784] dark:text-zinc-400 flex items-center gap-2 mt-1">
+                              <span className="font-medium text-[#0a0a0a] dark:text-zinc-200">{worker.trade || tradeMeta.title.slice(0, -1)}</span>
                               <span>•</span>
                               <span>{experience}</span>
                               <span>•</span>
@@ -467,32 +467,32 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
 
                         <Link
                           to={`/worker/${workerId}`}
-                          className="px-4 py-2 rounded-full bg-slate-100 hover:bg-[#0f2f63] hover:text-white text-[#0f2f63] text-xs font-bold transition uppercase tracking-wider shrink-0"
+                          className="px-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-[#0f2f63] dark:hover:bg-[#0066FF] text-[#0f2f63] dark:text-zinc-200 hover:text-white dark:hover:text-white text-xs font-bold transition uppercase tracking-wider shrink-0"
                         >
                           View Profile
                         </Link>
                       </div>
 
                       {worker.bio && (
-                        <p className="text-xs text-[#525866] leading-relaxed line-clamp-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <p className="text-xs text-[#525866] dark:text-zinc-300 leading-relaxed line-clamp-2 bg-slate-50 dark:bg-[#1C1C21] p-2.5 rounded-xl border border-slate-100 dark:border-zinc-800/80">
                           "{worker.bio}"
                         </p>
                       )}
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
                         <div className="flex flex-wrap items-center gap-1.5">
                           {skillsList.slice(0, 4).map((skill: string) => (
                             <span 
                               key={skill}
-                              className="px-2.5 py-1 rounded-lg bg-slate-100 text-[#474d5b] text-[10px] font-semibold"
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-[#474d5b] dark:text-zinc-300 text-[10px] font-semibold"
                             >
                               {skill}
                             </span>
                           ))}
                         </div>
 
-                        <span className="text-[11px] text-[#717784] flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-[#0f2f63]" />
+                        <span className="text-[11px] text-[#717784] dark:text-zinc-400 flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-[#0f2f63] dark:text-[#38BDF8]" />
                           {worker.city || cityMeta.name}
                         </span>
                       </div>
@@ -503,40 +503,40 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
             )}
 
             {/* Employer FAQ & Hiring Guide Accordion */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e6e8ec] space-y-6 mt-8">
+            <div className="bg-white dark:bg-[#121215] rounded-3xl p-6 sm:p-8 border border-[#e6e8ec] dark:border-zinc-800 space-y-6 mt-8">
               <div>
-                <h3 className="text-lg font-bold text-[#0a0a0a]">
+                <h3 className="text-lg font-bold text-[#0a0a0a] dark:text-white">
                   Frequently Asked Questions About Hiring {tradeMeta.title} in {cityMeta.name}
                 </h3>
-                <p className="text-xs text-[#717784] mt-1">
+                <p className="text-xs text-[#717784] dark:text-zinc-400 mt-1">
                   Compliance, verification standards, and hiring protocols
                 </p>
               </div>
 
               <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
-                  <h4 className="text-xs font-bold text-[#0a0a0a]">
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1C1C21] border border-slate-200/80 dark:border-zinc-800/80 space-y-1.5">
+                  <h4 className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-100">
                     1. How does TrustHyre verify {tradeMeta.title.toLowerCase()} in {cityMeta.name}?
                   </h4>
-                  <p className="text-xs text-[#525866] leading-relaxed">
+                  <p className="text-xs text-[#525866] dark:text-zinc-300 leading-relaxed">
                     Every candidate on TrustHyre completes government ID authentication, trade skill questionnaires, and hands-on work history records. When workers arrive on-site, attendance is recorded directly for complete accountability.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
-                  <h4 className="text-xs font-bold text-[#0a0a0a]">
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1C1C21] border border-slate-200/80 dark:border-zinc-800/80 space-y-1.5">
+                  <h4 className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-100">
                     2. Are there any recruiter or middle-men fees?
                   </h4>
-                  <p className="text-xs text-[#525866] leading-relaxed">
+                  <p className="text-xs text-[#525866] dark:text-zinc-300 leading-relaxed">
                     No. TrustHyre operates on a direct connection model. Employers negotiate wages directly with candidates with zero commission deductions.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
-                  <h4 className="text-xs font-bold text-[#0a0a0a]">
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1C1C21] border border-slate-200/80 dark:border-zinc-800/80 space-y-1.5">
+                  <h4 className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-100">
                     3. What is the typical wage benchmark for {tradeMeta.title.toLowerCase()} in {cityMeta.name}?
                   </h4>
-                  <p className="text-xs text-[#525866] leading-relaxed">
+                  <p className="text-xs text-[#525866] dark:text-zinc-300 leading-relaxed">
                     Standard monthly compensation in {cityMeta.name} averages between {tradeMeta.avgSalary}, depending on shift hours, commercial tooling requirements, and practical years of experience.
                   </p>
                 </div>
@@ -548,35 +548,35 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
           <div className="space-y-6">
             
             {/* Direct Employer CTA Box */}
-            <div className="bg-[#0f2f63] text-white rounded-3xl p-6 shadow-md space-y-4 relative overflow-hidden">
-              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-blue-200" />
+            <div className="bg-[#0f2f63] dark:bg-[#09090b] text-white rounded-3xl p-6 shadow-md space-y-4 relative overflow-hidden border border-transparent dark:border-zinc-800">
+              <div className="w-10 h-10 rounded-2xl bg-white/10 dark:bg-zinc-800 flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-blue-200 dark:text-[#38BDF8]" />
               </div>
               <div>
                 <h3 className="text-base font-bold text-white">
                   Need Staff Immediately?
                 </h3>
-                <p className="text-xs text-blue-100/80 leading-relaxed mt-1">
+                <p className="text-xs text-blue-100/80 dark:text-zinc-400 leading-relaxed mt-1">
                   Post your requirements in 2 minutes. We alert active verified workers across {cityMeta.name} instantly.
                 </p>
               </div>
 
               <button
                 onClick={() => navigate('/post-job')}
-                className="w-full py-3 rounded-xl bg-white hover:bg-slate-100 text-[#0f2f63] text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-sm"
+                className="w-full py-3 rounded-xl bg-white dark:bg-[#0066FF] hover:bg-slate-100 dark:hover:bg-[#0052cc] text-[#0f2f63] dark:text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-sm"
               >
                 Post Job Opening Now
               </button>
 
-              <div className="text-[11px] text-blue-200/70 flex items-center justify-center gap-1.5">
+              <div className="text-[11px] text-blue-200/70 dark:text-zinc-400 flex items-center justify-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 Zero Agency Commission
               </div>
             </div>
 
             {/* Popular Trades in City */}
-            <div className="bg-white border border-[#e6e8ec] rounded-2xl p-5 shadow-2xs space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#717784]">
+            <div className="bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-2xl p-5 shadow-2xs space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400">
                 Popular Trades in {cityMeta.name}
               </h3>
               <div className="space-y-1.5">
@@ -590,12 +590,12 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
                         to={`/hire-${slug}s-in-${citySlug}`}
                         className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium transition ${
                           active 
-                            ? 'bg-[#0f2f63] text-white font-bold' 
-                            : 'text-[#2e333d] hover:bg-slate-50'
+                            ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white font-bold' 
+                            : 'text-[#2e333d] dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-900/60'
                         }`}
                       >
                         <span>{meta.title}</span>
-                        <span className={active ? 'text-blue-200 text-[10px]' : 'text-[#868c98] text-[10px]'}>
+                        <span className={active ? 'text-blue-200 dark:text-blue-100 text-[10px]' : 'text-[#868c98] dark:text-zinc-500 text-[10px]'}>
                           {meta.avgSalary.split('/')[0]}
                         </span>
                       </Link>
@@ -605,8 +605,8 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
             </div>
 
             {/* Other Cities Links */}
-            <div className="bg-white border border-[#e6e8ec] rounded-2xl p-5 shadow-2xs space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#717784]">
+            <div className="bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-2xl p-5 shadow-2xs space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400">
                 Hire in Other Tamil Nadu & Karnataka Hubs
               </h3>
               <div className="space-y-1.5">
@@ -616,7 +616,7 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
                     <Link
                       key={c}
                       to={`/hire-${tradeSlug === 'workers' ? 'workers' : tradeSlug}-in-${c}`}
-                      className="block text-xs text-[#5a6270] hover:text-[#0f2f63] hover:underline py-1"
+                      className="block text-xs text-[#5a6270] dark:text-zinc-400 hover:text-[#0f2f63] dark:hover:text-[#38BDF8] hover:underline py-1"
                     >
                       Hire in {meta.name}, {meta.state}
                     </Link>

@@ -76,7 +76,7 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
   const isDetecting = internalLocating || isLocating;
 
   return (
-    <div className="bg-[#f4f4f4] rounded-[1.75rem] border border-[#e6e8ec] p-5 sm:p-6 mb-6 shadow-xs font-['Onest',system-ui,sans-serif] space-y-4">
+    <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-[1.75rem] border border-[#e6e8ec] dark:border-zinc-800 p-5 sm:p-6 mb-6 shadow-xs font-['Onest',system-ui,sans-serif] space-y-4">
       
       {/* Top Row: Section Title, Counter & Location Detector */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -84,17 +84,17 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
         {/* Title & Subtitle */}
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] animate-pulse" />
-            <span className="text-[10px] font-medium uppercase text-[#0f2f63]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] dark:bg-sky-400 animate-pulse" />
+            <span className="text-[10px] font-medium uppercase text-[#0f2f63] dark:text-sky-400">
               Verified Job Directory
             </span>
           </div>
 
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-medium uppercase leading-tight text-[#0a0a0a]">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-medium uppercase leading-tight text-[#0a0a0a] dark:text-zinc-100">
             {resolvedTitle}
           </h1>
           
-          <p className="text-xs text-[#717784] font-normal leading-relaxed max-w-xl">
+          <p className="text-xs text-[#717784] dark:text-zinc-400 font-normal leading-relaxed max-w-xl">
             {resolvedSubtitle}
           </p>
         </div>
@@ -104,9 +104,9 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
           
           {/* Active Total Openings Badge */}
           {totalJobs > 0 && (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#e6e8ec] text-xs font-medium text-[#0a0a0a] shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span><strong className="font-semibold text-[#0a0a0a] tabular-nums">{totalJobs}</strong> Openings Available</span>
+              <span><strong className="font-semibold text-[#0a0a0a] dark:text-zinc-100 tabular-nums">{totalJobs}</strong> Openings Available</span>
             </div>
           )}
 
@@ -129,12 +129,12 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
               type="button"
               onClick={handleLocateClick}
               disabled={isDetecting}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-white/80 border border-[#e6e8ec] text-xs font-medium text-[#0a0a0a] shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-[#121215] hover:bg-white/80 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-60"
             >
               {isDetecting ? (
-                <Loader2 className="w-3.5 h-3.5 text-[#0f2f63] animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400 animate-spin" />
               ) : (
-                <LocateFixed className="w-3.5 h-3.5 text-[#2563c9]" />
+                <LocateFixed className="w-3.5 h-3.5 text-[#2563c9] dark:text-sky-400" />
               )}
               <span>{isDetecting ? 'Detecting City...' : 'Detect Near Me'}</span>
             </button>
@@ -146,7 +146,7 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
 
       {/* Optional Inline Location Notice (No Alert Boxes) */}
       {locationNotice && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-800">
+        <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 rounded-xl text-xs text-amber-800 dark:text-amber-300">
           <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
           <span>{locationNotice}</span>
           <button
@@ -161,8 +161,8 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
 
       {/* Horizontal Trade Filter Pills */}
       {onTradeSelect && (
-        <div className="pt-2 border-t border-[#e6e8ec]/80 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-[10px] font-medium uppercase text-[#717784] shrink-0 mr-1 hidden sm:inline-block">
+        <div className="pt-2 border-t border-[#e6e8ec]/80 dark:border-zinc-800 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <span className="text-[10px] font-medium uppercase text-[#717784] dark:text-zinc-400 shrink-0 mr-1 hidden sm:inline-block">
             Categories:
           </span>
           {FEATURED_TRADES.map((trade) => {
@@ -173,8 +173,8 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
                 onClick={() => onTradeSelect(trade)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#0f2f63] text-white shadow-xs'
-                    : 'bg-white border border-[#e6e8ec] text-[#0a0a0a] hover:border-[#0f2f63]/40'
+                    ? 'bg-[#0f2f63] dark:bg-sky-600 text-white shadow-xs'
+                    : 'bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-[#0a0a0a] dark:text-zinc-200 hover:border-[#0f2f63]/40 dark:hover:border-zinc-700'
                 }`}
               >
                 {trade}

@@ -67,21 +67,21 @@ export const AdminDashboardPage: React.FC = () => {
       value: stats?.totalUsers || 0,
       sub: `${stats?.totalWorkers || 0} Candidates • ${stats?.totalEmployers || 0} Employers`,
       icon: Users,
-      color: 'bg-blue-50 text-[#0f2f63] border border-blue-100'
+      color: 'bg-blue-50 dark:bg-blue-950/40 text-[#0f2f63] dark:text-sky-400 border border-blue-100 dark:border-blue-900/40'
     },
     {
       title: 'Active Job Postings',
       value: stats?.openJobs || 0,
       sub: `${stats?.totalJobs || 0} Total Listings Created`,
       icon: Briefcase,
-      color: 'bg-amber-50 text-amber-700 border border-amber-200'
+      color: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40'
     },
     {
       title: 'Pending Verifications',
       value: stats?.pendingVerifications || 0,
       sub: `${stats?.totalVerifications || 0} Evaluated Records`,
       icon: FileCheck2,
-      color: 'bg-rose-50 text-rose-700 border border-rose-200',
+      color: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40',
       alert: (stats?.pendingVerifications || 0) > 0
     },
     {
@@ -89,28 +89,28 @@ export const AdminDashboardPage: React.FC = () => {
       value: stats?.totalHired || 0,
       sub: `${(stats?.totalHired || 0)} Direct Placements`,
       icon: CheckCircle2,
-      color: 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+      color: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/40'
     },
   ];
 
   return (
     <div className="space-y-6 font-['Onest',system-ui,sans-serif] w-full max-w-full min-w-0">
       {/* Welcome Banner */}
-      <div className="bg-white border border-[#e6e8ec] rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xs relative overflow-hidden min-w-0">
+      <div className="bg-white dark:bg-[#09090b] border border-[#e6e8ec] dark:border-zinc-800 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xs relative overflow-hidden min-w-0 transition-colors">
         <div className="min-w-0 flex-1">
-          <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] mb-1.5">
+          <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] dark:text-zinc-400 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9]" />
             <span>Platform Overview</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-medium text-[#0a0a0a] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-medium text-[#0a0a0a] dark:text-white tracking-tight">
             Command Center
           </h1>
-          <p className="text-xs sm:text-sm text-[#717784] mt-1 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 mt-1 leading-relaxed">
             Real-time ecosystem metrics, workforce identity review queue, and platform operational health.
           </p>
         </div>
         
-        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] sm:text-xs font-medium uppercase tracking-wider shrink-0">
+        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-400 text-[11px] sm:text-xs font-medium uppercase tracking-wider shrink-0">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>Services Operational</span>
         </div>
@@ -123,17 +123,17 @@ export const AdminDashboardPage: React.FC = () => {
           return (
             <div 
               key={idx}
-              className="bg-white border border-[#e6e8ec] rounded-2xl p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between shadow-xs hover:border-[#0f2f63]/30 transition-all min-w-0"
+              className="bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-2xl p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between shadow-xs hover:border-[#0f2f63]/30 dark:hover:border-zinc-700 transition-all min-w-0"
             >
               <div className="flex items-center justify-between mb-3 min-w-0">
-                <span className="text-xs font-medium uppercase tracking-wider text-[#717784] truncate mr-2">{kpi.title}</span>
+                <span className="text-xs font-medium uppercase tracking-wider text-[#717784] dark:text-zinc-400 truncate mr-2">{kpi.title}</span>
                 <div className={`w-10 h-10 rounded-xl ${kpi.color} flex items-center justify-center shadow-2xs shrink-0`}>
                   <Icon className="w-5 h-5" />
                 </div>
               </div>
               <div className="min-w-0">
-                <span className="text-2xl sm:text-3xl font-semibold text-[#0a0a0a] tracking-tight block">{kpi.value.toLocaleString()}</span>
-                <p className="text-xs text-[#717784] mt-1 truncate">{kpi.sub}</p>
+                <span className="text-2xl sm:text-3xl font-semibold text-[#0a0a0a] dark:text-white tracking-tight block">{kpi.value.toLocaleString()}</span>
+                <p className="text-xs text-[#717784] dark:text-zinc-400 mt-1 truncate">{kpi.sub}</p>
               </div>
             </div>
           );
@@ -202,16 +202,16 @@ export const AdminDashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-w-0">
         
         {/* Left Column: Verification Queue */}
-        <div className="lg:col-span-7 bg-white border border-[#e6e8ec] rounded-2xl p-4 sm:p-6 lg:p-7 flex flex-col justify-between shadow-xs min-w-0">
+        <div className="lg:col-span-7 bg-white dark:bg-[#09090b] border border-[#e6e8ec] dark:border-zinc-800 rounded-2xl p-4 sm:p-6 lg:p-7 flex flex-col justify-between shadow-xs min-w-0 transition-colors">
           <div className="min-w-0">
-            <div className="flex items-center justify-between mb-5 pb-4 border-b border-[#e6e8ec] gap-2 min-w-0">
+            <div className="flex items-center justify-between mb-5 pb-4 border-b border-[#e6e8ec] dark:border-zinc-800 gap-2 min-w-0">
               <div className="flex items-center gap-2.5 min-w-0">
-                <FileCheck2 className="w-5 h-5 text-[#0f2f63] shrink-0" />
-                <h2 className="text-base font-semibold text-[#0a0a0a] truncate">Pending Verifications</h2>
+                <FileCheck2 className="w-5 h-5 text-[#0f2f63] dark:text-sky-400 shrink-0" />
+                <h2 className="text-base font-semibold text-[#0a0a0a] dark:text-white truncate">Pending Verifications</h2>
               </div>
               <Link 
                 to="/admin/verifications"
-                className="text-xs font-medium text-[#2563c9] hover:underline inline-flex items-center gap-1 shrink-0 whitespace-nowrap"
+                className="text-xs font-medium text-[#2563c9] dark:text-sky-400 hover:underline inline-flex items-center gap-1 shrink-0 whitespace-nowrap"
               >
                 <span>Full Queue ({pendingVerifications.length})</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -220,29 +220,29 @@ export const AdminDashboardPage: React.FC = () => {
 
             {isLoadingVerifications ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="w-6 h-6 text-[#0f2f63] animate-spin" />
+                <Loader2 className="w-6 h-6 text-[#0f2f63] dark:text-sky-400 animate-spin" />
               </div>
             ) : pendingVerifications.length === 0 ? (
-              <div className="text-center py-12 bg-[#f8fafc] rounded-xl border border-[#e6e8ec]">
+              <div className="text-center py-12 bg-[#f8fafc] dark:bg-[#121215] rounded-xl border border-[#e6e8ec] dark:border-zinc-800">
                 <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                <p className="text-xs font-semibold text-[#0a0a0a]">All identity verification requests cleared!</p>
-                <p className="text-[11px] text-[#717784] mt-0.5">No pending documents in queue.</p>
+                <p className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">All identity verification requests cleared!</p>
+                <p className="text-[11px] text-[#717784] dark:text-zinc-400 mt-0.5">No pending documents in queue.</p>
               </div>
             ) : (
               <div className="space-y-3 min-w-0">
                 {pendingVerifications.slice(0, 4).map((rec) => (
                   <div 
                     key={rec.id}
-                    className="p-3 sm:p-3.5 bg-[#f8fafc] border border-[#e6e8ec] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-[#f4f4f4] transition-colors min-w-0"
+                    className="p-3 sm:p-3.5 bg-[#f8fafc] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800/60 transition-colors min-w-0"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1 w-full sm:w-auto">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0f2f63] font-bold flex items-center justify-center text-sm border border-blue-100 shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-400 font-bold flex items-center justify-center text-sm border border-blue-100 dark:border-sky-900/40 shrink-0">
                         {rec.userName.charAt(0)}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h4 className="text-xs font-semibold text-[#0a0a0a] truncate">{rec.userName}</h4>
-                        <p className="text-[11px] text-[#717784] truncate">{rec.userEmail || rec.userPhone || 'Registered User'}</p>
-                        <span className="inline-block mt-1 px-2 py-0.5 bg-blue-50 border border-blue-200 text-[#0f2f63] rounded-md text-[9px] font-bold uppercase tracking-wider">
+                        <h4 className="text-xs font-semibold text-[#0a0a0a] dark:text-white truncate">{rec.userName}</h4>
+                        <p className="text-[11px] text-[#717784] dark:text-zinc-400 truncate">{rec.userEmail || rec.userPhone || 'Registered User'}</p>
+                        <span className="inline-block mt-1 px-2 py-0.5 bg-blue-50 dark:bg-sky-950/40 border border-blue-200 dark:border-sky-900/40 text-[#0f2f63] dark:text-sky-300 rounded-md text-[9px] font-bold uppercase tracking-wider">
                           {rec.verificationType}
                         </span>
                       </div>
@@ -259,7 +259,7 @@ export const AdminDashboardPage: React.FC = () => {
                       <button
                         onClick={() => verifyMutation.mutate({ id: rec.id, status: 'REJECTED' })}
                         disabled={verifyMutation.isPending}
-                        className="flex-1 sm:flex-none px-3.5 py-1.5 bg-white hover:bg-rose-50 border border-[#e6e8ec] hover:border-rose-200 text-[#717784] hover:text-rose-600 rounded-full text-xs font-medium uppercase tracking-wider transition-all cursor-pointer shrink-0"
+                        className="flex-1 sm:flex-none px-3.5 py-1.5 bg-white dark:bg-[#1C1C21] hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-[#e6e8ec] dark:border-zinc-700 hover:border-rose-200 dark:hover:border-rose-800/40 text-[#717784] dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-full text-xs font-medium uppercase tracking-wider transition-all cursor-pointer shrink-0"
                       >
                         Reject
                       </button>
@@ -270,9 +270,9 @@ export const AdminDashboardPage: React.FC = () => {
             )}
           </div>
 
-          <div className="mt-5 pt-4 border-t border-[#e6e8ec] text-[11px] text-[#717784] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 min-w-0">
+          <div className="mt-5 pt-4 border-t border-[#e6e8ec] dark:border-zinc-800 text-[11px] text-[#717784] dark:text-zinc-400 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 min-w-0">
             <span className="truncate">Approved records instantly receive verified trust badges.</span>
-            <Link to="/admin/verifications" className="text-[#0f2f63] font-medium hover:underline shrink-0 whitespace-nowrap">
+            <Link to="/admin/verifications" className="text-[#0f2f63] dark:text-sky-400 font-medium hover:underline shrink-0 whitespace-nowrap">
               Inspect Queue &rarr;
             </Link>
           </div>
@@ -281,14 +281,14 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Right Column: Platform Feeds & Fast Nav */}
         <div className="lg:col-span-5 space-y-6 min-w-0">
           {/* Recent Registrations */}
-          <div className="bg-white border border-[#e6e8ec] rounded-2xl p-4 sm:p-6 shadow-xs min-w-0">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#e6e8ec] gap-2 min-w-0">
+          <div className="bg-white dark:bg-[#09090b] border border-[#e6e8ec] dark:border-zinc-800 rounded-2xl p-4 sm:p-6 shadow-xs min-w-0 transition-colors">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#e6e8ec] dark:border-zinc-800 gap-2 min-w-0">
               <div className="flex items-center gap-2 min-w-0">
-                <UserCheck className="w-4 h-4 text-[#0f2f63] shrink-0" />
-                <h3 className="text-sm font-semibold text-[#0a0a0a] truncate">Recent Registrations</h3>
+                <UserCheck className="w-4 h-4 text-[#0f2f63] dark:text-sky-400 shrink-0" />
+                <h3 className="text-sm font-semibold text-[#0a0a0a] dark:text-white truncate">Recent Registrations</h3>
               </div>
               {isSuperAdmin && (
-                <Link to="/admin/users" className="text-xs font-medium text-[#2563c9] hover:underline shrink-0 whitespace-nowrap">
+                <Link to="/admin/users" className="text-xs font-medium text-[#2563c9] dark:text-sky-400 hover:underline shrink-0 whitespace-nowrap">
                   View All
                 </Link>
               )}
@@ -296,17 +296,17 @@ export const AdminDashboardPage: React.FC = () => {
 
             <div className="space-y-2.5 min-w-0">
               {(stats?.recentUsers || []).slice(0, 5).map((u: any) => (
-                <div key={u.id} className="flex items-center justify-between text-xs py-2 border-b border-[#e6e8ec] last:border-0 gap-3 min-w-0">
+                <div key={u.id} className="flex items-center justify-between text-xs py-2 border-b border-[#e6e8ec] dark:border-zinc-800/80 last:border-0 gap-3 min-w-0">
                   <div className="min-w-0 flex-1">
-                    <span className="font-semibold text-[#0a0a0a] block truncate">
+                    <span className="font-semibold text-[#0a0a0a] dark:text-zinc-100 block truncate">
                       {[u.first_name, u.last_name].filter(Boolean).join(' ') || u.email}
                     </span>
-                    <span className="text-[10px] text-[#717784] font-normal block truncate">
+                    <span className="text-[10px] text-[#717784] dark:text-zinc-400 font-normal block truncate">
                       {u.email}
                     </span>
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0 whitespace-nowrap ${
-                    u.role === 'EMPLOYER' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-blue-50 text-[#0f2f63] border border-blue-200'
+                    u.role === 'EMPLOYER' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40' : 'bg-blue-50 dark:bg-blue-950/40 text-[#0f2f63] dark:text-sky-400 border border-blue-200 dark:border-blue-900/40'
                   }`}>
                     {u.role}
                   </span>
@@ -316,52 +316,52 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
 
           {/* Quick Actions Card */}
-          <div className="bg-white border border-[#e6e8ec] rounded-2xl p-4 sm:p-6 shadow-xs min-w-0">
-            <h3 className="text-sm font-semibold text-[#0a0a0a] mb-3">Quick Navigation</h3>
+          <div className="bg-white dark:bg-[#09090b] border border-[#e6e8ec] dark:border-zinc-800 rounded-2xl p-4 sm:p-6 shadow-xs min-w-0 transition-colors">
+            <h3 className="text-sm font-semibold text-[#0a0a0a] dark:text-white mb-3">Quick Navigation</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 min-w-0">
               <Link
                 to="/admin/analytics"
-                className="p-2.5 bg-[#f8fafc] hover:bg-blue-50/60 border border-[#e6e8ec] hover:border-blue-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+                className="p-2.5 bg-[#f8fafc] dark:bg-[#121215] hover:bg-blue-50/60 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 hover:border-blue-200 dark:hover:border-zinc-700 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
               >
-                <BarChart3 className="w-4 h-4 text-[#0f2f63] group-hover:scale-110 transition-transform shrink-0" />
-                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Analytics</span>
+                <BarChart3 className="w-4 h-4 text-[#0f2f63] dark:text-sky-400 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 truncate w-full">Analytics</span>
               </Link>
               <Link
                 to="/admin/blog"
-                className="p-2.5 bg-[#f8fafc] hover:bg-purple-50/60 border border-[#e6e8ec] hover:border-purple-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+                className="p-2.5 bg-[#f8fafc] dark:bg-[#121215] hover:bg-purple-50/60 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 hover:border-purple-200 dark:hover:border-zinc-700 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
               >
-                <BookOpen className="w-4 h-4 text-purple-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Articles</span>
+                <BookOpen className="w-4 h-4 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 truncate w-full">Articles</span>
               </Link>
               <Link
                 to="/admin/leads"
-                className="p-2.5 bg-[#f8fafc] hover:bg-emerald-50/60 border border-[#e6e8ec] hover:border-emerald-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+                className="p-2.5 bg-[#f8fafc] dark:bg-[#121215] hover:bg-emerald-50/60 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 hover:border-emerald-200 dark:hover:border-zinc-700 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
               >
-                <Building2 className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Companies</span>
+                <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 truncate w-full">Companies</span>
               </Link>
               {isSuperAdmin && (
                 <Link
                   to="/admin/users"
-                  className="p-2.5 bg-[#f8fafc] hover:bg-sky-50/60 border border-[#e6e8ec] hover:border-sky-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+                  className="p-2.5 bg-[#f8fafc] dark:bg-[#121215] hover:bg-sky-50/60 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 hover:border-sky-200 dark:hover:border-zinc-700 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
                 >
-                  <Users className="w-4 h-4 text-sky-600 group-hover:scale-110 transition-transform shrink-0" />
-                  <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Directory</span>
+                  <Users className="w-4 h-4 text-sky-600 dark:text-sky-400 group-hover:scale-110 transition-transform shrink-0" />
+                  <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 truncate w-full">Directory</span>
                 </Link>
               )}
               <Link
                 to="/admin/jobs"
-                className="p-2.5 bg-[#f8fafc] hover:bg-amber-50/60 border border-[#e6e8ec] hover:border-amber-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+                className="p-2.5 bg-[#f8fafc] dark:bg-[#121215] hover:bg-amber-50/60 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 hover:border-amber-200 dark:hover:border-zinc-700 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
               >
-                <Briefcase className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Moderation</span>
+                <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 truncate w-full">Moderation</span>
               </Link>
               <Link
                 to="/admin/verifications"
-                className="p-2.5 bg-[#f8fafc] hover:bg-rose-50/60 border border-[#e6e8ec] hover:border-rose-200 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+                className="p-2.5 bg-[#f8fafc] dark:bg-[#121215] hover:bg-rose-50/60 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 hover:border-rose-200 dark:hover:border-zinc-700 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
               >
-                <FileCheck2 className="w-4 h-4 text-rose-600 group-hover:scale-110 transition-transform shrink-0" />
-                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] truncate w-full">Verification</span>
+                <FileCheck2 className="w-4 h-4 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 truncate w-full">Verification</span>
               </Link>
             </div>
           </div>

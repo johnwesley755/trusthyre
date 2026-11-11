@@ -61,12 +61,12 @@ export const WageBenchmarkModal: React.FC<WageBenchmarkModalProps> = ({
       title="Trade Wage & Earnings Benchmark"
       subtitle={`Real market take-home rates in ${currentCity || 'Chennai'}`}
       icon={<IndianRupee className="w-5 h-5 text-[#10b981]" />}
-      iconBgColor="bg-emerald-50 text-emerald-700 border border-emerald-200"
+      iconBgColor="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
       maxWidth="lg"
-      bodyClassName="p-0 flex flex-col bg-white"
+      bodyClassName="p-0 flex flex-col bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100"
       footer={
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-[#717784] font-medium">
+          <div className="text-xs text-[#717784] dark:text-zinc-400 font-medium">
             * Zero agent cuts or illegal deductions on TrustHyre
           </div>
           <button
@@ -83,7 +83,7 @@ export const WageBenchmarkModal: React.FC<WageBenchmarkModalProps> = ({
       <div className="p-4 sm:p-5 space-y-4 max-h-[65vh] overflow-y-auto">
         {/* 1. Trade Selector Dropdown */}
         <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
+          <label className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
             Select Frontline Trade:
           </label>
           <Dropdown
@@ -101,54 +101,54 @@ export const WageBenchmarkModal: React.FC<WageBenchmarkModalProps> = ({
 
         {/* 2. Official Market Range 3-Tier Grid */}
         <div className="grid grid-cols-3 gap-2.5 text-center">
-          <div className="bg-[#F8FAFC] p-3 rounded-2xl border border-[#e6e8ec] flex flex-col justify-center">
-            <span className="text-[10px] uppercase font-bold text-[#717784] block">Entry Level</span>
-            <span className="text-xs sm:text-sm font-bold text-[#0A1931] mt-0.5 block">
+          <div className="bg-[#F8FAFC] dark:bg-[#121215] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 flex flex-col justify-center">
+            <span className="text-[10px] uppercase font-bold text-[#717784] dark:text-zinc-400 block">Entry Level</span>
+            <span className="text-xs sm:text-sm font-bold text-[#0A1931] dark:text-white mt-0.5 block">
               ₹{currentBenchmark.minMonthly.toLocaleString('en-IN')}
             </span>
-            <span className="text-[10px] text-[#717784]">/month</span>
+            <span className="text-[10px] text-[#717784] dark:text-zinc-400">/month</span>
           </div>
 
-          <div className="bg-[#eff6ff] p-3 pt-4 rounded-2xl border-2 border-[#0066ff] relative shadow-2xs flex flex-col justify-center">
-            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-[#0066ff] text-white text-[9px] font-bold rounded-full uppercase tracking-wider whitespace-nowrap shadow-xs">
+          <div className="bg-[#eff6ff] dark:bg-blue-950/40 p-3 pt-4 rounded-2xl border-2 border-[#0066ff] dark:border-[#38BDF8] relative shadow-2xs flex flex-col justify-center">
+            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-[#0066ff] dark:bg-blue-600 text-white text-[9px] font-bold rounded-full uppercase tracking-wider whitespace-nowrap shadow-xs">
               Verified Average
             </span>
-            <span className="text-[10px] uppercase font-bold text-[#0066ff] block">Market Median</span>
-            <span className="text-sm sm:text-base font-extrabold text-[#0066ff] mt-0.5 block">
+            <span className="text-[10px] uppercase font-bold text-[#0066ff] dark:text-[#38BDF8] block">Market Median</span>
+            <span className="text-sm sm:text-base font-extrabold text-[#0066ff] dark:text-[#38BDF8] mt-0.5 block">
               ₹{currentBenchmark.avgMonthly.toLocaleString('en-IN')}
             </span>
-            <span className="text-[10px] text-[#0066ff]/80 font-medium">/month</span>
+            <span className="text-[10px] text-[#0066ff]/80 dark:text-blue-300 font-medium">/month</span>
           </div>
 
-          <div className="bg-[#F8FAFC] p-3 rounded-2xl border border-[#e6e8ec] flex flex-col justify-center">
-            <span className="text-[10px] uppercase font-bold text-[#717784] block">Experienced</span>
-            <span className="text-xs sm:text-sm font-bold text-[#0A1931] mt-0.5 block">
+          <div className="bg-[#F8FAFC] dark:bg-[#121215] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 flex flex-col justify-center">
+            <span className="text-[10px] uppercase font-bold text-[#717784] dark:text-zinc-400 block">Experienced</span>
+            <span className="text-xs sm:text-sm font-bold text-[#0A1931] dark:text-white mt-0.5 block">
               ₹{currentBenchmark.maxMonthly.toLocaleString('en-IN')}
             </span>
-            <span className="text-[10px] text-[#717784]">/month</span>
+            <span className="text-[10px] text-[#717784] dark:text-zinc-400">/month</span>
           </div>
         </div>
 
         {/* 3. Take-Home Cashflow Simulator Box */}
-        <div className="bg-[#eff6ff]/60 border border-[#dbeafe] rounded-2xl p-4 space-y-3.5">
+        <div className="bg-[#eff6ff]/60 dark:bg-blue-950/20 border border-[#dbeafe] dark:border-blue-900/40 rounded-2xl p-4 space-y-3.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#0f2f63]">
-              <Zap className="w-4 h-4 text-[#0066ff]" />
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[#0f2f63] dark:text-blue-200">
+              <Zap className="w-4 h-4 text-[#0066ff] dark:text-[#38BDF8]" />
               <span>Overtime & Perks Simulator (Real In-Hand Value)</span>
             </div>
-            <span className="text-[10px] font-bold bg-white text-[#0066ff] px-2 py-0.5 rounded-full border border-[#dbeafe]">
+            <span className="text-[10px] font-bold bg-white dark:bg-blue-950/60 text-[#0066ff] dark:text-[#38BDF8] px-2 py-0.5 rounded-full border border-[#dbeafe] dark:border-blue-900/50">
               Interactive
             </span>
           </div>
 
           {/* Overtime Slider */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs font-medium text-[#0A1931]">
+            <div className="flex items-center justify-between text-xs font-medium text-[#0A1931] dark:text-white">
               <span className="flex items-center gap-1">
-                <Clock3 className="w-3.5 h-3.5 text-[#0066ff]" />
+                <Clock3 className="w-3.5 h-3.5 text-[#0066ff] dark:text-[#38BDF8]" />
                 <span>Overtime (OT) Hours:</span>
               </span>
-              <span className="font-bold text-[#0066ff]">
+              <span className="font-bold text-[#0066ff] dark:text-[#38BDF8]">
                 {overtimeHoursPerDay} hrs/day (+₹{overtimeMonthly.toLocaleString('en-IN')}/mo)
               </span>
             </div>
@@ -161,7 +161,7 @@ export const WageBenchmarkModal: React.FC<WageBenchmarkModalProps> = ({
               onChange={(e) => setOvertimeHoursPerDay(Number(e.target.value))}
               className="w-full accent-[#0066ff] cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-[#717784]">
+            <div className="flex justify-between text-[10px] text-[#717784] dark:text-zinc-400">
               <span>0 hrs (Standard 8h)</span>
               <span>1 hr</span>
               <span>2 hrs (Typical)</span>
@@ -177,12 +177,12 @@ export const WageBenchmarkModal: React.FC<WageBenchmarkModalProps> = ({
               onClick={() => setIncludesFreeFood(!includesFreeFood)}
               className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
                 includesFreeFood
-                  ? 'bg-amber-100/70 border-amber-300 text-amber-950 shadow-2xs'
-                  : 'bg-white border-[#e6e8ec] text-[#717784] hover:bg-slate-50'
+                  ? 'bg-amber-100/70 dark:bg-amber-950/50 border-amber-300 dark:border-amber-800 text-amber-950 dark:text-amber-200 shadow-2xs'
+                  : 'bg-white dark:bg-[#121215] border-[#e6e8ec] dark:border-zinc-700 text-[#717784] dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800'
               }`}
             >
               <span className="flex items-center gap-1.5">
-                <Utensils className="w-3.5 h-3.5 text-amber-700" />
+                <Utensils className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                 <span>Free Food</span>
               </span>
               <span className="text-[10px] font-bold">
@@ -195,12 +195,12 @@ export const WageBenchmarkModal: React.FC<WageBenchmarkModalProps> = ({
               onClick={() => setIncludesFreeRoom(!includesFreeRoom)}
               className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
                 includesFreeRoom
-                  ? 'bg-indigo-100/70 border-indigo-300 text-indigo-950 shadow-2xs'
-                  : 'bg-white border-[#e6e8ec] text-[#717784] hover:bg-slate-50'
+                  ? 'bg-indigo-100/70 dark:bg-indigo-950/50 border-indigo-300 dark:border-indigo-800 text-indigo-950 dark:text-indigo-200 shadow-2xs'
+                  : 'bg-white dark:bg-[#121215] border-[#e6e8ec] dark:border-zinc-700 text-[#717784] dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800'
               }`}
             >
               <span className="flex items-center gap-1.5">
-                <Home className="w-3.5 h-3.5 text-indigo-700" />
+                <Home className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
                 <span>Free Room</span>
               </span>
               <span className="text-[10px] font-bold">
@@ -210,20 +210,20 @@ export const WageBenchmarkModal: React.FC<WageBenchmarkModalProps> = ({
           </div>
 
           {/* Estimated Total Monthly Take-Home */}
-          <div className="bg-white p-3.5 rounded-xl border border-[#dbeafe] flex items-center justify-between">
+          <div className="bg-white dark:bg-[#121215] p-3.5 rounded-xl border border-[#dbeafe] dark:border-zinc-800 flex items-center justify-between">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
                 Estimated Total In-Hand Value
               </span>
-              <span className="text-xs text-[#717784]">
+              <span className="text-xs text-[#717784] dark:text-zinc-400">
                 Equivalent to ≈ ₹{dailyCashFlowEquivalent}/day
               </span>
             </div>
             <div className="text-right">
-              <span className="text-lg sm:text-xl font-extrabold text-[#10b981]">
+              <span className="text-lg sm:text-xl font-extrabold text-[#10b981] dark:text-emerald-400">
                 ₹{totalMonthlyEarningsPotential.toLocaleString('en-IN')}
               </span>
-              <span className="text-[10px] text-[#717784] block">/month take-home</span>
+              <span className="text-[10px] text-[#717784] dark:text-zinc-400 block">/month take-home</span>
             </div>
           </div>
         </div>

@@ -48,7 +48,7 @@ const TabsList = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "inline-flex items-center gap-1.5 rounded-2xl bg-slate-100 p-1.5 border border-slate-200/80 text-slate-500 overflow-x-auto no-scrollbar max-w-full",
+      "inline-flex items-center gap-1.5 rounded-2xl bg-slate-100 dark:bg-zinc-900 p-1.5 border border-slate-200/80 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 overflow-x-auto no-scrollbar max-w-full",
       className
     )}
     {...props}
@@ -80,8 +80,8 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
         className={cn(
           "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer active:scale-98 disabled:pointer-events-none disabled:opacity-50",
           isActive
-            ? "bg-white text-[#0066FF] font-extrabold shadow-2xs ring-1 ring-slate-200/60"
-            : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50",
+            ? "bg-white dark:bg-black text-[#0066FF] dark:text-[#38BDF8] font-extrabold shadow-2xs ring-1 ring-slate-200/60 dark:ring-zinc-800"
+            : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-zinc-800",
           className
         )}
         {...props}
@@ -92,8 +92,8 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
             className={cn(
               "rounded-full px-2 py-0.5 text-[10px] font-black transition-colors",
               isActive
-                ? "bg-blue-50 text-[#0066FF] border border-blue-200/60"
-                : "bg-slate-200/80 text-slate-600"
+                ? "bg-blue-50 dark:bg-blue-950/60 text-[#0066FF] dark:text-[#38BDF8] border border-blue-200/60 dark:border-blue-900/60"
+                : "bg-slate-200/80 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
             )}
           >
             {count}

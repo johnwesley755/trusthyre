@@ -212,11 +212,11 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
 
   return createPortal(
     <div 
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-900/60 backdrop-blur-xs font-['Onest',system-ui,sans-serif] overflow-hidden select-none animate-in fade-in duration-150"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs font-['Onest',system-ui,sans-serif] overflow-hidden select-none animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[88vh] select-text"
+        className="relative w-full max-w-lg bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-white dark:text-zinc-100 rounded-3xl shadow-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[88vh] select-text"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header */}
@@ -306,8 +306,8 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
                   )}
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900">All Locations</h4>
-                  <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">All Locations</h4>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-tight">
                     Alert me for jobs across India (remote, relocation or nationwide openings).
                   </p>
                 </div>
@@ -332,8 +332,8 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
                   )}
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900">Specific City / Area</h4>
-                  <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Specific City / Area</h4>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-tight">
                     Limit alerts strictly to job vacancies in or around your preferred city.
                   </p>
                 </div>
@@ -351,7 +351,7 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
                     value={cityInput}
                     onChange={(e) => setCityInput(e.target.value)}
                     placeholder="e.g. Chennai, Bengaluru, Mumbai, Hyderabad..."
-                    className="w-full pl-10 pr-24 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63] focus:bg-white transition-all"
+                    className="w-full pl-10 pr-24 py-2.5 bg-slate-50 dark:bg-[#121215] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63] focus:bg-white transition-all"
                   />
                   <button
                     type="button"
@@ -406,7 +406,7 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
                 placeholder="e.g. Electrician, Wireman, HVAC, Forklift, Security"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63] focus:bg-white transition-all"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#121215] border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63] focus:bg-white transition-all"
               />
             </div>
           </div>
@@ -439,12 +439,12 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
           </div>
 
           {/* Frequency & Channels Info */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
-            <div className="flex items-center gap-2 text-slate-900 font-semibold">
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#121215] border border-slate-200 dark:border-zinc-800 text-xs space-y-1.5">
+            <div className="flex items-center gap-2 text-slate-900 dark:text-white font-semibold">
               <ShieldCheck className="w-4 h-4 text-blue-600" />
               <span>Instant Job Matching & Verified Employers</span>
             </div>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
+            <p className="text-slate-600 dark:text-zinc-300 text-[11px] leading-relaxed">
               When an employer posts a job matching your filters, TrustHyre will dispatch an instant notification to your app bell 🔔 and mobile device.
             </p>
           </div>
@@ -456,7 +456,7 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
                 <span className="text-[11px] font-bold text-slate-700 block">
                   Verify Alert & Notification Delivery
                 </span>
-                <span className="text-[10px] text-slate-500">
+                <span className="text-[10px] text-slate-500 dark:text-zinc-400">
                   Send a simulated matching job dispatch to your bell badge and push notification.
                 </span>
               </div>
@@ -501,7 +501,7 @@ export const JobAlertModal: React.FC<JobAlertModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200 text-xs font-semibold transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-slate-600 dark:text-zinc-300 hover:bg-slate-200 text-xs font-semibold transition-colors cursor-pointer"
             >
               Cancel
             </button>

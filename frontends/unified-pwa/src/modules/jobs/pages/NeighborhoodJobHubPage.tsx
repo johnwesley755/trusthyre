@@ -163,7 +163,7 @@ export default function NeighborhoodJobHubPage({
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-16">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#000000] text-slate-900 dark:text-zinc-100 pb-16 transition-colors duration-200">
       <SeoHead
         title={pageTitle}
         description={pageDescription}
@@ -172,16 +172,16 @@ export default function NeighborhoodJobHubPage({
       />
 
       {/* Breadcrumb Navigation */}
-      <div className="bg-white border-b border-slate-200">
+      <div className="bg-white dark:bg-[#09090b] border-b border-slate-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <nav className="flex items-center gap-1.5 text-xs text-slate-500 overflow-x-auto whitespace-nowrap">
+          <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-400 overflow-x-auto whitespace-nowrap">
             {breadcrumbs.map((crumb, idx) => (
               <React.Fragment key={crumb.path}>
-                {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-600 shrink-0" />}
                 {idx === breadcrumbs.length - 1 ? (
-                  <span className="font-semibold text-slate-900">{crumb.name}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white">{crumb.name}</span>
                 ) : (
-                  <Link to={crumb.path} className="hover:text-[#0f2f63] hover:underline transition-colors">
+                  <Link to={crumb.path} className="hover:text-[#0f2f63] dark:hover:text-[#38BDF8] hover:underline transition-colors">
                     {crumb.name}
                   </Link>
                 )}
@@ -192,20 +192,20 @@ export default function NeighborhoodJobHubPage({
       </div>
 
       {/* Hyper-Local Hero Banner */}
-      <div className="bg-gradient-to-br from-[#0a1e3b] via-[#0f2f63] to-[#1e40af] text-white py-10 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-br from-[#0a1e3b] via-[#0f2f63] to-[#1e40af] dark:from-[#050b14] dark:via-[#091528] dark:to-[#0f2f63] text-white py-10 px-4 sm:px-6 lg:px-8 border-b border-transparent dark:border-zinc-800">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-emerald-300 font-bold text-xs uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 dark:bg-white/5 backdrop-blur-md text-emerald-300 font-bold text-xs uppercase tracking-wider">
               <ShieldCheck className="w-3.5 h-3.5" />
               Verified Micro-Market Hub
             </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 text-slate-200 text-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 dark:bg-white/5 text-slate-200 text-xs">
               <Compass className="w-3.5 h-3.5" />
               {cityName} Local Zone
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight mb-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight mb-3 text-white">
             {tradeSlug ? `${tradeSlug.toUpperCase()} Jobs in ` : 'Verified Blue-Collar Jobs in '}
             <span className="text-amber-400">{areaName}</span>, {cityName}
           </h1>
@@ -216,7 +216,7 @@ export default function NeighborhoodJobHubPage({
 
           {/* Key Metrics / Highlights */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-xl">
-            <div className="bg-white/10 backdrop-blur-xs border border-white/15 rounded-xl p-3">
+            <div className="bg-white/10 dark:bg-white/5 backdrop-blur-xs border border-white/15 dark:border-white/10 rounded-xl p-3">
               <div className="text-xs text-slate-300 font-medium">Active Openings</div>
               <div className="text-lg sm:text-xl font-black text-white flex items-center gap-1">
                 <Briefcase className="w-4 h-4 text-emerald-400" />
@@ -224,7 +224,7 @@ export default function NeighborhoodJobHubPage({
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-xs border border-white/15 rounded-xl p-3">
+            <div className="bg-white/10 dark:bg-white/5 backdrop-blur-xs border border-white/15 dark:border-white/10 rounded-xl p-3">
               <div className="text-xs text-slate-300 font-medium">
                 {salaryStats.isLive ? 'Current Pay Range' : 'Estimated Pay Range'}
               </div>
@@ -234,7 +234,7 @@ export default function NeighborhoodJobHubPage({
               </div>
             </div>
 
-            <div className="col-span-2 sm:col-span-1 bg-white/10 backdrop-blur-xs border border-white/15 rounded-xl p-3">
+            <div className="col-span-2 sm:col-span-1 bg-white/10 dark:bg-white/5 backdrop-blur-xs border border-white/15 dark:border-white/10 rounded-xl p-3">
               <div className="text-xs text-slate-300 font-medium">Broker Commission</div>
               <div className="text-lg sm:text-xl font-black text-emerald-400 flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4" />
@@ -247,10 +247,10 @@ export default function NeighborhoodJobHubPage({
 
       {/* Key Transit & Local Taluks Bar */}
       {cityTaluks.length > 0 && (
-        <div className="bg-white border-b border-slate-200 py-3.5 px-4 sm:px-6 lg:px-8 shadow-xs">
+        <div className="bg-white dark:bg-[#09090b] border-b border-slate-200 dark:border-zinc-800 py-3.5 px-4 sm:px-6 lg:px-8 shadow-xs">
           <div className="max-w-7xl mx-auto flex items-center gap-3 overflow-x-auto whitespace-nowrap scrollbar-none">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1 shrink-0">
-              <Train className="w-3.5 h-3.5 text-[#0f2f63]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1 shrink-0">
+              <Train className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
               {cityName} Local Areas:
             </span>
             {cityTaluks.slice(0, 10).map((taluk) => {
@@ -262,8 +262,8 @@ export default function NeighborhoodJobHubPage({
                   to={`/${city}/${slug}-jobs`}
                   className={`inline-flex items-center gap-1 px-3 py-1 text-xs rounded-full font-medium transition-colors shrink-0 ${
                     isActive 
-                      ? 'bg-[#0f2f63] text-white' 
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-2xs' 
+                      : 'bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-transparent dark:border-zinc-800'
                   }`}
                 >
                   <MapPin className="w-3 h-3 text-red-500" />
@@ -280,16 +280,16 @@ export default function NeighborhoodJobHubPage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Job Listings Column */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <span>Verified Openings in {areaName}</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-[#0f2f63] font-bold">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-sky-950/60 border border-blue-200 dark:border-blue-900 text-[#0f2f63] dark:text-[#38BDF8] font-bold">
                   {jobs.length}
                 </span>
               </h2>
               <Link
                 to={`/search?city=${cityName}&q=${areaName}`}
-                className="text-xs font-semibold text-[#0f2f63] hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-[#0f2f63] dark:text-[#38BDF8] hover:underline flex items-center gap-1"
               >
                 View all in search <ArrowRight className="w-3 h-3" />
               </Link>
@@ -300,17 +300,17 @@ export default function NeighborhoodJobHubPage({
                 <AppLoader />
               </div>
             ) : jobs.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center space-y-3">
-                <MapPin className="w-8 h-8 text-slate-400 mx-auto" />
-                <h3 className="text-base font-bold text-slate-800">
+              <div className="bg-white dark:bg-[#121215] rounded-2xl border border-dashed border-slate-300 dark:border-zinc-800 p-8 text-center space-y-3">
+                <MapPin className="w-8 h-8 text-slate-400 dark:text-zinc-600 mx-auto" />
+                <h3 className="text-base font-bold text-slate-800 dark:text-white">
                   No active openings currently listed in {areaName}
                 </h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-md mx-auto">
                   New verified positions are posted daily. Explore all openings across {cityName} or set up a WhatsApp job alert.
                 </p>
                 <Link
                   to={`/jobs-in-${city}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#0f2f63] text-white rounded-full text-xs font-bold hover:bg-[#1a4487] transition-all"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#1a4487] dark:hover:bg-[#0052cc] text-white rounded-full text-xs font-bold transition-all shadow-xs"
                 >
                   Browse all {cityName} Jobs
                 </Link>
@@ -324,35 +324,35 @@ export default function NeighborhoodJobHubPage({
             )}
 
             {/* Hyper-Local FAQ Section for Rich Results */}
-            <div className="mt-12 bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-xs">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <HelpCircle className="w-5 h-5 text-[#0f2f63]" />
+            <div className="mt-12 bg-white dark:bg-[#121215] rounded-2xl border border-slate-200 dark:border-zinc-800 p-6 space-y-4 shadow-xs">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-[#0f2f63] dark:text-[#38BDF8]" />
                 Frequently Asked Questions about Working in {areaName}
               </h3>
               <div className="space-y-3 text-sm">
-                <div className="p-3.5 bg-slate-50 rounded-xl">
-                  <h4 className="font-bold text-slate-800 mb-1">
+                <div className="p-3.5 bg-slate-50 dark:bg-[#1C1C21] rounded-xl border border-transparent dark:border-zinc-800/80">
+                  <h4 className="font-bold text-slate-800 dark:text-zinc-100 mb-1">
                     What types of jobs are most in demand in {areaName}?
                   </h4>
-                  <p className="text-slate-600 text-xs leading-relaxed">
+                  <p className="text-slate-600 dark:text-zinc-400 text-xs leading-relaxed">
                     Popular sectors in {areaName} and across {cityName} include retail, facility maintenance, driving, technician, and warehousing roles.
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-slate-50 rounded-xl">
-                  <h4 className="font-bold text-slate-800 mb-1">
+                <div className="p-3.5 bg-slate-50 dark:bg-[#1C1C21] rounded-xl border border-transparent dark:border-zinc-800/80">
+                  <h4 className="font-bold text-slate-800 dark:text-zinc-100 mb-1">
                     Is there any broker fee to apply for jobs here?
                   </h4>
-                  <p className="text-slate-600 text-xs leading-relaxed">
+                  <p className="text-slate-600 dark:text-zinc-400 text-xs leading-relaxed">
                     No. TrustHyre is 100% free for workers. Employers post genuine openings with direct contact details and confirmed worksite locations.
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-slate-50 rounded-xl">
-                  <h4 className="font-bold text-slate-800 mb-1">
+                <div className="p-3.5 bg-slate-50 dark:bg-[#1C1C21] rounded-xl border border-transparent dark:border-zinc-800/80">
+                  <h4 className="font-bold text-slate-800 dark:text-zinc-100 mb-1">
                     How do I receive job updates for {areaName} on WhatsApp?
                   </h4>
-                  <p className="text-slate-600 text-xs leading-relaxed">
+                  <p className="text-slate-600 dark:text-zinc-400 text-xs leading-relaxed">
                     Click the WhatsApp share button on any opening to share it with your peers or join our local neighborhood candidate pool for immediate alerts.
                   </p>
                 </div>
@@ -362,9 +362,9 @@ export default function NeighborhoodJobHubPage({
 
           {/* Sidebar: Dynamic Neighborhoods & Area Links for this City */}
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
-                <Navigation className="w-4 h-4 text-[#0f2f63]" />
+            <div className="bg-white dark:bg-[#121215] rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-xs">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-3 flex items-center gap-1.5">
+                <Navigation className="w-4 h-4 text-[#0f2f63] dark:text-[#38BDF8]" />
                 Explore Other {cityName} Localities
               </h3>
               <div className="space-y-1.5 max-h-96 overflow-y-auto">
@@ -376,13 +376,13 @@ export default function NeighborhoodJobHubPage({
                       <Link
                         key={t}
                         to={`/${city}/${slug}-jobs`}
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 text-xs font-medium text-slate-700 hover:text-[#0f2f63] transition-colors"
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900/60 text-xs font-medium text-slate-700 dark:text-zinc-300 hover:text-[#0f2f63] dark:hover:text-[#38BDF8] transition-colors"
                       >
                         <span className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                          <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
                           {t}
                         </span>
-                        <span className="text-[10px] text-slate-400">View Jobs</span>
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500">View Jobs</span>
                       </Link>
                     );
                   })}

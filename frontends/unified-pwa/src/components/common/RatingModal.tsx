@@ -107,7 +107,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
   return (
     <AnimatePresence>
       <div 
-        className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-900/60 backdrop-blur-xs font-['Onest',system-ui,sans-serif]"
+        className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs font-['Onest',system-ui,sans-serif]"
         onClick={(e) => {
           if (e.target === e.currentTarget && !isSubmitting) onClose();
         }}
@@ -120,10 +120,10 @@ export const RatingModal: React.FC<RatingModalProps> = ({
           exit={{ opacity: 0, scale: 0.96, y: 8 }}
           transition={{ duration: 0.18, ease: "easeOut" }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-2xl sm:rounded-3xl border border-[#e6e8ec] shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden my-auto"
+          className="bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100 rounded-2xl sm:rounded-3xl border border-[#e6e8ec] dark:border-zinc-800 shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden my-auto"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#e6e8ec] bg-white shrink-0">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#1C1C21] shrink-0">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 border border-[#0f2f63]/15 text-[#0f2f63] flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-5 h-5" />
@@ -132,7 +132,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
                 <h3 className="text-sm sm:text-base font-bold text-[#0a0a0a] truncate tracking-tight">
                   {rateeRole === 'worker' ? 'Rate Verified Worker' : 'Rate Employer Experience'}
                 </h3>
-                <p className="text-[11px] text-[#717784] truncate">
+                <p className="text-[11px] text-[#717784] dark:text-zinc-400 truncate">
                   {jobTitle ? `${jobTitle} • ` : ''}{rateeName}
                 </p>
               </div>
@@ -141,7 +141,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0 ml-2 cursor-pointer disabled:opacity-50"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:text-zinc-300 hover:bg-slate-100 transition-colors shrink-0 ml-2 cursor-pointer disabled:opacity-50"
             >
               <X className="w-4 h-4" />
             </button>
@@ -151,10 +151,10 @@ export const RatingModal: React.FC<RatingModalProps> = ({
           <form 
             id="rating-modal-form"
             onSubmit={handleSubmit} 
-            className="flex-1 overflow-y-auto p-5 space-y-4 text-xs leading-relaxed text-[#717784] overscroll-contain"
+            className="flex-1 overflow-y-auto p-5 space-y-4 text-xs leading-relaxed text-[#717784] dark:text-zinc-400 overscroll-contain"
           >
             {/* Star Selector */}
-            <div className="bg-[#f8f9fa] rounded-2xl p-4 border border-[#e6e8ec] text-center space-y-2">
+            <div className="bg-[#f8f9fa] dark:bg-[#121215] rounded-2xl p-4 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-2">
               <div className="flex items-center justify-center gap-1.5">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -182,7 +182,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
 
             {/* Quick Feedback Tags */}
             <div className="space-y-2">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-[#717784] block">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
                 Key Strengths & Feedback
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -209,7 +209,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
             {/* Written Review */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[#717784]">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400">
                   Detailed Review (Optional)
                 </label>
                 <span className="text-[10px] text-slate-400">
@@ -225,7 +225,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
                     ? 'Describe punctuality, quality of work, and performance on the job...'
                     : 'Describe work instructions, safety environment, and payment timeliness...'
                 }
-                className="w-full px-3 py-2 text-xs rounded-xl border border-[#e6e8ec] focus:outline-none focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] placeholder:text-slate-400 resize-none text-[#0a0a0a] bg-white transition-all"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-[#e6e8ec] dark:border-zinc-700 bg-white dark:bg-[#121215] text-[#0A1931] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] placeholder:text-slate-400 resize-none text-[#0a0a0a] bg-white transition-all"
               />
             </div>
 
@@ -239,12 +239,12 @@ export const RatingModal: React.FC<RatingModalProps> = ({
           </form>
 
           {/* Modal Footer Actions */}
-          <div className="p-4 sm:p-5 border-t border-[#e6e8ec] bg-white flex items-center justify-end gap-2.5 shrink-0">
+          <div className="p-4 sm:p-5 border-t border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#16161A] flex items-center justify-end gap-2.5 shrink-0">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-xs font-semibold uppercase text-slate-600 hover:text-[#0a0a0a] hover:bg-slate-100 rounded-full transition-colors cursor-pointer border border-[#e6e8ec]"
+              className="px-4 py-2 text-xs font-semibold uppercase text-slate-600 dark:text-zinc-300 hover:text-[#0a0a0a] hover:bg-slate-100 rounded-full transition-colors cursor-pointer border border-[#e6e8ec]"
             >
               Cancel
             </button>

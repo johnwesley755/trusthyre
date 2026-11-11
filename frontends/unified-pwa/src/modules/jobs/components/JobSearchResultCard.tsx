@@ -245,15 +245,15 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
   return (
     <div 
       onClick={() => navigate(jobDetailUrl)}
-      className={`bg-white rounded-[2rem] border transition-all duration-300 group cursor-pointer shadow-xs relative overflow-hidden font-['Onest',system-ui,sans-serif] flex flex-col md:flex-row items-stretch ${
+      className={`bg-white dark:bg-[#121215] rounded-[2rem] border transition-all duration-300 group cursor-pointer shadow-xs relative overflow-hidden font-['Onest',system-ui,sans-serif] flex flex-col md:flex-row items-stretch ${
         isExpired 
-          ? 'border-rose-200/80 bg-slate-50/50 hover:border-rose-300' 
-          : 'border-[#e6e8ec] hover:border-[#0f2f63]/50 hover:shadow-xl hover:-translate-y-0.5'
+          ? 'border-rose-200/80 dark:border-rose-900/40 bg-slate-50/50 dark:bg-rose-950/10 hover:border-rose-300 dark:hover:border-rose-800' 
+          : 'border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/50 dark:hover:border-zinc-700 hover:shadow-xl hover:-translate-y-0.5'
       }`}
     >
       {/* Left: Cover Image Vertical Panel (Exact 20% on Desktop like JobDetailPage) */}
       {effectiveCoverUrl ? (
-        <div className="w-full md:w-[22%] md:min-w-[210px] md:max-w-[250px] h-44 sm:h-52 md:h-auto min-h-[200px] overflow-hidden relative border-b md:border-b-0 md:border-r border-[#e6e8ec] bg-slate-900 group shrink-0">
+        <div className="w-full md:w-[22%] md:min-w-[210px] md:max-w-[250px] h-44 sm:h-52 md:h-auto min-h-[200px] overflow-hidden relative border-b md:border-b-0 md:border-r border-[#e6e8ec] dark:border-zinc-800 bg-slate-900 group shrink-0">
           <img 
             src={effectiveCoverUrl} 
             alt={job.title} 
@@ -326,7 +326,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3.5 min-w-0 flex-1">
             {/* Company Monogram / Logo Badge */}
-            <div className="w-12 h-12 rounded-2xl bg-[#f4f4f4] border border-[#e6e8ec] flex items-center justify-center text-[#0a0a0a] font-semibold text-base shrink-0 group-hover:border-[#0f2f63]/30 transition-all overflow-hidden">
+            <div className="w-12 h-12 rounded-2xl bg-[#f4f4f4] dark:bg-[#1C1C21] border border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-center text-[#0a0a0a] dark:text-zinc-100 font-semibold text-base shrink-0 group-hover:border-[#0f2f63]/30 dark:group-hover:border-sky-500/30 transition-all overflow-hidden">
               {job.employerProfile?.logoUrl ? (
                 <img src={job.employerProfile.logoUrl} alt={companyName} className="w-full h-full object-contain rounded-2xl" />
               ) : (
@@ -337,31 +337,31 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
             {/* Job Title & Company Line */}
             <div className="min-w-0 space-y-1 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a] group-hover:text-[#0f2f63] transition-colors truncate">
+                <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a] dark:text-zinc-100 group-hover:text-[#0f2f63] dark:group-hover:text-sky-400 transition-colors truncate">
                   <TranslateText text={job.title} />
                 </h3>
                 {isExpired ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[10px] font-semibold border border-rose-200">
-                    <Clock className="w-3 h-3 text-rose-600" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[10px] font-semibold border border-rose-200 dark:border-rose-900/50">
+                    <Clock className="w-3 h-3 text-rose-600 dark:text-rose-400" />
                     <span>Expired</span>
                   </span>
                 ) : (
                   <>
                     {(job.isWalkInInterview || (job.additionalDetails as any)?.isWalkInInterview) && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 text-[10px] font-extrabold border border-amber-300 shadow-2xs">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 text-[10px] font-extrabold border border-amber-300 dark:border-amber-900/50 shadow-2xs">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                         <span>Walk-in Open</span>
                       </span>
                     )}
                     {job.isUrgentSpotHire && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-800 text-[10px] font-extrabold border border-rose-300 shadow-2xs">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-[10px] font-extrabold border border-rose-300 dark:border-rose-900/50 shadow-2xs">
                         <Zap className="w-3 h-3 text-rose-600 fill-rose-600" />
                         <span>Urgent Spot Hire</span>
                       </span>
                     )}
                     {isVerified && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-medium border border-emerald-100">
-                        <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium border border-emerald-100 dark:border-emerald-900/50">
+                        <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                         <span>Verified</span>
                       </span>
                     )}
@@ -369,32 +369,32 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                 )}
               </div>
 
-              <div className="flex items-center gap-1.5 text-xs text-[#717784] font-medium truncate flex-wrap">
-                <span className="text-[#0a0a0a] font-semibold">{companyName}</span>
+              <div className="flex items-center gap-1.5 text-xs text-[#717784] dark:text-zinc-400 font-medium truncate flex-wrap">
+                <span className="text-[#0a0a0a] dark:text-zinc-200 font-semibold">{companyName}</span>
                 {job.isExternal ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold border border-blue-200 shadow-2xs">
-                    <Globe className="w-3 h-3 text-blue-600" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-sky-950/40 text-blue-700 dark:text-sky-300 text-[10px] font-semibold border border-blue-200 dark:border-sky-900/50 shadow-2xs">
+                    <Globe className="w-3 h-3 text-blue-600 dark:text-sky-400" />
                     <span>{job.sourceName || 'Verified Partner'}</span>
                   </span>
                 ) : null}
                 {job.alternateSources && job.alternateSources.length > 1 ? (
                   <span 
-                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-medium border border-slate-200"
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 text-[10px] font-medium border border-slate-200 dark:border-zinc-700"
                     title={`Also cross-verified on: ${job.alternateSources.map((s) => s.sourceName).join(', ')}`}
                   >
                     <span>+{job.alternateSources.length - 1} Sources</span>
                   </span>
                 ) : null}
-                <span className="text-[#e6e8ec]">•</span>
-                <span className="inline-flex items-center gap-1 text-[#717784] truncate">
-                  <MapPin className="w-3.5 h-3.5 text-[#2563c9]" />
+                <span className="text-[#e6e8ec] dark:text-zinc-700">•</span>
+                <span className="inline-flex items-center gap-1 text-[#717784] dark:text-zinc-400 truncate">
+                  <MapPin className="w-3.5 h-3.5 text-[#2563c9] dark:text-sky-400" />
                   <span className="truncate"><TranslateText text={locationText} /></span>
                 </span>
                 {/* ⚡ High-Trust Employer Response Speed Badge (JobToday Model) */}
                 {!isExpired && (
                   <>
-                    <span className="text-[#e6e8ec]">•</span>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <span className="text-[#e6e8ec] dark:text-zinc-700">•</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900/50">
                       <Zap className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600" />
                       <span>Responds fast</span>
                     </span>
@@ -413,7 +413,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
               className={`p-2.5 rounded-full border transition-all cursor-pointer items-center justify-center flex shadow-2xs active:scale-95 ${
                 isPlayingAudio
                   ? 'bg-amber-500 border-amber-600 text-slate-950 animate-pulse ring-2 ring-amber-300'
-                  : 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100'
+                  : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/50 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60'
               }`}
               title={isPlayingAudio ? 'Stop audio briefing' : 'Listen to 15s job briefing in your language'}
             >
@@ -428,7 +428,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
             <button
               type="button"
               onClick={handleWhatsAppClick}
-              className="p-2.5 rounded-full border border-[#25D366]/30 bg-[#25D366]/10 hover:bg-[#25D366]/25 text-[#128C7E] transition-all cursor-pointer items-center justify-center flex shadow-2xs active:scale-95"
+              className="p-2.5 rounded-full border border-[#25D366]/30 dark:border-[#25D366]/40 bg-[#25D366]/10 hover:bg-[#25D366]/25 text-[#128C7E] dark:text-[#25D366] transition-all cursor-pointer items-center justify-center flex shadow-2xs active:scale-95"
               title="Share Opening on WhatsApp"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -442,8 +442,8 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
               onClick={handleBookmarkClick}
               className={`p-2.5 rounded-full border transition-all cursor-pointer items-center justify-center flex ${
                 isSaved 
-                  ? 'bg-[#0f2f63] border-[#0f2f63] text-white shadow-xs' 
-                  : 'bg-[#f4f4f4] border-[#e6e8ec] text-[#717784] hover:text-[#0a0a0a] hover:bg-white'
+                  ? 'bg-[#0f2f63] dark:bg-sky-600 border-[#0f2f63] dark:border-sky-500 text-white shadow-xs' 
+                  : 'bg-[#f4f4f4] dark:bg-[#1C1C21] border-[#e6e8ec] dark:border-zinc-800 text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-zinc-100 hover:bg-white dark:hover:bg-zinc-800'
               }`}
               title={isSaved ? 'Remove from Saved' : 'Save Job'}
             >
@@ -453,25 +453,25 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
         </div>
 
         {/* Middle Specs Grid: Experience | Job Type | Pay/Salary */}
-        <div className="grid grid-cols-3 gap-2 py-2.5 px-4 bg-[#f4f4f4]/80 rounded-2xl border border-[#e6e8ec]/80 text-left">
+        <div className="grid grid-cols-3 gap-2 py-2.5 px-4 bg-[#f4f4f4]/80 dark:bg-[#09090b] rounded-2xl border border-[#e6e8ec]/80 dark:border-zinc-800 text-left">
           <div>
-            <span className="block text-[10px] font-medium uppercase tracking-wider text-[#717784]">Experience</span>
-            <span className="text-xs sm:text-sm font-bold text-[#0a0a0a]">
+            <span className="block text-[10px] font-medium uppercase tracking-wider text-[#717784] dark:text-zinc-400">Experience</span>
+            <span className="text-xs sm:text-sm font-bold text-[#0a0a0a] dark:text-zinc-100">
               {experienceText}
             </span>
           </div>
           <div>
-            <span className="block text-[10px] font-medium uppercase tracking-wider text-[#717784]">Job Type</span>
-            <span className="text-xs sm:text-sm font-bold text-[#0a0a0a]">
+            <span className="block text-[10px] font-medium uppercase tracking-wider text-[#717784] dark:text-zinc-400">Job Type</span>
+            <span className="text-xs sm:text-sm font-bold text-[#0a0a0a] dark:text-zinc-100">
               <TranslateText text={job.jobType || 'Full-Time'} />
             </span>
           </div>
           <div>
-            <span className="block text-[10px] font-medium uppercase tracking-wider text-[#717784]">
+            <span className="block text-[10px] font-medium uppercase tracking-wider text-[#717784] dark:text-zinc-400">
               {viewMode === 'daily' ? 'Daily Wage' : 'Monthly Salary'}
             </span>
             <div className="flex flex-col">
-              <span className={`text-xs sm:text-sm font-bold ${isExpired ? 'text-slate-500 line-through' : 'text-emerald-700'}`}>
+              <span className={`text-xs sm:text-sm font-bold ${isExpired ? 'text-slate-500 line-through' : 'text-emerald-700 dark:text-emerald-400'}`}>
                 {salaryText}
               </span>
             </div>
@@ -573,22 +573,22 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
         })()}
 
         {/* Footer Line: Posted Time & Date & Apply / Status */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#e6e8ec] text-xs flex-wrap gap-2">
-          <div className="flex items-center gap-1.5 flex-wrap text-xs text-[#717784]">
-            <span className="inline-flex items-center gap-1 font-normal text-[#717784]">
-              <Calendar className="w-3.5 h-3.5 text-[#717784]" />
+        <div className="flex items-center justify-between pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 text-xs flex-wrap gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap text-xs text-[#717784] dark:text-zinc-400">
+            <span className="inline-flex items-center gap-1 font-normal text-[#717784] dark:text-zinc-400">
+              <Calendar className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-400" />
               <span>{postedInfo.relative}</span>
             </span>
             {postedInfo.formattedDate && (
               <>
-                <span className="text-[#d1d5db]">•</span>
-                <span className="text-[#0a0a0a] font-medium">{postedInfo.formattedDate}</span>
+                <span className="text-[#d1d5db] dark:text-zinc-700">•</span>
+                <span className="text-[#0a0a0a] dark:text-zinc-200 font-medium">{postedInfo.formattedDate}</span>
               </>
             )}
             {effectiveExpiry && (
               <>
-                <span className="text-[#d1d5db]">•</span>
-                <span className={`text-[11px] font-medium ${isExpired ? 'text-rose-600 font-semibold' : 'text-[#717784]'}`}>
+                <span className="text-[#d1d5db] dark:text-zinc-700">•</span>
+                <span className={`text-[11px] font-medium ${isExpired ? 'text-rose-600 dark:text-rose-400 font-semibold' : 'text-[#717784] dark:text-zinc-400'}`}>
                   {isExpired 
                     ? `Expired on ${effectiveExpiry.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}` 
                     : `Closes ${effectiveExpiry.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`}

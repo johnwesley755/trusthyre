@@ -110,48 +110,48 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
       {/* 1. Main Search Container Card */}
       <form 
         onSubmit={handleSearch}
-        className="relative z-30 bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-full p-2 sm:p-2 border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-1 text-[#0a0a0a]"
+        className="relative z-30 bg-white/95 dark:bg-[#121215]/95 backdrop-blur-md rounded-2xl sm:rounded-full p-2 sm:p-2 border border-white/20 dark:border-zinc-800/80 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-1 text-[#0a0a0a] dark:text-white transition-colors"
       >
         
         {/* Segment A: Job Title / Keyword Input */}
-        <div className="flex-1 flex items-center gap-2.5 px-3.5 py-1.5 sm:py-1 border-b sm:border-b-0 sm:border-r border-slate-200/80">
-          <Search className="w-4 h-4 text-[#0f2f63] shrink-0" />
+        <div className="flex-1 flex items-center gap-2.5 px-3.5 py-1.5 sm:py-1 border-b sm:border-b-0 sm:border-r border-slate-200/80 dark:border-zinc-800">
+          <Search className="w-4 h-4 text-[#0f2f63] dark:text-[#38BDF8] shrink-0" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("Search by trade, skill or job title...", "Search by trade, skill or job title...")}
-            className="w-full bg-transparent text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none"
+            className="w-full bg-transparent text-xs sm:text-sm font-medium text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none"
             aria-label="Job Search Keyword"
           />
         </div>
 
         {/* Segment B: Experience Dropdown matching City / Location Popup UI */}
-        <div className="relative flex items-center px-1 border-b sm:border-b-0 sm:border-r border-slate-200/80 min-w-[170px] shrink-0">
+        <div className="relative flex items-center px-1 border-b sm:border-b-0 sm:border-r border-slate-200/80 dark:border-zinc-800 min-w-[170px] shrink-0">
           <Dropdown
             variant="outline"
-            icon={<Briefcase className="w-4 h-4 text-[#0f2f63] shrink-0" />}
+            icon={<Briefcase className="w-4 h-4 text-[#0f2f63] dark:text-[#38BDF8] shrink-0" />}
             value={experience}
             onChange={(val) => setExperience(val)}
             options={EXPERIENCE_LEVELS.map((lvl) => ({
               value: lvl.value,
               label: lvl.label,
             }))}
-            triggerClassName="border-0 bg-transparent shadow-none hover:bg-transparent px-2.5 py-1 text-xs sm:text-sm font-semibold text-slate-800"
+            triggerClassName="border-0 bg-transparent shadow-none hover:bg-transparent px-2.5 py-1 text-xs sm:text-sm font-semibold text-slate-800 dark:text-zinc-100"
             menuClassName="w-56"
           />
         </div>
 
         {/* Segment C: Location / City with Geolocation */}
         <div className="relative flex-1 flex items-center gap-2 px-3.5 py-1.5 sm:py-1">
-          <MapPin className="w-4 h-4 text-[#0f2f63] shrink-0" />
+          <MapPin className="w-4 h-4 text-[#0f2f63] dark:text-[#38BDF8] shrink-0" />
           <input
             type="text"
             value={city}
             onFocus={() => setCitySuggestionsVisible(true)}
             onChange={(e) => setCity(e.target.value)}
             placeholder={t("City / Worksite area...", "City / Worksite area...")}
-            className="w-full bg-transparent text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none"
+            className="w-full bg-transparent text-xs sm:text-sm font-medium text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none"
             aria-label="City or Location"
           />
 
@@ -161,7 +161,7 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
             onClick={handleDetectLocation}
             disabled={isLocating}
             title={t("Detect My Current City", "Detect My Current City")}
-            className="p-1.5 rounded-full hover:bg-slate-100 text-[#0f2f63] transition-colors shrink-0 cursor-pointer disabled:opacity-50"
+            className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-[#0f2f63] dark:text-[#38BDF8] transition-colors shrink-0 cursor-pointer disabled:opacity-50"
             aria-label="Detect Location"
           >
             {isLocating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
@@ -174,8 +174,8 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
                 className="fixed inset-0 z-40" 
                 onClick={() => setCitySuggestionsVisible(false)} 
               />
-              <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 overflow-hidden font-['Onest',system-ui,sans-serif]">
-                <div className="px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1">
+              <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-[#1C1C21] rounded-2xl shadow-2xl border border-slate-200 dark:border-zinc-800 py-2 z-50 overflow-hidden font-['Onest',system-ui,sans-serif]">
+                <div className="px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 border-b border-slate-100 dark:border-zinc-800 mb-1">
                   Popular Hubs
                 </div>
                 {POPULAR_CITIES.map((popCity) => (
@@ -186,10 +186,10 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
                       setCity(popCity);
                       setCitySuggestionsVisible(false);
                     }}
-                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-[#0f2f63]/10 hover:text-[#0f2f63] transition-colors flex items-center justify-between cursor-pointer"
+                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:bg-[#0f2f63]/10 dark:hover:bg-zinc-800/80 hover:text-[#0f2f63] dark:hover:text-[#38BDF8] transition-colors flex items-center justify-between cursor-pointer"
                   >
                     <span>{popCity}</span>
-                    <span className="text-[10px] text-slate-400 font-medium">Verified</span>
+                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Verified</span>
                   </button>
                 ))}
               </div>

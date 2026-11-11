@@ -1,6 +1,64 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+  --bg-base: #FFFFFF;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-subtle: #F8FAFC;
+  
+  /* 4-Tier Semantic Surfaces */
+  --surface-canvas: #FFFFFF;
+  --surface-base: #F8FAFC;
+  --surface-card: #FFFFFF;
+  --surface-elevated: #FFFFFF;
+  --surface-overlay: rgba(255, 255, 255, 0.92);
+
+  --border-subtle: #F1F5F9;
+  --border-default: #E2E8F0;
+  --border-strong: #CBD5E1;
+
+  --text-primary: #0A1931;
+  --text-secondary: #334155;
+  --text-body: #64748B;
+  --text-muted: #94A3B8;
+
+  --brand-primary: #0F2F63;
+  --brand-accent: #0066FF;
+  --accent-blue: #0066FF;
+}
+
+html.dark {
+  color-scheme: dark;
+  --bg-base: #000000;
+  --bg-surface: #09090B;
+  --bg-elevated: #1C1C21;
+  --bg-subtle: #121215;
+
+  /* 4-Tier Semantic Surfaces (OLED True Pitch Depth Scale) */
+  --surface-canvas: #000000;
+  --surface-base: #09090B;
+  --surface-card: #121215;
+  --surface-elevated: #1C1C21;
+  --surface-overlay: rgba(18, 18, 21, 0.90);
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: #27272A;
+  --border-strong: #3F3F46;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #E4E4E7;
+  --text-body: #A1A1AA;
+  --text-muted: #71717A;
+
+  --brand-primary: #2563EB;
+  --brand-accent: #38BDF8;
+  --accent-blue: #38BDF8;
+}
+
 @layer base {
   html {
     font-size: 17px;
@@ -22,6 +80,9 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: auto;
     touch-action: pan-y;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   html, body, #root, input, textarea, select, button {

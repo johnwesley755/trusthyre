@@ -15,7 +15,8 @@ import {
   HelpCircle,
   Globe,
 } from 'lucide-react';
-import trustHyreLogo from '../../../assets/TrustHyre Skills and Opportunities Logo.png';
+import trustHyreLogoLight from '../../../assets/TrustHyre Skills and Opportunities Logo.png';
+import trustHyreLogoDark from '../../../assets/TrustHyre Logo with Skills Tagline.png';
 import { SeoHead } from '../../../components/common/SeoHead';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../../../providers/TranslationContext';
 import { AutoTranslate } from '../../../components/common/AutoTranslate';
@@ -62,34 +63,39 @@ export const TermsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0A1931] font-sans antialiased selection:bg-[#0f2f63] selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#000000] text-[#0A1931] dark:text-zinc-100 font-sans antialiased selection:bg-[#0f2f63] selection:text-white flex flex-col justify-between transition-colors duration-200">
       <SeoHead
         title="Terms of Service"
         description="Review TrustHyre's Terms of Service and operational guidelines for employers and verified skilled professionals."
         canonicalPath="/terms"
       />
       {/* Sticky Navigation Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-3 sm:gap-4">
           <Link to="/" className="flex items-center group py-1 shrink-0" aria-label="TrustHyre Home">
             <img 
-              src={trustHyreLogo} 
+              src={trustHyreLogoLight} 
               alt="TrustHyre" 
-              className="h-9 sm:h-11 md:h-12 w-auto object-contain block select-none mix-blend-multiply group-hover:opacity-90 transition-opacity" 
+              className="h-9 sm:h-11 md:h-12 w-auto object-contain block dark:hidden select-none group-hover:opacity-90 transition-opacity" 
+            />
+            <img 
+              src={trustHyreLogoDark} 
+              alt="TrustHyre" 
+              className="h-9 sm:h-11 md:h-12 w-auto object-contain hidden dark:block select-none group-hover:opacity-90 transition-opacity" 
             />
           </Link>
 
           {/* Quick Tab Switcher */}
-          <div className="flex items-center p-1 bg-slate-100 rounded-full border border-slate-200/80 text-xs font-semibold">
+          <div className="flex items-center p-1 bg-slate-100 dark:bg-zinc-900 rounded-full border border-slate-200/80 dark:border-zinc-800 text-xs font-semibold">
             <Link
               to="/terms"
-              className="px-3 sm:px-3.5 py-1.5 rounded-full bg-[#0f2f63] text-white shadow-xs transition-colors"
+              className="px-3 sm:px-3.5 py-1.5 rounded-full bg-[#0f2f63] dark:bg-[#2563EB] text-white shadow-xs transition-colors"
             >
               Terms of Service
             </Link>
             <Link
               to="/privacy"
-              className="px-3 sm:px-3.5 py-1.5 rounded-full text-slate-600 hover:text-[#0A1931] hover:bg-white/60 transition-colors"
+              className="px-3 sm:px-3.5 py-1.5 rounded-full text-slate-600 dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-800 transition-colors"
             >
               Privacy Policy
             </Link>
@@ -102,7 +108,7 @@ export const TermsPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 fullWidth={false}
-                icon={<Globe className="w-3.5 h-3.5 text-[#0066FF]" />}
+                icon={<Globe className="w-3.5 h-3.5 text-[#0066FF] dark:text-[#38BDF8]" />}
                 value={language}
                 onChange={(val) => setLanguage(val as any)}
                 options={SUPPORTED_LANGUAGES.map((l) => ({
@@ -118,7 +124,7 @@ export const TermsPage: React.FC = () => {
             <button
               type="button"
               onClick={() => window.print()}
-              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-600 hover:text-[#0A1931] hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 transition-colors cursor-pointer"
               title="Print document"
             >
               <Printer className="w-3.5 h-3.5" />
@@ -126,7 +132,7 @@ export const TermsPage: React.FC = () => {
             </button>
             <Link
               to="/"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-[#0f2f63] py-1.5 px-3 rounded-full hover:bg-slate-100 transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-[#0f2f63] dark:hover:text-white py-1.5 px-3 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Back</span>
@@ -137,27 +143,27 @@ export const TermsPage: React.FC = () => {
 
       {/* Hero Header */}
       <AutoTranslate>
-        <section className="bg-gradient-to-b from-white to-[#F8FAFC] border-b border-slate-200/80 py-10 sm:py-14 px-4 sm:px-6 lg:px-8">
+        <section className="bg-gradient-to-b from-white dark:from-[#09090b] to-[#F8FAFC] dark:to-[#000000] border-b border-slate-200/80 dark:border-zinc-800 py-10 sm:py-14 px-4 sm:px-6 lg:px-8 transition-colors">
           <div className="max-w-7xl mx-auto">
             <div className="max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-[#0f2f63] text-xs font-bold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-sky-500/10 border border-blue-100 dark:border-sky-500/20 text-[#0f2f63] dark:text-[#38BDF8] text-xs font-bold uppercase tracking-wider">
                 <FileText className="w-3.5 h-3.5" />
                 <span>Legal & Platform Agreement</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0A1931] tracking-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0A1931] dark:text-white tracking-tight">
                 Terms of Service
               </h1>
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+              <p className="text-sm sm:text-base text-slate-600 dark:text-zinc-400 leading-relaxed">
                 These terms govern your access to and use of TrustHyre&apos;s workforce platform, direct hiring network, and verified skill profiles.
               </p>
-              <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500 pt-2">
-                <span className="bg-white px-3 py-1 rounded-md border border-slate-200 shadow-2xs">
+              <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500 dark:text-zinc-400 pt-2">
+                <span className="bg-white dark:bg-[#121215] px-3 py-1 rounded-md border border-slate-200 dark:border-zinc-800 shadow-2xs">
                   Effective: October 14, 2026
                 </span>
-                <span className="bg-white px-3 py-1 rounded-md border border-slate-200 shadow-2xs">
+                <span className="bg-white dark:bg-[#121215] px-3 py-1 rounded-md border border-slate-200 dark:border-zinc-800 shadow-2xs">
                   Version 2.4 (National & Enterprise)
                 </span>
-                <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-md border border-emerald-200 shadow-2xs inline-flex items-center gap-1">
+                <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-md border border-emerald-200 dark:border-emerald-800/80 shadow-2xs inline-flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Legally Compliant
                 </span>
@@ -174,8 +180,8 @@ export const TermsPage: React.FC = () => {
             
             {/* Left: Sticky Table of Contents (Desktop) */}
             <aside className="lg:col-span-4 sticky top-24 space-y-6">
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
-                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">
+              <div className="bg-white dark:bg-[#121215] rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-5 shadow-xs">
+                <h2 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-3 px-2">
                   Table of Contents
                 </h2>
                 <nav className="space-y-1">
@@ -189,8 +195,8 @@ export const TermsPage: React.FC = () => {
                         onClick={() => scrollToSection(sec.id)}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition-all cursor-pointer ${
                           isActive
-                            ? 'bg-[#0f2f63] text-white shadow-xs'
-                            : 'text-slate-600 hover:text-[#0A1931] hover:bg-slate-100/80'
+                            ? 'bg-[#0f2f63] dark:bg-[#2563EB] text-white shadow-xs'
+                            : 'text-slate-600 dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-zinc-800'
                         }`}
                       >
                         <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
@@ -202,17 +208,17 @@ export const TermsPage: React.FC = () => {
               </div>
 
               {/* Support Callout */}
-              <div className="bg-blue-50/70 rounded-2xl border border-blue-100 p-5 space-y-3">
-                <div className="flex items-center gap-2 text-[#0f2f63] font-bold text-xs uppercase tracking-wider">
+              <div className="bg-blue-50/70 dark:bg-sky-950/20 rounded-2xl border border-blue-100 dark:border-sky-800/40 p-5 space-y-3">
+                <div className="flex items-center gap-2 text-[#0f2f63] dark:text-[#38BDF8] font-bold text-xs uppercase tracking-wider">
                   <HelpCircle className="w-4 h-4" />
                   <span>Need Clarification?</span>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed">
                   Have questions regarding work agreements, hiring terms, or platform features?
                 </p>
                 <a
                   href="mailto:legal@trusthyre.com"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0f2f63] hover:text-[#2563c9] underline underline-offset-2"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0f2f63] dark:text-[#38BDF8] hover:text-[#2563c9] dark:hover:text-sky-300 underline underline-offset-2"
                 >
                   Contact Legal Counsel &rarr;
                 </a>
@@ -223,36 +229,36 @@ export const TermsPage: React.FC = () => {
             <div className="lg:col-span-8 space-y-8">
               
               {/* Quick Executive Summary Card */}
-              <div className="bg-white rounded-2xl border-2 border-blue-100 p-6 shadow-xs space-y-3">
-                <div className="flex items-center gap-2 text-[#0f2f63] font-black text-sm">
-                  <ShieldCheck className="w-5 h-5 text-[#0066FF]" />
+              <div className="bg-white dark:bg-[#121215] rounded-2xl border-2 border-blue-100 dark:border-sky-900/50 p-6 shadow-xs space-y-3">
+                <div className="flex items-center gap-2 text-[#0f2f63] dark:text-[#38BDF8] font-black text-sm">
+                  <ShieldCheck className="w-5 h-5 text-[#0066FF] dark:text-[#38BDF8]" />
                   <span>Executive Summary of User Commitments</span>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
                   TrustHyre connects skilled workers with verified employers. By using the platform, you agree to:
                 </p>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-xs text-slate-700 font-medium">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-xs text-slate-700 dark:text-zinc-300 font-medium">
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <span>Provide truthful personal or company credentials.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <span>Abide by mutually agreed job terms and contracts.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <span>Zero tolerance for workplace harassment or abusive conduct.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <span>Resolve concerns through direct platform support.</span>
                   </li>
                 </ul>
               </div>
 
               {/* Section 1 */}
-              <section id="agreement" className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+              <section id="agreement" className="bg-white dark:bg-[#121215] rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0f2f63]">
                     <Scale className="w-5 h-5" />
@@ -268,7 +274,7 @@ export const TermsPage: React.FC = () => {
               </section>
 
               {/* Section 2 */}
-              <section id="accounts" className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+              <section id="accounts" className="bg-white dark:bg-[#121215] rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0f2f63]">
                     <Users className="w-5 h-5" />
@@ -290,7 +296,7 @@ export const TermsPage: React.FC = () => {
               </section>
 
               {/* Section 3 */}
-              <section id="employers" className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+              <section id="employers" className="bg-white dark:bg-[#121215] rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0f2f63]">
                     <Building2 className="w-5 h-5" />
@@ -309,7 +315,7 @@ export const TermsPage: React.FC = () => {
               </section>
 
               {/* Section 4 */}
-              <section id="workers" className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+              <section id="workers" className="bg-white dark:bg-[#121215] rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0f2f63]">
                     <ShieldCheck className="w-5 h-5" />
@@ -327,7 +333,7 @@ export const TermsPage: React.FC = () => {
               </section>
 
               {/* Section 5 */}
-              <section id="engagements" className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+              <section id="engagements" className="bg-white dark:bg-[#121215] rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0f2f63]">
                     <Briefcase className="w-5 h-5" />
@@ -345,7 +351,7 @@ export const TermsPage: React.FC = () => {
               </section>
 
               {/* Section 6 */}
-              <section id="prohibited" className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+              <section id="prohibited" className="bg-white dark:bg-[#121215] rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0f2f63]">
                     <AlertCircle className="w-5 h-5" />
@@ -364,7 +370,7 @@ export const TermsPage: React.FC = () => {
               </section>
 
               {/* Section 7 */}
-              <section id="liability" className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+              <section id="liability" className="bg-white dark:bg-[#121215] rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0f2f63]">
                     <Lock className="w-5 h-5" />
@@ -380,7 +386,7 @@ export const TermsPage: React.FC = () => {
               </section>
 
               {/* Section 8 */}
-              <section id="governing" className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+              <section id="governing" className="bg-white dark:bg-[#121215] rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0f2f63]">
                     <Scale className="w-5 h-5" />
@@ -398,13 +404,13 @@ export const TermsPage: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="w-full bg-white border-t border-slate-200 py-8 px-4 sm:px-6 lg:px-8 mt-12">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <footer className="w-full bg-white dark:bg-[#000000] border-t border-slate-200 dark:border-zinc-800 py-8 px-4 sm:px-6 lg:px-8 mt-12 transition-colors">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-zinc-500">
           <p>&copy; {new Date().getFullYear()} TrustHyre Technologies Pvt. Ltd. All rights reserved.</p>
           <div className="flex items-center gap-6 font-semibold">
-            <Link to="/terms" className="text-[#0f2f63] font-bold">Terms of Service</Link>
-            <Link to="/privacy" className="hover:text-[#0f2f63] transition-colors">Privacy Policy</Link>
-            <a href="mailto:support@trusthyre.com" className="hover:text-[#0f2f63] transition-colors">Help & Support</a>
+            <Link to="/terms" className="text-[#0f2f63] dark:text-[#38BDF8] font-bold">Terms of Service</Link>
+            <Link to="/privacy" className="hover:text-[#0f2f63] dark:hover:text-[#38BDF8] transition-colors">Privacy Policy</Link>
+            <a href="mailto:support@trusthyre.com" className="hover:text-[#0f2f63] dark:hover:text-[#38BDF8] transition-colors">Help & Support</a>
           </div>
         </div>
       </footer>

@@ -500,17 +500,17 @@ export const AdminLeadsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] mb-1.5">
+          <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] dark:text-zinc-400 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9]" />
             <span>Opportunity Acquisition</span>
           </div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-medium text-[#0a0a0a] tracking-tight">Hiring Company Discovery</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-blue-50 text-[#0f2f63] border border-blue-200 hidden">
+            <h1 className="text-2xl sm:text-3xl font-medium text-[#0a0a0a] dark:text-white tracking-tight">Hiring Company Discovery</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-blue-50 dark:bg-sky-950/30 text-[#0f2f63] dark:text-sky-400 border border-blue-200 dark:border-sky-900/50 hidden">
               Live Opportunity Finder
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-[#717784] mt-1 max-w-3xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 mt-1 max-w-3xl leading-relaxed">
             Find external businesses that currently need workers, view their verified phone and email, and invite them to hire verified workers on TrustHyre.
           </p>
         </div>
@@ -520,9 +520,9 @@ export const AdminLeadsPage: React.FC = () => {
           {/* Interactive Guide / How It Works Button */}
           <button
             onClick={() => setIsGuideModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium uppercase tracking-wider bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium uppercase tracking-wider bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50 shadow-xs transition-all cursor-pointer"
           >
-            <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
+            <Lightbulb className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             <span>How This Works</span>
           </button>
 
@@ -547,7 +547,7 @@ export const AdminLeadsPage: React.FC = () => {
           {/* Ingest Manual Lead */}
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider bg-[#0f2f63] hover:bg-[#2563c9] text-white shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#2563c9] text-white shadow-xs transition-all cursor-pointer"
           >
             <PlusCircle className="w-3.5 h-3.5" />
             <span>Add Company</span>
@@ -613,11 +613,11 @@ export const AdminLeadsPage: React.FC = () => {
 
       {/* Discovery Sources Status Strip */}
       {sourcesData && sourcesData.length > 0 && (
-        <div className="bg-[#f8fafc] border border-[#e2e4e9] rounded-2xl px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+        <div className="bg-[#f8fafc] dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 rounded-2xl px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
-            <Bot className="w-4 h-4 text-[#0f2f63]" />
-            <span className="font-bold text-[#0a0a0a]">Configured Discovery Crawlers:</span>
-            <span className="text-emerald-700 font-bold">
+            <Bot className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
+            <span className="font-bold text-[#0a0a0a] dark:text-white">Configured Discovery Crawlers:</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-bold">
               {sourcesData.filter((s: any) => s.active || s.status === 'ACTIVE' || s.status === 'SUPPORTED' || !s.is_restricted).length} Active Channels
             </span>
           </div>
@@ -628,11 +628,11 @@ export const AdminLeadsPage: React.FC = () => {
                 <span
                   key={s.id || s.name}
                   title={s.complianceNote || (isLive ? 'Active automated feed' : 'Requires official partner API')}
-                  className="px-2.5 py-1 bg-white border border-[#e2e4e9] rounded-full text-[10px] font-semibold text-[#5a6270] flex items-center gap-1.5 cursor-help shadow-2xs"
+                  className="px-2.5 py-1 bg-white dark:bg-[#1C1C21] border border-[#e2e4e9] dark:border-zinc-800 rounded-full text-[10px] font-semibold text-[#5a6270] dark:text-zinc-300 flex items-center gap-1.5 cursor-help shadow-2xs"
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-500' : 'bg-amber-400'}`} />
                   <span>{s.name}</span>
-                  <span className={`text-[9px] ${isLive ? 'text-emerald-700 font-bold' : 'text-[#717784]'}`}>
+                  <span className={`text-[9px] ${isLive ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-[#717784] dark:text-zinc-500'}`}>
                     ({isLive ? 'LIVE' : 'RESTRICTED'})
                   </span>
                 </span>
@@ -649,17 +649,17 @@ export const AdminLeadsPage: React.FC = () => {
           return (
             <div
               key={idx}
-              className="bg-white border border-[#e2e4e9] rounded-2xl sm:rounded-3xl p-5 relative overflow-hidden flex flex-col justify-between shadow-xs hover:border-[#cbd0d8] transition-all"
+              className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 rounded-2xl sm:rounded-3xl p-5 relative overflow-hidden flex flex-col justify-between shadow-xs hover:border-[#cbd0d8] dark:hover:border-zinc-700 transition-all"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-[#717784] uppercase tracking-wider">{kpi.title}</span>
+                <span className="text-xs font-bold text-[#717784] dark:text-zinc-400 uppercase tracking-wider">{kpi.title}</span>
                 <div className={`w-10 h-10 rounded-2xl ${kpi.color} flex items-center justify-center shadow-xs`}>
                   <Icon className="w-5 h-5" />
                 </div>
               </div>
               <div>
-                <span className="text-3xl font-black text-[#0a0a0a]">{kpi.value.toLocaleString()}</span>
-                <p className="text-xs text-[#717784] font-medium mt-1">{kpi.sub}</p>
+                <span className="text-3xl font-black text-[#0a0a0a] dark:text-white">{kpi.value.toLocaleString()}</span>
+                <p className="text-xs text-[#717784] dark:text-zinc-400 font-medium mt-1">{kpi.sub}</p>
               </div>
             </div>
           );
@@ -667,10 +667,10 @@ export const AdminLeadsPage: React.FC = () => {
       </div>
 
       {/* Comprehensive Filter & Search Bar */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#e6e8ec] shadow-xs space-y-3.5">
+      <div className="bg-white dark:bg-[#121215] p-4 sm:p-5 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xs space-y-3.5">
         {/* Top Row: Status Tabs */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#e6e8ec]">
-          <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] border border-[#e6e8ec] overflow-x-auto max-w-full">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#e6e8ec] dark:border-zinc-800">
+          <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] dark:bg-[#000000] border border-[#e6e8ec] dark:border-zinc-800 overflow-x-auto max-w-full">
             {statusTabs.map((tab) => (
               <button
                 key={tab.value}
@@ -680,8 +680,8 @@ export const AdminLeadsPage: React.FC = () => {
                 }}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                   statusFilter === tab.value
-                    ? 'bg-[#0f2f63] text-white shadow-xs'
-                    : 'text-[#717784] hover:text-[#0a0a0a]'
+                    ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-xs'
+                    : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
                 }`}
               >
                 {tab.label}
@@ -692,7 +692,7 @@ export const AdminLeadsPage: React.FC = () => {
           {hasActiveFilters && (
             <button
               onClick={resetAllFilters}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-full border border-rose-200 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-full border border-rose-200 dark:border-rose-900/50 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset Filters</span>
@@ -712,9 +712,9 @@ export const AdminLeadsPage: React.FC = () => {
                 setPage(1);
               }}
               placeholder="Search company, job role, phone, city..."
-              className="w-full bg-[#f8fafc] border border-[#e2e4e9] focus:border-[#0f2f63] focus:bg-white focus:ring-2 focus:ring-[#0f2f63]/10 rounded-xl px-3.5 py-2 pl-9 pr-8 text-xs text-[#0a0a0a] placeholder:text-[#94a3b8] outline-none transition-all"
+              className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-sky-500 focus:bg-white dark:focus:bg-[#000000] focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20 rounded-xl px-3.5 py-2 pl-9 pr-8 text-xs text-[#0a0a0a] dark:text-white placeholder:text-[#94a3b8] dark:placeholder:text-zinc-500 outline-none transition-all"
             />
-            <Search className="w-4 h-4 text-[#94a3b8] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#94a3b8] dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
             {searchQuery && (
               <button
                 type="button"
@@ -722,7 +722,7 @@ export const AdminLeadsPage: React.FC = () => {
                   setSearchQuery('');
                   setPage(1);
                 }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#0a0a0a] p-0.5"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white p-0.5"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -809,18 +809,18 @@ export const AdminLeadsPage: React.FC = () => {
       {isLoading ? (
         <AppLoader variant="page" message="Loading business lead directory..." />
       ) : leads.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl sm:rounded-3xl border border-[#e2e4e9] shadow-xs">
-          <Building2 className="w-10 h-10 text-[#94a3b8] mx-auto mb-3" />
-          <h3 className="text-sm font-bold text-[#0a0a0a]">No hiring companies found</h3>
-          <p className="text-xs text-[#717784] mt-1">
+        <div className="text-center py-20 bg-white dark:bg-[#121215] rounded-2xl sm:rounded-3xl border border-[#e2e4e9] dark:border-zinc-800 shadow-xs">
+          <Building2 className="w-10 h-10 text-[#94a3b8] dark:text-zinc-600 mx-auto mb-3" />
+          <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-white">No hiring companies found</h3>
+          <p className="text-xs text-[#717784] dark:text-zinc-400 mt-1">
             Click "Run Auto-Discovery Scan" or "Quick Scrape URL" to discover hiring businesses.
           </p>
         </div>
       ) : (
-        <div className="bg-white border border-[#e2e4e9] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs">
+        <div className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-[#5a6270]">
-              <thead className="bg-[#f8fafc] text-[#5a6270] uppercase text-[10px] font-bold border-b border-[#e2e4e9] tracking-wider">
+            <table className="w-full text-left text-xs text-[#5a6270] dark:text-zinc-400">
+              <thead className="bg-[#f8fafc] dark:bg-[#000000] text-[#5a6270] dark:text-zinc-400 uppercase text-[10px] font-bold border-b border-[#e2e4e9] dark:border-zinc-800 tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5 whitespace-nowrap min-w-[240px]">Company Name & Website</th>
                   <th className="px-5 py-3.5 whitespace-nowrap min-w-[220px]">Workers Needed (Openings)</th>
@@ -830,24 +830,24 @@ export const AdminLeadsPage: React.FC = () => {
                   <th className="px-5 py-3.5 whitespace-nowrap text-right min-w-[180px]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e6e8ec]">
+              <tbody className="divide-y divide-[#e6e8ec] dark:divide-zinc-800">
                 {leads.map((lead) => {
                   const reqCount = lead.requirements?.length || 0;
                   const primaryReq = lead.requirements?.[0];
 
                   return (
-                    <tr key={lead.id} className="hover:bg-[#f8fafc]/80 transition-colors group">
+                    <tr key={lead.id} className="hover:bg-[#f8fafc]/80 dark:hover:bg-[#1C1C21]/60 transition-colors group">
                       {/* Employer Info */}
                       <td className="px-5 py-3.5">
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-blue-50/80 border border-blue-100 text-[#0f2f63] font-bold flex items-center justify-center text-sm shrink-0 shadow-2xs">
+                          <div className="w-10 h-10 rounded-xl bg-blue-50/80 dark:bg-sky-950/40 border border-blue-100 dark:border-sky-800/40 text-[#0f2f63] dark:text-sky-300 font-bold flex items-center justify-center text-sm shrink-0 shadow-2xs">
                             {lead.company_name.charAt(0)}
                           </div>
                           <div className="min-w-0">
                             <button
                               type="button"
                               onClick={() => setSelectedLead(lead)}
-                              className="font-bold text-[#0a0a0a] hover:text-[#0f2f63] text-left block text-xs sm:text-sm leading-tight transition-colors truncate max-w-[220px] cursor-pointer"
+                              className="font-bold text-[#0a0a0a] dark:text-white hover:text-[#0f2f63] dark:hover:text-sky-400 text-left block text-xs sm:text-sm leading-tight transition-colors truncate max-w-[220px] cursor-pointer"
                               title={lead.company_name}
                             >
                               {lead.company_name}
@@ -858,16 +858,16 @@ export const AdminLeadsPage: React.FC = () => {
                                   href={formatLink(lead.company_website || lead.company_domain)}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-[11px] text-[#0f2f63] hover:underline font-mono inline-flex items-center gap-1 shrink-0"
+                                  className="text-[11px] text-[#0f2f63] dark:text-sky-400 hover:underline font-mono inline-flex items-center gap-1 shrink-0"
                                 >
-                                  <Globe className="w-3 h-3 text-[#717784]" />
+                                  <Globe className="w-3 h-3 text-[#717784] dark:text-zinc-500" />
                                   <span className="truncate max-w-[140px]">{lead.company_domain}</span>
                                 </a>
                               ) : (
-                                <span className="text-[11px] text-[#94a3b8]">No website</span>
+                                <span className="text-[11px] text-[#94a3b8] dark:text-zinc-600">No website</span>
                               )}
                               {lead.city && (
-                                <span className="text-[10px] px-2 py-0.5 bg-[#f4f5f8] text-[#5a6270] rounded-full border border-[#e2e4e9] font-medium whitespace-nowrap">
+                                <span className="text-[10px] px-2 py-0.5 bg-[#f4f5f8] dark:bg-[#1C1C21] text-[#5a6270] dark:text-zinc-300 rounded-full border border-[#e2e4e9] dark:border-zinc-800 font-medium whitespace-nowrap">
                                   {lead.city}
                                 </span>
                               )}
@@ -880,13 +880,13 @@ export const AdminLeadsPage: React.FC = () => {
                       <td className="px-5 py-3.5">
                         {primaryReq ? (
                           <div className="min-w-0">
-                            <span className="font-bold text-[#0a0a0a] block text-xs truncate max-w-[240px]" title={primaryReq.title}>
+                            <span className="font-bold text-[#0a0a0a] dark:text-white block text-xs truncate max-w-[240px]" title={primaryReq.title}>
                               {primaryReq.title}
                             </span>
-                            <div className="flex items-center gap-1.5 text-[11px] text-[#5a6270] mt-0.5 whitespace-nowrap">
-                              <span className="text-[#0f2f63] font-semibold">{primaryReq.workers_needed || 1} Worker(s) Needed</span>
-                              {primaryReq.salary_range && <span className="text-[#94a3b8]">•</span>}
-                              {primaryReq.salary_range && <span className="text-[#717784]">{primaryReq.salary_range}</span>}
+                            <div className="flex items-center gap-1.5 text-[11px] text-[#5a6270] dark:text-zinc-400 mt-0.5 whitespace-nowrap">
+                              <span className="text-[#0f2f63] dark:text-sky-400 font-semibold">{primaryReq.workers_needed || 1} Worker(s) Needed</span>
+                              {primaryReq.salary_range && <span className="text-[#94a3b8] dark:text-zinc-600">•</span>}
+                              {primaryReq.salary_range && <span className="text-[#717784] dark:text-zinc-400">{primaryReq.salary_range}</span>}
                             </div>
                             <div className="flex items-center gap-1.5 mt-1.5">
                               {primaryReq.source_url && (
@@ -894,23 +894,23 @@ export const AdminLeadsPage: React.FC = () => {
                                   href={formatLink(primaryReq.source_url)}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white hover:bg-[#f4f5f8] text-[#0f2f63] rounded-full text-[10px] font-semibold border border-[#e2e4e9] transition-all shadow-2xs max-w-[170px] truncate"
+                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white dark:bg-[#1C1C21] hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 text-[#0f2f63] dark:text-sky-400 rounded-full text-[10px] font-semibold border border-[#e2e4e9] dark:border-zinc-800 transition-all shadow-2xs max-w-[170px] truncate"
                                   title={`Open exact job post on ${primaryReq.source_name || 'Portal'}`}
                                 >
-                                  <Link2 className="w-2.5 h-2.5 shrink-0 text-[#0f2f63]" />
+                                  <Link2 className="w-2.5 h-2.5 shrink-0 text-[#0f2f63] dark:text-sky-400" />
                                   <span className="truncate">{primaryReq.source_name || 'View Post'}</span>
-                                  <ExternalLink className="w-2.5 h-2.5 shrink-0 text-[#717784]" />
+                                  <ExternalLink className="w-2.5 h-2.5 shrink-0 text-[#717784] dark:text-zinc-500" />
                                 </a>
                               )}
                               {reqCount > 1 && (
-                                <span className="text-[10px] font-semibold text-[#717784] bg-[#f4f5f8] px-2 py-0.5 rounded-full border border-[#e2e4e9] whitespace-nowrap">
+                                <span className="text-[10px] font-semibold text-[#717784] dark:text-zinc-400 bg-[#f4f5f8] dark:bg-[#1C1C21] px-2 py-0.5 rounded-full border border-[#e2e4e9] dark:border-zinc-800 whitespace-nowrap">
                                   +{reqCount - 1} more
                                 </span>
                               )}
                             </div>
                           </div>
                         ) : (
-                          <span className="text-[#94a3b8] italic text-xs">No roles detected</span>
+                          <span className="text-[#94a3b8] dark:text-zinc-600 italic text-xs">No roles detected</span>
                         )}
                       </td>
 
@@ -920,23 +920,23 @@ export const AdminLeadsPage: React.FC = () => {
                           {lead.official_email ? (
                             <a
                               href={`mailto:${lead.official_email}`}
-                              className="flex items-center gap-1.5 text-[11px] text-[#0a0a0a] hover:text-[#0f2f63] font-medium transition-colors"
+                              className="flex items-center gap-1.5 text-[11px] text-[#0a0a0a] dark:text-zinc-200 hover:text-[#0f2f63] dark:hover:text-sky-400 font-medium transition-colors"
                             >
-                              <Mail className="w-3 h-3 text-[#717784] shrink-0" />
+                              <Mail className="w-3 h-3 text-[#717784] dark:text-zinc-500 shrink-0" />
                               <span className="truncate max-w-[160px]">{lead.official_email}</span>
                             </a>
                           ) : null}
                           {lead.official_phone ? (
                             <a
                               href={`tel:${lead.official_phone}`}
-                              className="flex items-center gap-1.5 text-[11px] text-[#0a0a0a] hover:text-[#0f2f63] font-medium transition-colors"
+                              className="flex items-center gap-1.5 text-[11px] text-[#0a0a0a] dark:text-zinc-200 hover:text-[#0f2f63] dark:hover:text-sky-400 font-medium transition-colors"
                             >
-                              <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
+                              <Phone className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                               <span>{lead.official_phone}</span>
                             </a>
                           ) : null}
                           {!lead.official_email && !lead.official_phone && (
-                            <span className="text-[11px] text-[#94a3b8] italic">Finding contacts...</span>
+                            <span className="text-[11px] text-[#94a3b8] dark:text-zinc-600 italic">Finding contacts...</span>
                           )}
                         </div>
                       </td>
@@ -944,19 +944,19 @@ export const AdminLeadsPage: React.FC = () => {
                       {/* Contactability Score Badge */}
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         {lead.contactability_score === 'COMPLETE' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap shadow-2xs">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/40 whitespace-nowrap shadow-2xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                             <ShieldCheck className="w-3 h-3 shrink-0" />
                             <span>Full Info</span>
                           </span>
                         ) : lead.contactability_score === 'PARTIAL' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/80 whitespace-nowrap shadow-2xs">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800/40 whitespace-nowrap shadow-2xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
                             <ShieldCheck className="w-3 h-3 shrink-0" />
                             <span>Partial Info</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#f4f5f8] text-[#717784] border border-[#e2e4e9] whitespace-nowrap shadow-2xs">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#f4f5f8] dark:bg-zinc-800 text-[#717784] dark:text-zinc-400 border border-[#e2e4e9] dark:border-zinc-700 whitespace-nowrap shadow-2xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#94a3b8] shrink-0" />
                             <span>No Contact</span>
                           </span>
@@ -966,37 +966,37 @@ export const AdminLeadsPage: React.FC = () => {
                       {/* Progress Status Badge */}
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         {lead.status === 'ONBOARDED' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap shadow-2xs">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/40 whitespace-nowrap shadow-2xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                             <span>Joined Platform</span>
                           </span>
                         ) : lead.status === 'DISCOVERED' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-[#0f2f63] border border-blue-200/80 whitespace-nowrap shadow-2xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] shrink-0" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-300 border border-blue-200/80 dark:border-sky-800/40 whitespace-nowrap shadow-2xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] dark:bg-sky-400 shrink-0" />
                             <span>New Lead</span>
                           </span>
                         ) : lead.status === 'VERIFIED' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-teal-50 text-teal-700 border border-teal-200/80 whitespace-nowrap shadow-2xs">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 border border-teal-200/80 dark:border-teal-800/40 whitespace-nowrap shadow-2xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
                             <span>Verified Info</span>
                           </span>
                         ) : lead.status === 'CONTACTED' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/80 whitespace-nowrap shadow-2xs">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800/40 whitespace-nowrap shadow-2xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
                             <span>Contacted</span>
                           </span>
                         ) : lead.status === 'INTERESTED' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200/80 whitespace-nowrap shadow-2xs">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-800/40 whitespace-nowrap shadow-2xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
                             <span>Interested</span>
                           </span>
                         ) : lead.status === 'EXPIRED' || lead.status === 'INVALID' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap shadow-2xs">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200/80 dark:border-rose-800/40 whitespace-nowrap shadow-2xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
                             <span>Expired</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#f4f5f8] text-[#717784] border border-[#e2e4e9] whitespace-nowrap shadow-2xs">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#f4f5f8] dark:bg-zinc-800 text-[#717784] dark:text-zinc-400 border border-[#e2e4e9] dark:border-zinc-700 whitespace-nowrap shadow-2xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#94a3b8] shrink-0" />
                             <span>{lead.status}</span>
                           </span>
@@ -1009,7 +1009,7 @@ export const AdminLeadsPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => navigate(`/admin/leads/${lead.id}`)}
-                            className="px-3 py-1.5 bg-white hover:bg-[#f4f5f8] border border-[#e2e4e9] text-[#0a0a0a] hover:text-[#0f2f63] rounded-full text-xs font-semibold whitespace-nowrap shadow-2xs transition-all cursor-pointer"
+                            className="px-3 py-1.5 bg-white dark:bg-[#1C1C21] hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 border border-[#e2e4e9] dark:border-zinc-800 text-[#0a0a0a] dark:text-white hover:text-[#0f2f63] dark:hover:text-sky-400 rounded-full text-xs font-semibold whitespace-nowrap shadow-2xs transition-all cursor-pointer"
                           >
                             View Details
                           </button>
@@ -1018,7 +1018,7 @@ export const AdminLeadsPage: React.FC = () => {
                               type="button"
                               onClick={() => convertMutation.mutate(lead.id)}
                               disabled={convertMutation.isPending}
-                              className="px-3.5 py-1.5 bg-[#0f2f63] hover:bg-[#163e7f] text-white rounded-full text-xs font-semibold whitespace-nowrap shadow-xs hover:shadow-sm disabled:opacity-50 inline-flex items-center gap-1.5 transition-all cursor-pointer"
+                              className="px-3.5 py-1.5 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#163e7f] dark:hover:bg-[#0052cc] text-white rounded-full text-xs font-semibold whitespace-nowrap shadow-xs hover:shadow-sm disabled:opacity-50 inline-flex items-center gap-1.5 transition-all cursor-pointer"
                               title="Onboard company to TrustHyre"
                             >
                               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
@@ -1035,17 +1035,17 @@ export const AdminLeadsPage: React.FC = () => {
           </div>
 
           {/* Table Pagination Footer */}
-          <div className="px-5 py-3.5 bg-[#fafbfc] border-t border-[#e2e4e9] flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="text-xs text-[#717784] font-medium">
+          <div className="px-5 py-3.5 bg-[#fafbfc] dark:bg-[#000000] border-t border-[#e2e4e9] dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-xs text-[#717784] dark:text-zinc-400 font-medium">
               Showing{' '}
-              <span className="font-bold text-[#0a0a0a]">
+              <span className="font-bold text-[#0a0a0a] dark:text-white">
                 {totalLeads === 0 ? 0 : (page - 1) * limit + 1}
               </span>{' '}
               to{' '}
-              <span className="font-bold text-[#0a0a0a]">
+              <span className="font-bold text-[#0a0a0a] dark:text-white">
                 {Math.min(page * limit, totalLeads)}
               </span>{' '}
-              of <span className="font-bold text-[#0a0a0a]">{totalLeads}</span> hiring companies
+              of <span className="font-bold text-[#0a0a0a] dark:text-white">{totalLeads}</span> hiring companies
             </div>
 
             <div className="flex items-center gap-1.5">
@@ -1053,7 +1053,7 @@ export const AdminLeadsPage: React.FC = () => {
                 type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1 || isLoading}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#e2e4e9] bg-white text-xs font-semibold text-[#0a0a0a] hover:bg-[#f4f5f8] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#1C1C21] text-xs font-semibold text-[#0a0a0a] dark:text-white hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
                 <span>Prev</span>
@@ -1078,7 +1078,7 @@ export const AdminLeadsPage: React.FC = () => {
                   .map((p, idx) => {
                     if (typeof p === 'string') {
                       return (
-                        <span key={`ellipsis-${idx}`} className="px-1 text-[#94a3b8] text-xs font-bold select-none">
+                        <span key={`ellipsis-${idx}`} className="px-1 text-[#94a3b8] dark:text-zinc-600 text-xs font-bold select-none">
                           ...
                         </span>
                       );
@@ -1091,8 +1091,8 @@ export const AdminLeadsPage: React.FC = () => {
                         disabled={isLoading}
                         className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           page === p
-                            ? 'bg-[#0f2f63] text-white shadow-xs'
-                            : 'bg-white border border-[#e2e4e9] text-[#5a6270] hover:text-[#0a0a0a] hover:bg-[#f4f5f8]'
+                            ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-xs'
+                            : 'bg-white dark:bg-[#1C1C21] border border-[#e2e4e9] dark:border-zinc-800 text-[#5a6270] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-[#f4f5f8] dark:hover:bg-zinc-800'
                         }`}
                       >
                         {p}
@@ -1105,7 +1105,7 @@ export const AdminLeadsPage: React.FC = () => {
                 type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages || isLoading}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#e2e4e9] bg-white text-xs font-semibold text-[#0a0a0a] hover:bg-[#f4f5f8] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#1C1C21] text-xs font-semibold text-[#0a0a0a] dark:text-white hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
               >
                 <span>Next</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -1117,30 +1117,30 @@ export const AdminLeadsPage: React.FC = () => {
 
       {/* Lead Detail & Provenance Modal */}
       {selectedLead && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white border border-[#e2e4e9] w-full max-w-2xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl relative max-h-[92vh] overflow-y-auto space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 w-full max-w-2xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl relative max-h-[92vh] overflow-y-auto space-y-4">
             {/* Modal Header */}
-            <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-[#e6e8ec]">
+            <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-[#e6e8ec] dark:border-zinc-800">
               <div className="flex items-start sm:items-center gap-3 min-w-0">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-50/80 border border-blue-100 text-[#0f2f63] font-black flex items-center justify-center text-base sm:text-lg shrink-0 mt-0.5 sm:mt-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-50/80 dark:bg-sky-950/40 border border-blue-100 dark:border-sky-800/40 text-[#0f2f63] dark:text-sky-300 font-black flex items-center justify-center text-base sm:text-lg shrink-0 mt-0.5 sm:mt-0">
                   {selectedLead.company_name.charAt(0)}
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a] truncate">{selectedLead.company_name}</h3>
+                  <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a] dark:text-white truncate">{selectedLead.company_name}</h3>
                   <div className="flex flex-wrap items-center gap-2 mt-0.5">
                     {selectedLead.company_website && (
                       <a
                         href={formatLink(selectedLead.company_website)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-[#0f2f63] hover:underline flex items-center gap-1 font-medium"
+                        className="text-xs text-[#0f2f63] dark:text-sky-400 hover:underline flex items-center gap-1 font-medium"
                       >
                         <Globe className="w-3.5 h-3.5" />
                         <span>Visit Website</span>
-                        <ExternalLink className="w-3 h-3" />
+                        <ExternalLink className="w-3 h-3 text-[#717784] dark:text-zinc-500" />
                       </a>
                     )}
-                    <span className="text-xs text-[#717784]">• {selectedLead.industry || 'General Trade'}</span>
+                    <span className="text-xs text-[#717784] dark:text-zinc-400">• {selectedLead.industry || 'General Trade'}</span>
                   </div>
                 </div>
               </div>
@@ -1148,7 +1148,7 @@ export const AdminLeadsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedLead(null)}
-                className="p-1.5 sm:p-2 rounded-full text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f5f8] transition-colors shrink-0 cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-full text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1158,34 +1158,34 @@ export const AdminLeadsPage: React.FC = () => {
             {/* Official Contact & Provenance Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               {/* Contact Channels Card */}
-              <div className="bg-[#f8fafc] p-3.5 sm:p-4 rounded-2xl border border-[#e2e4e9] space-y-2.5">
-                <span className="text-[10px] font-bold text-[#717784] uppercase tracking-wider block">
+              <div className="bg-[#f8fafc] dark:bg-[#1C1C21] p-3.5 sm:p-4 rounded-2xl border border-[#e2e4e9] dark:border-zinc-800 space-y-2.5">
+                <span className="text-[10px] font-bold text-[#717784] dark:text-zinc-400 uppercase tracking-wider block">
                   Official Business Channels
                 </span>
-                <div className="space-y-2 text-xs text-[#0a0a0a]">
+                <div className="space-y-2 text-xs text-[#0a0a0a] dark:text-white">
                   <div className="flex items-center justify-between">
-                    <span className="text-[#717784] flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5 text-[#0f2f63]" /> Email:
+                    <span className="text-[#717784] dark:text-zinc-400 flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" /> Email:
                     </span>
-                    <span className="font-semibold text-[#0a0a0a] truncate max-w-[180px]">{selectedLead.official_email || 'Not Provided'}</span>
+                    <span className="font-semibold text-[#0a0a0a] dark:text-white truncate max-w-[180px]">{selectedLead.official_email || 'Not Provided'}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[#717784] flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-emerald-600" /> Phone:
+                    <span className="text-[#717784] dark:text-zinc-400 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Phone:
                     </span>
-                    <span className="font-semibold text-[#0a0a0a]">{selectedLead.official_phone || 'Not Provided'}</span>
+                    <span className="font-semibold text-[#0a0a0a] dark:text-white">{selectedLead.official_phone || 'Not Provided'}</span>
                   </div>
                   {selectedLead.contact_page_url && (
-                    <div className="flex items-center justify-between pt-1 border-t border-[#e2e4e9]">
-                      <span className="text-[#717784]">Contact Form:</span>
+                    <div className="flex items-center justify-between pt-1 border-t border-[#e2e4e9] dark:border-zinc-800">
+                      <span className="text-[#717784] dark:text-zinc-400">Contact Form:</span>
                       <a
                         href={formatLink(selectedLead.contact_page_url)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#0f2f63] hover:underline flex items-center gap-1 font-semibold"
+                        className="text-[#0f2f63] dark:text-sky-400 hover:underline flex items-center gap-1 font-semibold"
                       >
                         <span>Open Page</span>
-                        <ExternalLink className="w-3 h-3 text-[#717784]" />
+                        <ExternalLink className="w-3 h-3 text-[#717784] dark:text-zinc-500" />
                       </a>
                     </div>
                   )}
@@ -1193,12 +1193,12 @@ export const AdminLeadsPage: React.FC = () => {
               </div>
 
               {/* Provenance & Status Card */}
-              <div className="bg-[#f8fafc] p-3.5 sm:p-4 rounded-2xl border border-[#e2e4e9] space-y-2.5">
-                <span className="text-[10px] font-bold text-[#717784] uppercase tracking-wider block">
+              <div className="bg-[#f8fafc] dark:bg-[#1C1C21] p-3.5 sm:p-4 rounded-2xl border border-[#e2e4e9] dark:border-zinc-800 space-y-2.5">
+                <span className="text-[10px] font-bold text-[#717784] dark:text-zinc-400 uppercase tracking-wider block">
                   Progress Status
                 </span>
                 <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="text-[#717784] shrink-0">Stage:</span>
+                  <span className="text-[#717784] dark:text-zinc-400 shrink-0">Stage:</span>
                   <div className="w-36">
                     <Select
                       selectSize="sm"
@@ -1214,14 +1214,14 @@ export const AdminLeadsPage: React.FC = () => {
                     </Select>
                   </div>
                 </div>
-                <div className="text-[11px] text-[#717784] flex justify-between">
+                <div className="text-[11px] text-[#717784] dark:text-zinc-400 flex justify-between">
                   <span>Found on:</span>
-                  <span className="font-medium text-[#0a0a0a]">
+                  <span className="font-medium text-[#0a0a0a] dark:text-white">
                     {new Date(selectedLead.created_at).toLocaleDateString()}
                   </span>
                 </div>
                 {selectedLead.trusthire_employer_id && (
-                  <div className="p-1.5 bg-blue-50/80 text-[#0f2f63] rounded-lg text-[10px] font-bold text-center border border-blue-100">
+                  <div className="p-1.5 bg-blue-50/80 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-300 rounded-lg text-[10px] font-bold text-center border border-blue-100 dark:border-sky-800/40">
                     Linked to Live TrustHyre Employer Account
                   </div>
                 )}
@@ -1231,36 +1231,36 @@ export const AdminLeadsPage: React.FC = () => {
             {/* Worker Requirements List */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-[#0a0a0a] uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-[#0a0a0a] dark:text-white uppercase tracking-wider">
                   Open Opportunities / Vacancies ({selectedLead.requirements?.length || 0})
                 </h4>
-                <span className="text-[11px] text-[#717784]">Detected from source postings</span>
+                <span className="text-[11px] text-[#717784] dark:text-zinc-400">Detected from source postings</span>
               </div>
               <div className="space-y-2.5">
                 {selectedLead.requirements?.map((req) => {
                   const cleanDesc = stripHtml(req.description);
                   return (
-                    <div key={req.id} className="p-3.5 sm:p-4 bg-[#f8fafc] border border-[#e2e4e9] rounded-2xl space-y-2">
+                    <div key={req.id} className="p-3.5 sm:p-4 bg-[#f8fafc] dark:bg-[#1C1C21] border border-[#e2e4e9] dark:border-zinc-800 rounded-2xl space-y-2">
                       <div className="flex items-start justify-between gap-2.5">
                         <div className="min-w-0 flex-1">
-                          <h5 className="text-xs sm:text-sm font-semibold text-[#0a0a0a] leading-snug">{req.title}</h5>
+                          <h5 className="text-xs sm:text-sm font-semibold text-[#0a0a0a] dark:text-white leading-snug">{req.title}</h5>
                           {cleanDesc ? (
-                            <p className="text-[11px] sm:text-xs text-[#5a6270] mt-1 leading-relaxed line-clamp-4 whitespace-pre-line">
+                            <p className="text-[11px] sm:text-xs text-[#5a6270] dark:text-zinc-400 mt-1 leading-relaxed line-clamp-4 whitespace-pre-line">
                               {cleanDesc}
                             </p>
                           ) : (
-                            <p className="text-[11px] text-[#94a3b8] italic mt-0.5">No description text provided in posting</p>
+                            <p className="text-[11px] text-[#94a3b8] dark:text-zinc-600 italic mt-0.5">No description text provided in posting</p>
                           )}
                         </div>
-                        <span className="px-2.5 py-1 bg-blue-50/80 text-[#0f2f63] border border-blue-100 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 whitespace-nowrap">
+                        <span className="px-2.5 py-1 bg-blue-50/80 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-300 border border-blue-100 dark:border-sky-800/40 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 whitespace-nowrap">
                           {req.workers_needed || 1} Worker(s)
                         </span>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-[#e2e4e9] text-[11px] text-[#5a6270]">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-[#e2e4e9] dark:border-zinc-800 text-[11px] text-[#5a6270] dark:text-zinc-400">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[#717784]">Salary:</span>
-                          <strong className="text-[#0a0a0a] font-medium">{req.salary_range || 'Competitive'}</strong>
+                          <span className="text-[#717784] dark:text-zinc-400">Salary:</span>
+                          <strong className="text-[#0a0a0a] dark:text-white font-medium">{req.salary_range || 'Competitive'}</strong>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
@@ -1306,7 +1306,7 @@ export const AdminLeadsPage: React.FC = () => {
                                 gender: reqExtra.gender || '',
                               });
                             }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#0f2f63]/5 hover:bg-[#0f2f63] text-[#0f2f63] hover:text-white rounded-lg text-xs font-semibold border border-[#0f2f63]/20 transition-all shadow-2xs cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#0f2f63]/5 dark:bg-sky-500/10 hover:bg-[#0f2f63] dark:hover:bg-[#0066FF] text-[#0f2f63] dark:text-sky-400 hover:text-white dark:hover:text-white rounded-lg text-xs font-semibold border border-[#0f2f63]/20 dark:border-sky-500/20 transition-all shadow-2xs cursor-pointer"
                             title="Edit this job vacancy description and salary"
                           >
                             <Edit3 className="w-3 h-3" />
@@ -1317,14 +1317,14 @@ export const AdminLeadsPage: React.FC = () => {
                               href={formatLink(req.source_url)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-[#f4f5f8] text-[#0f2f63] rounded-lg text-xs font-semibold border border-[#e2e4e9] transition-all shadow-2xs"
+                              className="inline-flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-[#121215] hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 text-[#0f2f63] dark:text-sky-400 rounded-lg text-xs font-semibold border border-[#e2e4e9] dark:border-zinc-800 transition-all shadow-2xs"
                             >
-                              <Link2 className="w-3 h-3 text-[#0f2f63]" />
+                              <Link2 className="w-3 h-3 text-[#0f2f63] dark:text-sky-400" />
                               <span className="truncate max-w-[240px]">Open Exact Job Post ({req.source_name || 'Portal'})</span>
-                              <ExternalLink className="w-3 h-3 text-[#717784]" />
+                              <ExternalLink className="w-3 h-3 text-[#717784] dark:text-zinc-500" />
                             </a>
                           ) : (
-                            <span className="text-[#717784] font-medium">Source: {req.source_name}</span>
+                            <span className="text-[#717784] dark:text-zinc-400 font-medium">Source: {req.source_name}</span>
                           )}
                         </div>
                       </div>
@@ -1335,8 +1335,8 @@ export const AdminLeadsPage: React.FC = () => {
             </div>
 
             {/* Outreach Activity Log */}
-            <div className="space-y-3 pt-2 border-t border-[#e6e8ec]">
-              <h4 className="text-xs font-bold text-[#0a0a0a] uppercase tracking-wider">
+            <div className="space-y-3 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
+              <h4 className="text-xs font-bold text-[#0a0a0a] dark:text-white uppercase tracking-wider">
                 Call & Outreach Log ({selectedLead.outreach_logs?.length || 0})
               </h4>
 
@@ -1350,7 +1350,7 @@ export const AdminLeadsPage: React.FC = () => {
                   }
                   outreachMutation.mutate({ id: selectedLead.id, data: outreachForm });
                 }}
-                className="p-3.5 bg-[#f8fafc] border border-[#e2e4e9] rounded-2xl space-y-2.5"
+                className="p-3.5 bg-[#f8fafc] dark:bg-[#1C1C21] border border-[#e2e4e9] dark:border-zinc-800 rounded-2xl space-y-2.5"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <Select
@@ -1380,7 +1380,7 @@ export const AdminLeadsPage: React.FC = () => {
                     value={outreachForm.contactTarget}
                     onChange={(e) => setOutreachForm({ ...outreachForm, contactTarget: e.target.value })}
                     placeholder="e.g. Spoke with HR Mgr"
-                    className="bg-white border border-[#e2e4e9] rounded-xl px-3 py-1.5 text-xs text-[#0a0a0a] placeholder:text-[#94a3b8] outline-none focus:border-[#0f2f63]"
+                    className="bg-white dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-[#0a0a0a] dark:text-white placeholder:text-[#94a3b8] dark:placeholder:text-zinc-500 outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                   />
                 </div>
 
@@ -1391,12 +1391,12 @@ export const AdminLeadsPage: React.FC = () => {
                     value={outreachForm.notes}
                     onChange={(e) => setOutreachForm({ ...outreachForm, notes: e.target.value })}
                     placeholder="Enter call notes or next action steps..."
-                    className="flex-1 bg-white border border-[#e2e4e9] rounded-xl px-3 py-1.5 text-xs text-[#0a0a0a] placeholder:text-[#94a3b8] outline-none focus:border-[#0f2f63]"
+                    className="flex-1 bg-white dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-[#0a0a0a] dark:text-white placeholder:text-[#94a3b8] dark:placeholder:text-zinc-500 outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                   />
                   <button
                     type="submit"
                     disabled={outreachMutation.isPending}
-                    className="w-full sm:w-auto px-4 py-2 bg-[#0f2f63] hover:bg-[#163e7f] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    className="w-full sm:w-auto px-4 py-2 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#163e7f] dark:hover:bg-[#0052cc] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 disabled:opacity-50 flex items-center justify-center gap-1.5"
                   >
                     <Send className="w-3.5 h-3.5" />
                     <span>Log Call</span>
@@ -1407,18 +1407,18 @@ export const AdminLeadsPage: React.FC = () => {
               {/* Past Logs */}
               <div className="space-y-2 max-h-36 overflow-y-auto">
                 {selectedLead.outreach_logs?.map((log) => (
-                  <div key={log.id} className="p-2.5 bg-white border border-[#e2e4e9] rounded-xl text-xs flex justify-between items-start">
+                  <div key={log.id} className="p-2.5 bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl text-xs flex justify-between items-start">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-[#0a0a0a]">{log.channel}</span>
-                        {log.contact_target && <span className="text-[11px] text-[#717784]">({log.contact_target})</span>}
-                        <span className="px-1.5 py-0.5 bg-blue-50/80 text-[#0f2f63] border border-blue-100 rounded text-[9px] font-bold">
+                        <span className="font-bold text-[#0a0a0a] dark:text-white">{log.channel}</span>
+                        {log.contact_target && <span className="text-[11px] text-[#717784] dark:text-zinc-400">({log.contact_target})</span>}
+                        <span className="px-1.5 py-0.5 bg-blue-50/80 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-300 border border-blue-100 dark:border-sky-800/40 rounded text-[9px] font-bold">
                           {log.outcome || 'COMPLETED'}
                         </span>
                       </div>
-                      <p className="text-[#5a6270] mt-0.5">{log.notes}</p>
+                      <p className="text-[#5a6270] dark:text-zinc-400 mt-0.5">{log.notes}</p>
                     </div>
-                    <span className="text-[10px] text-[#717784]">
+                    <span className="text-[10px] text-[#717784] dark:text-zinc-500">
                       {new Date(log.contacted_at).toLocaleDateString()}
                     </span>
                   </div>
@@ -1427,10 +1427,10 @@ export const AdminLeadsPage: React.FC = () => {
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-3.5 border-t border-[#e6e8ec] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <div className="pt-3.5 border-t border-[#e6e8ec] dark:border-zinc-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
               <button
                 onClick={() => setSelectedLead(null)}
-                className="w-full sm:w-auto px-4 py-2 bg-white hover:bg-[#f4f5f8] text-[#0a0a0a] border border-[#e2e4e9] rounded-xl text-xs font-medium transition-colors cursor-pointer text-center"
+                className="w-full sm:w-auto px-4 py-2 bg-white dark:bg-[#1C1C21] hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-white border border-[#e2e4e9] dark:border-zinc-800 rounded-xl text-xs font-medium transition-colors cursor-pointer text-center"
               >
                 Close
               </button>
@@ -1439,9 +1439,9 @@ export const AdminLeadsPage: React.FC = () => {
                 <button
                   onClick={() => convertMutation.mutate(selectedLead.id)}
                   disabled={convertMutation.isPending}
-                  className="w-full sm:w-auto px-5 py-2.5 bg-[#0f2f63] hover:bg-[#163e7f] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#163e7f] dark:hover:bg-[#0052cc] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <Sparkles className="w-4 h-4 text-[#5790e6]" />
+                  <Sparkles className="w-4 h-4 text-[#5790e6] dark:text-sky-200" />
                   <span>Onboard to TrustHyre (Create Employer)</span>
                 </button>
               )}
@@ -1452,22 +1452,22 @@ export const AdminLeadsPage: React.FC = () => {
 
       {/* Edit Vacancy / Requirement Modal */}
       {editingReq && selectedLead && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white border border-[#e2e4e9] w-full max-w-xl rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 w-full max-w-xl rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#e6e8ec] dark:border-zinc-800">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[#0f2f63]/10 text-[#0f2f63] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-[#0f2f63]/10 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center">
                   <FileText className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#0a0a0a]">Edit Job Vacancy</h3>
-                  <p className="text-xs text-[#717784]">{selectedLead.company_name}</p>
+                  <h3 className="text-base font-bold text-[#0a0a0a] dark:text-white">Edit Job Vacancy</h3>
+                  <p className="text-xs text-[#717784] dark:text-zinc-400">{selectedLead.company_name}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingReq(null)}
-                className="p-1.5 text-[#717784] hover:text-[#0a0a0a] rounded-lg cursor-pointer"
+                className="p-1.5 text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white rounded-lg cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1475,17 +1475,17 @@ export const AdminLeadsPage: React.FC = () => {
 
             <div className="space-y-4 text-xs">
               {/* Cover Image & Category Selector */}
-              <div className="bg-[#f8f9fa] p-3.5 rounded-2xl border border-[#e6e8ec] space-y-3">
+              <div className="bg-[#f8f9fa] dark:bg-[#1C1C21] p-3.5 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-[#0f2f63]" />
-                    <span className="text-[11px] font-bold text-[#0a0a0a] uppercase tracking-wide">Worksite Photo & Cover Banner</span>
+                    <ImageIcon className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
+                    <span className="text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase tracking-wide">Worksite Photo & Cover Banner</span>
                   </div>
                   {editReqForm.coverImageUrl && (
                     <button
                       type="button"
                       onClick={() => setEditReqForm({ ...editReqForm, coverImageUrl: '' })}
-                      className="text-[10px] text-rose-600 font-semibold hover:underline cursor-pointer"
+                      className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold hover:underline cursor-pointer"
                     >
                       Reset to Auto-Cover
                     </button>
@@ -1493,7 +1493,7 @@ export const AdminLeadsPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <div className="w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-slate-200 border border-[#e2e4e9] relative shrink-0">
+                  <div className="w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-slate-200 dark:bg-zinc-800 border border-[#e2e4e9] dark:border-zinc-700 relative shrink-0">
                     <img
                       src={editReqForm.coverImageUrl || resolveTradeCover(editReqForm.title, editReqForm.category)}
                       alt="Job cover"
@@ -1538,7 +1538,7 @@ export const AdminLeadsPage: React.FC = () => {
                         type="button"
                         onClick={() => leadsReqFileInputRef.current?.click()}
                         disabled={isLeadsUploading}
-                        className="px-3 py-1.5 rounded-lg bg-[#0f2f63] hover:bg-[#1a4487] text-white text-[11px] font-semibold cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-lg bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#1a4487] dark:hover:bg-[#0052cc] text-white text-[11px] font-semibold cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                       >
                         {isLeadsUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UploadCloud className="w-3.5 h-3.5" />}
                         <span>Upload Custom Photo</span>
@@ -1553,8 +1553,8 @@ export const AdminLeadsPage: React.FC = () => {
                           onClick={() => setEditReqForm({ ...editReqForm, coverImageUrl: preset.url })}
                           className={`text-[10px] px-2 py-0.5 rounded-md border font-medium cursor-pointer transition-all ${
                             editReqForm.coverImageUrl === preset.url 
-                              ? 'bg-[#0f2f63] text-white border-[#0f2f63]' 
-                              : 'bg-white text-[#717784] border-[#e6e8ec] hover:border-[#0f2f63]'
+                              ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white border-[#0f2f63] dark:border-[#0066FF]' 
+                              : 'bg-white dark:bg-[#121215] text-[#717784] dark:text-zinc-400 border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63] dark:hover:border-sky-500'
                           }`}
                         >
                           {preset.label}
@@ -1566,18 +1566,18 @@ export const AdminLeadsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Title *</label>
+                <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Job Title *</label>
                 <input
                   type="text"
                   value={editReqForm.title}
                   onChange={(e) => setEditReqForm({ ...editReqForm, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-semibold focus:outline-none focus:border-[#0f2f63]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-semibold text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Trade Category *</label>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Trade Category *</label>
                   <Select
                     value={editReqForm.category}
                     onChange={(e) => setEditReqForm({ ...editReqForm, category: e.target.value })}
@@ -1602,65 +1602,65 @@ export const AdminLeadsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Salary Range</label>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Salary Range</label>
                   <input
                     type="text"
                     value={editReqForm.salaryRange}
                     onChange={(e) => setEditReqForm({ ...editReqForm, salaryRange: e.target.value })}
                     placeholder="e.g. ₹25,000 - ₹35,000"
-                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-medium text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Workers Needed</label>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Workers Needed</label>
                   <input
                     type="number"
                     min="1"
                     value={editReqForm.workersNeeded}
                     onChange={(e) => setEditReqForm({ ...editReqForm, workersNeeded: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-medium text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Worksite Location / Address</label>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Worksite Location / Address</label>
                   <input
                     type="text"
                     value={editReqForm.address}
                     onChange={(e) => setEditReqForm({ ...editReqForm, address: e.target.value })}
                     placeholder="e.g. Guindy Industrial Estate, Plot 14"
-                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-medium text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">City / Region</label>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">City / Region</label>
                   <input
                     type="text"
                     value={editReqForm.city}
                     onChange={(e) => setEditReqForm({ ...editReqForm, city: e.target.value })}
                     placeholder="e.g. Chennai"
-                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-medium text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Job Description & Scope</label>
+                <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Job Description & Scope</label>
                 <textarea
                   rows={6}
                   value={editReqForm.description}
                   onChange={(e) => setEditReqForm({ ...editReqForm, description: e.target.value })}
                   placeholder="Enter clean job description, duties, and hiring requirements..."
-                  className="w-full px-3 py-2.5 rounded-xl border border-[#e2e4e9] text-xs leading-relaxed focus:outline-none focus:border-[#0f2f63] font-sans"
+                  className="w-full px-3 py-2.5 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs leading-relaxed text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500 font-sans"
                 />
               </div>
 
               {/* Frontline Workplace Perks Multi-select */}
-              <div className="pt-3 border-t border-[#e6e8ec] space-y-2">
-                <label className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider block">
+              <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 space-y-2">
+                <label className="text-[11px] font-bold text-[#0f2f63] dark:text-sky-400 uppercase tracking-wider block">
                   Workplace Perks & Benefits Provided
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1687,8 +1687,8 @@ export const AdminLeadsPage: React.FC = () => {
                         }}
                         className={`p-2.5 rounded-xl border text-[11px] font-bold text-left transition-all cursor-pointer flex items-center justify-between ${
                           isSelected
-                            ? 'bg-[#0f2f63] text-white border-[#0f2f63]'
-                            : 'bg-white text-[#0a0a0a] border-[#e6e8ec] hover:border-[#0f2f63]/40'
+                            ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white border-[#0f2f63] dark:border-[#0066FF]'
+                            : 'bg-white dark:bg-[#1C1C21] text-[#0a0a0a] dark:text-white border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/40 dark:hover:border-sky-500/40'
                         }`}
                       >
                         <span>{perk.label}</span>
@@ -1700,27 +1700,27 @@ export const AdminLeadsPage: React.FC = () => {
               </div>
 
               {/* Direct Calling & Contact Options */}
-              <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
-                <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider block">Candidate Contact Channels</span>
+              <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 space-y-3">
+                <span className="text-[11px] font-bold text-[#0f2f63] dark:text-sky-400 uppercase tracking-wider block">Candidate Contact Channels</span>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] bg-white">
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#1C1C21]">
                     <div>
-                      <p className="text-xs font-bold text-[#0a0a0a]">Direct Phone Call</p>
-                      <p className="text-[10px] text-[#717784]">Enables Call HR button</p>
+                      <p className="text-xs font-bold text-[#0a0a0a] dark:text-white">Direct Phone Call</p>
+                      <p className="text-[10px] text-[#717784] dark:text-zinc-400">Enables Call HR button</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={editReqForm.allowDirectCall}
                       onChange={(e) => setEditReqForm({ ...editReqForm, allowDirectCall: e.target.checked })}
-                      className="w-4 h-4 accent-[#0f2f63] cursor-pointer"
+                      className="w-4 h-4 accent-[#0f2f63] dark:accent-[#0066FF] cursor-pointer"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] bg-white">
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#1C1C21]">
                     <div>
-                      <p className="text-xs font-bold text-[#0a0a0a]">WhatsApp Chat</p>
-                      <p className="text-[10px] text-[#717784]">Enables WhatsApp button</p>
+                      <p className="text-xs font-bold text-[#0a0a0a] dark:text-white">WhatsApp Chat</p>
+                      <p className="text-[10px] text-[#717784] dark:text-zinc-400">Enables WhatsApp button</p>
                     </div>
                     <input
                       type="checkbox"
@@ -1732,21 +1732,21 @@ export const AdminLeadsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Recruiter / Supervisor Phone Number</label>
+                  <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Recruiter / Supervisor Phone Number</label>
                   <input
                     type="tel"
                     value={editReqForm.contactPhone}
                     onChange={(e) => setEditReqForm({ ...editReqForm, contactPhone: e.target.value })}
                     placeholder="e.g. +91 98765 43210"
-                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                    className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-medium text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                   />
                 </div>
               </div>
 
               {/* Walk-in Interview Details */}
-              <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
+              <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider">Walk-in Interview FastTrack</span>
+                  <span className="text-[11px] font-bold text-[#0f2f63] dark:text-sky-400 uppercase tracking-wider">Walk-in Interview FastTrack</span>
                   <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
                     <input
                       type="checkbox"
@@ -1754,53 +1754,53 @@ export const AdminLeadsPage: React.FC = () => {
                       onChange={(e) => setEditReqForm({ ...editReqForm, isWalkInInterview: e.target.checked })}
                       className="w-4 h-4 accent-amber-500 cursor-pointer"
                     />
-                    <span>Is Walk-in Interview</span>
+                    <span className="text-[#0a0a0a] dark:text-white">Is Walk-in Interview</span>
                   </label>
                 </div>
 
                 {editReqForm.isWalkInInterview && (
-                  <div className="p-3.5 bg-amber-50/50 rounded-2xl border border-amber-200/60 space-y-3">
+                  <div className="p-3.5 bg-amber-50/50 dark:bg-amber-950/20 rounded-2xl border border-amber-200/60 dark:border-amber-800/40 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Walk-in Dates</label>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Walk-in Dates</label>
                         <input
                           type="text"
                           value={editReqForm.walkInDates}
                           onChange={(e) => setEditReqForm({ ...editReqForm, walkInDates: e.target.value })}
                           placeholder="e.g. 06 Nov - 09 Nov (Mon to Fri)"
-                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Timing Slot</label>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Timing Slot</label>
                         <input
                           type="text"
                           value={editReqForm.walkInTiming}
                           onChange={(e) => setEditReqForm({ ...editReqForm, walkInTiming: e.target.value })}
                           placeholder="e.g. 10:00 AM - 04:00 PM"
-                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Venue / Landmark</label>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Venue / Landmark</label>
                         <input
                           type="text"
                           value={editReqForm.walkInVenue}
                           onChange={(e) => setEditReqForm({ ...editReqForm, walkInVenue: e.target.value })}
                           placeholder="e.g. Near Metro Station, Opp. Police Station"
-                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-[#0a0a0a] uppercase mb-1">Contact Person / HR</label>
+                        <label className="block text-[10px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Contact Person / HR</label>
                         <input
                           type="text"
                           value={editReqForm.walkInContactPerson}
                           onChange={(e) => setEditReqForm({ ...editReqForm, walkInContactPerson: e.target.value })}
                           placeholder="e.g. Mr. Ramesh (HR Manager)"
-                          className="w-full px-3 py-2 rounded-xl border border-amber-200 text-xs bg-white focus:outline-none focus:border-[#0f2f63]"
+                          className="w-full px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                         />
                       </div>
                     </div>
@@ -1808,38 +1808,38 @@ export const AdminLeadsPage: React.FC = () => {
                 )}
               </div>
 
-                <div className="pt-3 border-t border-[#e6e8ec] space-y-3">
+                <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider">Role & Eligibility Criteria (Optional)</span>
-                    <span className="text-[10px] text-[#717784]">Inherited on onboarding</span>
+                    <span className="text-[11px] font-bold text-[#0f2f63] dark:text-sky-400 uppercase tracking-wider">Role & Eligibility Criteria (Optional)</span>
+                    <span className="text-[10px] text-[#717784] dark:text-zinc-400">Inherited on onboarding</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Department</label>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Department</label>
                       <input
                         type="text"
                         placeholder="e.g. Restaurant / Hospitality / Tourism"
                         value={editReqForm.department}
                         onChange={(e) => setEditReqForm({ ...editReqForm, department: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-medium text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Role / Category</label>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Role / Category</label>
                       <input
                         type="text"
                         placeholder="e.g. Cook / Chef / Kitchen Help"
                         value={editReqForm.roleCategory}
                         onChange={(e) => setEditReqForm({ ...editReqForm, roleCategory: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-medium text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Employment Type</label>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Employment Type</label>
                       <Select
                         value={editReqForm.employmentType}
                         onChange={(e) => setEditReqForm({ ...editReqForm, employmentType: e.target.value })}
@@ -1852,7 +1852,7 @@ export const AdminLeadsPage: React.FC = () => {
                       </Select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Shift</label>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Shift</label>
                       <Select
                         value={editReqForm.shift}
                         onChange={(e) => setEditReqForm({ ...editReqForm, shift: e.target.value })}
@@ -1868,17 +1868,17 @@ export const AdminLeadsPage: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Experience</label>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Experience</label>
                       <input
                         type="text"
                         placeholder="e.g. Any experience / 1-2 Yrs"
                         value={editReqForm.experience}
                         onChange={(e) => setEditReqForm({ ...editReqForm, experience: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-medium text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Education</label>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Education</label>
                       <Select
                         value={editReqForm.education}
                         onChange={(e) => setEditReqForm({ ...editReqForm, education: e.target.value })}
@@ -1893,30 +1893,30 @@ export const AdminLeadsPage: React.FC = () => {
                       </Select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Languages</label>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Languages</label>
                       <input
                         type="text"
                         placeholder="e.g. English, Tamil, Hindi"
                         value={editReqForm.languages}
                         onChange={(e) => setEditReqForm({ ...editReqForm, languages: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-medium text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Age Limit</label>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Age Limit</label>
                       <input
                         type="text"
                         placeholder="e.g. 18 - 35 years"
                         value={editReqForm.ageLimit}
                         onChange={(e) => setEditReqForm({ ...editReqForm, ageLimit: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium focus:outline-none focus:border-[#0f2f63]"
+                        className="w-full px-3 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 bg-white dark:bg-[#000000] text-xs font-medium text-[#0a0a0a] dark:text-white focus:outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-[#0a0a0a] uppercase mb-1">Gender Preference</label>
+                      <label className="block text-[11px] font-bold text-[#0a0a0a] dark:text-white uppercase mb-1">Gender Preference</label>
                       <Select
                         value={editReqForm.gender}
                         onChange={(e) => setEditReqForm({ ...editReqForm, gender: e.target.value })}
@@ -1932,11 +1932,11 @@ export const AdminLeadsPage: React.FC = () => {
 
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#e6e8ec]">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#e6e8ec] dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => setEditingReq(null)}
-                className="px-4 py-2 rounded-xl border border-[#e2e4e9] text-xs font-medium cursor-pointer hover:bg-[#f4f5f8]"
+                className="px-4 py-2 rounded-xl border border-[#e2e4e9] dark:border-zinc-800 text-xs font-medium cursor-pointer hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-white"
               >
                 Cancel
               </button>
@@ -2001,7 +2001,7 @@ export const AdminLeadsPage: React.FC = () => {
                     },
                   });
                 }}
-                className="px-5 py-2 rounded-xl bg-[#0f2f63] hover:bg-[#163e7f] text-white text-xs font-bold cursor-pointer shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#163e7f] dark:hover:bg-[#0052cc] text-white text-xs font-bold cursor-pointer shadow-xs flex items-center gap-1.5 disabled:opacity-50"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>Save Changes</span>
@@ -2013,17 +2013,17 @@ export const AdminLeadsPage: React.FC = () => {
 
       {/* Manual Add Lead Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white border border-[#e2e4e9] w-full max-w-lg rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl relative max-h-[92vh] overflow-y-auto space-y-4">
-            <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-[#e6e8ec]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 w-full max-w-lg rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl relative max-h-[92vh] overflow-y-auto space-y-4">
+            <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-[#e6e8ec] dark:border-zinc-800">
               <div className="min-w-0">
-                <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a] tracking-tight">Add Hiring Company Record</h3>
-                <p className="text-[11px] sm:text-xs text-[#5a6270] mt-0.5">Record a new business looking for workers into your pipeline.</p>
+                <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a] dark:text-white tracking-tight">Add Hiring Company Record</h3>
+                <p className="text-[11px] sm:text-xs text-[#5a6270] dark:text-zinc-400 mt-0.5">Record a new business looking for workers into your pipeline.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-1.5 sm:p-2 rounded-full text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f5f8] transition-colors shrink-0 cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-full text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -2039,154 +2039,154 @@ export const AdminLeadsPage: React.FC = () => {
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">Company Name</label>
+                  <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">Company Name</label>
                   <input
                     type="text"
                     required
                     value={newLeadForm.companyName}
                     onChange={(e) => setNewLeadForm({ ...newLeadForm, companyName: e.target.value })}
                     placeholder="e.g. ABC Restaurant"
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                    className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">City</label>
+                  <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">City</label>
                   <input
                     type="text"
                     required
                     value={newLeadForm.city}
                     onChange={(e) => setNewLeadForm({ ...newLeadForm, city: e.target.value })}
                     placeholder="e.g. Chennai"
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                    className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">Official Website</label>
+                  <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">Official Website</label>
                   <input
                     type="text"
                     value={newLeadForm.companyWebsite}
                     onChange={(e) => setNewLeadForm({ ...newLeadForm, companyWebsite: e.target.value })}
                     placeholder="e.g. https://abcrestaurant.in"
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                    className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">Official Email</label>
+                  <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">Official Email</label>
                   <input
                     type="email"
                     value={newLeadForm.officialEmail}
                     onChange={(e) => setNewLeadForm({ ...newLeadForm, officialEmail: e.target.value })}
                     placeholder="careers@abcrestaurant.in"
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                    className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">Official Phone</label>
+                  <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">Official Phone</label>
                   <input
                     type="text"
                     value={newLeadForm.officialPhone}
                     onChange={(e) => setNewLeadForm({ ...newLeadForm, officialPhone: e.target.value })}
                     placeholder="044-2811xxxx"
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                    className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">Contact Page URL</label>
+                  <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">Contact Page URL</label>
                   <input
                     type="text"
                     value={newLeadForm.contactPageUrl}
                     onChange={(e) => setNewLeadForm({ ...newLeadForm, contactPageUrl: e.target.value })}
                     placeholder="https://abcrestaurant.in/contact"
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                    className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                   />
                 </div>
               </div>
 
               {/* Requirement details */}
-              <div className="pt-2 border-t border-[#e6e8ec] space-y-3">
-                <span className="text-[11px] font-bold text-[#0f2f63] uppercase tracking-wider block">
+              <div className="pt-2 border-t border-[#e6e8ec] dark:border-zinc-800 space-y-3">
+                <span className="text-[11px] font-bold text-[#0f2f63] dark:text-sky-400 uppercase tracking-wider block">
                   Worker Opening Details
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">Job Title</label>
+                    <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">Job Title</label>
                     <input
                       type="text"
                       required
                       value={newLeadForm.title}
                       onChange={(e) => setNewLeadForm({ ...newLeadForm, title: e.target.value })}
                       placeholder="e.g. Delivery Driver"
-                      className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                      className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">Workers Needed</label>
+                    <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">Workers Needed</label>
                     <input
                       type="number"
                       required
                       min={1}
                       value={newLeadForm.workersNeeded}
                       onChange={(e) => setNewLeadForm({ ...newLeadForm, workersNeeded: parseInt(e.target.value, 10) })}
-                      className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                      className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">Salary Range</label>
+                    <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">Salary Range</label>
                     <input
                       type="text"
                       value={newLeadForm.salaryRange}
                       onChange={(e) => setNewLeadForm({ ...newLeadForm, salaryRange: e.target.value })}
                       placeholder="₹15,000 - ₹20,000 / month"
-                      className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                      className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">Original Job Posting Link</label>
+                    <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">Original Job Posting Link</label>
                     <input
                       type="text"
                       required
                       value={newLeadForm.sourceUrl}
                       onChange={(e) => setNewLeadForm({ ...newLeadForm, sourceUrl: e.target.value })}
                       placeholder="https://source.com/listing/123"
-                      className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10 font-mono"
+                      className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20 font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#0a0a0a] mb-1">Job Description</label>
+                  <label className="block text-[11px] font-semibold text-[#0a0a0a] dark:text-white mb-1">Job Description</label>
                   <textarea
                     rows={2}
                     value={newLeadForm.description}
                     onChange={(e) => setNewLeadForm({ ...newLeadForm, description: e.target.value })}
                     placeholder="Requirement description and job details..."
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl p-2.5 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63] focus:ring-2 focus:ring-[#0f2f63]/10"
+                    className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl p-2.5 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500 focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[#e6e8ec] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2 bg-white hover:bg-[#f4f5f8] text-[#0a0a0a] border border-[#e2e4e9] rounded-xl text-xs font-medium transition-colors cursor-pointer text-center"
+                  className="w-full sm:w-auto px-4 py-2 bg-white dark:bg-[#1C1C21] hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-white border border-[#e2e4e9] dark:border-zinc-800 rounded-xl text-xs font-medium transition-colors cursor-pointer text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={manualIngestMutation.isPending}
-                  className="w-full sm:w-auto px-5 py-2.5 bg-[#0f2f63] hover:bg-[#163e7f] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#163e7f] dark:hover:bg-[#0052cc] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
                   {manualIngestMutation.isPending ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -2203,23 +2203,23 @@ export const AdminLeadsPage: React.FC = () => {
 
       {/* Multi-Trade Blue-Collar Discovery Modal */}
       {isDiscoveryModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white border border-[#e2e4e9] w-full max-w-lg rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xl relative max-h-[92vh] overflow-y-auto space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 w-full max-w-lg rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xl relative max-h-[92vh] overflow-y-auto space-y-4">
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 pb-3 border-b border-[#e6e8ec]">
+            <div className="flex items-start justify-between gap-3 pb-3 border-b border-[#e6e8ec] dark:border-zinc-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-xs">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs">
                   <Radar className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#0a0a0a]">Auto-Discovery Scanner</h3>
-                  <p className="text-xs text-[#717784]">Select blue-collar trades and target city to scan 8 live portals.</p>
+                  <h3 className="text-base font-bold text-[#0a0a0a] dark:text-white">Auto-Discovery Scanner</h3>
+                  <p className="text-xs text-[#717784] dark:text-zinc-400">Select blue-collar trades and target city to scan 8 live portals.</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsDiscoveryModalOpen(false)}
-                className="p-1.5 rounded-full text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f5f8] transition-colors cursor-pointer"
+                className="p-1.5 rounded-full text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2229,7 +2229,7 @@ export const AdminLeadsPage: React.FC = () => {
             <div className="space-y-4 text-xs">
               {/* Trade Selection */}
               <div>
-                <label className="block text-xs font-semibold text-[#0a0a0a] mb-1.5">
+                <label className="block text-xs font-semibold text-[#0a0a0a] dark:text-white mb-1.5">
                   Target Blue-Collar Role / Trade:
                 </label>
                 <Select
@@ -2253,14 +2253,14 @@ export const AdminLeadsPage: React.FC = () => {
 
               {discoveryTrade === 'CUSTOM' && (
                 <div>
-                  <label className="block text-xs font-semibold text-[#0a0a0a] mb-1">Custom Role Name:</label>
+                  <label className="block text-xs font-semibold text-[#0a0a0a] dark:text-white mb-1">Custom Role Name:</label>
                   <input
                     type="text"
                     required
                     value={customTrade}
                     onChange={(e) => setCustomTrade(e.target.value)}
                     placeholder="e.g. CNC Machine Operator, Carpenter, Welder"
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63]"
+                    className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500"
                   />
                 </div>
               )}
@@ -2268,7 +2268,7 @@ export const AdminLeadsPage: React.FC = () => {
               {/* City Selection */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[#0a0a0a] mb-1.5">Target City:</label>
+                  <label className="block text-xs font-semibold text-[#0a0a0a] dark:text-white mb-1.5">Target City:</label>
                   <Select
                     variant="subtle"
                     value={discoveryCity}
@@ -2286,7 +2286,7 @@ export const AdminLeadsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#0a0a0a] mb-1.5">Scan Limit:</label>
+                  <label className="block text-xs font-semibold text-[#0a0a0a] dark:text-white mb-1.5">Scan Limit:</label>
                   <Select
                     variant="subtle"
                     value={discoveryLimit}
@@ -2301,22 +2301,22 @@ export const AdminLeadsPage: React.FC = () => {
 
               {discoveryCity === 'CUSTOM' && (
                 <div>
-                  <label className="block text-xs font-semibold text-[#0a0a0a] mb-1">Custom City Name:</label>
+                  <label className="block text-xs font-semibold text-[#0a0a0a] dark:text-white mb-1">Custom City Name:</label>
                   <input
                     type="text"
                     required
                     value={customCity}
                     onChange={(e) => setCustomCity(e.target.value)}
                     placeholder="e.g. Coimbatore, Madurai, Ahmedabad"
-                    className="w-full bg-[#f8fafc] border border-[#e2e4e9] rounded-xl px-3 py-2 text-xs text-[#0a0a0a] outline-none focus:bg-white focus:border-[#0f2f63]"
+                    className="w-full bg-[#f8fafc] dark:bg-[#000000] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none focus:bg-white dark:focus:bg-[#000000] focus:border-[#0f2f63] dark:focus:border-sky-500"
                   />
                 </div>
               )}
 
               {/* Informational strip */}
-              <div className="bg-[#f8fafc] border border-[#e2e4e9] rounded-xl p-3 text-[11px] text-[#5a6270] space-y-1">
-                <div className="flex items-center gap-1.5 font-bold text-[#0a0a0a]">
-                  <Bot className="w-3.5 h-3.5 text-emerald-600" />
+              <div className="bg-[#f8fafc] dark:bg-[#1C1C21] border border-[#e2e4e9] dark:border-zinc-800 rounded-xl p-3 text-[11px] text-[#5a6270] dark:text-zinc-400 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-[#0a0a0a] dark:text-white">
+                  <Bot className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span>8 Crawlers Ready (Free $0):</span>
                 </div>
                 <p>Naukri Blue Collar, Indeed India, WorkIndia Direct, Apna Gateway, Headcount Labs, Lever & Greenhouse ATS feeds, Schema.org.</p>
@@ -2324,11 +2324,11 @@ export const AdminLeadsPage: React.FC = () => {
             </div>
 
             {/* Actions */}
-            <div className="pt-3 border-t border-[#e6e8ec] flex items-center justify-end gap-2">
+            <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setIsDiscoveryModalOpen(false)}
-                className="px-4 py-2 bg-white hover:bg-[#f4f5f8] text-[#0a0a0a] border border-[#e2e4e9] rounded-xl text-xs font-medium transition-colors cursor-pointer"
+                className="px-4 py-2 bg-white dark:bg-[#1C1C21] hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-white border border-[#e2e4e9] dark:border-zinc-800 rounded-xl text-xs font-medium transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -2361,17 +2361,17 @@ export const AdminLeadsPage: React.FC = () => {
 
       {/* Interactive Guide & Walkthrough Modal */}
       {isGuideModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white border border-[#e2e4e9] w-full max-w-3xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 sm:p-7 shadow-xl relative max-h-[92vh] overflow-y-auto space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#121215] border border-[#e2e4e9] dark:border-zinc-800 w-full max-w-3xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 sm:p-7 shadow-xl relative max-h-[92vh] overflow-y-auto space-y-5">
             {/* Header */}
-            <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-[#e6e8ec]">
+            <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-[#e6e8ec] dark:border-zinc-800">
               <div className="flex items-start sm:items-center gap-3 min-w-0">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shadow-xs shrink-0 mt-0.5 sm:mt-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-xs shrink-0 mt-0.5 sm:mt-0">
                   <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a] tracking-tight">How Hiring Company Discovery Works</h3>
-                  <p className="text-[11px] sm:text-xs text-[#5a6270] mt-0.5">
+                  <h3 className="text-base sm:text-lg font-bold text-[#0a0a0a] dark:text-white tracking-tight">How Hiring Company Discovery Works</h3>
+                  <p className="text-[11px] sm:text-xs text-[#5a6270] dark:text-zinc-400 mt-0.5">
                     A quick visual guide explaining how we find businesses and bring them onto TrustHyre.
                   </p>
                 </div>
@@ -2379,7 +2379,7 @@ export const AdminLeadsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsGuideModalOpen(false)}
-                className="p-1.5 sm:p-2 rounded-full text-[#717784] hover:text-[#0a0a0a] hover:bg-[#f4f5f8] transition-colors shrink-0 cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-full text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-[#f4f5f8] dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -2387,109 +2387,109 @@ export const AdminLeadsPage: React.FC = () => {
             </div>
 
             {/* Plain English Explanation Card */}
-            <div className="bg-blue-50/80 border border-blue-200/80 rounded-2xl p-4 sm:p-5 text-xs text-slate-700 space-y-2">
-              <div className="flex items-center gap-2 font-black text-[#0066FF] text-sm">
+            <div className="bg-blue-50/80 dark:bg-sky-950/30 border border-blue-200/80 dark:border-sky-900/40 rounded-2xl p-4 sm:p-5 text-xs text-slate-700 dark:text-zinc-300 space-y-2">
+              <div className="flex items-center gap-2 font-black text-[#0066FF] dark:text-sky-400 text-sm">
                 <Sparkles className="w-4 h-4" />
                 <span>What is a "Hiring Company Lead"?</span>
               </div>
               <p className="leading-relaxed">
                 A <strong>Hiring Company</strong> is any real-world business (like a restaurant, logistics company, electrical contractor, or retail store) that has posted job requirements on the internet asking for workers.
               </p>
-              <p className="leading-relaxed text-slate-600">
-                Instead of waiting for employers to register on TrustHire by themselves, our engine finds them automatically, grabs their office phone and email, and lets your team call them to onboard them onto TrustHire.
+              <p className="leading-relaxed text-slate-600 dark:text-zinc-400">
+                Instead of waiting for employers to register on TrustHyre by themselves, our engine finds them automatically, grabs their office phone and email, and lets your team call them to onboard them onto TrustHyre.
               </p>
             </div>
 
             {/* 4-Step Interactive Diagram */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-[#0A1931] uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-[#0A1931] dark:text-white uppercase tracking-wider">
                 The 4-Step Acquisition Journey
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {/* Step 1 */}
-                <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2 relative overflow-hidden">
+                <div className="p-4 bg-slate-50 dark:bg-[#1C1C21] border border-slate-200/80 dark:border-zinc-800 rounded-2xl space-y-2 relative overflow-hidden">
                   <div className="flex items-center gap-2.5">
                     <span className="w-6 h-6 rounded-full bg-[#0066FF] text-white text-[11px] font-black flex items-center justify-center">
                       1
                     </span>
-                    <h5 className="text-xs font-bold text-[#0A1931]">Automated Discovery</h5>
+                    <h5 className="text-xs font-bold text-[#0A1931] dark:text-white">Automated Discovery</h5>
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
                     The engine scans external career feeds, public boards, and structured job data (`Schema.org/JobPosting`) to find open worker requisitions.
                   </p>
                 </div>
 
                 {/* Step 2 */}
-                <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2 relative overflow-hidden">
+                <div className="p-4 bg-slate-50 dark:bg-[#1C1C21] border border-slate-200/80 dark:border-zinc-800 rounded-2xl space-y-2 relative overflow-hidden">
                   <div className="flex items-center gap-2.5">
                     <span className="w-6 h-6 rounded-full bg-emerald-600 text-white text-[11px] font-black flex items-center justify-center">
                       2
                     </span>
-                    <h5 className="text-xs font-bold text-[#0A1931]">Contact Verification</h5>
+                    <h5 className="text-xs font-bold text-[#0A1931] dark:text-white">Contact Verification</h5>
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
                     The crawler visits the employer's official website domain to extract real business emails, office phone numbers, and contact forms.
                   </p>
                 </div>
 
                 {/* Step 3 */}
-                <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2 relative overflow-hidden">
+                <div className="p-4 bg-slate-50 dark:bg-[#1C1C21] border border-slate-200/80 dark:border-zinc-800 rounded-2xl space-y-2 relative overflow-hidden">
                   <div className="flex items-center gap-2.5">
                     <span className="w-6 h-6 rounded-full bg-amber-600 text-white text-[11px] font-black flex items-center justify-center">
                       3
                     </span>
-                    <h5 className="text-xs font-bold text-[#0A1931]">Team Outreach Call</h5>
+                    <h5 className="text-xs font-bold text-[#0A1931] dark:text-white">Team Outreach Call</h5>
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
                     Admin / BD team calls the employer: <em>"We saw you need 5 delivery drivers in Chennai. We have verified workers ready right now."</em>
                   </p>
                 </div>
 
                 {/* Step 4 */}
-                <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2 relative overflow-hidden">
+                <div className="p-4 bg-slate-50 dark:bg-[#1C1C21] border border-slate-200/80 dark:border-zinc-800 rounded-2xl space-y-2 relative overflow-hidden">
                   <div className="flex items-center gap-2.5">
                     <span className="w-6 h-6 rounded-full bg-purple-600 text-white text-[11px] font-black flex items-center justify-center">
                       4
                     </span>
-                    <h5 className="text-xs font-bold text-[#0A1931]">1-Click Onboard</h5>
+                    <h5 className="text-xs font-bold text-[#0A1931] dark:text-white">1-Click Onboard</h5>
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    When the employer agrees, clicking <strong>"Onboard"</strong> instantly creates their TrustHire employer profile and publishes their job post live!
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
+                    When the employer agrees, clicking <strong>"Onboard"</strong> instantly creates their TrustHyre employer profile and publishes their job post live!
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Example Box */}
-            <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-2 text-xs">
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 block">
+            <div className="p-4 bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-2xl space-y-2 text-xs">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-400 block">
                 Real-World Walkthrough Example
               </span>
-              <p className="text-slate-700 leading-relaxed">
+              <p className="text-slate-700 dark:text-zinc-300 leading-relaxed">
                 <strong>Example:</strong> ABC Restaurant in Chennai posts <em>"Need 5 delivery riders"</em> on their site.
               </p>
-              <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600 pl-1">
+              <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600 dark:text-zinc-400 pl-1">
                 <li>Discovery crawler extracts company name, 5 driver requirement, and phone `044-2811xxxx`.</li>
-                <li>TrustHire Admin calls ABC Restaurant and explains how candidates are identity and background verified.</li>
-                <li>Admin clicks <strong>"Onboard to TrustHire"</strong> $\rightarrow$ ABC Restaurant's job goes live $\rightarrow$ Verified delivery drivers apply immediately!</li>
+                <li>TrustHyre Admin calls ABC Restaurant and explains how candidates are identity and background verified.</li>
+                <li>Admin clicks <strong>"Onboard to TrustHyre"</strong> &rarr; ABC Restaurant's job goes live &rarr; Verified delivery drivers apply immediately!</li>
               </ul>
             </div>
 
             {/* Calling Tips */}
-            <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2 text-xs">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 bg-slate-50 dark:bg-[#1C1C21] border border-slate-200/80 dark:border-zinc-800 rounded-2xl space-y-2 text-xs">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">
                 Quick BD Outreach Pitch Script
               </span>
-              <p className="text-slate-700 italic bg-white p-3 rounded-xl border border-slate-200/70">
-                "Hello [Company Name], this is the TrustHire team in Chennai. We noticed you are currently hiring for [Job Role]. We have background-verified trade workers available in your area who can start immediately with zero advance placement fees. Can we share a few verified candidate profiles with you?"
+              <p className="text-slate-700 dark:text-zinc-300 italic bg-white dark:bg-[#121215] p-3 rounded-xl border border-slate-200/70 dark:border-zinc-800">
+                "Hello [Company Name], this is the TrustHyre team in Chennai. We noticed you are currently hiring for [Job Role]. We have background-verified trade workers available in your area who can start immediately with zero advance placement fees. Can we share a few verified candidate profiles with you?"
               </p>
             </div>
 
             {/* Action Footer */}
-            <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <span className="text-[11px] text-slate-500">
-                Read full technical docs in <code className="text-[#0066FF] font-mono">docs/HIRING_COMPANY_DISCOVERY_GUIDE.md</code>
+            <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span className="text-[11px] text-slate-500 dark:text-zinc-400">
+                Read full technical docs in <code className="text-[#0066FF] dark:text-sky-400 font-mono">docs/HIRING_COMPANY_DISCOVERY_GUIDE.md</code>
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -2504,7 +2504,7 @@ export const AdminLeadsPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setIsGuideModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                  className="px-4 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                 >
                   Got It
                 </button>

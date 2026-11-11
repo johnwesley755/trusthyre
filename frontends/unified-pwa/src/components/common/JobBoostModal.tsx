@@ -68,10 +68,10 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
       icon={<Zap className="w-5 h-5 text-amber-500 fill-amber-500" />}
       iconBgColor="bg-amber-50 text-amber-600 border border-amber-200"
       maxWidth="lg"
-      bodyClassName="p-4 sm:p-5 space-y-4 bg-white"
+      bodyClassName="p-4 sm:p-5 space-y-4 bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-white dark:text-zinc-100"
       footer={
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-[#717784] flex items-center gap-1.5">
+          <div className="text-xs text-[#717784] dark:text-zinc-400 flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-[#0066ff]" />
             <span>Active for 24 Hours • Free Daily Recruiter Quota</span>
           </div>
@@ -107,24 +107,24 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
       }
     >
       {/* 1. Hyperlocal Candidate Reach Estimator Card */}
-      <div className="p-4 rounded-2xl bg-[#eff6ff] border border-[#dbeafe] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+      <div className="p-4 rounded-2xl bg-[#eff6ff] dark:bg-blue-950/30 border border-[#dbeafe] dark:border-blue-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-white border border-[#dbeafe] flex items-center justify-center text-[#0066ff] shrink-0 shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#1C1C21] border border-[#dbeafe] dark:border-blue-900/50 flex items-center justify-center text-[#0066ff] dark:text-[#38BDF8] shrink-0 shadow-2xs">
             <Radio className="w-6 h-6 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#0066ff]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#0066ff] dark:text-[#38BDF8]">
                 Hyperlocal Candidate Reach
               </span>
               <span className="px-2 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
                 High Intent
               </span>
             </div>
-            <h4 className="text-lg font-extrabold text-[#0A1931]">
+            <h4 className="text-lg font-extrabold text-[#0A1931] dark:text-white">
               ~{estimatedMatches} Verified Candidates Nearby
             </h4>
-            <p className="text-xs text-[#717784] mt-0.5">
+            <p className="text-xs text-[#717784] dark:text-zinc-400 mt-0.5">
               Within 12-15 km radius of {locationText} matching this trade
             </p>
           </div>
@@ -139,7 +139,7 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
 
       {/* 2. Boost Acceleration Options */}
       <div className="space-y-2.5">
-        <label className="text-xs font-bold uppercase tracking-wider text-[#717784] block">
+        <label className="text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block">
           Select Boost Accelerators:
         </label>
 
@@ -161,14 +161,14 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm font-bold text-[#0A1931]">
+              <span className="text-xs sm:text-sm font-bold text-[#0A1931] dark:text-white">
                 Pin Job to Top of Search Feed
               </span>
               <span className="text-[10px] font-bold uppercase text-[#0066ff] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
                 Rank #1
               </span>
             </div>
-            <p className="text-xs text-[#717784] mt-0.5">
+            <p className="text-xs text-[#717784] dark:text-zinc-400 mt-0.5">
               Guarantees the opening stays in the top 3 results for candidates searching in {locationText}.
             </p>
           </div>
@@ -192,7 +192,7 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm font-bold text-[#0A1931] flex items-center gap-1.5">
+              <span className="text-xs sm:text-sm font-bold text-[#0A1931] dark:text-white flex items-center gap-1.5">
                 <Flame className="w-4 h-4 text-amber-600 fill-amber-500" />
                 <span>Attach "⚡ Spot Hire" Urgent Tag</span>
               </span>
@@ -200,7 +200,7 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
                 Urgent
               </span>
             </div>
-            <p className="text-xs text-[#717784] mt-0.5">
+            <p className="text-xs text-[#717784] dark:text-zinc-400 mt-0.5">
               Attracts immediate joiners by signaling on-the-spot interviews and fast selection.
             </p>
           </div>
@@ -224,7 +224,7 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm font-bold text-[#0A1931] flex items-center gap-1.5">
+              <span className="text-xs sm:text-sm font-bold text-[#0A1931] dark:text-white flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 <span>Enable 1-Tap Walk-In Interview Pass</span>
               </span>
@@ -232,7 +232,7 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
                 Direct Entry
               </span>
             </div>
-            <p className="text-xs text-[#717784] mt-0.5">
+            <p className="text-xs text-[#717784] dark:text-zinc-400 mt-0.5">
               Allows verified candidates to generate a digital gate pass with directions to your worksite.
             </p>
           </div>
@@ -240,14 +240,14 @@ export const JobBoostModal: React.FC<JobBoostModalProps> = ({
       </div>
 
       {/* 3. Candidate Alert Preview */}
-      <div className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-[#e6e8ec] space-y-2 text-xs">
-        <div className="flex items-center justify-between text-[#717784]">
+      <div className="p-3.5 rounded-2xl bg-[#F8FAFC] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 space-y-2 text-xs">
+        <div className="flex items-center justify-between text-[#717784] dark:text-zinc-400">
           <span className="font-bold uppercase tracking-wider text-[10px]">
             Candidate Push & WhatsApp Notification Preview:
           </span>
-          <span className="text-[10px] text-emerald-700 font-bold">● Live Trigger</span>
+          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">● Live Trigger</span>
         </div>
-        <div className="p-3 bg-white rounded-xl border border-[#e6e8ec] font-mono text-xs text-[#0A1931] leading-relaxed">
+        <div className="p-3 bg-white dark:bg-[#16161A] rounded-xl border border-[#e6e8ec] dark:border-zinc-800 font-mono text-xs text-[#0A1931] dark:text-white leading-relaxed">
           🔔 <strong>Urgent Vacancy Alert:</strong> {job.title} at {locationText} is hiring immediately. 
           {job.budget ? ` Pay: ₹${job.budget.toLocaleString('en-IN')}/month.` : ''} Tap to view walk-in pass or call HR directly.
         </div>

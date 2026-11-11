@@ -249,14 +249,14 @@ export const SignUpPage = () => {
     const isCandidate = activeRole === 'WORKER';
 
     return (
-        <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] selection:bg-[#2563c9] selection:text-white flex flex-col">
+        <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] text-[#0a0a0a] dark:text-zinc-100 font-['Onest',system-ui,sans-serif] selection:bg-[#2563c9] selection:text-white flex flex-col transition-colors duration-200">
             <SeoHead
                 title="Create an Account | TrustHyre"
                 description="Sign up for TrustHyre as an employer to hire verified talent, or as a skilled candidate to unlock opportunities."
                 canonicalPath="/sign-up"
             />
             {/* Framed Full-Screen Canvas matching Landing Page Architecture */}
-            <div className="relative w-full flex-1 min-h-[calc(100svh-1rem)] sm:min-h-[calc(100svh-1.5rem)] lg:h-[calc(100svh-1.5rem)] rounded-2xl sm:rounded-[2rem] overflow-hidden border border-[#e6e8ec] bg-white shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all">
+            <div className="relative w-full flex-1 min-h-[calc(100svh-1rem)] sm:min-h-[calc(100svh-1.5rem)] lg:h-[calc(100svh-1.5rem)] rounded-2xl sm:rounded-[2rem] overflow-hidden border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#09090b] shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all">
                 
                 {/* Left Side: Full-Bleed Brand Visual Hero */}
                 <div className="lg:col-span-5 xl:col-span-5 hidden lg:block h-full">
@@ -264,7 +264,7 @@ export const SignUpPage = () => {
                 </div>
 
                 {/* Right Side: Clean Modern Form with Independent Smooth Scroll */}
-                <div className="lg:col-span-7 xl:col-span-7 p-4 sm:p-8 lg:p-12 flex flex-col justify-between relative bg-white h-full overflow-y-auto">
+                <div className="lg:col-span-7 xl:col-span-7 p-4 sm:p-8 lg:p-12 flex flex-col justify-between relative bg-white dark:bg-[#09090b] text-[#0a0a0a] dark:text-zinc-100 h-full overflow-y-auto">
                     
                     {/* Top Navigation Row: Back Link + Role Segmented Switcher */}
                     <div className="flex flex-wrap items-center justify-between gap-3 mb-6 sm:mb-8">
@@ -273,7 +273,7 @@ export const SignUpPage = () => {
                                 <button 
                                     type="button"
                                     onClick={() => { setStage('FORM'); setError(''); }}
-                                    className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] hover:text-[#0a0a0a] transition-colors cursor-pointer"
+                                    className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white transition-colors cursor-pointer"
                                 >
                                     <ArrowLeft className="w-3.5 h-3.5" />
                                     <span>Edit Details</span>
@@ -281,7 +281,7 @@ export const SignUpPage = () => {
                             ) : (
                                 <Link 
                                     to="/" 
-                                    className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] hover:text-[#0a0a0a] transition-colors"
+                                    className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
                                 >
                                     <ArrowLeft className="w-3.5 h-3.5" />
                                     <span>Back to Home</span>
@@ -292,15 +292,15 @@ export const SignUpPage = () => {
                         {/* Top Right: Segmented Role Pill & Native Language Indicators */}
                         <div className="flex items-center gap-2.5">
                             {/* Segmented Pill Role Switcher */}
-                            <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] border border-[#e6e8ec]">
+                            <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800">
                                 <button
                                     type="button"
                                     disabled={stage === 'OTP'}
                                     onClick={() => handleRoleToggle('WORKER')}
                                     className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${
                                         isCandidate 
-                                            ? 'bg-[#0f2f63] text-white shadow-xs' 
-                                            : 'text-[#717784] hover:text-[#0a0a0a]'
+                                            ? 'bg-[#0f2f63] dark:bg-[#2563EB] text-white shadow-xs' 
+                                            : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
                                     } ${stage === 'OTP' ? 'opacity-60 cursor-not-allowed' : ''}`}
                                 >
                                     <User className="w-3 h-3" />
@@ -312,8 +312,8 @@ export const SignUpPage = () => {
                                     onClick={() => handleRoleToggle('EMPLOYER')}
                                     className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-1.5 ${
                                         !isCandidate 
-                                            ? 'bg-[#0f2f63] text-white shadow-xs' 
-                                            : 'text-[#717784] hover:text-[#0a0a0a]'
+                                            ? 'bg-[#0f2f63] dark:bg-[#2563EB] text-white shadow-xs' 
+                                            : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
                                     } ${stage === 'OTP' ? 'opacity-60 cursor-not-allowed' : ''}`}
                                 >
                                     <Building2 className="w-3 h-3" />
@@ -321,11 +321,13 @@ export const SignUpPage = () => {
                                 </button>
                             </div>
 
-                            <div className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#f4f4f4] border border-[#e6e8ec] text-[11px] font-semibold text-[#717784]">
-                                <Languages className="w-3.5 h-3.5 text-[#0f2f63]" />
-                                <span className="text-[#0f2f63] font-bold">EN</span>
-                                <span className="text-[#c5c8d0]">•</span>
+                            <div className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#f4f4f4] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-[11px] font-semibold text-[#717784] dark:text-zinc-300">
+                                <Languages className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
+                                <span className="text-[#0f2f63] dark:text-[#38BDF8] font-bold">EN</span>
+                                <span className="text-[#c5c8d0] dark:text-zinc-600">•</span>
                                 <span>தமிழ்</span>
+                                <span className="text-[#c5c8d0] dark:text-zinc-600">•</span>
+                                <span>हिंदी</span>
                                 <span className="text-[#c5c8d0]">•</span>
                                 <span>हिंदी</span>
                             </div>
@@ -351,14 +353,14 @@ export const SignUpPage = () => {
                                 >
                                     {/* Eyebrow & Title */}
                                     <div className="mb-6">
-                                        <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] mb-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9]" />
+                                        <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] dark:text-zinc-400 mb-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9] dark:bg-[#38BDF8]" />
                                             <span>{isCandidate ? 'Candidate Registration (வேலை தேடுபவர்)' : 'Employer Registration (பணியமர்த்துபவர்)'}</span>
                                         </div>
-                                        <h1 className="text-3xl sm:text-4xl font-medium text-[#0a0a0a] leading-[1.05]">
+                                        <h1 className="text-3xl sm:text-4xl font-medium text-[#0a0a0a] dark:text-white leading-[1.05]">
                                             Create an account
                                         </h1>
-                                        <p className="text-xs sm:text-sm text-[#717784] mt-2 leading-relaxed">
+                                        <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 mt-2 leading-relaxed">
                                             {isCandidate 
                                                 ? 'Get verified, discover local jobs, and connect directly with verified employers.' 
                                                 : 'Access India’s pre-screened technical talent pool with reliable attendance commitment.'}
@@ -372,25 +374,25 @@ export const SignUpPage = () => {
                                             onClick={() => handleRoleToggle('WORKER')}
                                             className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer relative flex flex-col justify-between min-h-[92px] ${
                                                 isCandidate
-                                                    ? 'border-[#0f2f63] bg-[#0f2f63]/5 shadow-sm ring-2 ring-[#0f2f63]/15'
-                                                    : 'border-[#e6e8ec] hover:border-slate-300 bg-white'
+                                                    ? 'border-[#0f2f63] dark:border-[#38BDF8] bg-[#0f2f63]/5 dark:bg-sky-500/10 shadow-sm ring-2 ring-[#0f2f63]/15 dark:ring-sky-500/20'
+                                                    : 'border-[#e6e8ec] dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 bg-white dark:bg-[#121215]'
                                             }`}
                                         >
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                                                    isCandidate ? 'bg-[#0f2f63] text-white' : 'bg-[#f4f4f4] text-[#717784]'
+                                                    isCandidate ? 'bg-[#0f2f63] dark:bg-[#2563EB] text-white' : 'bg-[#f4f4f4] dark:bg-zinc-800 text-[#717784] dark:text-zinc-400'
                                                 }`}>
                                                     <User className="w-4 h-4" />
                                                 </div>
                                                 {isCandidate && (
-                                                    <span className="w-5 h-5 rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs">
+                                                    <span className="w-5 h-5 rounded-full bg-[#0f2f63] dark:bg-[#2563EB] text-white flex items-center justify-center text-xs">
                                                         <CheckCircle2 className="w-3.5 h-3.5" />
                                                     </span>
                                                 )}
                                             </div>
                                             <div>
-                                                <span className="block text-xs font-bold text-[#0a0a0a]">Looking for Work</span>
-                                                <span className="block text-[10px] text-[#717784]">வேலை தேடுகிறேன் · Daily jobs</span>
+                                                <span className="block text-xs font-bold text-[#0a0a0a] dark:text-white">Looking for Work</span>
+                                                <span className="block text-[10px] text-[#717784] dark:text-zinc-400">வேலை தேடுகிறேன் · Daily jobs</span>
                                             </div>
                                         </button>
 
@@ -399,25 +401,25 @@ export const SignUpPage = () => {
                                             onClick={() => handleRoleToggle('EMPLOYER')}
                                             className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer relative flex flex-col justify-between min-h-[92px] ${
                                                 !isCandidate
-                                                    ? 'border-[#0f2f63] bg-[#0f2f63]/5 shadow-sm ring-2 ring-[#0f2f63]/15'
-                                                    : 'border-[#e6e8ec] hover:border-slate-300 bg-white'
+                                                    ? 'border-[#0f2f63] dark:border-[#38BDF8] bg-[#0f2f63]/5 dark:bg-sky-500/10 shadow-sm ring-2 ring-[#0f2f63]/15 dark:ring-sky-500/20'
+                                                    : 'border-[#e6e8ec] dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 bg-white dark:bg-[#121215]'
                                             }`}
                                         >
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                                                    !isCandidate ? 'bg-[#0f2f63] text-white' : 'bg-[#f4f4f4] text-[#717784]'
+                                                    !isCandidate ? 'bg-[#0f2f63] dark:bg-[#2563EB] text-white' : 'bg-[#f4f4f4] dark:bg-zinc-800 text-[#717784] dark:text-zinc-400'
                                                 }`}>
                                                     <Building2 className="w-4 h-4" />
                                                 </div>
                                                 {!isCandidate && (
-                                                    <span className="w-5 h-5 rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs">
+                                                    <span className="w-5 h-5 rounded-full bg-[#0f2f63] dark:bg-[#2563EB] text-white flex items-center justify-center text-xs">
                                                         <CheckCircle2 className="w-3.5 h-3.5" />
                                                     </span>
                                                 )}
                                             </div>
                                             <div>
-                                                <span className="block text-xs font-bold text-[#0a0a0a]">I Want to Hire</span>
-                                                <span className="block text-[10px] text-[#717784]">பணியமர்த்தல் · Post shifts</span>
+                                                <span className="block text-xs font-bold text-[#0a0a0a] dark:text-white">I Want to Hire</span>
+                                                <span className="block text-[10px] text-[#717784] dark:text-zinc-400">பணியமர்த்தல் · Post shifts</span>
                                             </div>
                                         </button>
                                     </div>
@@ -429,9 +431,9 @@ export const SignUpPage = () => {
                                                 initial={{ opacity: 0, y: -8 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: -8 }}
-                                                className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium rounded-xl flex items-center gap-2.5 shadow-2xs"
+                                                className="mb-5 p-3.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs font-medium rounded-xl flex items-center gap-2.5 shadow-2xs"
                                             >
-                                                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                                                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
                                                 <span>{error}</span>
                                             </motion.div>
                                         )}
@@ -444,7 +446,7 @@ export const SignUpPage = () => {
                                         {isCandidate ? (
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="space-y-1.5">
-                                                    <label className="block text-xs font-medium uppercase text-[#0a0a0a]">
+                                                    <label className="block text-xs font-medium uppercase text-[#0a0a0a] dark:text-zinc-200">
                                                         First Name
                                                     </label>
                                                     <input
@@ -453,11 +455,11 @@ export const SignUpPage = () => {
                                                         onChange={(e) => setFirstName(e.target.value)}
                                                         placeholder="John"
                                                         required
-                                                        className="w-full bg-[#f4f4f4]/60 hover:bg-[#f4f4f4] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-4 py-3 text-base sm:text-sm text-[#0a0a0a] placeholder:text-[#9ea3ae] font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10"
+                                                        className="w-full bg-[#f4f4f4]/60 dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-[#18181f] focus:bg-white dark:focus:bg-[#18181f] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-[#38BDF8] rounded-xl px-4 py-3 text-base sm:text-sm text-[#0a0a0a] dark:text-white placeholder:text-[#9ea3ae] dark:placeholder:text-zinc-500 font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#38BDF8]/20"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
-                                                    <label className="block text-xs font-medium uppercase text-[#0a0a0a]">
+                                                    <label className="block text-xs font-medium uppercase text-[#0a0a0a] dark:text-zinc-200">
                                                         Last Name
                                                     </label>
                                                     <input
@@ -466,13 +468,13 @@ export const SignUpPage = () => {
                                                         onChange={(e) => setLastName(e.target.value)}
                                                         placeholder="Doe"
                                                         required
-                                                        className="w-full bg-[#f4f4f4]/60 hover:bg-[#f4f4f4] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-4 py-3 text-base sm:text-sm text-[#0a0a0a] placeholder:text-[#9ea3ae] font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10"
+                                                        className="w-full bg-[#f4f4f4]/60 dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-[#18181f] focus:bg-white dark:focus:bg-[#18181f] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-[#38BDF8] rounded-xl px-4 py-3 text-base sm:text-sm text-[#0a0a0a] dark:text-white placeholder:text-[#9ea3ae] dark:placeholder:text-zinc-500 font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#38BDF8]/20"
                                                     />
                                                 </div>
                                             </div>
                                         ) : (
                                             <div className="space-y-1.5">
-                                                <label className="block text-xs font-medium uppercase text-[#0a0a0a]">
+                                                <label className="block text-xs font-medium uppercase text-[#0a0a0a] dark:text-zinc-200">
                                                     Company / Enterprise Name
                                                 </label>
                                                 <input
@@ -481,14 +483,14 @@ export const SignUpPage = () => {
                                                     onChange={(e) => setCompanyName(e.target.value)}
                                                     placeholder="Reliance Logistics Ltd"
                                                     required
-                                                    className="w-full bg-[#f4f4f4]/60 hover:bg-[#f4f4f4] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-4 py-3 text-base sm:text-sm text-[#0a0a0a] placeholder:text-[#9ea3ae] font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10"
+                                                    className="w-full bg-[#f4f4f4]/60 dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-[#18181f] focus:bg-white dark:focus:bg-[#18181f] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-[#38BDF8] rounded-xl px-4 py-3 text-base sm:text-sm text-[#0a0a0a] dark:text-white placeholder:text-[#9ea3ae] dark:placeholder:text-zinc-500 font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#38BDF8]/20"
                                                 />
                                             </div>
                                         )}
 
                                         {/* Email Field */}
                                         <div className="space-y-1.5">
-                                            <label className="block text-xs font-medium uppercase text-[#0a0a0a]">
+                                            <label className="block text-xs font-medium uppercase text-[#0a0a0a] dark:text-zinc-200">
                                                 {isCandidate ? 'Email Address' : 'Official Work Email'}
                                             </label>
                                             <input
@@ -497,17 +499,17 @@ export const SignUpPage = () => {
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 placeholder={isCandidate ? 'name@example.com' : 'contact@company.com'}
                                                 required
-                                                className="w-full bg-[#f4f4f4]/60 hover:bg-[#f4f4f4] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-4 py-3 text-base sm:text-sm text-[#0a0a0a] placeholder:text-[#9ea3ae] font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10"
+                                                className="w-full bg-[#f4f4f4]/60 dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-[#18181f] focus:bg-white dark:focus:bg-[#18181f] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-[#38BDF8] rounded-xl px-4 py-3 text-base sm:text-sm text-[#0a0a0a] dark:text-white placeholder:text-[#9ea3ae] dark:placeholder:text-zinc-500 font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#38BDF8]/20"
                                             />
                                         </div>
 
                                         {/* Mobile Phone Field */}
                                         <div className="space-y-1.5">
-                                            <label className="block text-xs font-medium uppercase text-[#0a0a0a]">
+                                            <label className="block text-xs font-medium uppercase text-[#0a0a0a] dark:text-zinc-200">
                                                 Mobile Number
                                             </label>
-                                            <div className="flex rounded-xl overflow-hidden border border-[#e6e8ec] focus-within:border-[#0f2f63] focus-within:ring-2 focus-within:ring-[#0f2f63]/10 transition-all bg-[#f4f4f4]/60">
-                                                <span className="inline-flex items-center gap-1.5 px-3.5 bg-[#f4f4f4] text-xs font-medium text-[#717784] border-r border-[#e6e8ec] select-none">
+                                            <div className="flex rounded-xl overflow-hidden border border-[#e6e8ec] dark:border-zinc-800 focus-within:border-[#0f2f63] dark:focus-within:border-[#38BDF8] focus-within:ring-2 focus-within:ring-[#0f2f63]/10 dark:focus-within:ring-[#38BDF8]/20 transition-all bg-[#f4f4f4]/60 dark:bg-[#121215]">
+                                                <span className="inline-flex items-center gap-1.5 px-3.5 bg-[#f4f4f4] dark:bg-zinc-800 text-xs font-medium text-[#717784] dark:text-zinc-400 border-r border-[#e6e8ec] dark:border-zinc-700 select-none">
                                                     <span>🇮🇳</span>
                                                     <span>+91</span>
                                                 </span>
@@ -518,14 +520,14 @@ export const SignUpPage = () => {
                                                     placeholder="98765 43210"
                                                     maxLength={10}
                                                     required
-                                                    className="w-full bg-transparent px-4 py-3 text-base sm:text-sm text-[#0a0a0a] placeholder:text-[#9ea3ae] font-normal outline-hidden"
+                                                    className="w-full bg-transparent px-4 py-3 text-base sm:text-sm text-[#0a0a0a] dark:text-white placeholder:text-[#9ea3ae] dark:placeholder:text-zinc-500 font-normal outline-hidden"
                                                 />
                                             </div>
                                         </div>
 
                                         {/* Password Field */}
                                         <div className="space-y-1.5">
-                                            <label className="block text-xs font-medium uppercase text-[#0a0a0a]">
+                                            <label className="block text-xs font-medium uppercase text-[#0a0a0a] dark:text-zinc-200">
                                                 Password
                                             </label>
                                             <div className="relative">
@@ -535,12 +537,12 @@ export const SignUpPage = () => {
                                                     onChange={(e) => setPassword(e.target.value)}
                                                     placeholder="Minimum 6 characters"
                                                     required
-                                                    className="w-full bg-[#f4f4f4]/60 hover:bg-[#f4f4f4] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-4 py-3 pr-10 text-base sm:text-sm text-[#0a0a0a] placeholder:text-[#9ea3ae] font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10"
+                                                    className="w-full bg-[#f4f4f4]/60 dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-[#18181f] focus:bg-white dark:focus:bg-[#18181f] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-[#38BDF8] rounded-xl px-4 py-3 pr-10 text-base sm:text-sm text-[#0a0a0a] dark:text-white placeholder:text-[#9ea3ae] dark:placeholder:text-zinc-500 font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#38BDF8]/20"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9ea3ae] hover:text-[#0a0a0a] transition-colors cursor-pointer"
+                                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9ea3ae] hover:text-[#0a0a0a] dark:hover:text-white transition-colors cursor-pointer"
                                                 >
                                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                 </button>
@@ -551,7 +553,7 @@ export const SignUpPage = () => {
                                         <button
                                             type="submit"
                                             disabled={isLoading || !email || !password || !phoneNumber}
-                                            className="w-full mt-2 bg-[#0f2f63] hover:bg-[#2563c9] active:scale-[0.99] disabled:opacity-50 text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                                            className="w-full mt-2 bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-[#2563EB] dark:hover:bg-blue-600 active:scale-[0.99] disabled:opacity-50 text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                                         >
                                             {isLoading ? (
                                                 <>
@@ -569,11 +571,11 @@ export const SignUpPage = () => {
 
                                     {/* Sign In Redirect Link */}
                                     <div className="mt-5 text-center">
-                                        <p className="text-xs sm:text-sm text-[#717784] font-normal">
+                                        <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 font-normal">
                                             Already have an account?{' '}
                                             <Link 
                                                 to={`/sign-in?role=${activeRole.toLowerCase()}`} 
-                                                className="font-medium text-[#0f2f63] hover:text-[#2563c9] underline underline-offset-2 transition-colors"
+                                                className="font-medium text-[#0f2f63] dark:text-[#38BDF8] hover:text-[#2563c9] dark:hover:text-sky-300 underline underline-offset-2 transition-colors"
                                             >
                                                 Sign in
                                             </Link>
@@ -583,15 +585,15 @@ export const SignUpPage = () => {
                                     {/* Quick Google Signup for Candidate & Employer (Bypasses OTP as Google verifies identity) */}
                                     <div>
                                         <div className="flex items-center gap-3 my-5">
-                                            <div className="flex-1 h-px bg-[#e6e8ec]"></div>
-                                            <span className="text-[10px] font-medium uppercase text-[#9ea3ae]">or fast track with</span>
-                                            <div className="flex-1 h-px bg-[#e6e8ec]"></div>
+                                            <div className="flex-1 h-px bg-[#e6e8ec] dark:bg-zinc-800"></div>
+                                            <span className="text-[10px] font-medium uppercase text-[#9ea3ae] dark:text-zinc-500">or fast track with</span>
+                                            <div className="flex-1 h-px bg-[#e6e8ec] dark:bg-zinc-800"></div>
                                         </div>
 
                                         <button
                                             type="button"
                                             onClick={handleGoogleSignUp}
-                                            className="w-full bg-white hover:bg-[#f4f4f4] border border-[#e6e8ec] text-[#0a0a0a] py-3 px-4 rounded-full font-medium text-xs sm:text-sm uppercase flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs"
+                                            className="w-full bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 text-[#0a0a0a] dark:text-white py-3 px-4 rounded-full font-medium text-xs sm:text-sm uppercase flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs"
                                         >
                                             <svg className="w-4 h-4" viewBox="0 0 24 24">
                                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -613,19 +615,19 @@ export const SignUpPage = () => {
                                 >
                                     {/* OTP Stage Header */}
                                     <div className="mb-6">
-                                        <div className="w-12 h-12 rounded-2xl bg-[#0f2f63]/5 border border-[#0f2f63]/10 flex items-center justify-center text-[#0f2f63] mb-4 shadow-xs">
-                                            <Mail className="w-6 h-6 text-[#0f2f63]" />
+                                        <div className="w-12 h-12 rounded-2xl bg-[#0f2f63]/5 dark:bg-sky-500/10 border border-[#0f2f63]/10 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] mb-4 shadow-xs">
+                                            <Mail className="w-6 h-6 text-[#0f2f63] dark:text-[#38BDF8]" />
                                         </div>
-                                        <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] mb-2">
+                                        <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] dark:text-zinc-400 mb-2">
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                             <span>Step 2 of 2: Email Verification</span>
                                         </div>
-                                        <h1 className="text-3xl sm:text-4xl font-medium text-[#0a0a0a] leading-[1.05]">
+                                        <h1 className="text-3xl sm:text-4xl font-medium text-[#0a0a0a] dark:text-white leading-[1.05]">
                                             Check your inbox
                                         </h1>
-                                        <p className="text-xs sm:text-sm text-[#717784] mt-2 leading-relaxed">
+                                        <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 mt-2 leading-relaxed">
                                             We've sent a 6-digit verification code to{' '}
-                                            <span className="font-semibold text-[#0a0a0a] bg-[#f4f4f4] px-1.5 py-0.5 rounded-md border border-[#e6e8ec]">
+                                            <span className="font-semibold text-[#0a0a0a] dark:text-white bg-[#f4f4f4] dark:bg-zinc-800 px-1.5 py-0.5 rounded-md border border-[#e6e8ec] dark:border-zinc-700">
                                                 {email}
                                             </span>
                                         </p>
@@ -638,9 +640,9 @@ export const SignUpPage = () => {
                                                 initial={{ opacity: 0, y: -8 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: -8 }}
-                                                className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-xl flex items-center gap-2 shadow-2xs"
+                                                className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 text-xs font-medium rounded-xl flex items-center gap-2 shadow-2xs"
                                             >
-                                                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                                                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                                                 <span>A new verification code has been dispatched to your email.</span>
                                             </motion.div>
                                         )}
@@ -653,9 +655,9 @@ export const SignUpPage = () => {
                                                 initial={{ opacity: 0, y: -8 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: -8 }}
-                                                className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium rounded-xl flex items-center gap-2.5 shadow-2xs"
+                                                className="mb-5 p-3.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/80 text-rose-800 dark:text-rose-300 text-xs font-medium rounded-xl flex items-center gap-2.5 shadow-2xs"
                                             >
-                                                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                                                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
                                                 <span>{error}</span>
                                             </motion.div>
                                         )}
@@ -664,12 +666,12 @@ export const SignUpPage = () => {
                                     {/* OTP Input Form */}
                                     <form onSubmit={handleVerifyAndRegister} className="space-y-4">
                                         <div className="space-y-2">
-                                            <label className="block text-xs font-medium uppercase text-[#0a0a0a] flex items-center justify-between">
+                                            <label className="block text-xs font-medium uppercase text-[#0a0a0a] dark:text-zinc-200 flex items-center justify-between">
                                                 <span>6-Digit Verification Code</span>
                                                 <button
                                                     type="button"
                                                     onClick={() => { setStage('FORM'); setError(''); }}
-                                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-[#2563c9] hover:underline cursor-pointer"
+                                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-[#2563c9] dark:text-[#38BDF8] hover:underline cursor-pointer"
                                                 >
                                                     <Edit3 className="w-3 h-3" />
                                                     <span>Change Email</span>
@@ -685,9 +687,9 @@ export const SignUpPage = () => {
                                                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                                                 placeholder="123456"
                                                 required
-                                                className="w-full bg-[#f4f4f4]/60 hover:bg-[#f4f4f4] focus:bg-white border-2 border-[#e6e8ec] focus:border-[#0f2f63] rounded-2xl px-4 py-3.5 text-center text-2xl font-bold tracking-[0.4em] text-[#0a0a0a] placeholder:text-[#cbd0d8] placeholder:font-normal placeholder:tracking-normal transition-all outline-hidden focus:ring-4 focus:ring-[#0f2f63]/10"
+                                                className="w-full bg-[#f4f4f4]/60 dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-[#1C1C21] border-2 border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-[#38BDF8] rounded-2xl px-4 py-3.5 text-center text-2xl font-bold tracking-[0.4em] text-[#0a0a0a] dark:text-white placeholder:text-[#cbd0d8] dark:placeholder:text-zinc-600 placeholder:font-normal placeholder:tracking-normal transition-all outline-hidden focus:ring-4 focus:ring-[#0f2f63]/10 dark:focus:ring-sky-500/20"
                                             />
-                                            <p className="text-[11px] text-[#717784] text-center">
+                                            <p className="text-[11px] text-[#717784] dark:text-zinc-400 text-center">
                                                 Enter the 6-digit code from your email (valid for 15 minutes)
                                             </p>
                                         </div>
@@ -696,7 +698,7 @@ export const SignUpPage = () => {
                                         <button
                                             type="submit"
                                             disabled={isLoading || otp.trim().length !== 6}
-                                            className="w-full mt-2 bg-[#0f2f63] hover:bg-[#2563c9] active:scale-[0.99] disabled:opacity-50 text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                                            className="w-full mt-2 bg-[#0f2f63] dark:bg-[#2563EB] hover:bg-[#2563c9] dark:hover:bg-[#1D4ED8] active:scale-[0.99] disabled:opacity-50 text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                                         >
                                             {isLoading ? (
                                                 <>
@@ -714,15 +716,15 @@ export const SignUpPage = () => {
                                         {/* Resend Code Section */}
                                         <div className="pt-3 text-center">
                                             {resendCooldown > 0 ? (
-                                                <p className="text-xs text-[#717784] font-medium">
-                                                    Resend code in <span className="font-bold text-[#0a0a0a]">{resendCooldown}s</span>
+                                                <p className="text-xs text-[#717784] dark:text-zinc-400 font-medium">
+                                                    Resend code in <span className="font-bold text-[#0a0a0a] dark:text-white">{resendCooldown}s</span>
                                                 </p>
                                             ) : (
                                                 <button
                                                     type="button"
                                                     disabled={isResending}
                                                     onClick={handleResendOtp}
-                                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f2f63] hover:text-[#2563c9] underline underline-offset-2 transition-colors cursor-pointer"
+                                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f2f63] dark:text-[#38BDF8] hover:text-[#2563c9] underline underline-offset-2 transition-colors cursor-pointer"
                                                 >
                                                     {isResending ? (
                                                         <>
@@ -741,8 +743,8 @@ export const SignUpPage = () => {
                                     </form>
 
                                     {/* Security Guarantee Badge */}
-                                    <div className="mt-8 p-3 bg-[#f8f9fb] border border-[#e6e8ec] rounded-xl flex items-center gap-2.5 text-[11px] text-[#717784]">
-                                        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                                    <div className="mt-8 p-3 bg-[#f8f9fb] dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl flex items-center gap-2.5 text-[11px] text-[#717784] dark:text-zinc-400">
+                                        <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                                         <span>Your email is verified with Brevo security to keep your TrustHyre account secure.</span>
                                     </div>
                                 </motion.div>
@@ -752,11 +754,11 @@ export const SignUpPage = () => {
                     </div>
 
                     {/* Bottom Footer Note */}
-                    <div className="pt-4 text-center text-xs text-[#717784]">
+                    <div className="pt-4 text-center text-xs text-[#717784] dark:text-zinc-500">
                         By creating an account, you agree to our{' '}
-                        <Link to="/terms" className="underline hover:text-[#0a0a0a] transition-colors">Terms of Service</Link>{' '}
+                        <Link to="/terms" className="underline hover:text-[#0a0a0a] dark:hover:text-white transition-colors">Terms of Service</Link>{' '}
                         and{' '}
-                        <Link to="/privacy" className="underline hover:text-[#0a0a0a] transition-colors">Privacy Policy</Link>.
+                        <Link to="/privacy" className="underline hover:text-[#0a0a0a] dark:hover:text-white transition-colors">Privacy Policy</Link>.
                     </div>
                 </div>
 

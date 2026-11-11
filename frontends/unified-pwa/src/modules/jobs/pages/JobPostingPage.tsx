@@ -441,23 +441,23 @@ export const JobPostingPage = () => {
   ];
 
   return (
-    <div className="w-full min-h-screen p-2 sm:p-4 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
+    <div className="w-full min-h-screen p-2 sm:p-4 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <main className="max-w-7xl mx-auto space-y-5 sm:space-y-6 pb-20">
         
         {/* 1. Header Hero Card */}
-        <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec]">
+        <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] dark:border-zinc-800">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] animate-pulse" />
-                <span className="text-[10px] font-semibold uppercase text-[#0f2f63]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] dark:bg-sky-400 animate-pulse" />
+                <span className="text-[10px] font-semibold uppercase text-[#0f2f63] dark:text-sky-400">
                   {isEditMode ? 'Edit Requisition' : 'Job & Shift Posting'}
                 </span>
               </div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0a0a0a]">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100">
                 {isEditMode ? 'Update Job Opening' : 'Post a New Job Opening'}
               </h1>
-              <p className="text-xs text-[#717784] font-medium leading-relaxed max-w-xl">
+              <p className="text-xs text-[#717784] dark:text-zinc-400 font-medium leading-relaxed max-w-xl">
                 {isEditMode 
                   ? 'Update the details, compensation, requirements, or worksite location for this job requisition.'
                   : 'Quickly find verified workers nearby with authenticated profiles and zero agency middle-men fees.'}
@@ -466,9 +466,9 @@ export const JobPostingPage = () => {
 
             <Link
               to="/jobs"
-              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-white hover:bg-slate-50 border border-[#e6e8ec] text-[#0a0a0a] text-xs font-semibold uppercase transition-all shadow-2xs shrink-0"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-white dark:bg-[#121215] hover:bg-slate-50 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 text-[#0a0a0a] dark:text-zinc-200 text-xs font-semibold uppercase transition-all shadow-2xs shrink-0"
             >
-              <Briefcase className="w-3.5 h-3.5 text-[#717784]" />
+              <Briefcase className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-400" />
               <span>Manage Existing Jobs</span>
             </Link>
           </div>
@@ -482,19 +482,19 @@ export const JobPostingPage = () => {
             <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
               
               {/* Step 1: Role Fundamentals */}
-              <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] space-y-4">
-                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] pb-3">
-                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] dark:border-zinc-800 space-y-4">
+                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
+                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] dark:bg-sky-500 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
                     1
                   </div>
-                  <h3 className="text-xs font-bold uppercase text-[#717784] tracking-wide">
+                  <h3 className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 tracking-wide">
                     Role Fundamentals & Scope
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Job Title *</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Job Title *</label>
                     <input 
                       name="title"
                       required
@@ -504,12 +504,12 @@ export const JobPostingPage = () => {
                         setPreviewTitle(e.target.value);
                       }}
                       placeholder="e.g. Master Industrial Electrician"
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none transition-all"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Industry Category *</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Industry Category *</label>
                     <Dropdown
                       name="industry"
                       value={industry}
@@ -532,7 +532,7 @@ export const JobPostingPage = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#0a0a0a]">Role Scope & Responsibilities *</label>
+                  <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Role Scope & Responsibilities *</label>
                   <textarea 
                     name="description"
                     required
@@ -540,23 +540,23 @@ export const JobPostingPage = () => {
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe daily tasks, working hours, tools provided, break times, and specific site regulations..."
                     rows={4}
-                    className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all resize-none leading-relaxed"
+                    className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none transition-all resize-none leading-relaxed"
                   />
                 </div>
               </div>
 
               {/* Step 2: Upload Your Own Image (First-Class Feature & Fully Responsive) */}
-              <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-[#e6e8ec] pb-3">
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] dark:border-zinc-800 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
                   <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                    <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 sm:mt-0 shadow-2xs select-none">
+                    <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] dark:bg-sky-500 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 sm:mt-0 shadow-2xs select-none">
                       2
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-xs font-bold uppercase text-[#717784] tracking-wide">
+                      <h3 className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 tracking-wide">
                         Upload Cover Image
                       </h3>
-                      <p className="text-[11px] text-[#717784] leading-snug mt-0.5">
+                      <p className="text-[11px] text-[#717784] dark:text-zinc-400 leading-snug mt-0.5">
                         Upload your company workplace, warehouse, team, or site photo for candidates to see in their search feed.
                       </p>
                     </div>
@@ -570,7 +570,7 @@ export const JobPostingPage = () => {
                         setUploadedFileName('');
                         setSelectedPresetUrl(null);
                       }}
-                      className="self-start sm:self-auto text-[11px] font-semibold text-rose-600 hover:text-rose-800 transition-colors cursor-pointer shrink-0"
+                      className="self-start sm:self-auto text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-800 transition-colors cursor-pointer shrink-0"
                     >
                       Remove Image
                     </button>
@@ -586,8 +586,8 @@ export const JobPostingPage = () => {
                     onClick={() => fileInputRef.current?.click()}
                     className={`w-full p-5 sm:p-8 md:p-10 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 select-none ${
                       isDragging 
-                        ? 'border-[#0f2f63] bg-[#0f2f63]/5 ring-4 ring-[#0f2f63]/10 scale-[0.99]' 
-                        : 'border-[#c5c8d0] hover:border-[#0f2f63] hover:bg-slate-50/80 bg-white'
+                        ? 'border-[#0f2f63] dark:border-sky-400 bg-[#0f2f63]/5 dark:bg-sky-400/10 ring-4 ring-[#0f2f63]/10 scale-[0.99]' 
+                        : 'border-[#c5c8d0] dark:border-zinc-700 hover:border-[#0f2f63] dark:hover:border-sky-400 hover:bg-slate-50/80 dark:hover:bg-zinc-800/50 bg-white dark:bg-[#121215]'
                     }`}
                   >
                     <input
@@ -601,14 +601,14 @@ export const JobPostingPage = () => {
                       }}
                     />
 
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0f2f63]/5 text-[#0f2f63] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0f2f63]/5 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                       <UploadCloud className="w-6 h-6 sm:w-7 sm:h-7" />
                     </div>
 
-                    <h4 className="text-xs sm:text-sm font-bold text-[#0a0a0a]">
+                    <h4 className="text-xs sm:text-sm font-bold text-[#0a0a0a] dark:text-zinc-100">
                       Upload Your Own Image
                     </h4>
-                    <p className="text-[11px] sm:text-xs text-[#717784] mt-1 max-w-sm leading-relaxed px-2">
+                    <p className="text-[11px] sm:text-xs text-[#717784] dark:text-zinc-400 mt-1 max-w-sm leading-relaxed px-2">
                       Drag and drop your photo here, or click to browse from your device
                     </p>
 
@@ -617,13 +617,13 @@ export const JobPostingPage = () => {
                       <span>Browse Image File</span>
                     </div>
 
-                    <span className="text-[10px] text-[#9ea3ae] mt-2">
+                    <span className="text-[10px] text-[#9ea3ae] dark:text-zinc-500 mt-2">
                       Supports JPG, PNG, WebP up to 10MB
                     </span>
                   </div>
                 ) : (
                   /* Active Uploaded Image Preview Box */
-                  <div className="w-full rounded-2xl border border-[#e6e8ec] bg-white overflow-hidden shadow-xs relative">
+                  <div className="w-full rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#121215] overflow-hidden shadow-xs relative">
                     <div className="w-full h-44 sm:h-56 md:h-64 relative bg-slate-900">
                       <img
                         src={uploadedImageUrl}
@@ -693,18 +693,18 @@ export const JobPostingPage = () => {
                 )}
 
                 {/* Secondary Option: Stock Trade Presets (Optional) */}
-                <div className="pt-2 border-t border-[#e6e8ec]">
+                <div className="pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
                   <button
                     type="button"
                     onClick={() => setShowPresets(!showPresets)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#717784] hover:text-[#0f2f63] cursor-pointer transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#717784] dark:text-zinc-400 hover:text-[#0f2f63] dark:hover:text-sky-400 cursor-pointer transition-colors"
                   >
                     <ImageIcon className="w-3.5 h-3.5" />
                     <span>{showPresets ? 'Hide stock trade banners' : "Don't have your own photo? Choose a free trade banner"}</span>
                   </button>
 
                   {showPresets && (
-                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2 border-t border-[#e6e8ec] animate-in fade-in duration-200">
+                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800 animate-in fade-in duration-200">
                       {TRADE_COVER_PRESETS.map((preset) => {
                         const isPresetSelected = !uploadedImageUrl && selectedPresetUrl === preset.url;
                         return (
@@ -718,14 +718,14 @@ export const JobPostingPage = () => {
                             }}
                             className={`group relative rounded-xl overflow-hidden border-2 text-left transition-all cursor-pointer h-20 sm:h-24 flex flex-col justify-end p-2 ${
                               isPresetSelected
-                                ? 'border-[#0f2f63] shadow-md ring-2 ring-[#0f2f63]/20'
-                                : 'border-[#e6e8ec] hover:border-slate-400 opacity-80 hover:opacity-100'
+                                ? 'border-[#0f2f63] dark:border-sky-400 shadow-md ring-2 ring-[#0f2f63]/20'
+                                : 'border-[#e6e8ec] dark:border-zinc-800 hover:border-slate-400 dark:hover:border-zinc-700 opacity-80 hover:opacity-100'
                             }`}
                           >
                             <img src={preset.url} alt={preset.label} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                             {isPresetSelected && (
-                              <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#0f2f63] text-white flex items-center justify-center">
+                              <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#0f2f63] dark:bg-sky-500 text-white flex items-center justify-center">
                                 <Check className="w-2.5 h-2.5 stroke-[3]" />
                               </div>
                             )}
@@ -741,43 +741,43 @@ export const JobPostingPage = () => {
               </div>
 
               {/* Step 3: Worksite Location */}
-              <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] space-y-4">
-                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] pb-3">
-                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] dark:border-zinc-800 space-y-4">
+                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
+                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] dark:bg-sky-500 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
                     3
                   </div>
-                  <h3 className="text-xs font-bold uppercase text-[#717784] tracking-wide">
+                  <h3 className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 tracking-wide">
                     Worksite Location & GPS Geolocation
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Street / Site Address *</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Street / Site Address *</label>
                     <input 
                       name="address"
                       required
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="e.g. Guindy Industrial Estate, Plot 14"
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none transition-all"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">City / Region *</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">City / Region *</label>
                     <input 
                       name="city"
                       required
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="e.g. Chennai"
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none transition-all"
                     />
                   </div>
                 </div>
 
-                <div className="bg-white p-3 rounded-2xl border border-[#e6e8ec] relative z-0 isolate">
+                <div className="bg-white dark:bg-[#121215] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 relative z-0 isolate">
                   <LocationPicker 
                     onLocationSelect={(lat, lon, addr, cty) => {
                       setCoords({ lat, lon });
@@ -789,21 +789,21 @@ export const JobPostingPage = () => {
               </div>
 
               {/* Step 4: Compensation & Required Experience */}
-              <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] space-y-4">
-                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] pb-3">
-                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] dark:border-zinc-800 space-y-4">
+                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
+                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] dark:bg-sky-500 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
                     4
                   </div>
-                  <h3 className="text-xs font-bold uppercase text-[#717784] tracking-wide">
+                  <h3 className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 tracking-wide">
                     Compensation, Duration & Skill Requirements
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Monthly Budget (₹) *</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Monthly Budget (₹) *</label>
                     <div className="relative">
-                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#717784]" />
+                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#717784] dark:text-zinc-500" />
                       <input 
                         name="budget"
                         type="number"
@@ -814,13 +814,13 @@ export const JobPostingPage = () => {
                           setPreviewBudget(e.target.value);
                         }}
                         placeholder="28000"
-                        className="w-full bg-white border border-[#e6e8ec] rounded-xl pl-9 pr-3 py-3 text-xs font-bold text-[#0a0a0a] tabular-nums focus:border-[#0f2f63] outline-none transition-all"
+                        className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl pl-9 pr-3 py-3 text-xs font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none transition-all"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Min. Experience (Years)</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Min. Experience (Years)</label>
                     <input 
                       name="experienceYearsRequired"
                       type="text"
@@ -831,13 +831,13 @@ export const JobPostingPage = () => {
                         setPreviewExp(e.target.value);
                       }}
                       placeholder="2"
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none transition-all"
                     />
                   </div>
 
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-[#0a0a0a]">Auto-Expiry Date & Time (Optional)</label>
+                      <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Auto-Expiry Date & Time (Optional)</label>
                       {expiresAt ? (
                         <button
                           type="button"
@@ -845,12 +845,12 @@ export const JobPostingPage = () => {
                             setExpiresAt('');
                             setPreviewExpiresAt('');
                           }}
-                          className="text-[10px] text-rose-600 hover:text-rose-800 font-semibold cursor-pointer underline"
+                          className="text-[10px] text-rose-600 dark:text-rose-400 hover:text-rose-800 font-semibold cursor-pointer underline"
                         >
                           Remove Expiry
                         </button>
                       ) : (
-                        <span className="text-[10px] text-[#717784] font-medium">Optional</span>
+                        <span className="text-[10px] text-[#717784] dark:text-zinc-400 font-medium">Optional</span>
                       )}
                     </div>
                     <input 
@@ -862,9 +862,9 @@ export const JobPostingPage = () => {
                         setExpiresAt(e.target.value);
                         setPreviewExpiresAt(e.target.value);
                       }}
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] focus:border-[#0f2f63] outline-none transition-all cursor-pointer"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs font-semibold text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none transition-all cursor-pointer"
                     />
-                    <p className="text-[10px] text-[#717784]">
+                    <p className="text-[10px] text-[#717784] dark:text-zinc-500">
                       Leave blank for open-ended hiring, or pick a date & time to auto-expire.
                     </p>
                   </div>
@@ -872,14 +872,14 @@ export const JobPostingPage = () => {
 
                 {/* Skill Tags */}
                 <div className="space-y-2 pt-2">
-                  <label className="text-xs font-bold text-[#0a0a0a]">Technical Skill Tags</label>
+                  <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Technical Skill Tags</label>
                   <div className="flex gap-2">
                     <input 
                       value={skillInput}
                       onChange={(e) => setSkillInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
                       placeholder="Type a skill and press Enter (e.g. Conduit Bending, Three Phase)..."
-                      className="flex-1 bg-white border border-[#e6e8ec] rounded-xl px-3.5 py-2.5 text-xs text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
+                      className="flex-1 bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none"
                     />
                     <button 
                       type="button" 
@@ -894,12 +894,12 @@ export const JobPostingPage = () => {
                     {skills.map(skill => (
                       <span 
                         key={skill} 
-                        className="bg-white border border-[#e6e8ec] px-3 py-1 rounded-full text-xs font-semibold text-[#0a0a0a] flex items-center gap-1.5 shadow-2xs"
+                        className="bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 px-3 py-1 rounded-full text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 flex items-center gap-1.5 shadow-2xs"
                       >
-                        <Check className="w-3 h-3 text-emerald-600" />
+                        <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                         <span>{skill}</span>
                         <X 
-                          className="w-3.5 h-3.5 cursor-pointer text-[#717784] hover:text-rose-600 ml-0.5" 
+                          className="w-3.5 h-3.5 cursor-pointer text-[#717784] dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 ml-0.5" 
                           onClick={() => removeSkill(skill)} 
                         />
                       </span>
@@ -907,14 +907,14 @@ export const JobPostingPage = () => {
                   </div>
 
                   <div className="pt-2">
-                    <p className="text-[10px] font-bold uppercase text-[#717784] mb-1.5">Quick Suggestions:</p>
+                    <p className="text-[10px] font-bold uppercase text-[#717784] dark:text-zinc-400 mb-1.5">Quick Suggestions:</p>
                     <div className="flex flex-wrap gap-1.5">
                       {QUICK_SKILL_SUGGESTIONS.map(s => (
                         <button
                           key={s}
                           type="button"
                           onClick={() => !skills.includes(s) && setSkills([...skills, s])}
-                          className="text-[11px] px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 border border-[#e6e8ec] text-[#717784] cursor-pointer"
+                          className="text-[11px] px-2.5 py-1 rounded-lg bg-white dark:bg-[#121215] hover:bg-slate-50 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 text-[#717784] dark:text-zinc-300 cursor-pointer"
                         >
                           + {s}
                         </button>
@@ -926,46 +926,46 @@ export const JobPostingPage = () => {
 
 
               {/* Step 5: Role & Eligibility Criteria (Optional) */}
-              <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] space-y-4">
-                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] pb-3">
-                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] dark:border-zinc-800 space-y-4">
+                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
+                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] dark:bg-sky-500 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
                     5
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold uppercase text-[#717784] tracking-wide">
+                    <h3 className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 tracking-wide">
                       Role & Eligibility Criteria (Optional)
                     </h3>
-                    <p className="text-[11px] text-[#717784]">Specify hiring requirements so candidates know exact shift and eligibility expectations.</p>
+                    <p className="text-[11px] text-[#717784] dark:text-zinc-400">Specify hiring requirements so candidates know exact shift and eligibility expectations.</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Department</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Department</label>
                     <input 
                       name="department"
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
                       placeholder="e.g. Restaurant / Hospitality / Tourism"
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs font-medium text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Role / Category</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Role / Category</label>
                     <input 
                       name="roleCategory"
                       value={roleCategory}
                       onChange={(e) => setRoleCategory(e.target.value)}
                       placeholder="e.g. Cook / Chef / Kitchen Help"
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs font-medium text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Employment Type</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Employment Type</label>
                     <Dropdown
                       name="employmentType"
                       value={employmentType}
@@ -976,7 +976,7 @@ export const JobPostingPage = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Shift</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Shift</label>
                     <Dropdown
                       name="shift"
                       value={shift}
@@ -989,7 +989,7 @@ export const JobPostingPage = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Education</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Education</label>
                     <Dropdown
                       name="education"
                       value={education}
@@ -1000,30 +1000,30 @@ export const JobPostingPage = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Languages Required</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Languages Required</label>
                     <input 
                       name="languages"
                       value={languages}
                       onChange={(e) => setLanguages(e.target.value)}
                       placeholder="e.g. English, Tamil, Hindi"
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs font-medium text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#0a0a0a]">Age Limit</label>
+                    <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Age Limit</label>
                     <input 
                       name="ageLimit"
                       value={ageLimit}
                       onChange={(e) => setAgeLimit(e.target.value)}
                       placeholder="e.g. 18 - 35 years"
-                      className="w-full bg-white border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:border-[#0f2f63] outline-none"
+                      className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs font-medium text-[#0a0a0a] dark:text-zinc-100 focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#0a0a0a]">Gender Preference</label>
+                  <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Gender Preference</label>
                   <Dropdown
                     name="gender"
                     value={gender}
@@ -1035,22 +1035,22 @@ export const JobPostingPage = () => {
               </div>
 
               {/* Step 6: Frontline Perks & Direct Contact (WorkIndia & Apna Viral Viewership Drivers) */}
-              <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] space-y-5">
-                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] pb-3">
-                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 md:p-8 border border-[#e6e8ec] dark:border-zinc-800 space-y-5">
+                <div className="flex items-center gap-2.5 sm:gap-3 border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
+                  <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] aspect-square rounded-full bg-[#0f2f63] dark:bg-sky-500 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs select-none">
                     6
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold uppercase text-[#717784] tracking-wide">
+                    <h3 className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 tracking-wide">
                       Frontline Perks & Direct Recruiter Contact
                     </h3>
-                    <p className="text-[11px] text-[#717784]">Jobs with Free Food, Room, Overtime, and Direct Call HR get 5x more candidate applications.</p>
+                    <p className="text-[11px] text-[#717784] dark:text-zinc-400">Jobs with Free Food, Room, Overtime, and Direct Call HR get 5x more candidate applications.</p>
                   </div>
                 </div>
 
                 {/* Perks Selector */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-[#0a0a0a] block">
+                  <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200 block">
                     Select Perks & Facilities Provided (Optional)
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1074,8 +1074,8 @@ export const JobPostingPage = () => {
                           }}
                           className={`p-3 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer flex items-center justify-between ${
                             isSelected
-                              ? 'bg-[#0f2f63] text-white border-[#0f2f63] shadow-xs'
-                              : 'bg-white text-[#0a0a0a] border-[#e6e8ec] hover:border-[#0f2f63]/40'
+                              ? 'bg-[#0f2f63] dark:bg-sky-600 text-white border-[#0f2f63] dark:border-sky-500 shadow-xs'
+                              : 'bg-white dark:bg-[#121215] text-[#0a0a0a] dark:text-zinc-200 border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/40 dark:hover:border-zinc-700'
                           }`}
                         >
                           <span>{perk.label}</span>
@@ -1087,15 +1087,15 @@ export const JobPostingPage = () => {
                 </div>
 
                 {/* Direct Contact Toggle and Input */}
-                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#e6e8ec] space-y-4">
+                <div className="bg-white dark:bg-[#121215] rounded-2xl p-4 sm:p-5 border border-[#e6e8ec] dark:border-zinc-800 space-y-4">
                   {/* Walk-in Interview FastTrack Toggle (WorkIndia & Apna Pattern) */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e6e8ec] pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
                     <div>
                       <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-amber-500" />
-                        <h4 className="text-xs font-bold text-[#0a0a0a]">Walk-in Interview FastTrack</h4>
+                        <h4 className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-100">Walk-in Interview FastTrack</h4>
                       </div>
-                      <p className="text-[11px] text-[#717784]">Post specific interview dates and timing slots so candidates can directly walk in without application waiting periods.</p>
+                      <p className="text-[11px] text-[#717784] dark:text-zinc-400">Post specific interview dates and timing slots so candidates can directly walk in without application waiting periods.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -1104,63 +1104,63 @@ export const JobPostingPage = () => {
                         onChange={(e) => setIsWalkInInterview(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                      <div className="w-11 h-6 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                     </label>
                   </div>
 
                   {isWalkInInterview && (
-                    <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-200/60 space-y-3 animate-in fade-in">
+                    <div className="p-4 bg-amber-50/50 dark:bg-amber-950/20 rounded-xl border border-amber-200/60 dark:border-amber-900/40 space-y-3 animate-in fade-in">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label className="text-[11px] font-bold text-[#0a0a0a]">Walk-in Dates</label>
+                          <label className="text-[11px] font-bold text-[#0a0a0a] dark:text-zinc-200">Walk-in Dates</label>
                           <input
                             type="text"
                             value={walkInDates}
                             onChange={(e) => setWalkInDates(e.target.value)}
                             placeholder="e.g. 06 Nov - 09 Nov (Mon to Fri)"
-                            className="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
+                            className="w-full bg-white dark:bg-[#1C1C21] border border-amber-200 dark:border-amber-900/40 rounded-lg p-2.5 text-xs text-[#0a0a0a] dark:text-zinc-100 outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[11px] font-bold text-[#0a0a0a]">Interview Timing Slot</label>
+                          <label className="text-[11px] font-bold text-[#0a0a0a] dark:text-zinc-200">Interview Timing Slot</label>
                           <input
                             type="text"
                             value={walkInTiming}
                             onChange={(e) => setWalkInTiming(e.target.value)}
                             placeholder="e.g. 10:00 AM - 04:00 PM"
-                            className="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
+                            className="w-full bg-white dark:bg-[#1C1C21] border border-amber-200 dark:border-amber-900/40 rounded-lg p-2.5 text-xs text-[#0a0a0a] dark:text-zinc-100 outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                           />
                         </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label className="text-[11px] font-bold text-[#0a0a0a]">Interview Venue / Landmark</label>
+                          <label className="text-[11px] font-bold text-[#0a0a0a] dark:text-zinc-200">Interview Venue / Landmark</label>
                           <input
                             type="text"
                             value={walkInVenue}
                             onChange={(e) => setWalkInVenue(e.target.value)}
                             placeholder="e.g. Near Guindy Metro Station, Opp. Police Station"
-                            className="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
+                            className="w-full bg-white dark:bg-[#1C1C21] border border-amber-200 dark:border-amber-900/40 rounded-lg p-2.5 text-xs text-[#0a0a0a] dark:text-zinc-100 outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[11px] font-bold text-[#0a0a0a]">Contact Person / HR Name</label>
+                          <label className="text-[11px] font-bold text-[#0a0a0a] dark:text-zinc-200">Contact Person / HR Name</label>
                           <input
                             type="text"
                             value={walkInContactPerson}
                             onChange={(e) => setWalkInContactPerson(e.target.value)}
                             placeholder="e.g. Mr. Ramesh (HR Manager)"
-                            className="w-full bg-white border border-amber-200 rounded-lg p-2.5 text-xs text-[#0a0a0a] outline-none focus:border-[#0f2f63]"
+                            className="w-full bg-white dark:bg-[#1C1C21] border border-amber-200 dark:border-amber-900/40 rounded-lg p-2.5 text-xs text-[#0a0a0a] dark:text-zinc-100 outline-none focus:border-[#0f2f63] dark:focus:border-sky-500"
                           />
                         </div>
                       </div>
                     </div>
                   )}
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e6e8ec] pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
                     <div>
-                      <h4 className="text-xs font-bold text-[#0a0a0a]">Allow Candidates to Call HR Directly</h4>
-                      <p className="text-[11px] text-[#717784]">Shows a prominent "Call HR" button on your job card for instant phone screening.</p>
+                      <h4 className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-100">Allow Candidates to Call HR Directly</h4>
+                      <p className="text-[11px] text-[#717784] dark:text-zinc-400">Shows a prominent "Call HR" button on your job card for instant phone screening.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -1169,21 +1169,21 @@ export const JobPostingPage = () => {
                         onChange={(e) => setAllowDirectCall(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                      <div className="w-11 h-6 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                     </label>
                   </div>
 
                   {allowDirectCall && (
                     <div className="space-y-1.5 animate-in fade-in">
-                      <label className="text-xs font-bold text-[#0a0a0a]">Direct Recruiter / Supervisor Phone Number</label>
+                      <label className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200">Direct Recruiter / Supervisor Phone Number</label>
                       <input
                         type="tel"
                         value={contactPhone}
                         onChange={(e) => setContactPhone(e.target.value)}
                         placeholder="e.g. +91 98765 43210 (Defaults to registered mobile if blank)"
-                        className="w-full bg-[#fbfbfb] border border-[#e6e8ec] rounded-xl p-3 text-xs font-medium text-[#0a0a0a] focus:bg-white focus:border-[#0f2f63] outline-none"
+                        className="w-full bg-[#fbfbfb] dark:bg-[#1C1C21] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl p-3 text-xs font-medium text-[#0a0a0a] dark:text-zinc-100 focus:bg-white dark:focus:bg-[#121215] focus:border-[#0f2f63] dark:focus:border-sky-500 outline-none"
                       />
-                      <p className="text-[10px] text-[#717784]">
+                      <p className="text-[10px] text-[#717784] dark:text-zinc-500">
                         Workers can tap to call this number directly from the job card without middleman fees.
                       </p>
                     </div>
@@ -1192,9 +1192,9 @@ export const JobPostingPage = () => {
               </div>
 
               {/* Submit Button Action Row */}
-              <div className="bg-[#fbfbfb] p-4 rounded-2xl border border-[#e6e8ec] flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-xs text-[#717784]">
-                  <p className="font-semibold text-[#0a0a0a]">Secure Protected Shift Posting</p>
+              <div className="bg-[#fbfbfb] dark:bg-[#09090b] p-4 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-xs text-[#717784] dark:text-zinc-400">
+                  <p className="font-semibold text-[#0a0a0a] dark:text-zinc-200">Secure Protected Shift Posting</p>
                   <p className="text-[11px]">Funds are held securely and released upon candidate check-out confirmation.</p>
                 </div>
 
@@ -1219,23 +1219,23 @@ export const JobPostingPage = () => {
           <div className="col-span-1 lg:col-span-4 space-y-5 sm:space-y-6 lg:sticky lg:top-20">
             
             {/* Live Mockup Card */}
-            <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 border border-[#e6e8ec] space-y-4">
-              <div className="flex items-center justify-between border-b border-[#e6e8ec] pb-3">
+            <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 border border-[#e6e8ec] dark:border-zinc-800 space-y-4">
+              <div className="flex items-center justify-between border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
                 <div className="flex items-center gap-1.5">
-                  <ImageIcon className="w-4 h-4 text-[#0f2f63]" />
-                  <h3 className="text-xs font-bold uppercase text-[#717784]">
+                  <ImageIcon className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
+                  <h3 className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400">
                     Candidate Feed Preview
                   </h3>
                 </div>
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900/50">
                   Live Sync
                 </span>
               </div>
 
               {/* Mockup Card with Cover Image */}
-              <div className="bg-white rounded-2xl border border-[#e6e8ec] shadow-sm overflow-hidden space-y-0">
+              <div className="bg-white dark:bg-[#121215] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-sm overflow-hidden space-y-0">
                 {effectiveCoverUrl && (
-                  <div className="w-full h-36 relative overflow-hidden bg-slate-100 border-b border-[#e6e8ec]">
+                  <div className="w-full h-36 relative overflow-hidden bg-slate-100 dark:bg-zinc-800 border-b border-[#e6e8ec] dark:border-zinc-800">
                     <img 
                       src={effectiveCoverUrl} 
                       alt="Cover Banner" 
@@ -1258,50 +1258,50 @@ export const JobPostingPage = () => {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       {!effectiveCoverUrl && (
-                        <span className="px-2 py-0.5 rounded-full bg-[#0f2f63]/5 text-[#0f2f63] text-[9px] font-bold border border-[#0f2f63]/10">
+                        <span className="px-2 py-0.5 rounded-full bg-[#0f2f63]/5 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 text-[9px] font-bold border border-[#0f2f63]/10 dark:border-sky-500/20">
                           {previewIndustry}
                         </span>
                       )}
-                      <h4 className="text-sm font-bold text-[#0a0a0a] mt-1 leading-snug">
+                      <h4 className="text-sm font-bold text-[#0a0a0a] dark:text-zinc-100 mt-1 leading-snug">
                         {previewTitle || 'Job Title'}
                       </h4>
                     </div>
-                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-xl tabular-nums shrink-0">
+                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-xl tabular-nums shrink-0">
                       ₹{Number(previewBudget || 0).toLocaleString('en-IN')}
                     </span>
                   </div>
 
-                  <div className="text-xs text-[#717784] space-y-1">
+                  <div className="text-xs text-[#717784] dark:text-zinc-400 space-y-1">
                     <p className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-[#0f2f63] shrink-0" />
+                      <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400 shrink-0" />
                       <span className="truncate">{city || address || 'Designated worksite location'}</span>
                     </p>
-                    <p className="text-[11px] text-[#717784]">
+                    <p className="text-[11px] text-[#717784] dark:text-zinc-400">
                       Min. {previewExp || 0} years experience required
                     </p>
                   </div>
 
                   <div className="flex flex-wrap gap-1 pt-1">
                     {skills.slice(0, 3).map(s => (
-                      <span key={s} className="px-2 py-0.5 bg-[#f4f4f4] rounded-md text-[10px] font-medium text-[#0a0a0a]">
+                      <span key={s} className="px-2 py-0.5 bg-[#f4f4f4] dark:bg-[#1C1C21] border border-transparent dark:border-zinc-800 rounded-md text-[10px] font-medium text-[#0a0a0a] dark:text-zinc-200">
                         {s}
                       </span>
                     ))}
                     {skills.length > 3 && (
-                      <span className="px-2 py-0.5 bg-[#f4f4f4] rounded-md text-[10px] font-medium text-[#717784]">
+                      <span className="px-2 py-0.5 bg-[#f4f4f4] dark:bg-[#1C1C21] border border-transparent dark:border-zinc-800 rounded-md text-[10px] font-medium text-[#717784] dark:text-zinc-400">
                         +{skills.length - 3} more
                       </span>
                     )}
                   </div>
 
-                  <div className="pt-2 border-t border-[#e6e8ec] flex items-center justify-between text-[11px]">
-                    <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                  <div className="pt-2 border-t border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between text-[11px]">
+                    <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
                       <ShieldCheck className="w-3.5 h-3.5" />
                       <span>Verified Job Listing</span>
                     </span>
                     {previewExpiresAt && (
-                      <span className="text-[#717784] text-[10px] flex items-center gap-1 font-medium">
-                        <CalendarClock className="w-3 h-3 text-[#0f2f63]" />
+                      <span className="text-[#717784] dark:text-zinc-400 text-[10px] flex items-center gap-1 font-medium">
+                        <CalendarClock className="w-3 h-3 text-[#0f2f63] dark:text-sky-400" />
                         <span>Closes {new Date(previewExpiresAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                       </span>
                     )}
@@ -1311,23 +1311,23 @@ export const JobPostingPage = () => {
             </div>
 
             {/* Hiring Speed & Protection Note */}
-            <div className="bg-[#f4f4f4] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 border border-[#e6e8ec] space-y-3 text-xs">
+            <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl sm:rounded-[1.75rem] p-4 sm:p-6 border border-[#e6e8ec] dark:border-zinc-800 space-y-3 text-xs">
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
-                <h4 className="font-bold text-[#0a0a0a]">TrustHyre Hiring Advantages</h4>
+                <h4 className="font-bold text-[#0a0a0a] dark:text-zinc-100">TrustHyre Hiring Advantages</h4>
               </div>
 
-              <ul className="space-y-2.5 text-[#717784] leading-relaxed">
+              <ul className="space-y-2.5 text-[#717784] dark:text-zinc-400 leading-relaxed">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <span>Nearby verified candidates receive direct push notifications instantly.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <span>Average shift fulfillment turnaround of under 4 hours across major commercial zones.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <span>Zero hidden recruiter commissions or subscription lock-ins.</span>
                 </li>
               </ul>

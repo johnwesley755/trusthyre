@@ -155,18 +155,18 @@ export const AdminUsersPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 font-['Onest',system-ui,sans-serif]">
+    <div className="space-y-6 font-['Onest',system-ui,sans-serif] w-full max-w-full min-w-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] mb-1.5">
+          <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] dark:text-zinc-400 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9]" />
             <span>Identity Registry</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-medium text-[#0a0a0a] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-medium text-[#0a0a0a] dark:text-white tracking-tight">
             User Directory
           </h1>
-          <p className="text-xs sm:text-sm text-[#717784] mt-1 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 mt-1 leading-relaxed">
             Manage all verified candidates, registered employers, and administrator accounts across the ecosystem.
           </p>
         </div>
@@ -186,15 +186,15 @@ export const AdminUsersPage: React.FC = () => {
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
-        <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] border border-[#e6e8ec] overflow-x-auto max-w-full">
+        <div className="inline-flex p-1 rounded-full bg-[#f4f4f4] dark:bg-[#09090b] border border-[#e6e8ec] dark:border-zinc-800 overflow-x-auto max-w-full">
           {roleTabs.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setSelectedRole(tab.value)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                 selectedRole === tab.value
-                  ? 'bg-[#0f2f63] text-white shadow-xs'
-                  : 'text-[#717784] hover:text-[#0a0a0a]'
+                  ? 'bg-[#0f2f63] dark:bg-sky-500 text-white shadow-xs'
+                  : 'text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white'
               }`}
             >
               {tab.label}
@@ -208,30 +208,30 @@ export const AdminUsersPage: React.FC = () => {
             placeholder="Search by name, email, phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#f4f4f4]/60 hover:bg-[#f4f4f4] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-full px-4 py-2 pl-9 text-xs text-[#0a0a0a] placeholder:text-[#9ea3ae] transition-colors outline-hidden"
+            className="w-full bg-[#f4f4f4]/60 dark:bg-[#09090b] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 focus:bg-white dark:focus:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-sky-500 rounded-full px-4 py-2 pl-9 text-xs text-[#0a0a0a] dark:text-white placeholder:text-[#9ea3ae] dark:placeholder:text-zinc-500 transition-colors outline-hidden"
           />
           <Search className="w-3.5 h-3.5 text-[#9ea3ae] absolute left-3.5 top-1/2 -translate-y-1/2" />
         </div>
       </div>
 
       {/* Users Table / List */}
-      <div className="bg-white rounded-2xl border border-[#e6e8ec] overflow-hidden shadow-2xs">
+      <div className="bg-white dark:bg-[#09090b] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 overflow-hidden shadow-2xs transition-colors">
         {isLoading ? (
           <div className="py-20 flex justify-center">
             <AppLoader />
           </div>
         ) : users.length === 0 ? (
           <div className="py-16 text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-[#f4f4f4] flex items-center justify-center mx-auto text-[#717784]">
+            <div className="w-12 h-12 rounded-full bg-[#f4f4f4] dark:bg-[#121215] flex items-center justify-center mx-auto text-[#717784] dark:text-zinc-400">
               <Users className="w-5 h-5" />
             </div>
-            <p className="text-xs font-medium text-[#717784]">No user profiles match your filter criteria</p>
+            <p className="text-xs font-medium text-[#717784] dark:text-zinc-400">No user profiles match your filter criteria</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#e6e8ec] bg-[#f8f9fa] text-[11px] font-bold uppercase tracking-wider text-[#717784]">
+                <tr className="border-b border-[#e6e8ec] dark:border-zinc-800 bg-[#f8f9fa] dark:bg-[#121215] text-[11px] font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400">
                   <th className="py-3 px-4">User</th>
                   <th className="py-3 px-4">Contact</th>
                   <th className="py-3 px-4">Role</th>
@@ -240,20 +240,20 @@ export const AdminUsersPage: React.FC = () => {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e6e8ec] text-xs">
+              <tbody className="divide-y divide-[#e6e8ec] dark:divide-zinc-800 text-xs">
                 {users.map((u: any) => {
                   const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ') || 'Unnamed Member';
                   const roleBadgeStyles: Record<string, string> = {
-                    WORKER: 'bg-blue-50 text-[#0f2f63] border-blue-100',
-                    EMPLOYER: 'bg-purple-50 text-purple-700 border-purple-100',
-                    ADMIN: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-                    SUPER_ADMIN: 'bg-amber-50 text-amber-700 border-amber-100',
+                    WORKER: 'bg-blue-50 dark:bg-blue-950/40 text-[#0f2f63] dark:text-sky-400 border-blue-100 dark:border-blue-900/40',
+                    EMPLOYER: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-900/40',
+                    ADMIN: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40',
+                    SUPER_ADMIN: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/40',
                   };
                   return (
-                    <tr key={u.id} className="hover:bg-[#f8f9fa]/60 transition-colors">
+                    <tr key={u.id} className="hover:bg-[#f8f9fa]/60 dark:hover:bg-[#121215]/60 transition-colors">
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[#f4f4f4] border border-[#e6e8ec] flex items-center justify-center text-[11px] font-bold text-[#0f2f63] overflow-hidden shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-[#f4f4f4] dark:bg-[#1C1C21] border border-[#e6e8ec] dark:border-zinc-700 flex items-center justify-center text-[11px] font-bold text-[#0f2f63] dark:text-sky-400 overflow-hidden shrink-0">
                             {u.profile_image_url ? (
                               <img src={u.profile_image_url} alt="" className="w-full h-full object-cover" />
                             ) : (
@@ -261,15 +261,15 @@ export const AdminUsersPage: React.FC = () => {
                             )}
                           </div>
                           <div>
-                            <p className="font-semibold text-[#0a0a0a]">{fullName}</p>
-                            <p className="text-[10px] text-[#717784] font-mono">{u.id.substring(0, 8)}...</p>
+                            <p className="font-semibold text-[#0a0a0a] dark:text-white">{fullName}</p>
+                            <p className="text-[10px] text-[#717784] dark:text-zinc-500 font-mono">{u.id.substring(0, 8)}...</p>
                           </div>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-[#717784]">
+                      <td className="py-3.5 px-4 text-[#717784] dark:text-zinc-400">
                         <p className="flex items-center gap-1.5">
                           <Mail className="w-3 h-3 text-[#9ea3ae]" />
-                          <span>{u.email}</span>
+                          <span className="text-[#0a0a0a] dark:text-zinc-200">{u.email}</span>
                         </p>
                         {u.phone_number && (
                           <p className="flex items-center gap-1.5 mt-0.5 text-[11px]">
@@ -279,17 +279,17 @@ export const AdminUsersPage: React.FC = () => {
                         )}
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${roleBadgeStyles[u.role] || 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${roleBadgeStyles[u.role] || 'bg-slate-50 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700'}`}>
                           {u.role}
                         </span>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${u.email_verified ? 'text-emerald-700' : 'text-amber-700'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${u.email_verified ? 'bg-emerald-600' : 'bg-amber-500'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${u.email_verified ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${u.email_verified ? 'bg-emerald-600 dark:bg-emerald-500' : 'bg-amber-500'}`} />
                           <span>{u.email_verified ? 'Verified' : 'Pending'}</span>
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-[#717784] text-[11px]">
+                      <td className="py-3.5 px-4 text-[#717784] dark:text-zinc-400 text-[11px]">
                         {new Date(u.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
                       <td className="py-3.5 px-4 text-right">
@@ -297,7 +297,7 @@ export const AdminUsersPage: React.FC = () => {
                           <button
                             onClick={() => handleDeleteUser(u)}
                             disabled={deleteUserMutation.isPending && (deleteUserMutation.variables as string) === u.id}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer inline-flex items-center justify-center disabled:opacity-40"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer inline-flex items-center justify-center disabled:opacity-40"
                             title={`Delete ${u.email}`}
                           >
                             {deleteUserMutation.isPending && (deleteUserMutation.variables as string) === u.id ? (
@@ -307,7 +307,7 @@ export const AdminUsersPage: React.FC = () => {
                             )}
                           </button>
                         ) : (
-                          <span className="text-[10px] text-slate-300 font-mono select-none">—</span>
+                          <span className="text-[10px] text-slate-300 dark:text-zinc-600 font-mono select-none">—</span>
                         )}
                       </td>
                     </tr>
@@ -321,13 +321,13 @@ export const AdminUsersPage: React.FC = () => {
 
       {/* Provisioning / Invitation Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-2xs">
-          <div className="bg-white rounded-2xl border border-[#e6e8ec] shadow-xl w-full max-w-lg overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#1C1C21] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-xl w-full max-w-lg overflow-hidden transition-colors">
             
             {/* Modal Header */}
-            <div className="p-5 border-b border-[#e6e8ec] flex items-center justify-between">
+            <div className="p-5 border-b border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-[#0a0a0a]">Administrator Provisioning</h3>
+                <h3 className="text-base font-bold text-[#0a0a0a] dark:text-white">Administrator Provisioning</h3>
                 <p className="text-xs text-[#717784]">Grant secure administrative access to platform operations</p>
               </div>
               <button
@@ -450,7 +450,7 @@ export const AdminUsersPage: React.FC = () => {
                           value={inviteForm.email}
                           onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
                           placeholder="candidate.admin@trusthyre.com"
-                          className="w-full bg-[#f8f9fa] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3.5 py-2 pl-9 text-xs text-[#0a0a0a] outline-none"
+                          className="w-full bg-[#f8f9fa] dark:bg-[#121215] focus:bg-white dark:focus:bg-[#09090b] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 rounded-xl px-3.5 py-2 pl-9 text-xs text-[#0a0a0a] dark:text-white outline-none"
                         />
                         <Mail className="w-4 h-4 text-[#9ea3ae] absolute left-3 top-1/2 -translate-y-1/2" />
                       </div>
@@ -462,25 +462,25 @@ export const AdminUsersPage: React.FC = () => {
                         id="sendEmailNotification"
                         checked={inviteForm.sendEmailNotification}
                         onChange={(e) => setInviteForm({ ...inviteForm, sendEmailNotification: e.target.checked })}
-                        className="rounded border-[#e6e8ec] text-[#0f2f63] focus:ring-0 cursor-pointer"
+                        className="rounded border-[#e6e8ec] dark:border-zinc-700 text-[#0f2f63] dark:text-sky-500 focus:ring-0 cursor-pointer"
                       />
-                      <label htmlFor="sendEmailNotification" className="text-xs text-[#717784] cursor-pointer">
+                      <label htmlFor="sendEmailNotification" className="text-xs text-[#717784] dark:text-zinc-400 cursor-pointer">
                         Send branded Brevo email with invitation button
                       </label>
                     </div>
 
-                    <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#e6e8ec]">
+                    <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#e6e8ec] dark:border-zinc-800">
                       <button
                         type="button"
                         onClick={() => setIsModalOpen(false)}
-                        className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-[#717784] hover:bg-[#f4f4f4]"
+                        className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 transition-colors"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={inviteAdminMutation.isPending}
-                        className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0f2f63] hover:bg-[#1a4484] text-white shadow-xs disabled:opacity-50 transition-all cursor-pointer"
+                        className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0f2f63] hover:bg-[#1a4484] dark:bg-sky-600 dark:hover:bg-sky-500 text-white shadow-xs disabled:opacity-50 transition-all cursor-pointer"
                       >
                         {inviteAdminMutation.isPending ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -496,30 +496,30 @@ export const AdminUsersPage: React.FC = () => {
                   <form onSubmit={handleDirectSubmit} className="p-5 space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="block text-[11px] font-bold uppercase text-[#0a0a0a]">First Name</label>
+                        <label className="block text-[11px] font-bold uppercase text-[#0a0a0a] dark:text-zinc-200">First Name</label>
                         <input
                           type="text"
                           required
                           value={directForm.firstName}
                           onChange={(e) => setDirectForm({ ...directForm, firstName: e.target.value })}
                           placeholder="John"
-                          className="w-full bg-[#f8f9fa] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3.5 py-2 text-xs text-[#0a0a0a] outline-none"
+                          className="w-full bg-[#f8f9fa] dark:bg-[#121215] focus:bg-white dark:focus:bg-[#09090b] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 rounded-xl px-3.5 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="block text-[11px] font-bold uppercase text-[#0a0a0a]">Last Name</label>
+                        <label className="block text-[11px] font-bold uppercase text-[#0a0a0a] dark:text-zinc-200">Last Name</label>
                         <input
                           type="text"
                           value={directForm.lastName}
                           onChange={(e) => setDirectForm({ ...directForm, lastName: e.target.value })}
                           placeholder="Doe"
-                          className="w-full bg-[#f8f9fa] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3.5 py-2 text-xs text-[#0a0a0a] outline-none"
+                          className="w-full bg-[#f8f9fa] dark:bg-[#121215] focus:bg-white dark:focus:bg-[#09090b] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 rounded-xl px-3.5 py-2 text-xs text-[#0a0a0a] dark:text-white outline-none"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-[11px] font-bold uppercase text-[#0a0a0a]">Email Address</label>
+                      <label className="block text-[11px] font-bold uppercase text-[#0a0a0a] dark:text-zinc-200">Email Address</label>
                       <div className="relative">
                         <input
                           type="email"
@@ -527,14 +527,14 @@ export const AdminUsersPage: React.FC = () => {
                           value={directForm.email}
                           onChange={(e) => setDirectForm({ ...directForm, email: e.target.value })}
                           placeholder="admin@trusthyre.com"
-                          className="w-full bg-[#f8f9fa] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3.5 py-2 pl-9 text-xs text-[#0a0a0a] outline-none"
+                          className="w-full bg-[#f8f9fa] dark:bg-[#121215] focus:bg-white dark:focus:bg-[#09090b] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 rounded-xl px-3.5 py-2 pl-9 text-xs text-[#0a0a0a] dark:text-white outline-none"
                         />
                         <Mail className="w-4 h-4 text-[#9ea3ae] absolute left-3 top-1/2 -translate-y-1/2" />
                       </div>
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-[11px] font-bold uppercase text-[#0a0a0a]">Initial Password</label>
+                      <label className="block text-[11px] font-bold uppercase text-[#0a0a0a] dark:text-zinc-200">Initial Password</label>
                       <div className="relative">
                         <input
                           type="password"
@@ -543,25 +543,25 @@ export const AdminUsersPage: React.FC = () => {
                           value={directForm.password}
                           onChange={(e) => setDirectForm({ ...directForm, password: e.target.value })}
                           placeholder="••••••••••••"
-                          className="w-full bg-[#f8f9fa] focus:bg-white border border-[#e6e8ec] focus:border-[#0f2f63] rounded-xl px-3.5 py-2 pl-9 text-xs text-[#0a0a0a] outline-none"
+                          className="w-full bg-[#f8f9fa] dark:bg-[#121215] focus:bg-white dark:focus:bg-[#09090b] border border-[#e6e8ec] dark:border-zinc-700 focus:border-[#0f2f63] dark:focus:border-sky-500 rounded-xl px-3.5 py-2 pl-9 text-xs text-[#0a0a0a] dark:text-white outline-none"
                         />
                         <Lock className="w-4 h-4 text-[#9ea3ae] absolute left-3 top-1/2 -translate-y-1/2" />
                       </div>
-                      <p className="text-[10px] text-[#717784] mt-1">Minimum 8 characters.</p>
+                      <p className="text-[10px] text-[#717784] dark:text-zinc-400 mt-1">Minimum 8 characters.</p>
                     </div>
 
-                    <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#e6e8ec]">
+                    <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#e6e8ec] dark:border-zinc-800">
                       <button
                         type="button"
                         onClick={() => setIsModalOpen(false)}
-                        className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-[#717784] hover:bg-[#f4f4f4]"
+                        className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 transition-colors"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={createAdminMutation.isPending}
-                        className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0f2f63] hover:bg-[#1a4484] text-white shadow-xs disabled:opacity-50 transition-all cursor-pointer"
+                        className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0f2f63] hover:bg-[#1a4484] dark:bg-sky-600 dark:hover:bg-sky-500 text-white shadow-xs disabled:opacity-50 transition-all cursor-pointer"
                       >
                         {createAdminMutation.isPending ? (
                           <Loader2 className="w-4 h-4 animate-spin" />

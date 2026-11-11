@@ -82,16 +82,16 @@ export const renderInlineMarkdown = (
       const src = sanitizeUrl(imgMatch[2]);
       if (!src) {
         return (
-          <span key={i} className="text-[#717784] italic text-xs">
+          <span key={i} className="text-[#717784] dark:text-zinc-400 italic text-xs">
             {translateStr(alt || 'Invalid image URL')}
           </span>
         );
       }
       return (
-        <figure key={i} className="my-6 rounded-2xl overflow-hidden border border-[#e6e8ec] shadow-xs block">
+        <figure key={i} className="my-6 rounded-2xl overflow-hidden border border-[#e6e8ec] dark:border-zinc-800 shadow-xs block">
           <img src={src} alt={alt || 'Article Image'} className="w-full h-auto max-h-[520px] object-cover" loading="lazy" />
           {alt && (
-            <figcaption className="text-center text-xs text-[#717784] py-2 px-4 bg-slate-50 border-t border-[#e6e8ec] font-medium">
+            <figcaption className="text-center text-xs text-[#717784] dark:text-zinc-400 py-2 px-4 bg-slate-50 dark:bg-[#16161A] border-t border-[#e6e8ec] dark:border-zinc-800 font-medium">
               {translateStr(alt)}
             </figcaption>
           )}
@@ -112,7 +112,7 @@ export const renderInlineMarkdown = (
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#0f2f63] font-medium underline hover:text-[#2563c9] transition-colors"
+          className="text-[#0f2f63] dark:text-[#38BDF8] font-medium underline hover:text-[#2563c9] dark:hover:text-blue-300 transition-colors"
         >
           {translateStr(linkMatch[1])}
         </a>
@@ -122,7 +122,7 @@ export const renderInlineMarkdown = (
     // Bold + Italic: ***text***
     if (part.startsWith('***') && part.endsWith('***') && part.length >= 6) {
       return (
-        <strong key={i} className="font-bold text-[#0a0a0a]">
+        <strong key={i} className="font-bold text-[#0a0a0a] dark:text-white">
           <em className="italic">{translateStr(part.slice(3, -3))}</em>
         </strong>
       );
@@ -131,7 +131,7 @@ export const renderInlineMarkdown = (
     // Bold: **text**
     if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
       return (
-        <strong key={i} className="font-bold text-[#0a0a0a]">
+        <strong key={i} className="font-bold text-[#0a0a0a] dark:text-white">
           {translateStr(part.slice(2, -2))}
         </strong>
       );
@@ -140,7 +140,7 @@ export const renderInlineMarkdown = (
     // Italic: *text*
     if (part.startsWith('*') && part.endsWith('*') && part.length >= 2) {
       return (
-        <em key={i} className="italic text-[#1f2937]">
+        <em key={i} className="italic text-[#1f2937] dark:text-zinc-300">
           {translateStr(part.slice(1, -1))}
         </em>
       );
@@ -149,7 +149,7 @@ export const renderInlineMarkdown = (
     // Inline Code: `code`
     if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
       return (
-        <code key={i} className="px-1.5 py-0.5 bg-[#f4f4f4] text-[#0f2f63] font-mono rounded text-xs">
+        <code key={i} className="px-1.5 py-0.5 bg-[#f4f4f4] dark:bg-zinc-800 text-[#0f2f63] dark:text-[#38BDF8] font-mono rounded text-xs">
           {part.slice(1, -1)}
         </code>
       );
@@ -192,7 +192,7 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
     if (currentParagraph.length > 0) {
       const text = currentParagraph.join(' ');
       elements.push(
-        <p key={`${keyPrefix}-p`} className="text-sm sm:text-base text-[#374151] leading-relaxed mb-4 font-normal">
+        <p key={`${keyPrefix}-p`} className="text-sm sm:text-base text-[#374151] dark:text-zinc-200 leading-relaxed mb-4 font-normal">
           {renderInlineMarkdown(text, tText)}
         </p>
       );
@@ -203,7 +203,7 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
   const flushBulletList = (keyPrefix: string) => {
     if (currentBulletList.length > 0) {
       elements.push(
-        <ul key={`${keyPrefix}-ul`} className="list-disc pl-6 space-y-2 mb-5 text-[#374151]">
+        <ul key={`${keyPrefix}-ul`} className="list-disc pl-6 space-y-2 mb-5 text-[#374151] dark:text-zinc-200">
           {currentBulletList.map((item, idx) => (
             <li key={idx} className="text-sm sm:text-base leading-relaxed pl-1">
               {renderInlineMarkdown(item, tText)}
@@ -218,7 +218,7 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
   const flushNumberedList = (keyPrefix: string) => {
     if (currentNumberedList.length > 0) {
       elements.push(
-        <ol key={`${keyPrefix}-ol`} className="list-decimal pl-6 space-y-2 mb-5 text-[#374151]">
+        <ol key={`${keyPrefix}-ol`} className="list-decimal pl-6 space-y-2 mb-5 text-[#374151] dark:text-zinc-200">
           {currentNumberedList.map((itemText, idx) => (
             <li key={idx} className="text-sm sm:text-base leading-relaxed pl-1">
               {renderInlineMarkdown(itemText, tText)}
@@ -234,7 +234,7 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
     if (currentBlockquote.length > 0) {
       const text = currentBlockquote.join(' ');
       elements.push(
-        <blockquote key={`${keyPrefix}-bq`} className="border-l-4 border-[#0f2f63] bg-[#f8fafc] rounded-r-2xl p-4 sm:p-5 my-6 text-sm sm:text-base text-[#0a0a0a] shadow-2xs">
+        <blockquote key={`${keyPrefix}-bq`} className="border-l-4 border-[#0f2f63] dark:border-[#0066FF] bg-[#f8fafc] dark:bg-[#1C1C21] rounded-r-2xl p-4 sm:p-5 my-6 text-sm sm:text-base text-[#0a0a0a] dark:text-zinc-100 shadow-2xs">
           {renderInlineMarkdown(text, tText)}
         </blockquote>
       );
@@ -246,9 +246,9 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
     if (currentTableRows.length > 1) {
       const [headerRow, ...bodyRows] = currentTableRows;
       elements.push(
-        <div key={`${keyPrefix}-tbl`} className="my-6 overflow-x-auto rounded-2xl border border-[#e6e8ec] shadow-2xs">
+        <div key={`${keyPrefix}-tbl`} className="my-6 overflow-x-auto rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 shadow-2xs">
           <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-[#f4f4f4] border-b border-[#e6e8ec] text-[#0a0a0a] font-semibold uppercase tracking-wider text-[11px]">
+            <thead className="bg-[#f4f4f4] dark:bg-[#16161A] border-b border-[#e6e8ec] dark:border-zinc-800 text-[#0a0a0a] dark:text-white font-semibold uppercase tracking-wider text-[11px]">
               <tr>
                 {headerRow.map((cell, idx) => (
                   <th key={idx} className="px-4 py-3">
@@ -257,11 +257,11 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e6e8ec] bg-white">
+            <tbody className="divide-y divide-[#e6e8ec] dark:divide-zinc-800 bg-white dark:bg-[#121215]">
               {bodyRows.map((row, rIdx) => (
-                <tr key={rIdx} className="hover:bg-[#fafbfc] transition-colors">
+                <tr key={rIdx} className="hover:bg-[#fafbfc] dark:hover:bg-zinc-800/50 transition-colors">
                   {row.map((cell, cIdx) => (
-                    <td key={cIdx} className="px-4 py-3 text-[#374151]">
+                    <td key={cIdx} className="px-4 py-3 text-[#374151] dark:text-zinc-300">
                       {renderInlineMarkdown(cell, tText)}
                     </td>
                   ))}
@@ -326,7 +326,7 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
     if (trimmed.startsWith('# ')) {
       flushAll(keyPrefix);
       elements.push(
-        <h1 key={keyPrefix} className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-[#0a0a0a] mt-8 mb-4 pb-2 border-b border-[#e6e8ec]">
+        <h1 key={keyPrefix} className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-[#0a0a0a] dark:text-white mt-8 mb-4 pb-2 border-b border-[#e6e8ec] dark:border-zinc-800">
           {renderInlineMarkdown(trimmed.replace(/^#\s+/, ''), tText)}
         </h1>
       );
@@ -335,7 +335,7 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
     else if (trimmed.startsWith('## ')) {
       flushAll(keyPrefix);
       elements.push(
-        <h2 key={keyPrefix} className="text-lg sm:text-xl font-bold uppercase tracking-tight text-[#0a0a0a] mt-8 mb-4 pb-2 border-b border-[#e6e8ec]">
+        <h2 key={keyPrefix} className="text-lg sm:text-xl font-bold uppercase tracking-tight text-[#0a0a0a] dark:text-white mt-8 mb-4 pb-2 border-b border-[#e6e8ec] dark:border-zinc-800">
           {renderInlineMarkdown(trimmed.replace(/^##\s+/, ''), tText)}
         </h2>
       );
@@ -344,7 +344,7 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
     else if (trimmed.startsWith('### ')) {
       flushAll(keyPrefix);
       elements.push(
-        <h3 key={keyPrefix} className="text-base sm:text-lg font-bold text-[#0a0a0a] mt-6 mb-2">
+        <h3 key={keyPrefix} className="text-base sm:text-lg font-bold text-[#0a0a0a] dark:text-white mt-6 mb-2">
           {renderInlineMarkdown(trimmed.replace(/^###\s+/, ''), tText)}
         </h3>
       );
@@ -353,7 +353,7 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
     else if (trimmed.startsWith('#### ')) {
       flushAll(keyPrefix);
       elements.push(
-        <h4 key={keyPrefix} className="text-sm sm:text-base font-bold text-[#0a0a0a] mt-4 mb-2">
+        <h4 key={keyPrefix} className="text-sm sm:text-base font-bold text-[#0a0a0a] dark:text-white mt-4 mb-2">
           {renderInlineMarkdown(trimmed.replace(/^####\s+/, ''), tText)}
         </h4>
       );
@@ -362,7 +362,7 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({
     else if (trimmed === '---' || trimmed === '***') {
       flushAll(keyPrefix);
       elements.push(
-        <hr key={keyPrefix} className="my-8 border-[#e6e8ec]" />
+        <hr key={keyPrefix} className="my-8 border-[#e6e8ec] dark:border-zinc-800" />
       );
     }
     // Blockquote: >

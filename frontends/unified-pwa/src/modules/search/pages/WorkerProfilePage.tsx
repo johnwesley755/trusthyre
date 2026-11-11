@@ -231,7 +231,7 @@ export const WorkerProfilePage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen p-2 sm:p-3 bg-white font-['Onest',system-ui,sans-serif] text-[#0a0a0a]">
+    <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <SeoHead
         title={pageTitle}
         description={metaDesc}
@@ -251,7 +251,7 @@ export const WorkerProfilePage = () => {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
           <button 
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#717784] hover:text-[#0a0a0a] transition-colors cursor-pointer self-start py-1"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white transition-colors cursor-pointer self-start py-1"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Back to Candidate Directory</span>
@@ -260,14 +260,14 @@ export const WorkerProfilePage = () => {
           <div className="flex items-center gap-2 self-end sm:self-auto">
             <button 
               onClick={() => setIsResumeModalOpen(true)}
-              className="px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-medium uppercase shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+              className="px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-full text-xs font-medium uppercase shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               <FileText className="w-3.5 h-3.5" />
               <span>View CV</span>
             </button>
             <button 
               onClick={handleShare}
-              className="p-2 bg-white rounded-full shadow-2xs border border-slate-200/80 hover:bg-slate-50 transition-all text-slate-500 hover:text-[#0A1931] cursor-pointer flex items-center gap-1 text-xs font-medium"
+              className="p-2 bg-white dark:bg-[#121215] rounded-full shadow-2xs border border-slate-200/80 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all text-slate-500 dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-white cursor-pointer flex items-center gap-1 text-xs font-medium"
               title="Share Profile"
             >
               <Share2 className="w-3.5 h-3.5" />
@@ -276,8 +276,8 @@ export const WorkerProfilePage = () => {
               onClick={handleToggleSave}
               className={`p-2 rounded-full shadow-2xs border transition-all cursor-pointer flex items-center gap-1 text-xs font-medium ${
                 isSaved 
-                  ? 'bg-[#0f2f63]/10 border-[#0f2f63]/20 text-[#0f2f63]' 
-                  : 'bg-white border-slate-200/80 text-slate-500 hover:bg-slate-50 hover:text-[#0A1931]'
+                  ? 'bg-[#0f2f63]/10 dark:bg-blue-950/40 border-[#0f2f63]/20 dark:border-blue-900/40 text-[#0f2f63] dark:text-sky-300' 
+                  : 'bg-white dark:bg-[#121215] border-slate-200/80 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-[#0A1931] dark:hover:text-white'
               }`}
               title={isSaved ? 'Remove from Saved' : 'Save Profile'}
             >
@@ -287,7 +287,7 @@ export const WorkerProfilePage = () => {
         </div>
 
         {/* 1. HERO PROFILE CARD */}
-        <div className="bg-white rounded-[2rem] p-6 sm:p-8 border border-slate-200/80 relative overflow-hidden shadow-xs">
+        <div className="bg-white dark:bg-[#121215] rounded-[2rem] p-6 sm:p-8 border border-slate-200/80 dark:border-zinc-800 relative overflow-hidden shadow-xs">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             
             {/* Identity & Avatar Cluster */}
@@ -299,7 +299,7 @@ export const WorkerProfilePage = () => {
                   size="xl" 
                 />
                 {isVerified && (
-                  <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white rounded-full p-1 border-2 border-white shadow-xs">
+                  <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white rounded-full p-1 border-2 border-white dark:border-zinc-900 shadow-xs">
                     <Check className="w-3.5 h-3.5" />
                   </div>
                 )}
@@ -307,38 +307,38 @@ export const WorkerProfilePage = () => {
 
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-[#0A1931]">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-[#0A1931] dark:text-white">
                     {worker?.name || 'Candidate Specialist'}
                   </h1>
                   <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
                     isVerified 
-                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
-                      : 'bg-slate-100 text-slate-600 border border-slate-200/60'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' 
+                      : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200/60 dark:border-zinc-700'
                   }`}>
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> 
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> 
                     <span>{isVerified ? 'Biometric Verified' : 'Pending Verification'}</span>
                   </span>
 
                   {/* ⭐ Worker Rating Star Badge */}
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200/80 rounded-full shadow-2xs">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800 rounded-full shadow-2xs">
                     <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                    <span className="text-xs font-extrabold text-amber-900">
+                    <span className="text-xs font-extrabold text-amber-900 dark:text-amber-300">
                       {ratingsData.length > 0
                         ? (ratingsData.reduce((acc: number, r: any) => acc + (r.score || 0), 0) / ratingsData.length).toFixed(1)
                         : (worker?.rating ? Number(worker.rating).toFixed(1) : '5.0')}
                     </span>
-                    <span className="text-[10px] text-amber-700/80 font-medium">
+                    <span className="text-[10px] text-amber-700/80 dark:text-amber-400 font-medium">
                       ({ratingsData.length > 0 ? ratingsData.length : '1'})
                     </span>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
-                  <span className="px-3 py-1 bg-[#0f2f63]/10 text-[#0f2f63] rounded-full font-semibold">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 dark:text-zinc-400">
+                  <span className="px-3 py-1 bg-[#0f2f63]/10 dark:bg-blue-950/40 text-[#0f2f63] dark:text-sky-300 rounded-full font-semibold">
                     {currentTrade}
                   </span>
                   <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#0f2f63]" />
+                    <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
                     <span>{worker?.city || worker?.location || 'Local Matching Area'}</span>
                   </span>
                   <span>•</span>
@@ -346,7 +346,7 @@ export const WorkerProfilePage = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium border border-emerald-100">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-medium border border-emerald-100 dark:border-emerald-800">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span>{worker?.availability === 'AVAILABLE' ? 'Available for Direct Hire' : 'Active on Shift'}</span>
                   </span>
@@ -380,7 +380,7 @@ export const WorkerProfilePage = () => {
 
               <button
                 onClick={() => setIsResumeModalOpen(true)}
-                className="w-full sm:w-auto px-5 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full font-medium text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer uppercase active:scale-95"
+                className="w-full sm:w-auto px-5 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-full font-medium text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer uppercase active:scale-95"
               >
                 <FileText className="w-3.5 h-3.5 text-white" /> 
                 <span>View Digital CV</span>
@@ -397,40 +397,40 @@ export const WorkerProfilePage = () => {
           <div className="col-span-1 lg:col-span-8 space-y-6 order-1 lg:order-2">
             
             {/* Academic & Education Background */}
-            <div className="bg-white rounded-[1.75rem] p-6 border border-slate-200/80 shadow-xs space-y-4">
+            <div className="bg-white dark:bg-[#121215] rounded-[1.75rem] p-6 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-extrabold uppercase text-[#0A1931] flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-[#0f2f63]" /> 
+                <h3 className="text-sm font-extrabold uppercase text-[#0A1931] dark:text-white flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" /> 
                   <span>Academic Background & Education</span>
                 </h3>
                 {w?.highestEducation && (
-                  <span className="px-3 py-1 bg-slate-50/80 text-[#0f2f63] text-xs font-semibold rounded-full border border-slate-200/60">
+                  <span className="px-3 py-1 bg-slate-50/80 dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-300 text-xs font-semibold rounded-full border border-slate-200/60 dark:border-zinc-800">
                     {w.highestEducation}
                   </span>
                 )}
               </div>
 
               <div className="grid sm:grid-cols-2 gap-3 pt-1">
-                <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Highest Qualification</span>
-                  <p className="text-xs font-bold text-[#0A1931]">
+                <div className="p-4 bg-slate-50/80 dark:bg-[#1C1C21] rounded-2xl border border-slate-100 dark:border-zinc-800 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase">Highest Qualification</span>
+                  <p className="text-xs font-bold text-[#0A1931] dark:text-white">
                     {w?.highestEducation || 'Graduate / Diploma'}
                   </p>
-                  <span className="inline-block text-[11px] font-semibold text-emerald-600">
+                  <span className="inline-block text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                     {w?.isPursuingEducation ? '• Currently Studying / Enrolled' : '• Course Completed'}
                   </span>
                 </div>
 
-                <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Degree & Specialization</span>
-                  <p className="text-xs font-bold text-[#0A1931]">
+                <div className="p-4 bg-slate-50/80 dark:bg-[#1C1C21] rounded-2xl border border-slate-100 dark:border-zinc-800 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase">Degree & Specialization</span>
+                  <p className="text-xs font-bold text-[#0A1931] dark:text-white">
                     {w?.degree || w?.specialization || w?.schoolMedium ? (
                       `${w?.degree || ''} ${w?.specialization ? `(${w.specialization})` : ''} ${w?.schoolMedium ? `- ${w.schoolMedium}` : ''}`.trim()
                     ) : (
                       'General Curriculum'
                     )}
                   </p>
-                  <p className="text-[11px] text-slate-500 font-medium">
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">
                     {w?.collegeName || 'Recognized Institution / University'}
                   </p>
                 </div>
@@ -438,30 +438,30 @@ export const WorkerProfilePage = () => {
             </div>
 
             {/* Language Competencies */}
-            <div className="bg-white rounded-[1.75rem] p-6 border border-slate-200/80 shadow-xs space-y-4">
-              <h3 className="text-sm font-extrabold uppercase text-[#0A1931] flex items-center gap-2">
-                <Languages className="w-4 h-4 text-[#0f2f63]" /> 
+            <div className="bg-white dark:bg-[#121215] rounded-[1.75rem] p-6 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+              <h3 className="text-sm font-extrabold uppercase text-[#0A1931] dark:text-white flex items-center gap-2">
+                <Languages className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" /> 
                 <span>Language Competencies</span>
               </h3>
 
               <div className="grid sm:grid-cols-2 gap-3 pt-1">
-                <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">English Proficiency</span>
-                  <p className="text-xs font-bold text-[#0A1931]">{englishLevelLabel}</p>
-                  <p className="text-[11px] text-slate-500">Workplace communication readiness</p>
+                <div className="p-4 bg-slate-50/80 dark:bg-[#1C1C21] rounded-2xl border border-slate-100 dark:border-zinc-800 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase">English Proficiency</span>
+                  <p className="text-xs font-bold text-[#0A1931] dark:text-white">{englishLevelLabel}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400">Workplace communication readiness</p>
                 </div>
 
-                <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Languages Spoken</span>
+                <div className="p-4 bg-slate-50/80 dark:bg-[#1C1C21] rounded-2xl border border-slate-100 dark:border-zinc-800 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase">Languages Spoken</span>
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {w?.languagesKnown && w.languagesKnown.length > 0 ? (
                       w.languagesKnown.map((lang: string, idx: number) => (
-                        <span key={idx} className="px-2.5 py-0.5 bg-slate-100/90 text-slate-700 text-xs font-medium rounded-full border border-slate-200/60 shadow-2xs">
+                        <span key={idx} className="px-2.5 py-0.5 bg-slate-100/90 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 text-xs font-medium rounded-full border border-slate-200/60 dark:border-zinc-700 shadow-2xs">
                           {lang}
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-500">English, Hindi, Tamil</span>
+                      <span className="text-xs text-slate-500 dark:text-zinc-400">English, Hindi, Tamil</span>
                     )}
                   </div>
                 </div>
@@ -469,23 +469,23 @@ export const WorkerProfilePage = () => {
             </div>
 
             {/* Target Job Roles & Skills */}
-            <div className="bg-white rounded-[1.75rem] p-6 border border-slate-200/80 shadow-xs space-y-4">
-              <h3 className="text-sm font-extrabold uppercase text-[#0A1931] flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-[#0f2f63]" /> 
+            <div className="bg-white dark:bg-[#121215] rounded-[1.75rem] p-6 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+              <h3 className="text-sm font-extrabold uppercase text-[#0A1931] dark:text-white flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" /> 
                 <span>Target Job Roles & Verified Skills</span>
               </h3>
               
               <div className="space-y-4 pt-1">
                 {w?.preferredRoles && w.preferredRoles.length > 0 && (
                   <div>
-                    <span className="text-xs font-semibold text-slate-500 block mb-2">Preferred Roles:</span>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 block mb-2">Preferred Roles:</span>
                     <div className="flex flex-wrap gap-2">
                       {w.preferredRoles.map((role: string, idx: number) => (
                         <div 
                           key={idx} 
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50/80 border border-slate-200/60 text-[#0f2f63] font-semibold text-xs shadow-2xs"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50/80 dark:bg-[#1C1C21] border border-slate-200/60 dark:border-zinc-800 text-[#0f2f63] dark:text-sky-300 font-semibold text-xs shadow-2xs"
                         >
-                          <Award className="w-3.5 h-3.5 text-[#0f2f63]" />
+                          <Award className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
                           <span>{role}</span>
                         </div>
                       ))}
@@ -494,20 +494,20 @@ export const WorkerProfilePage = () => {
                 )}
 
                 <div>
-                  <span className="text-xs font-semibold text-slate-500 block mb-2">Verified Technical Skills:</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 block mb-2">Verified Technical Skills:</span>
                   <div className="flex flex-wrap gap-2">
                     {worker?.skills && worker.skills.length > 0 ? (
                       worker.skills.map((skill, idx) => (
                         <div 
                           key={idx} 
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50/80 border border-slate-200/60 text-slate-700 font-medium text-xs shadow-2xs hover:border-[#0f2f63]/40 transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50/80 dark:bg-[#1C1C21] border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 font-medium text-xs shadow-2xs hover:border-[#0f2f63]/40 dark:hover:border-zinc-700 transition-colors"
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span>{skill.trim()}</span>
                         </div>
                       ))
                     ) : (
-                      <p className="text-slate-500 italic text-xs">No specialized skills listed.</p>
+                      <p className="text-slate-500 dark:text-zinc-400 italic text-xs">No specialized skills listed.</p>
                     )}
                   </div>
                 </div>
@@ -516,22 +516,22 @@ export const WorkerProfilePage = () => {
 
             {/* Professional Summary / Bio */}
             {worker?.bio && (
-              <div className="bg-white rounded-[1.75rem] p-6 border border-slate-200/80 shadow-xs space-y-3">
-                <h3 className="text-sm font-extrabold uppercase text-[#0A1931]">Professional Summary</h3>
-                <p className="text-slate-700 text-xs sm:text-sm font-normal leading-relaxed bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
+              <div className="bg-white dark:bg-[#121215] rounded-[1.75rem] p-6 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-3">
+                <h3 className="text-sm font-extrabold uppercase text-[#0A1931] dark:text-white">Professional Summary</h3>
+                <p className="text-slate-700 dark:text-zinc-300 text-xs sm:text-sm font-normal leading-relaxed bg-slate-50/80 dark:bg-[#1C1C21] p-4 rounded-2xl border border-slate-100 dark:border-zinc-800">
                   {worker.bio}
                 </p>
               </div>
             )}
 
             {/* 📜 Digital Work History & Verified Shift Records */}
-            <div className="bg-white rounded-[1.75rem] p-6 border border-slate-200/80 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                <h3 className="text-sm font-extrabold uppercase text-[#0A1931] flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-[#0f2f63]" /> 
+            <div className="bg-white dark:bg-[#121215] rounded-[1.75rem] p-6 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
+                <h3 className="text-sm font-extrabold uppercase text-[#0A1931] dark:text-white flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" /> 
                   <span>Digital Work History & Shift Records</span>
                 </h3>
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60">
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900/40">
                   {workHistory.length} Verified Records
                 </span>
               </div>
@@ -546,41 +546,41 @@ export const WorkerProfilePage = () => {
                     return (
                       <div 
                         key={item.id || idx} 
-                        className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 hover:border-[#0f2f63]/30 transition-all space-y-2"
+                        className="p-4 rounded-2xl bg-slate-50/80 dark:bg-[#1C1C21] border border-slate-200/70 dark:border-zinc-800 hover:border-[#0f2f63]/30 dark:hover:border-zinc-700 transition-all space-y-2"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="text-sm font-bold text-[#0A1931]">{item.roleTitle}</h4>
+                              <h4 className="text-sm font-bold text-[#0A1931] dark:text-white">{item.roleTitle}</h4>
                               {isPlatformVerified ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
-                                  <BadgeCheck className="w-3 h-3 text-emerald-600" /> TrustHyre Completed Shift
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800">
+                                  <BadgeCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> TrustHyre Completed Shift
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200">
-                                  <CheckCircle2 className="w-3 h-3 text-blue-600" /> Prior Industry Record
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-[10px] font-bold border border-blue-200 dark:border-blue-800">
+                                  <CheckCircle2 className="w-3 h-3 text-blue-600 dark:text-blue-400" /> Prior Industry Record
                                 </span>
                               )}
                             </div>
-                            <p className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                            <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
                               <Building2 className="w-3.5 h-3.5 text-slate-400" />
                               <span>{item.companyName}</span>
                               {item.city && (
                                 <>
-                                  <span className="text-slate-300">•</span>
-                                  <span className="text-slate-500">{item.city}</span>
+                                  <span className="text-slate-300 dark:text-zinc-600">•</span>
+                                  <span className="text-slate-500 dark:text-zinc-400">{item.city}</span>
                                 </>
                               )}
                             </p>
                           </div>
-                          <span className="text-[11px] font-medium text-slate-500 shrink-0 flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+                          <span className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 shrink-0 flex items-center gap-1 bg-white dark:bg-[#121215] px-2.5 py-1 rounded-lg border border-slate-200 dark:border-zinc-800">
                             <Clock className="w-3 h-3 text-slate-400" />
                             {startDateText} - {endDateText}
                           </span>
                         </div>
 
                         {item.description && (
-                          <p className="text-xs text-slate-600 leading-relaxed bg-white/70 p-2.5 rounded-xl border border-slate-100">
+                          <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed bg-white/70 dark:bg-[#121215] p-2.5 rounded-xl border border-slate-100 dark:border-zinc-800">
                             {item.description}
                           </p>
                         )}
@@ -589,29 +589,29 @@ export const WorkerProfilePage = () => {
                   })}
                 </div>
               ) : (
-                <div className="p-6 text-center rounded-2xl bg-slate-50/60 border border-dashed border-slate-200 space-y-2">
-                  <Briefcase className="w-8 h-8 text-slate-300 mx-auto" />
-                  <p className="text-xs font-bold text-slate-600">No previous external shifts logged yet</p>
-                  <p className="text-[11px] text-slate-500">Completed jobs and shifts booked on TrustHyre will automatically display here with platform verification checkmarks.</p>
+                <div className="p-6 text-center rounded-2xl bg-slate-50/60 dark:bg-[#1C1C21] border border-dashed border-slate-200 dark:border-zinc-800 space-y-2">
+                  <Briefcase className="w-8 h-8 text-slate-300 dark:text-zinc-600 mx-auto" />
+                  <p className="text-xs font-bold text-slate-600 dark:text-zinc-300">No previous external shifts logged yet</p>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400">Completed jobs and shifts booked on TrustHyre will automatically display here with platform verification checkmarks.</p>
                 </div>
               )}
             </div>
 
             {/* ⭐ Employer Ratings & Reviews Showcase */}
-            <div className="bg-white rounded-[1.75rem] p-6 border border-slate-200/80 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                <h3 className="text-sm font-extrabold uppercase text-[#0A1931] flex items-center gap-2">
+            <div className="bg-white dark:bg-[#121215] rounded-[1.75rem] p-6 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
+                <h3 className="text-sm font-extrabold uppercase text-[#0A1931] dark:text-white flex items-center gap-2">
                   <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> 
                   <span>Employer Ratings & Verified Feedback</span>
                 </h3>
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full">
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-full">
                   <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                  <span className="text-xs font-extrabold text-amber-900">
+                  <span className="text-xs font-extrabold text-amber-900 dark:text-amber-300">
                     {ratingsData.length > 0
                       ? (ratingsData.reduce((acc: number, r: any) => acc + (r.score || 0), 0) / ratingsData.length).toFixed(1)
                       : (worker?.rating ? Number(worker.rating).toFixed(1) : '5.0')}
                   </span>
-                  <span className="text-[10px] text-amber-700 font-semibold">
+                  <span className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
                     ({ratingsData.length > 0 ? ratingsData.length : '1'} {ratingsData.length === 1 ? 'review' : 'reviews'})
                   </span>
                 </div>
@@ -622,44 +622,44 @@ export const WorkerProfilePage = () => {
                   {ratingsData.map((review: any, idx: number) => (
                     <div 
                       key={review.id || idx}
-                      className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 space-y-2"
+                      className="p-4 rounded-2xl bg-slate-50/80 dark:bg-[#1C1C21] border border-slate-200/70 dark:border-zinc-800 space-y-2"
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs font-bold text-[#0A1931]">
+                          <p className="text-xs font-bold text-[#0A1931] dark:text-white">
                             {review.reviewer?.companyName || review.reviewerName || 'Verified Employer'}
                           </p>
-                          <p className="text-[11px] text-slate-500">
+                          <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                             {review.job?.title || review.jobTitle || 'Verified Shift Assignment'}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-slate-200">
+                        <div className="flex items-center gap-1 bg-white dark:bg-[#121215] px-2 py-1 rounded-lg border border-slate-200 dark:border-zinc-800">
                           {Array.from({ length: 5 }).map((_, sIdx) => (
                             <Star 
                               key={sIdx} 
-                              className={`w-3 h-3 ${sIdx < (review.score || 5) ? 'text-amber-500 fill-amber-500' : 'text-slate-200'}`} 
+                              className={`w-3 h-3 ${sIdx < (review.score || 5) ? 'text-amber-500 fill-amber-500' : 'text-slate-200 dark:text-zinc-700'}`} 
                             />
                           ))}
                         </div>
                       </div>
                       {review.comment && (
-                        <p className="text-xs text-slate-600 italic bg-white/70 p-2.5 rounded-xl border border-slate-100">
+                        <p className="text-xs text-slate-600 dark:text-zinc-300 italic bg-white/70 dark:bg-[#121215] p-2.5 rounded-xl border border-slate-100 dark:border-zinc-800">
                           "{review.comment}"
                         </p>
                       )}
-                      <p className="text-[10px] text-slate-400">
+                      <p className="text-[10px] text-slate-400 dark:text-zinc-500">
                         {review.createdAt ? new Date(review.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Verified Feedback'}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="p-5 rounded-2xl bg-emerald-50/50 border border-emerald-100 space-y-1.5 text-center">
-                  <div className="flex items-center justify-center gap-1 text-emerald-700">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <div className="p-5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-1.5 text-center">
+                  <div className="flex items-center justify-center gap-1 text-emerald-700 dark:text-emerald-400">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span className="text-xs font-bold">100% Verified Trust Rating</span>
                   </div>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-xs text-slate-600 dark:text-zinc-300">
                     Candidate currently holds a pristine <strong>{worker?.rating ? Number(worker.rating).toFixed(1) : '5.0'} / 5.0</strong> trust and reliability standing based on identity screening and onboarding evaluations.
                   </p>
                 </div>
@@ -672,14 +672,14 @@ export const WorkerProfilePage = () => {
           <div className="col-span-1 lg:col-span-4 space-y-6 order-2 lg:order-1">
             
             {/* Recruiter Verified Resume Card */}
-            <div className="rounded-[1.75rem] border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0f2f63]/10 text-[#0f2f63] text-xs font-semibold">
+            <div className="rounded-[1.75rem] border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-[#121215] p-6 shadow-xs space-y-4">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0f2f63]/10 dark:bg-blue-950/40 text-[#0f2f63] dark:text-sky-300 text-xs font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Verified Worker Resume</span>
               </div>
               <div>
-                <h4 className="text-sm font-extrabold text-[#0A1931]">Standard Formatted CV</h4>
-                <p className="text-slate-500 text-xs mt-1 leading-relaxed">
+                <h4 className="text-sm font-extrabold text-[#0A1931] dark:text-white">Standard Formatted CV</h4>
+                <p className="text-slate-500 dark:text-zinc-400 text-xs mt-1 leading-relaxed">
                   View or download this worker's complete verified profile and work documents.
                 </p>
               </div>
@@ -688,7 +688,7 @@ export const WorkerProfilePage = () => {
                 <button
                   type="button"
                   onClick={() => setIsResumeModalOpen(true)}
-                  className="w-full py-2.5 px-4 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-medium uppercase flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
+                  className="w-full py-2.5 px-4 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-medium uppercase flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
                 >
                   <FileText className="w-4 h-4" />
                   <span>View Verified CV</span>
@@ -699,7 +699,7 @@ export const WorkerProfilePage = () => {
                     setIsResumeModalOpen(true);
                     setTimeout(() => window.print(), 300);
                   }}
-                  className="w-full py-2.5 px-4 rounded-full bg-slate-50 hover:bg-slate-100 text-[#0A1931] text-xs font-medium uppercase flex items-center justify-center gap-2 border border-slate-200 transition-all cursor-pointer active:scale-95"
+                  className="w-full py-2.5 px-4 rounded-full bg-slate-50 dark:bg-[#1C1C21] hover:bg-slate-100 dark:hover:bg-zinc-800 text-[#0A1931] dark:text-zinc-200 text-xs font-medium uppercase flex items-center justify-center gap-2 border border-slate-200 dark:border-zinc-800 transition-all cursor-pointer active:scale-95"
                 >
                   <Download className="w-4 h-4" />
                   <span>Print / Save PDF</span>
@@ -708,56 +708,56 @@ export const WorkerProfilePage = () => {
             </div>
 
             {/* Candidate Personal Contact Profile */}
-            <div className="bg-white rounded-[1.75rem] p-6 border border-slate-200/80 shadow-xs space-y-4">
-              <h3 className="text-xs font-bold uppercase text-slate-500 flex items-center gap-2 pb-2 border-b border-slate-100">
-                <UserIcon className="w-4 h-4 text-[#0f2f63]" /> 
+            <div className="bg-white dark:bg-[#121215] rounded-[1.75rem] p-6 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+              <h3 className="text-xs font-bold uppercase text-slate-500 dark:text-zinc-400 flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-zinc-800">
+                <UserIcon className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" /> 
                 <span>Contact & Personal Details</span>
               </h3>
               
               <div className="space-y-3 text-xs">
                 {displayDob && (
-                  <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                    <span className="text-slate-500 font-medium flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-[#0f2f63]" /> Date of Birth
+                  <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-zinc-800">
+                    <span className="text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" /> Date of Birth
                     </span>
-                    <span className="font-bold text-[#0A1931]">{displayDob}</span>
+                    <span className="font-bold text-[#0A1931] dark:text-white">{displayDob}</span>
                   </div>
                 )}
 
                 {displayGender && (
-                  <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                    <span className="text-slate-500 font-medium flex items-center gap-1.5">
-                      <UserIcon className="w-3.5 h-3.5 text-[#0f2f63]" /> Gender
+                  <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-zinc-800">
+                    <span className="text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-1.5">
+                      <UserIcon className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" /> Gender
                     </span>
-                    <span className="font-bold text-[#0A1931]">{displayGender}</span>
+                    <span className="font-bold text-[#0A1931] dark:text-white">{displayGender}</span>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500 font-medium flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-[#0f2f63]" /> Phone
+                <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-zinc-800">
+                  <span className="text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" /> Phone
                   </span>
                   {user ? (
                     worker?.phoneNumber ? (
                       <a
                         href={`tel:${worker.phoneNumber.replace(/\D/g, '')}`}
-                        className="font-bold text-[#0f2f63] hover:underline flex items-center gap-1"
+                        className="font-bold text-[#0f2f63] dark:text-sky-400 hover:underline flex items-center gap-1"
                         title="Call candidate directly"
                       >
                         <span>{worker.phoneNumber}</span>
                       </a>
                     ) : (
-                      <span className="font-bold text-[#0A1931]">Disclosed on Hire</span>
+                      <span className="font-bold text-[#0A1931] dark:text-white">Disclosed on Hire</span>
                     )
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-slate-400">
+                      <span className="font-mono text-slate-400 dark:text-zinc-500">
                         {worker?.phoneNumber ? `${worker.phoneNumber.slice(0, 5)}••••••` : '+91 98•••• ••42'}
                       </span>
                       <button
                         type="button"
                         onClick={() => navigate('/sign-in')}
-                        className="px-2.5 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-[#0f2f63] font-bold text-[11px] border border-slate-200 transition-all cursor-pointer"
+                        className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-[#0f2f63] dark:text-sky-300 font-bold text-[11px] border border-slate-200 dark:border-zinc-700 transition-all cursor-pointer"
                       >
                         Sign in to view
                       </button>
@@ -765,21 +765,21 @@ export const WorkerProfilePage = () => {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500 font-medium flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-[#0f2f63]" /> Email
+                <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-zinc-800">
+                  <span className="text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" /> Email
                   </span>
-                  <span className="font-bold text-[#0A1931] truncate max-w-[150px]" title={worker?.email}>
+                  <span className="font-bold text-[#0A1931] dark:text-white truncate max-w-[150px]" title={worker?.email}>
                     {worker?.email || 'Registered Email'}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-slate-500 font-medium flex items-center gap-1.5">
-                    <MessageSquare className="w-3.5 h-3.5 text-emerald-600" /> WhatsApp Direct
+                  <span className="text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> WhatsApp Direct
                   </span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    w?.whatsappOptIn !== false ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                    w?.whatsappOptIn !== false ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400'
                   }`}>
                     {w?.whatsappOptIn !== false ? 'Enabled' : 'Disabled'}
                   </span>
@@ -788,26 +788,26 @@ export const WorkerProfilePage = () => {
             </div>
 
             {/* Location & Mobility Card */}
-            <div className="bg-white rounded-[1.75rem] p-6 border border-slate-200/80 shadow-xs space-y-4">
-              <h3 className="text-xs font-bold uppercase text-slate-500 flex items-center gap-2 pb-2 border-b border-slate-100">
-                <MapPin className="w-4 h-4 text-[#0f2f63]" /> 
+            <div className="bg-white dark:bg-[#121215] rounded-[1.75rem] p-6 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+              <h3 className="text-xs font-bold uppercase text-slate-500 dark:text-zinc-400 flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-zinc-800">
+                <MapPin className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" /> 
                 <span>Location & Mobility</span>
               </h3>
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <span className="text-slate-500 font-medium block">Operational Base</span>
-                  <p className="font-bold text-[#0A1931] text-xs mt-0.5">
+                  <span className="text-slate-500 dark:text-zinc-400 font-medium block">Operational Base</span>
+                  <p className="font-bold text-[#0A1931] dark:text-white text-xs mt-0.5">
                     {worker?.address || worker?.city || worker?.location || 'Local Matching Hub'}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100">
-                  <span className="text-slate-500 font-medium block">Relocation Willingness</span>
-                  <p className={`font-bold mt-0.5 flex items-center gap-1.5 ${w?.willingToRelocate ? 'text-emerald-700' : 'text-[#0A1931]'}`}>
+                <div className="pt-2 border-t border-slate-100 dark:border-zinc-800">
+                  <span className="text-slate-500 dark:text-zinc-400 font-medium block">Relocation Willingness</span>
+                  <p className={`font-bold mt-0.5 flex items-center gap-1.5 ${w?.willingToRelocate ? 'text-emerald-700 dark:text-emerald-400' : 'text-[#0A1931] dark:text-white'}`}>
                     {w?.willingToRelocate ? (
                       <>
-                        <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                        <Globe className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                         <span>Willing to travel for out-of-town jobs</span>
                       </>
                     ) : (
@@ -817,11 +817,11 @@ export const WorkerProfilePage = () => {
                 </div>
 
                 {w?.preferredCities && w.preferredCities.length > 0 && (
-                  <div className="pt-2 border-t border-slate-100">
-                    <span className="text-slate-500 font-medium block mb-1.5">Target Cities:</span>
+                  <div className="pt-2 border-t border-slate-100 dark:border-zinc-800">
+                    <span className="text-slate-500 dark:text-zinc-400 font-medium block mb-1.5">Target Cities:</span>
                     <div className="flex flex-wrap gap-1.5">
                       {w.preferredCities.map((city: string, idx: number) => (
-                        <span key={idx} className="px-2.5 py-0.5 bg-slate-50 rounded-full text-[11px] font-medium text-[#0A1931] border border-slate-200/60">
+                        <span key={idx} className="px-2.5 py-0.5 bg-slate-50 dark:bg-zinc-800 rounded-full text-[11px] font-medium text-[#0A1931] dark:text-zinc-200 border border-slate-200/60 dark:border-zinc-700">
                           {city}
                         </span>
                       ))}
