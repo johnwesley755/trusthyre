@@ -14,6 +14,8 @@ export interface RequestScope {
   pool?: any;
   env?: any;
   ctx?: any;
+  currentUserId?: string;
+  currentUserRole?: string;
 }
 
 export const requestContextStorage = new AsyncLocalStorage<RequestScope>();
@@ -182,5 +184,26 @@ export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
     return typeof val === 'function' ? val.bind(client) : val;
   }
 });
+
+/**
+ * Runs a transactional query block bound to explicit PostgreSQL RLS session variables.
+ * Automatically clears on transaction completion to prevent connection pooling context bleed.
+ */
+export const withRlsContext = async <T>(
+  client: PrismaClient,
+  userId: string | undefined,
+  role: string | undefined,
+  fn: (tx: any) => Promise<T>
+): Promise<T> => {
+  return (client as any).$transaction(async (tx: any) => {
+    if (userId) {
+      await tx.$executeRawUnsafe(`SELECT set_config('app.current_user_id', $1, true);`, userId);
+    }
+    if (role) {
+      await tx.$executeRawUnsafe(`SELECT set_config('app.current_user_role', $1, true);`, role);
+    }
+    return fn(tx);
+  });
+};
 
 export default prisma;

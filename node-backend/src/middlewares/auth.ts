@@ -1,5 +1,6 @@
 import { Context, Next } from 'hono';
 import jwt from 'jsonwebtoken';
+import { requestContextStorage } from '../config/prisma';
 
 export const authenticateJWT = async (c: Context, next: Next) => {
   const authHeader = c.req.header('authorization');
@@ -12,8 +13,16 @@ export const authenticateJWT = async (c: Context, next: Next) => {
       // bindings are usually on c.env. 
       const secret = (c.env?.JWT_SECRET as string) || (process.env.JWT_SECRET as string);
       
-      const user = jwt.verify(token, secret);
+      const user: any = jwt.verify(token, secret);
       c.set('user', user);
+
+      // Bind authenticated claims to Request Context for RLS
+      const store = requestContextStorage.getStore();
+      if (store && user) {
+        store.currentUserId = user.sub;
+        store.currentUserRole = user.role;
+      }
+
       await next();
     } catch (err) {
       return c.json({ success: false, message: 'Forbidden: Invalid token' }, 403);
@@ -29,8 +38,15 @@ export const optionalAuth = async (c: Context, next: Next) => {
     const token = authHeader.split(' ')[1];
     try {
       const secret = (c.env?.JWT_SECRET as string) || (process.env.JWT_SECRET as string);
-      const user = jwt.verify(token, secret);
+      const user: any = jwt.verify(token, secret);
       c.set('user', user);
+
+      // Bind optional claims to Request Context for RLS
+      const store = requestContextStorage.getStore();
+      if (store && user) {
+        store.currentUserId = user.sub;
+        store.currentUserRole = user.role;
+      }
     } catch (err) {
       // ignore invalid tokens for optional auth
     }
