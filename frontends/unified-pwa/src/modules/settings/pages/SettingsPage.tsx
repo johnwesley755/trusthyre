@@ -427,15 +427,15 @@ export const SettingsPage: React.FC = () => {
         {/* Top Header & Breadcrumb Bar */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-zinc-800 dark:border-zinc-800">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
               <span>Account Hub</span>
               <span>/</span>
-              <span className="text-[#0f2f63] font-extrabold">{tabItems.find(t => t.id === activeTab)?.label}</span>
+              <span className="text-[#0f2f63] dark:text-[#38BDF8] font-extrabold">{tabItems.find(t => t.id === activeTab)?.label}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#0A1931] dark:text-white tracking-tight">
               Settings & Preferences
             </h1>
-            <p className="text-slate-500 dark:text-zinc-400 dark:text-zinc-400 font-medium text-xs sm:text-sm max-w-2xl leading-relaxed">
+            <p className="text-slate-500 dark:text-zinc-400 font-medium text-xs sm:text-sm max-w-2xl leading-relaxed">
               Configure your profile identity, security credentials, real-time push alerts, and regional marketplace preferences.
             </p>
           </div>
@@ -444,10 +444,10 @@ export const SettingsPage: React.FC = () => {
           <div className="flex items-center gap-2.5 shrink-0">
             <button
               onClick={() => navigate('/notifications')}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-white dark:bg-[#121215] hover:bg-slate-50 dark:bg-[#121215] dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 dark:border-zinc-700 text-xs font-semibold text-slate-700 dark:text-zinc-200 dark:text-zinc-200 shadow-2xs transition-all cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-white dark:bg-[#121215] hover:bg-slate-50 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 text-xs font-semibold text-slate-700 dark:text-zinc-200 shadow-2xs transition-all cursor-pointer active:scale-95"
               title="Go to Notifications Inbox"
             >
-              <Bell className="w-4 h-4 text-[#0f2f63]" />
+              <Bell className="w-4 h-4 text-[#0f2f63] dark:text-[#38BDF8]" />
               <span>Inbox</span>
               {unreadNotificationsCount > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-black">
@@ -501,10 +501,10 @@ export const SettingsPage: React.FC = () => {
                 className={`flex items-center gap-2 px-3.5 py-2.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer flex-1 justify-center ${
                   isActive
                     ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-[#38BDF8] shadow-xs'
-                    : 'text-slate-600 dark:text-zinc-400 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-zinc-800'
+                    : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-zinc-800'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#0f2f63]' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#0f2f63] dark:text-[#38BDF8]' : 'text-slate-400 dark:text-zinc-500'}`} />
                 <span>{tab.label}</span>
                 {tab.badge && (
                   <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[9px] font-black">
@@ -523,7 +523,7 @@ export const SettingsPage: React.FC = () => {
           <aside className="hidden lg:block lg:col-span-4 space-y-6 sticky top-6">
 
             {/* Vertical Navigation Menu */}
-            <div className="bg-white dark:bg-[#09090b] rounded-3xl border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs p-2.5 space-y-1.5">
+            <div className="bg-white dark:bg-[#09090b] rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-xs p-2.5 space-y-1.5">
               {tabItems.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -534,12 +534,12 @@ export const SettingsPage: React.FC = () => {
                     className={`w-full flex items-center justify-between p-3.5 rounded-2xl text-left transition-all cursor-pointer group active:scale-[0.99] ${
                       isActive 
                         ? 'bg-[#0f2f63]/10 dark:bg-blue-950/40 text-[#0f2f63] dark:text-[#38BDF8] border border-[#0f2f63]/20 dark:border-blue-800/40 shadow-2xs' 
-                        : 'text-slate-700 dark:text-zinc-200 dark:text-zinc-300 hover:bg-slate-50 dark:bg-[#121215] dark:hover:bg-[#121215] border border-transparent'
+                        : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-[#121215] border border-transparent'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                        isActive ? 'bg-[#0f2f63] text-white shadow-2xs' : 'bg-slate-100 dark:bg-zinc-800 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 dark:text-zinc-400 group-hover:text-slate-700 dark:text-zinc-200 dark:group-hover:text-zinc-200'
+                        isActive ? 'bg-[#0f2f63] dark:bg-[#0066FF] text-white shadow-2xs' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 group-hover:text-slate-700 dark:group-hover:text-zinc-200'
                       }`}>
                         <Icon className="w-4 h-4" />
                       </div>
@@ -560,7 +560,7 @@ export const SettingsPage: React.FC = () => {
                       </div>
                     </div>
                     <ChevronRight className={`w-4 h-4 shrink-0 transition-transform ${
-                      isActive ? 'text-[#0f2f63] translate-x-0.5' : 'text-slate-300 group-hover:text-slate-400'
+                      isActive ? 'text-[#0f2f63] dark:text-[#38BDF8] translate-x-0.5' : 'text-slate-300 dark:text-zinc-600 group-hover:text-slate-400 dark:group-hover:text-zinc-400'
                     }`} />
                   </button>
                 );
@@ -568,7 +568,7 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             {/* Account Profile Card */}
-            <div className="bg-white dark:bg-[#09090b] rounded-3xl border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs p-5 space-y-4">
+            <div className="bg-white dark:bg-[#09090b] rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-xs p-5 space-y-4">
               <div className="flex items-center gap-3.5">
                 <UserAvatar
                   src={user?.profileImageUrl}
@@ -583,7 +583,7 @@ export const SettingsPage: React.FC = () => {
                     <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-200 flex items-center gap-1 uppercase tracking-wider">
                       <ShieldCheck className="w-3 h-3 text-emerald-600" /> Verified
                     </span>
-                    <span className="text-[10px] font-bold text-[#0f2f63] uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-[#0f2f63] dark:text-[#38BDF8] uppercase tracking-wider">
                       {isEmployer ? 'Hiring Partner' : 'Specialist'}
                     </span>
                   </div>
@@ -594,11 +594,11 @@ export const SettingsPage: React.FC = () => {
               <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-zinc-800">
                 <div className="flex items-center justify-between text-xs font-bold">
                   <span className="text-slate-600 dark:text-zinc-400">Profile Completion</span>
-                  <span className="text-[#0f2f63]">{profileStrength}%</span>
+                  <span className="text-[#0f2f63] dark:text-[#38BDF8]">{profileStrength}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-zinc-800 overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-[#2563c9] to-[#0f2f63] rounded-full transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-[#2563c9] to-[#0f2f63] dark:to-[#38BDF8] rounded-full transition-all duration-500"
                     style={{ width: `${profileStrength}%` }}
                   />
                 </div>
@@ -618,7 +618,7 @@ export const SettingsPage: React.FC = () => {
             {/* TrustHyre Support Help Box */}
             <div className="bg-slate-50 dark:bg-[#121215] rounded-3xl border border-slate-200 dark:border-zinc-800 p-4 space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold text-[#0A1931] dark:text-zinc-200">
-                <HelpCircle className="w-4 h-4 text-[#0f2f63]" />
+                <HelpCircle className="w-4 h-4 text-[#0f2f63] dark:text-[#38BDF8]" />
                 <span>Need Assistance?</span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium leading-relaxed">
@@ -627,7 +627,7 @@ export const SettingsPage: React.FC = () => {
               <div className="pt-1">
                 <a
                   href="mailto:support@trusthyre.com"
-                  className="text-xs font-bold text-[#0f2f63] hover:underline flex items-center gap-1"
+                  className="text-xs font-bold text-[#0f2f63] dark:text-[#38BDF8] hover:underline flex items-center gap-1"
                 >
                   <span>support@trusthyre.com</span>
                   <ArrowUpRight className="w-3 h-3" />
@@ -669,7 +669,7 @@ export const SettingsPage: React.FC = () => {
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-[#0f2f63] uppercase tracking-wide">
+                          <span className="font-bold text-[#0f2f63] dark:text-[#38BDF8] uppercase tracking-wide">
                             {isEmployer ? 'Verified Hiring Partner' : 'Certified Specialist'}
                           </span>
                         </p>
@@ -692,14 +692,14 @@ export const SettingsPage: React.FC = () => {
                   <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs space-y-5">
                     {/* <div className="pb-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                       <div>
-                        <h2 className="text-base font-bold text-[#0A1931]">
+                        <h2 className="text-base font-bold text-[#0A1931] dark:text-white">
                           {isEmployer ? 'Company & Business Details' : 'Personal & Contact Details'}
                         </h2>
                         <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5">
                           Update your official display name, operating location, and public bio.
                         </p>
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2f63] bg-[#0f2f63]/10 px-2.5 py-1 rounded-full border border-[#0f2f63]/20">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2f63] dark:text-[#38BDF8] bg-[#0f2f63]/10 dark:bg-sky-500/10 px-2.5 py-1 rounded-full border border-[#0f2f63]/20 dark:border-sky-500/20">
                         Live Sync
                       </span>
                     </div> */}
@@ -840,7 +840,7 @@ export const SettingsPage: React.FC = () => {
                           <label className="block text-xs font-bold text-slate-700 dark:text-zinc-200">
                             {isEmployer ? 'Company Overview & About' : 'Professional Summary & Bio'}
                           </label>
-                          <span className="text-[11px] text-slate-400 font-medium">
+                          <span className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium">
                             {profileForm.bio.length} / 500
                           </span>
                         </div>
@@ -879,8 +879,8 @@ export const SettingsPage: React.FC = () => {
                   </div>
 
                   {/* Identity Verification & Compliance Banner */}
-                  <div className="bg-white dark:bg-[#09090b] p-5 rounded-[2rem] border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-2xl bg-[#0f2f63]/10 border border-[#0f2f63]/20 flex items-center justify-center text-[#0f2f63] shrink-0">
+                  <div className="bg-white dark:bg-[#09090b] p-5 rounded-[2rem] border border-slate-200 dark:border-zinc-800 shadow-xs flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/20 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0">
                       <ShieldCheck className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
@@ -909,14 +909,14 @@ export const SettingsPage: React.FC = () => {
                   className="space-y-6"
                 >
                   {/* Change Password Card */}
-                  <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs space-y-5">
+                  <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-5">
                     <div className="pb-4 border-b border-slate-100 dark:border-zinc-800">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-2xl bg-[#0f2f63]/10 text-[#0f2f63] flex items-center justify-center border border-[#0f2f63]/20">
+                        <div className="w-9 h-9 rounded-2xl bg-[#0f2f63]/10 dark:bg-sky-500/10 text-[#0f2f63] dark:text-[#38BDF8] flex items-center justify-center border border-[#0f2f63]/20 dark:border-sky-500/20">
                           <Lock className="w-4 h-4" />
                         </div>
                         <div>
-                          <h2 className="text-base font-bold text-[#0A1931]">Change Account Password</h2>
+                          <h2 className="text-base font-bold text-[#0A1931] dark:text-white">Change Account Password</h2>
                           <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
                             Protect your credentials with a strong, multi-factor compliant password.
                           </p>
@@ -969,7 +969,7 @@ export const SettingsPage: React.FC = () => {
                           <div className="mt-2 space-y-1.5">
                             <div className="flex items-center justify-between text-[11px]">
                               <span className="text-slate-500 dark:text-zinc-400 font-medium">Password Strength:</span>
-                              <span className="font-bold text-[#0A1931]">{passwordStrength.label}</span>
+                              <span className="font-bold text-[#0A1931] dark:text-white">{passwordStrength.label}</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                               <div 
@@ -1111,9 +1111,9 @@ export const SettingsPage: React.FC = () => {
                   className="space-y-6"
                 >
                   {/* Notification Channels Card */}
-                  <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs space-y-5">
+                  <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-5">
                     <div className="pb-4 border-b border-slate-100 dark:border-zinc-800">
-                      <h2 className="text-base font-bold text-[#0A1931]">Notification Channels & Delivery</h2>
+                      <h2 className="text-base font-bold text-[#0A1931] dark:text-white">Notification Channels & Delivery</h2>
                       <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5">
                         Customize how and when you receive critical alerts regarding jobs, applications, and messages.
                       </p>
@@ -1123,7 +1123,7 @@ export const SettingsPage: React.FC = () => {
                       {/* Web Push Alerts */}
                       <div className="p-4 rounded-2xl border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/60 flex items-center justify-between gap-4">
                         <div className="flex items-start gap-3.5">
-                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 border border-[#0f2f63]/15 flex items-center justify-center text-[#0f2f63] shrink-0 mt-0.5 shadow-2xs">
+                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/15 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0 mt-0.5 shadow-2xs">
                             <Smartphone className="w-4 h-4" />
                           </div>
                           <div>
@@ -1146,7 +1146,7 @@ export const SettingsPage: React.FC = () => {
                           onClick={() => handleToggle('push_notifications', pushNotifs)}
                           disabled={updateSettingsMutation.isPending}
                           className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer focus:outline-hidden ${
-                            pushNotifs ? 'bg-[#0f2f63]' : 'bg-slate-300'
+                            pushNotifs ? 'bg-[#0f2f63] dark:bg-[#0066FF]' : 'bg-slate-300 dark:bg-zinc-700'
                           }`}
                         >
                           <span
@@ -1160,7 +1160,7 @@ export const SettingsPage: React.FC = () => {
                       {/* Email Notifications */}
                       <div className="p-4 rounded-2xl border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/60 flex items-center justify-between gap-4">
                         <div className="flex items-start gap-3.5">
-                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 border border-[#0f2f63]/15 flex items-center justify-center text-[#0f2f63] shrink-0 mt-0.5 shadow-2xs">
+                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/15 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0 mt-0.5 shadow-2xs">
                             <Mail className="w-4 h-4" />
                           </div>
                           <div>
@@ -1183,7 +1183,7 @@ export const SettingsPage: React.FC = () => {
                           onClick={() => handleToggle('email_notifications', emailNotifs)}
                           disabled={updateSettingsMutation.isPending}
                           className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer focus:outline-hidden ${
-                            emailNotifs ? 'bg-[#0f2f63]' : 'bg-slate-300'
+                            emailNotifs ? 'bg-[#0f2f63] dark:bg-[#0066FF]' : 'bg-slate-300 dark:bg-zinc-700'
                           }`}
                         >
                           <span
@@ -1197,7 +1197,7 @@ export const SettingsPage: React.FC = () => {
                       {/* Market & Intelligence Updates */}
                       <div className="p-4 rounded-2xl border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/60 flex items-center justify-between gap-4">
                         <div className="flex items-start gap-3.5">
-                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 border border-[#0f2f63]/15 flex items-center justify-center text-[#0f2f63] shrink-0 mt-0.5 shadow-2xs">
+                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/15 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0 mt-0.5 shadow-2xs">
                             <Zap className="w-4 h-4" />
                           </div>
                           <div>
@@ -1220,7 +1220,7 @@ export const SettingsPage: React.FC = () => {
                           onClick={() => handleToggle('marketing_emails', marketingNotifs)}
                           disabled={updateSettingsMutation.isPending}
                           className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer focus:outline-hidden ${
-                            marketingNotifs ? 'bg-[#0f2f63]' : 'bg-slate-300'
+                            marketingNotifs ? 'bg-[#0f2f63] dark:bg-[#0066FF]' : 'bg-slate-300 dark:bg-zinc-700'
                           }`}
                         >
                           <span
@@ -1234,10 +1234,10 @@ export const SettingsPage: React.FC = () => {
                   </div>
 
                   {/* Push Diagnostic & Testing Box */}
-                  <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs space-y-4">
+                  <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-zinc-800">
                       <div className="flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-2xl bg-[#0f2f63]/10 border border-[#0f2f63]/20 flex items-center justify-center text-[#0f2f63] shrink-0 mt-0.5 shadow-2xs">
+                        <div className="w-9 h-9 rounded-2xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/20 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0 mt-0.5 shadow-2xs">
                           <BellRing className="w-4 h-4" />
                         </div>
                         <div>
@@ -1298,7 +1298,7 @@ export const SettingsPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+                    <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium leading-relaxed">
                       💡 Tip: Clicking "Send Test Push" triggers an instant message from the backend notification dispatcher directly to your registered browser device token. When clicked, it routes immediately to your Notifications Inbox.
                     </p>
                   </div>
@@ -1318,7 +1318,7 @@ export const SettingsPage: React.FC = () => {
                   {/* Language Selector Card */}
                   <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs space-y-4">
                     <div className="pb-3 border-b border-slate-100 dark:border-zinc-800">
-                      <h3 className="text-base font-bold text-[#0A1931]">Language & Regional Localization</h3>
+                      <h3 className="text-base font-bold text-[#0A1931] dark:text-white">Language & Regional Localization</h3>
                       <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5 leading-relaxed">
                         Choose your primary display language for job posts, messages, and platform notifications.
                       </p>
@@ -1342,8 +1342,8 @@ export const SettingsPage: React.FC = () => {
                             }}
                             className={`p-4 rounded-2xl border text-left transition-all flex items-center justify-between cursor-pointer active:scale-[0.99] ${
                               isSelected
-                                ? 'bg-[#0f2f63]/5 border-[#0f2f63] shadow-2xs ring-1 ring-[#0f2f63]'
-                                : 'bg-slate-50 dark:bg-[#121215]/50 hover:bg-slate-100 dark:bg-zinc-800/60 border-slate-200 dark:border-zinc-800'
+                                ? 'bg-[#0f2f63]/5 dark:bg-sky-500/10 border-[#0f2f63] dark:border-[#38BDF8] shadow-2xs ring-1 ring-[#0f2f63] dark:ring-[#38BDF8]'
+                                : 'bg-slate-50 dark:bg-[#121215]/50 hover:bg-slate-100 dark:hover:bg-zinc-800/60 border-slate-200 dark:border-zinc-800'
                             }`}
                           >
                             <div className="space-y-0.5" translate="no">
@@ -1351,10 +1351,10 @@ export const SettingsPage: React.FC = () => {
                                 {lang.name}
                               </p>
                               <p className="text-xs font-black text-slate-800 dark:text-zinc-100">{lang.native}</p>
-                              <p className="text-[10px] text-slate-400 font-medium">{lang.region}</p>
+                              <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">{lang.region}</p>
                             </div>
                             {isSelected ? (
-                              <CheckCircle2 className="w-5 h-5 text-[#0f2f63] shrink-0" />
+                              <CheckCircle2 className="w-5 h-5 text-[#0f2f63] dark:text-[#38BDF8] shrink-0" />
                             ) : (
                               <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-zinc-700 shrink-0" />
                             )}
@@ -1365,9 +1365,9 @@ export const SettingsPage: React.FC = () => {
                   </div>
 
                   {/* Regional Currency & Timezone Card */}
-                  <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs space-y-4">
+                  <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-4">
                     <div className="pb-3 border-b border-slate-100 dark:border-zinc-800">
-                      <h3 className="text-base font-bold text-[#0A1931]">Marketplace Regional Configuration</h3>
+                      <h3 className="text-base font-bold text-[#0A1931] dark:text-white">Marketplace Regional Configuration</h3>
                       <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5 leading-relaxed">
                         Default currency and timezone applied to job compensation details and shift schedules.
                       </p>
@@ -1376,13 +1376,13 @@ export const SettingsPage: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       <div className="p-3.5 bg-slate-50 dark:bg-[#121215] rounded-2xl border border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                         <span className="text-slate-500 dark:text-zinc-400 font-medium">Display Currency:</span>
-                        <span className="font-bold text-[#0A1931] bg-white px-2.5 py-1 rounded-full border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                        <span className="font-bold text-[#0A1931] dark:text-zinc-100 bg-white dark:bg-[#1C1C21] px-2.5 py-1 rounded-full border border-slate-200 dark:border-zinc-700 shadow-2xs">
                           ₹ INR (Indian Rupee)
                         </span>
                       </div>
                       <div className="p-3.5 bg-slate-50 dark:bg-[#121215] rounded-2xl border border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                         <span className="text-slate-500 dark:text-zinc-400 font-medium">Standard Timezone:</span>
-                        <span className="font-bold text-[#0A1931] bg-white px-2.5 py-1 rounded-full border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                        <span className="font-bold text-[#0A1931] dark:text-zinc-100 bg-white dark:bg-[#1C1C21] px-2.5 py-1 rounded-full border border-slate-200 dark:border-zinc-700 shadow-2xs">
                           IST (UTC +05:30)
                         </span>
                       </div>
@@ -1390,9 +1390,9 @@ export const SettingsPage: React.FC = () => {
                   </div>
 
                   {/* Legal Terms & Data Privacy Card */}
-                  <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs space-y-4">
+                  <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-4">
                     <div className="pb-3 border-b border-slate-100 dark:border-zinc-800">
-                      <h3 className="text-base font-bold text-[#0A1931]">Compliance, Privacy & Terms</h3>
+                      <h3 className="text-base font-bold text-[#0A1931] dark:text-white">Compliance, Privacy & Terms</h3>
                       <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5 leading-relaxed">
                         TrustHyre operates under verified employer and candidate safety standards.
                       </p>
