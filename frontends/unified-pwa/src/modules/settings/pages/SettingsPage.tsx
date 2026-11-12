@@ -421,7 +421,7 @@ export const SettingsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#000000] pb-24 pt-6 px-4 sm:px-6 lg:px-8 font-['Onest',system-ui,sans-serif] text-[#0A1931] dark:text-zinc-100 transition-colors duration-200">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#000000] pb-24 pt-6 px-4 sm:px-6 lg:px-8 font-['Onest',system-ui,sans-serif] text-slate-900 dark:text-zinc-100 transition-colors duration-200">
       <div className="max-w-6xl mx-auto space-y-6">
 
         {/* Top Header & Breadcrumb Bar */}
@@ -430,9 +430,9 @@ export const SettingsPage: React.FC = () => {
             <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
               <span>Account Hub</span>
               <span>/</span>
-              <span className="text-[#0f2f63] dark:text-[#38BDF8] font-extrabold">{tabItems.find(t => t.id === activeTab)?.label}</span>
+              <span className="text-[#0f2f63] dark:text-sky-400 font-extrabold">{tabItems.find(t => t.id === activeTab)?.label}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#0A1931] dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               Settings & Preferences
             </h1>
             <p className="text-slate-500 dark:text-zinc-400 font-medium text-xs sm:text-sm max-w-2xl leading-relaxed">
@@ -447,7 +447,7 @@ export const SettingsPage: React.FC = () => {
               className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-white dark:bg-[#121215] hover:bg-slate-50 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 text-xs font-semibold text-slate-700 dark:text-zinc-200 shadow-2xs transition-all cursor-pointer active:scale-95"
               title="Go to Notifications Inbox"
             >
-              <Bell className="w-4 h-4 text-[#0f2f63] dark:text-[#38BDF8]" />
+              <Bell className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
               <span>Inbox</span>
               {unreadNotificationsCount > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-black">
@@ -458,7 +458,7 @@ export const SettingsPage: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/profile')}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#0f2f63]/10 dark:bg-blue-950/60 hover:bg-[#0f2f63]/15 dark:hover:bg-blue-900/60 text-[#0f2f63] dark:text-[#38BDF8] border border-[#0f2f63]/20 dark:border-blue-800/40 text-xs font-semibold transition-all cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#0f2f63]/10 dark:bg-blue-950/60 hover:bg-[#0f2f63]/15 dark:hover:bg-blue-900/60 text-[#0f2f63] dark:text-sky-400 border border-[#0f2f63]/20 dark:border-blue-800/40 text-xs font-semibold transition-all cursor-pointer active:scale-95"
             >
               <span>View Public Profile</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -500,11 +500,11 @@ export const SettingsPage: React.FC = () => {
                 onClick={() => handleTabChange(tab.id as SettingsTab)}
                 className={`flex items-center gap-2 px-3.5 py-2.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer flex-1 justify-center ${
                   isActive
-                    ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-[#38BDF8] shadow-xs'
+                    ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-400 shadow-xs'
                     : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-zinc-800'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#0f2f63] dark:text-[#38BDF8]' : 'text-slate-400 dark:text-zinc-500'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#0f2f63] dark:text-sky-400' : 'text-slate-400 dark:text-zinc-500'}`} />
                 <span>{tab.label}</span>
                 {tab.badge && (
                   <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[9px] font-black">
@@ -533,7 +533,7 @@ export const SettingsPage: React.FC = () => {
                     onClick={() => handleTabChange(tab.id as SettingsTab)}
                     className={`w-full flex items-center justify-between p-3.5 rounded-2xl text-left transition-all cursor-pointer group active:scale-[0.99] ${
                       isActive 
-                        ? 'bg-[#0f2f63]/10 dark:bg-blue-950/40 text-[#0f2f63] dark:text-[#38BDF8] border border-[#0f2f63]/20 dark:border-blue-800/40 shadow-2xs' 
+                        ? 'bg-[#0f2f63]/10 dark:bg-blue-950/40 text-[#0f2f63] dark:text-sky-400 border border-[#0f2f63]/20 dark:border-blue-800/40 shadow-2xs' 
                         : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-[#121215] border border-transparent'
                     }`}
                   >
@@ -545,7 +545,7 @@ export const SettingsPage: React.FC = () => {
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className={`text-xs font-bold truncate ${isActive ? 'text-[#0f2f63] dark:text-[#38BDF8]' : 'text-[#0A1931] dark:text-zinc-200'}`}>
+                          <p className={`text-xs font-bold truncate ${isActive ? 'text-[#0f2f63] dark:text-sky-400' : 'text-slate-900 dark:text-zinc-200'}`}>
                             {tab.label}
                           </p>
                           {tab.badge && (
@@ -560,7 +560,7 @@ export const SettingsPage: React.FC = () => {
                       </div>
                     </div>
                     <ChevronRight className={`w-4 h-4 shrink-0 transition-transform ${
-                      isActive ? 'text-[#0f2f63] dark:text-[#38BDF8] translate-x-0.5' : 'text-slate-300 dark:text-zinc-600 group-hover:text-slate-400 dark:group-hover:text-zinc-400'
+                      isActive ? 'text-[#0f2f63] dark:text-sky-400 translate-x-0.5' : 'text-slate-300 dark:text-zinc-600 group-hover:text-slate-400 dark:group-hover:text-zinc-400'
                     }`} />
                   </button>
                 );
@@ -576,14 +576,14 @@ export const SettingsPage: React.FC = () => {
                   size="md"
                 />
                 <div className="min-w-0 space-y-0.5">
-                  <h3 className="text-sm font-bold text-[#0A1931] dark:text-zinc-100 truncate">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">
                     {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : (user?.companyName || user?.email || 'Account User')}
                   </h3>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-200 flex items-center gap-1 uppercase tracking-wider">
-                      <ShieldCheck className="w-3 h-3 text-emerald-600" /> Verified
+                    <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1 uppercase tracking-wider">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Verified
                     </span>
-                    <span className="text-[10px] font-bold text-[#0f2f63] dark:text-[#38BDF8] uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-blue-700 dark:text-sky-400 uppercase tracking-wider">
                       {isEmployer ? 'Hiring Partner' : 'Specialist'}
                     </span>
                   </div>
@@ -594,7 +594,7 @@ export const SettingsPage: React.FC = () => {
               <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-zinc-800">
                 <div className="flex items-center justify-between text-xs font-bold">
                   <span className="text-slate-600 dark:text-zinc-400">Profile Completion</span>
-                  <span className="text-[#0f2f63] dark:text-[#38BDF8]">{profileStrength}%</span>
+                  <span className="text-[#0f2f63] dark:text-sky-400">{profileStrength}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-zinc-800 overflow-hidden">
                   <div 
@@ -617,8 +617,8 @@ export const SettingsPage: React.FC = () => {
 
             {/* TrustHyre Support Help Box */}
             <div className="bg-slate-50 dark:bg-[#121215] rounded-3xl border border-slate-200 dark:border-zinc-800 p-4 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#0A1931] dark:text-zinc-200">
-                <HelpCircle className="w-4 h-4 text-[#0f2f63] dark:text-[#38BDF8]" />
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-zinc-200">
+                <HelpCircle className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
                 <span>Need Assistance?</span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium leading-relaxed">
@@ -627,7 +627,7 @@ export const SettingsPage: React.FC = () => {
               <div className="pt-1">
                 <a
                   href="mailto:support@trusthyre.com"
-                  className="text-xs font-bold text-[#0f2f63] dark:text-[#38BDF8] hover:underline flex items-center gap-1"
+                  className="text-xs font-bold text-[#0f2f63] dark:text-sky-400 hover:underline flex items-center gap-1"
                 >
                   <span>support@trusthyre.com</span>
                   <ArrowUpRight className="w-3 h-3" />
@@ -661,15 +661,15 @@ export const SettingsPage: React.FC = () => {
                       />
                       <div className="min-w-0 space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h2 className="text-lg font-black text-[#0A1931] dark:text-white truncate">
+                          <h2 className="text-lg font-black text-slate-900 dark:text-white truncate">
                             {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : (user?.companyName || user?.email || 'Account User')}
                           </h2>
-                          <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-black rounded-full border border-emerald-200 flex items-center gap-1 uppercase tracking-wider shrink-0">
-                            <ShieldCheck className="w-3 h-3" /> Verified Partner
+                          <span className="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[10px] font-black rounded-full border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1 uppercase tracking-wider shrink-0">
+                            <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Verified Partner
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-[#0f2f63] dark:text-[#38BDF8] uppercase tracking-wide">
+                          <span className="font-bold text-blue-700 dark:text-sky-400 uppercase tracking-wide">
                             {isEmployer ? 'Verified Hiring Partner' : 'Certified Specialist'}
                           </span>
                         </p>
@@ -692,14 +692,14 @@ export const SettingsPage: React.FC = () => {
                   <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs space-y-5">
                     {/* <div className="pb-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                       <div>
-                        <h2 className="text-base font-bold text-[#0A1931] dark:text-white">
+                        <h2 className="text-base font-bold text-slate-900 dark:text-white">
                           {isEmployer ? 'Company & Business Details' : 'Personal & Contact Details'}
                         </h2>
                         <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5">
                           Update your official display name, operating location, and public bio.
                         </p>
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2f63] dark:text-[#38BDF8] bg-[#0f2f63]/10 dark:bg-sky-500/10 px-2.5 py-1 rounded-full border border-[#0f2f63]/20 dark:border-sky-500/20">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2f63] dark:text-sky-400 bg-[#0f2f63]/10 dark:bg-sky-500/10 px-2.5 py-1 rounded-full border border-[#0f2f63]/20 dark:border-sky-500/20">
                         Live Sync
                       </span>
                     </div> */}
@@ -716,7 +716,7 @@ export const SettingsPage: React.FC = () => {
                                 value={profileForm.companyName}
                                 onChange={(e) => setProfileForm({ ...profileForm, companyName: e.target.value })}
                                 placeholder="e.g. Acme Logistics India"
-                                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
+                                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
                               />
                             </div>
                           </div>
@@ -730,7 +730,7 @@ export const SettingsPage: React.FC = () => {
                                 value={profileForm.fullName}
                                 onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })}
                                 placeholder="e.g. John Wesley"
-                                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
+                                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
                               />
                             </div>
                           </div>
@@ -745,7 +745,7 @@ export const SettingsPage: React.FC = () => {
                               value={profileForm.phoneNumber}
                               onChange={(e) => setProfileForm({ ...profileForm, phoneNumber: e.target.value })}
                               placeholder="+91 98765 43210"
-                              className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
+                              className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
                             />
                           </div>
                         </div>
@@ -761,7 +761,7 @@ export const SettingsPage: React.FC = () => {
                               value={profileForm.location}
                               onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
                               placeholder="e.g. Chennai, Tamil Nadu"
-                              className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
+                              className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
                             />
                           </div>
                         </div>
@@ -790,7 +790,7 @@ export const SettingsPage: React.FC = () => {
                               value={profileForm.industry}
                               onChange={(e) => setProfileForm({ ...profileForm, industry: e.target.value })}
                               placeholder="e.g. Logistics & Warehousing"
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
                             />
                           </div>
 
@@ -801,7 +801,7 @@ export const SettingsPage: React.FC = () => {
                               value={profileForm.companyWebsite}
                               onChange={(e) => setProfileForm({ ...profileForm, companyWebsite: e.target.value })}
                               placeholder="https://example.com"
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
                             />
                           </div>
                         </div>
@@ -817,7 +817,7 @@ export const SettingsPage: React.FC = () => {
                               value={profileForm.hourlyRate}
                               onChange={(e) => setProfileForm({ ...profileForm, hourlyRate: e.target.value })}
                               placeholder="e.g. 800"
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
                             />
                           </div>
 
@@ -828,7 +828,7 @@ export const SettingsPage: React.FC = () => {
                               value={profileForm.experienceYears}
                               onChange={(e) => setProfileForm({ ...profileForm, experienceYears: e.target.value })}
                               placeholder="e.g. 4"
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
                             />
                           </div>
                         </div>
@@ -852,7 +852,7 @@ export const SettingsPage: React.FC = () => {
                           placeholder={isEmployer 
                             ? "Tell candidates about your company culture, scale, and work environment..." 
                             : "Share your top skills, past projects, punctuality, and specialties..."}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 dark:border-zinc-700 bg-slate-50 dark:bg-[#121215]/50 dark:bg-[#121215] text-xs font-medium text-[#0A1931] dark:text-white focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 dark:border-zinc-700 bg-slate-50 dark:bg-[#121215]/50 dark:bg-[#121215] text-xs font-medium text-slate-900 dark:text-white focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all"
                         />
                       </div>
 
@@ -880,12 +880,12 @@ export const SettingsPage: React.FC = () => {
 
                   {/* Identity Verification & Compliance Banner */}
                   <div className="bg-white dark:bg-[#09090b] p-5 rounded-[2rem] border border-slate-200 dark:border-zinc-800 shadow-xs flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-2xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/20 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0">
+                    <div className="w-10 h-10 rounded-2xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/20 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-sky-400 shrink-0">
                       <ShieldCheck className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-xs font-bold text-[#0A1931] dark:text-zinc-200">{t('Identity Verification')}</h3>
+                        <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-200">{t('Identity Verification')}</h3>
                         <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
                           Verified Partner
                         </span>
@@ -912,11 +912,11 @@ export const SettingsPage: React.FC = () => {
                   <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-5">
                     <div className="pb-4 border-b border-slate-100 dark:border-zinc-800">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-2xl bg-[#0f2f63]/10 dark:bg-sky-500/10 text-[#0f2f63] dark:text-[#38BDF8] flex items-center justify-center border border-[#0f2f63]/20 dark:border-sky-500/20">
+                        <div className="w-9 h-9 rounded-2xl bg-[#0f2f63]/10 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center border border-[#0f2f63]/20 dark:border-sky-500/20">
                           <Lock className="w-4 h-4" />
                         </div>
                         <div>
-                          <h2 className="text-base font-bold text-[#0A1931] dark:text-white">Change Account Password</h2>
+                          <h2 className="text-base font-bold text-slate-900 dark:text-white">Change Account Password</h2>
                           <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
                             Protect your credentials with a strong, multi-factor compliant password.
                           </p>
@@ -933,7 +933,7 @@ export const SettingsPage: React.FC = () => {
                             value={passwordForm.oldPassword}
                             onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
                             placeholder="Enter current password"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all pr-10"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all pr-10"
                           />
                           <button
                             type="button"
@@ -953,7 +953,7 @@ export const SettingsPage: React.FC = () => {
                             value={passwordForm.newPassword}
                             onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                             placeholder="Minimum 8 characters"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all pr-10"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all pr-10"
                           />
                           <button
                             type="button"
@@ -969,7 +969,7 @@ export const SettingsPage: React.FC = () => {
                           <div className="mt-2 space-y-1.5">
                             <div className="flex items-center justify-between text-[11px]">
                               <span className="text-slate-500 dark:text-zinc-400 font-medium">Password Strength:</span>
-                              <span className="font-bold text-[#0A1931] dark:text-white">{passwordStrength.label}</span>
+                              <span className="font-bold text-slate-900 dark:text-white">{passwordStrength.label}</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                               <div 
@@ -989,7 +989,7 @@ export const SettingsPage: React.FC = () => {
                             value={passwordForm.confirmPassword}
                             onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                             placeholder="Re-enter your new password"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-[#0A1931] dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all pr-10"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/50 text-xs font-bold text-slate-900 dark:text-zinc-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]/20 focus:border-[#0f2f63] transition-all pr-10"
                           />
                           <button
                             type="button"
@@ -1056,7 +1056,7 @@ export const SettingsPage: React.FC = () => {
                   <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs space-y-4">
                     <div className="pb-3 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-bold text-[#0A1931] dark:text-zinc-100">Active Session Security</h3>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Active Session Security</h3>
                         <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5">
                           Account protected by JWT tokens and 256-bit encryption.
                         </p>
@@ -1113,7 +1113,7 @@ export const SettingsPage: React.FC = () => {
                   {/* Notification Channels Card */}
                   <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-5">
                     <div className="pb-4 border-b border-slate-100 dark:border-zinc-800">
-                      <h2 className="text-base font-bold text-[#0A1931] dark:text-white">Notification Channels & Delivery</h2>
+                      <h2 className="text-base font-bold text-slate-900 dark:text-white">Notification Channels & Delivery</h2>
                       <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5">
                         Customize how and when you receive critical alerts regarding jobs, applications, and messages.
                       </p>
@@ -1123,12 +1123,12 @@ export const SettingsPage: React.FC = () => {
                       {/* Web Push Alerts */}
                       <div className="p-4 rounded-2xl border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/60 flex items-center justify-between gap-4">
                         <div className="flex items-start gap-3.5">
-                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/15 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0 mt-0.5 shadow-2xs">
+                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/15 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-sky-400 shrink-0 mt-0.5 shadow-2xs">
                             <Smartphone className="w-4 h-4" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="text-xs font-bold text-[#0A1931] dark:text-zinc-200">Real-time Browser & Push Alerts</h3>
+                              <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-200">Real-time Browser & Push Alerts</h3>
                               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                                 pushNotifs ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-200 text-slate-600 dark:text-zinc-400'
                               }`}>
@@ -1160,12 +1160,12 @@ export const SettingsPage: React.FC = () => {
                       {/* Email Notifications */}
                       <div className="p-4 rounded-2xl border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/60 flex items-center justify-between gap-4">
                         <div className="flex items-start gap-3.5">
-                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/15 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0 mt-0.5 shadow-2xs">
+                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/15 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-sky-400 shrink-0 mt-0.5 shadow-2xs">
                             <Mail className="w-4 h-4" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="text-xs font-bold text-[#0A1931] dark:text-zinc-200">Email Summaries & Updates</h3>
+                              <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-200">Email Summaries & Updates</h3>
                               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                                 emailNotifs ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-200 text-slate-600 dark:text-zinc-400'
                               }`}>
@@ -1197,12 +1197,12 @@ export const SettingsPage: React.FC = () => {
                       {/* Market & Intelligence Updates */}
                       <div className="p-4 rounded-2xl border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-[#121215]/60 flex items-center justify-between gap-4">
                         <div className="flex items-start gap-3.5">
-                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/15 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0 mt-0.5 shadow-2xs">
+                          <div className="w-9 h-9 rounded-xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/15 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-sky-400 shrink-0 mt-0.5 shadow-2xs">
                             <Zap className="w-4 h-4" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="text-xs font-bold text-[#0A1931] dark:text-zinc-200">Market Rates & Hiring Intel</h3>
+                              <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-200">Market Rates & Hiring Intel</h3>
                               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                                 marketingNotifs ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-200 text-slate-600 dark:text-zinc-400'
                               }`}>
@@ -1237,11 +1237,11 @@ export const SettingsPage: React.FC = () => {
                   <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-zinc-800">
                       <div className="flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-2xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/20 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-[#38BDF8] shrink-0 mt-0.5 shadow-2xs">
+                        <div className="w-9 h-9 rounded-2xl bg-[#0f2f63]/10 dark:bg-sky-500/10 border border-[#0f2f63]/20 dark:border-sky-500/20 flex items-center justify-center text-[#0f2f63] dark:text-sky-400 shrink-0 mt-0.5 shadow-2xs">
                           <BellRing className="w-4 h-4" />
                         </div>
                         <div>
-                          <h3 className="text-sm font-bold text-[#0A1931] dark:text-zinc-100">FCM Push Diagnostic & Live Test</h3>
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">FCM Push Diagnostic & Live Test</h3>
                           <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5">
                             Verify browser push delivery, TrustHyre logo branding, and click-to-inbox routing.
                           </p>
@@ -1318,7 +1318,7 @@ export const SettingsPage: React.FC = () => {
                   {/* Language Selector Card */}
                   <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800/90 dark:border-zinc-800 shadow-xs space-y-4">
                     <div className="pb-3 border-b border-slate-100 dark:border-zinc-800">
-                      <h3 className="text-base font-bold text-[#0A1931] dark:text-white">Language & Regional Localization</h3>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Language & Regional Localization</h3>
                       <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5 leading-relaxed">
                         Choose your primary display language for job posts, messages, and platform notifications.
                       </p>
@@ -1347,14 +1347,14 @@ export const SettingsPage: React.FC = () => {
                             }`}
                           >
                             <div className="space-y-0.5" translate="no">
-                              <p className={`text-xs font-bold ${isSelected ? 'text-[#0f2f63] dark:text-[#38BDF8]' : 'text-[#0A1931] dark:text-zinc-200'}`}>
+                              <p className={`text-xs font-bold ${isSelected ? 'text-[#0f2f63] dark:text-sky-400' : 'text-slate-900 dark:text-zinc-200'}`}>
                                 {lang.name}
                               </p>
                               <p className="text-xs font-black text-slate-800 dark:text-zinc-100">{lang.native}</p>
                               <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">{lang.region}</p>
                             </div>
                             {isSelected ? (
-                              <CheckCircle2 className="w-5 h-5 text-[#0f2f63] dark:text-[#38BDF8] shrink-0" />
+                              <CheckCircle2 className="w-5 h-5 text-[#0f2f63] dark:text-sky-400 shrink-0" />
                             ) : (
                               <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-zinc-700 shrink-0" />
                             )}
@@ -1367,7 +1367,7 @@ export const SettingsPage: React.FC = () => {
                   {/* Regional Currency & Timezone Card */}
                   <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-4">
                     <div className="pb-3 border-b border-slate-100 dark:border-zinc-800">
-                      <h3 className="text-base font-bold text-[#0A1931] dark:text-white">Marketplace Regional Configuration</h3>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Marketplace Regional Configuration</h3>
                       <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5 leading-relaxed">
                         Default currency and timezone applied to job compensation details and shift schedules.
                       </p>
@@ -1376,13 +1376,13 @@ export const SettingsPage: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       <div className="p-3.5 bg-slate-50 dark:bg-[#121215] rounded-2xl border border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                         <span className="text-slate-500 dark:text-zinc-400 font-medium">Display Currency:</span>
-                        <span className="font-bold text-[#0A1931] dark:text-zinc-100 bg-white dark:bg-[#1C1C21] px-2.5 py-1 rounded-full border border-slate-200 dark:border-zinc-700 shadow-2xs">
+                        <span className="font-bold text-slate-900 dark:text-zinc-100 bg-white dark:bg-[#1C1C21] px-2.5 py-1 rounded-full border border-slate-200 dark:border-zinc-700 shadow-2xs">
                           ₹ INR (Indian Rupee)
                         </span>
                       </div>
                       <div className="p-3.5 bg-slate-50 dark:bg-[#121215] rounded-2xl border border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                         <span className="text-slate-500 dark:text-zinc-400 font-medium">Standard Timezone:</span>
-                        <span className="font-bold text-[#0A1931] dark:text-zinc-100 bg-white dark:bg-[#1C1C21] px-2.5 py-1 rounded-full border border-slate-200 dark:border-zinc-700 shadow-2xs">
+                        <span className="font-bold text-slate-900 dark:text-zinc-100 bg-white dark:bg-[#1C1C21] px-2.5 py-1 rounded-full border border-slate-200 dark:border-zinc-700 shadow-2xs">
                           IST (UTC +05:30)
                         </span>
                       </div>
@@ -1392,7 +1392,7 @@ export const SettingsPage: React.FC = () => {
                   {/* Legal Terms & Data Privacy Card */}
                   <div className="bg-white dark:bg-[#09090b] rounded-[2rem] p-6 sm:p-7 border border-slate-200 dark:border-zinc-800 shadow-xs space-y-4">
                     <div className="pb-3 border-b border-slate-100 dark:border-zinc-800">
-                      <h3 className="text-base font-bold text-[#0A1931] dark:text-white">Compliance, Privacy & Terms</h3>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Compliance, Privacy & Terms</h3>
                       <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5 leading-relaxed">
                         TrustHyre operates under verified employer and candidate safety standards.
                       </p>
@@ -1432,3 +1432,5 @@ export const SettingsPage: React.FC = () => {
 };
 
 export default SettingsPage;
+
+

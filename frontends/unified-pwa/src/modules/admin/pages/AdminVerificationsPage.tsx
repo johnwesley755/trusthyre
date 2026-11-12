@@ -64,14 +64,14 @@ export const AdminVerificationsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 text-xs font-medium uppercase text-[#717784] dark:text-zinc-400 mb-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#2563c9] dark:bg-sky-400" />
+          <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase text-slate-500 dark:text-zinc-400 mb-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#0066FF] dark:bg-sky-400" />
             <span>Compliance & Trust</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-medium text-[#0a0a0a] dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
             Identity & Document Verifications
           </h1>
-          <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 mt-1 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 mt-1 leading-relaxed">
             Review submitted credentials, biometric records, and profile authenticity for verified portal access.
           </p>
         </div>

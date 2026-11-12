@@ -64,6 +64,7 @@ model job_applications {
   transit_mode_preferred String?   @db.VarChar(50)
   voice_note_url         String?   @db.VarChar(500)
   jobs                   jobs      @relation(fields: [job_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  interviews             interviews[]
 
   @@index([job_id], map: "idx_job_applications_job_id")
   @@index([worker_id], map: "idx_job_applications_worker_id")
@@ -139,12 +140,41 @@ model jobs {
   job_applications           job_applications[]
   job_required_skills       job_required_skills[] @ignore
   saved_jobs                saved_jobs[]
+  interviews                interviews[]
 
   @@index([employer_id], map: "idx_jobs_employer_id")
   @@index([status], map: "idx_jobs_status")
   @@index([is_external, status], map: "idx_jobs_external_status")
   @@index([source_hash], map: "idx_jobs_source_hash")
   @@index([source_name, external_id], map: "idx_jobs_source_external_id")
+}
+
+model interviews {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  application_id   String           @db.Uuid
+  job_id           String           @db.Uuid
+  employer_id      String           @db.VarChar(255)
+  worker_id        String           @db.VarChar(255)
+  scheduled_at     DateTime         @db.Timestamp(6)
+  interview_type   String           @default("IN_PERSON") @db.VarChar(50)
+  location_address String?
+  latitude         Float?
+  longitude        Float?
+  contact_person   String?          @db.VarChar(100)
+  contact_phone    String?          @db.VarChar(50)
+  instructions     String?
+  status           String           @default("PROPOSED") @db.VarChar(50)
+  reschedule_note  String?
+  created_at       DateTime?        @default(now()) @db.Timestamp(6)
+  updated_at       DateTime?        @default(now()) @db.Timestamp(6)
+
+  job_applications job_applications @relation(fields: [application_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  jobs             jobs             @relation(fields: [job_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([application_id], map: "idx_interviews_app_id")
+  @@index([employer_id], map: "idx_interviews_emp_id")
+  @@index([worker_id], map: "idx_interviews_worker_id")
+  @@index([scheduled_at], map: "idx_interviews_scheduled_at")
 }
 
 model media_assets {

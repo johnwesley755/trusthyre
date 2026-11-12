@@ -4,7 +4,7 @@ import { AutoTranslate } from '../components/common/AutoTranslate';
 
 export default function AppLayout() {
   return (
-    <div className="min-h-screen w-full bg-[#F8FAFC] dark:bg-[#000000] text-[#0A1931] dark:text-[#F8FAFC] flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen w-full bg-[#F8FAFC] dark:bg-[#000000] text-[#0A1931] dark:text-[#F8FAFC] flex flex-col font-['Onest',system-ui,sans-serif] transition-colors duration-200">
       {/* Sleek Top Navbar */}
       <AutoTranslate>
         <AppTopNavbar />

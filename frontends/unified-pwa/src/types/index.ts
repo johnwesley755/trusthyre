@@ -140,7 +140,7 @@ export interface JobApplication {
   id: string;
   jobId: string;
   workerId: string;
-  status: 'APPLIED' | 'PENDING' | 'OFFER_SENT' | 'REVIEWING' | 'SHORTLISTED' | 'ACCEPTED' | 'APPROVED' | 'REJECTED' | 'DECLINED' | 'COMPLETED';
+  status: 'APPLIED' | 'PENDING' | 'OFFER_SENT' | 'REVIEWING' | 'SHORTLISTED' | 'ACCEPTED' | 'APPROVED' | 'REJECTED' | 'DECLINED' | 'COMPLETED' | 'INTERVIEW_SCHEDULED' | 'INTERVIEW_COMPLETED';
   appliedAt: string;
   coverLetter?: string;
   transitModePreferred?: string;

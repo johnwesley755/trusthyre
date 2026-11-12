@@ -10,6 +10,7 @@ import {
   Clock, 
   MapPin, 
   Calendar, 
+  CalendarClock,
   ChevronRight, 
   ShieldCheck, 
   AlertCircle, 
@@ -401,6 +402,21 @@ export default function AppliedJobsPage() {
                             Decline
                           </button>
                         </div>
+                      </div>
+                    )}
+
+                    {/* Interview Invitation Alert Box */}
+                    {app.status === 'INTERVIEW_SCHEDULED' && (
+                      <div className="bg-sky-50 dark:bg-sky-950/50 p-3.5 rounded-xl border border-sky-200 dark:border-sky-800/60 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <CalendarClock className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                          <p className="text-xs font-bold text-sky-950 dark:text-sky-200">
+                            Interview Invitation Received
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-slate-600 dark:text-zinc-300 leading-relaxed">
+                          The employer has invited you to coordinate an interview session. Check your notifications for venue details and timing.
+                        </p>
                       </div>
                     )}
                   </div>

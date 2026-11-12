@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { applicationService, type JobApplication } from '../../../services/application.service';
 import { jobService } from '../../../services/job.service';
@@ -9,6 +9,7 @@ import {
   XCircle, 
   Clock, 
   CalendarClock,
+  Calendar,
   AlertCircle,
   ChevronRight, 
   Loader2, 
@@ -31,6 +32,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UserAvatar } from '../../../components/common/UserAvatar';
 import { DataTablePagination } from '../../../components/common/DataTablePagination';
 import { AppLoader } from '../../../components/common/AppLoader';
+import { ScheduleInterviewModal } from '../components/ScheduleInterviewModal';
 import { 
   Table, 
   TableHeader, 
@@ -71,6 +73,12 @@ export default function ApplicationManagementPage() {
   const [jobSearchQuery, setJobSearchQuery] = useState('');
   const [outreachCandidate, setOutreachCandidate] = useState<CandidateOutreachCandidate | null>(null);
   const [isOutreachModalOpen, setIsOutreachModalOpen] = useState(false);
+  const [schedulingApp, setSchedulingApp] = useState<{
+    applicationId: string;
+    candidateName: string;
+    jobTitle: string;
+    defaultLocation?: string;
+  } | null>(null);
 
   const { data: jobs = [], isLoading: isJobsLoading } = useQuery<import('../../../types').Job[]>({ 
     queryKey: queryKeys.jobs.employerJobs, 
@@ -741,6 +749,21 @@ export default function ApplicationManagementPage() {
                         {!isApproved && !isOfferSent && !isDeclined && (
                           <>
                             <button
+                              type="button"
+                              onClick={() => setSchedulingApp({
+                                applicationId: app.id,
+                                candidateName: worker?.user?.firstName ? `${worker.user.firstName} ${worker.user.lastName || ''}`.trim() : 'Candidate',
+                                jobTitle: selectedJob?.title || 'Job Interview',
+                                defaultLocation: selectedJob?.location || undefined
+                              })}
+                              className="px-3.5 py-2 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-[#0f2f63] dark:text-[#38BDF8] border border-sky-200 dark:border-sky-800/60 rounded-full text-xs font-semibold uppercase transition-all shadow-2xs cursor-pointer flex items-center gap-1.5 active:scale-95"
+                              title="Schedule In-Person or Video Interview"
+                            >
+                              <Calendar className="w-3.5 h-3.5" />
+                              <span>{app.status === 'INTERVIEW_SCHEDULED' ? 'Reschedule' : 'Interview'}</span>
+                            </button>
+
+                            <button
                               onClick={() => mutation.mutate({ id: app.id, status: 'OFFER_SENT' })}
                               disabled={mutation.isPending}
                               className="px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-semibold uppercase transition-all shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
@@ -841,6 +864,22 @@ export default function ApplicationManagementPage() {
           employerName="Verified Employer"
           activeJobs={jobs}
           defaultJobId={selectedJobId || undefined}
+        />
+      )}
+
+      {/* Structured In-Person / Video Interview Scheduling Modal */}
+      {schedulingApp && (
+        <ScheduleInterviewModal
+          isOpen={Boolean(schedulingApp)}
+          onClose={() => setSchedulingApp(null)}
+          applicationId={schedulingApp.applicationId}
+          candidateName={schedulingApp.candidateName}
+          jobTitle={schedulingApp.jobTitle}
+          defaultLocation={schedulingApp.defaultLocation}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
+            queryClient.invalidateQueries({ queryKey: ['jobs', 'allEmployerApplications'] });
+          }}
         />
       )}
     </div>

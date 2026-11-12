@@ -27,6 +27,7 @@ import verificationRoutes from './routes/verificationRoutes';
 import savedRoutes from './routes/savedRoutes';
 import adminRoutes, { adminAnalyticsRouter } from './routes/adminRoutes';
 import searchAlertRoutes from './routes/searchAlertRoutes';
+import interviewRoutes from './routes/interviewRoutes';
 import { leadRouter } from './routes/leadRoutes';
 import metadataRoutes from './routes/metadataRoutes';
 import { blogRouter, adminBlogRouter } from './routes/blogRoutes';
@@ -175,6 +176,7 @@ app.route('/api/admin', adminRoutes);
 app.route('/api/metadata', metadataRoutes);
 app.route('/api/blog', blogRouter);
 app.route('/api/seo', seoRouter);
+app.route('/api/interviews', interviewRoutes);
 
 
 
