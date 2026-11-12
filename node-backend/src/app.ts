@@ -32,6 +32,7 @@ import { leadRouter } from './routes/leadRoutes';
 import metadataRoutes from './routes/metadataRoutes';
 import { blogRouter, adminBlogRouter } from './routes/blogRoutes';
 import { seoRouter } from './routes/seoRoutes';
+import recommendationRoutes from './routes/recommendationRoutes';
 import { SitemapService } from './services/sitemapService';
 
 
@@ -197,6 +198,7 @@ app.route('/api/metadata', metadataRoutes);
 app.route('/api/blog', blogRouter);
 app.route('/api/seo', seoRouter);
 app.route('/api/interviews', interviewRoutes);
+app.route('/api/recommendations', recommendationRoutes);
 
 
 
