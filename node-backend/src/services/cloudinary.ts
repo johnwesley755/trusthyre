@@ -8,6 +8,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const ALLOWED_UPLOAD_FORMATS = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'mp3', 'wav', 'ogg', 'm4a', 'webm'];
+
 export const uploadMedia = async (mediaInput: string | Buffer, folder: string = 'trusthyre', mimeType: string = 'image/jpeg') => {
   try {
     if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY) {
@@ -20,11 +22,19 @@ export const uploadMedia = async (mediaInput: string | Buffer, folder: string = 
 
     if (Buffer.isBuffer(mediaInput)) {
       const base64Data = `data:${mimeType};base64,${mediaInput.toString('base64')}`;
-      const result = await cloudinary.uploader.upload(base64Data, { folder, resource_type: 'auto' });
+      const result = await cloudinary.uploader.upload(base64Data, {
+        folder,
+        resource_type: 'auto',
+        allowed_formats: ALLOWED_UPLOAD_FORMATS
+      });
       return result;
     }
 
-    const result = await cloudinary.uploader.upload(mediaInput, { folder, resource_type: 'auto' });
+    const result = await cloudinary.uploader.upload(mediaInput, {
+      folder,
+      resource_type: 'auto',
+      allowed_formats: ALLOWED_UPLOAD_FORMATS
+    });
     return result;
   } catch (error) {
     console.error('Cloudinary upload error:', error);

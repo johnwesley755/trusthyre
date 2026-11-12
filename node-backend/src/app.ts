@@ -105,6 +105,16 @@ app.use('*', secureHeaders({
   referrerPolicy: 'strict-origin-when-cross-origin',
   strictTransportSecurity: 'max-age=31536000; includeSubDomains',
   crossOriginResourcePolicy: 'cross-origin',
+  contentSecurityPolicy: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "'unsafe-inline'", 'https://www.googletagmanager.com', 'https://challenges.cloudflare.com'],
+    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+    imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com', 'https://trusthyre.com', 'https://*.google-analytics.com'],
+    connectSrc: ["'self'", 'http://localhost:*', 'http://127.0.0.1:*', 'ws://localhost:*', 'ws://127.0.0.1:*', 'https://api.trusthyre.com', 'https://*.firebaseio.com', 'https://fcm.googleapis.com', 'https://*.neon.tech', 'https://challenges.cloudflare.com'],
+    frameAncestors: ["'none'"],
+    objectSrc: ["'none'"],
+  }
 }));
 
 app.use('*', cors({

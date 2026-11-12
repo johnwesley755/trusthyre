@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import crypto from 'crypto';
 import * as authController from '../controllers/authController';
 import { authenticateJWT, requireAdmin } from '../middlewares/auth';
 import { otpLimiter, loginLimiter, authActionLimiter } from '../middlewares/rateLimiter';
@@ -26,11 +27,21 @@ router.post('/webhooks/sync', async (c, next) => {
   const expectedSecret = envObj.INTERNAL_SERVICE_SECRET || 
                          process.env.INTERNAL_SERVICE_SECRET || 
                          envObj.INTERNAL_WEBHOOK_SECRET || 
-                         process.env.INTERNAL_WEBHOOK_SECRET || 
-                         'trusthyre-secure-internal-scraper-key-2026';
-  if (!secret || secret !== expectedSecret) {
+                         process.env.INTERNAL_WEBHOOK_SECRET;
+
+  // Fail-closed: Never allow access if service secret is not configured
+  if (!expectedSecret || !secret) {
     return c.json({ success: false, message: "Forbidden: Invalid service secret" }, 403 as any);
   }
+
+  // Timing-safe constant-time string comparison to prevent side-channel timing attacks
+  const secretBuf = Buffer.from(secret);
+  const expectedBuf = Buffer.from(expectedSecret);
+
+  if (secretBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(secretBuf, expectedBuf)) {
+    return c.json({ success: false, message: "Forbidden: Invalid service secret" }, 403 as any);
+  }
+
   await next();
 }, authController.handleLegacyWebhook);
 

@@ -13,7 +13,7 @@ export const authenticateJWT = async (c: Context, next: Next) => {
       // bindings are usually on c.env. 
       const secret = (c.env?.JWT_SECRET as string) || (process.env.JWT_SECRET as string);
       
-      const user: any = jwt.verify(token, secret);
+      const user: any = jwt.verify(token, secret, { algorithms: ['HS256'] });
       c.set('user', user);
 
       // Bind authenticated claims to Request Context for RLS
@@ -38,7 +38,7 @@ export const optionalAuth = async (c: Context, next: Next) => {
     const token = authHeader.split(' ')[1];
     try {
       const secret = (c.env?.JWT_SECRET as string) || (process.env.JWT_SECRET as string);
-      const user: any = jwt.verify(token, secret);
+      const user: any = jwt.verify(token, secret, { algorithms: ['HS256'] });
       c.set('user', user);
 
       // Bind optional claims to Request Context for RLS

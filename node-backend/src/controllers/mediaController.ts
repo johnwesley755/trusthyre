@@ -2,6 +2,8 @@ import { Context } from 'hono';
 import prisma from '../config/prisma';
 import { uploadMedia, deleteMedia } from '../services/cloudinary';
 import { ApiResponse } from '../utils/ApiResponse';
+import { validateFileSignature, sanitizeFileName } from '../utils/fileSignature';
+import { isAppAdmin } from '../utils/roles';
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'application/pdf',
@@ -47,7 +49,15 @@ export const upload = async (c: Context) => {
         if (arrayBuf.byteLength > 15 * 1024 * 1024) {
           return c.json(ApiResponse.error("File size exceeds 15MB limit"), 400 as any);
         }
-        mediaInput = Buffer.from(arrayBuf);
+        const fileBuffer = Buffer.from(arrayBuf);
+
+        // Security Gate: Binary Magic-Bytes & Malware Signature Inspection
+        const signatureCheck = validateFileSignature(fileBuffer, mimeType);
+        if (!signatureCheck.valid) {
+          return c.json(ApiResponse.error(signatureCheck.error || "File signature mismatch or potentially malicious payload"), 400 as any);
+        }
+
+        mediaInput = fileBuffer;
       } else if (typeof file === 'string') {
         mediaInput = file;
       }
@@ -67,13 +77,22 @@ export const upload = async (c: Context) => {
         }
       }
 
-      // Security Gate: Data-URL MIME check
+      // Security Gate: Data-URL MIME check and binary signature inspection
       if (typeof mediaInput === 'string' && mediaInput.startsWith('data:')) {
         const header = mediaInput.split(';')[0].toLowerCase();
         detectedMime = header.replace('data:', '');
         const isAllowedDataUrl = ALLOWED_MIME_TYPES.some(m => header.includes(m));
         if (!isAllowedDataUrl) {
           return c.json(ApiResponse.error("Unsupported data-URL format. Allowed formats: Images, PDF, Audio"), 400 as any);
+        }
+
+        const base64Content = mediaInput.split(',')[1];
+        if (base64Content) {
+          const decodedBuffer = Buffer.from(base64Content, 'base64');
+          const signatureCheck = validateFileSignature(decodedBuffer, detectedMime);
+          if (!signatureCheck.valid) {
+            return c.json(ApiResponse.error(signatureCheck.error || "Data URL binary signature mismatch"), 400 as any);
+          }
         }
       }
     }
@@ -87,11 +106,13 @@ export const upload = async (c: Context) => {
     // Security & Audit: Persist asset record with owner_id for deterministic RLS ownership
     const authUser = c.get('user');
     if (authUser?.sub && result?.public_id) {
+      const rawFileName = (result as any).original_filename || '';
+      const safeName = rawFileName ? sanitizeFileName(rawFileName) : null;
       await prisma.media_assets.create({
         data: {
           url: result.secure_url,
           public_id: result.public_id,
-          file_name: (result as any).original_filename || null,
+          file_name: safeName,
           file_type: detectedMime,
           file_size: (result as any).bytes ? BigInt((result as any).bytes) : null,
           owner_id: authUser.sub,
@@ -122,7 +143,7 @@ export const remove = async (c: Context) => {
     if (!id) return c.json(ApiResponse.error("Media ID required"), 400 as any);
 
     // Security Gate: Validate asset ownership via direct RLS-backed media_assets or legacy profile links
-    if (authUser.role !== 'ADMIN') {
+    if (!isAppAdmin(authUser.role)) {
       const ownedAsset = await prisma.media_assets.findFirst({
         where: {
           public_id: id,

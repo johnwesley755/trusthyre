@@ -3,6 +3,7 @@ import prisma from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
 import { SearchAlertService } from '../services/searchAlertService';
+import { isAppAdmin } from '../utils/roles';
 
 const maskPhoneNumber = (phone: string | null | undefined): string | null => {
   if (!phone) return null;
@@ -357,7 +358,7 @@ export const getProfilesByUserIds = async (c: Context) => {
   try {
     const authUser = c.get('user');
     const employerId = authUser?.sub;
-    const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'admin';
+    const isAdmin = isAppAdmin(authUser?.role);
     const userIds: string[] = (await c.req.json());
     const validUserIds = (userIds || []).filter(Boolean);
     if (validUserIds.length === 0) return c.json(ApiResponse.ok([]));
@@ -503,7 +504,7 @@ export const getWorkerById = async (c: Context) => {
 
     const authUser = c.get('user');
     const requesterId = authUser?.sub;
-    const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'admin';
+    const isAdmin = isAppAdmin(authUser?.role);
     const isSelf = requesterId && (requesterId === profile.user_id || requesterId === profile.id);
 
     let hasEmployerRelation = false;
@@ -888,10 +889,9 @@ export const getWorkerWorkHistory = async (c: Context) => {
     // 2. Fetch logged records from worker_work_history table
     let externalRows: any[] = [];
     try {
-      externalRows = await prisma.$queryRawUnsafe<any[]>(
-        `SELECT * FROM worker_work_history WHERE worker_id = $1 ORDER BY start_date DESC`,
-        workerId
-      );
+      externalRows = await prisma.$queryRaw<any[]>`
+        SELECT * FROM worker_work_history WHERE worker_id = ${workerId} ORDER BY start_date DESC
+      `;
     } catch (e: any) {
       // Table may still be initializing
       externalRows = [];

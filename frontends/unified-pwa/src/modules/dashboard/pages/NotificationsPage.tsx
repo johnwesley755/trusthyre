@@ -113,7 +113,7 @@ export const NotificationsPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full min-h-screen p-3 sm:p-6 lg:p-8 bg-[#F8FAFC] dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0A1931] dark:text-zinc-100 pb-24 transition-colors duration-200">
+    <div className="w-full min-h-screen pb-24 pt-6 px-4 sm:px-6 lg:px-8 bg-[#F8FAFC] dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-slate-900 dark:text-zinc-100 transition-colors duration-200">
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* Navigation Breadcrumb / Actions Row */}
