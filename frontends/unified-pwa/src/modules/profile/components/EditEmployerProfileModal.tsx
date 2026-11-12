@@ -240,7 +240,6 @@ export const EditEmployerProfileModal: React.FC<EditEmployerProfileModalProps> =
                       src={profileImageUrl} 
                       alt=""
                       referrerPolicy="no-referrer"
-                      crossOrigin="anonymous"
                       onError={(e) => {
                         (e.currentTarget as HTMLElement).style.display = 'none';
                         setLogoLoadError(true);

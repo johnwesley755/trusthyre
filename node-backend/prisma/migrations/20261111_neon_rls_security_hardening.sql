@@ -913,5 +913,29 @@ DROP POLICY IF EXISTS "flyway_schema_history_auth_admin_delete" ON public.flyway
 CREATE POLICY "flyway_schema_history_auth_admin_delete" ON public.flyway_schema_history_auth
     FOR DELETE USING (is_app_admin());
 
+-- ============================================================================
+-- 30. TABLE: recommendation_interactions
+-- ============================================================================
+ALTER TABLE IF EXISTS public.recommendation_interactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.recommendation_interactions FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "rec_interactions_select" ON public.recommendation_interactions;
+CREATE POLICY "rec_interactions_select" ON public.recommendation_interactions
+FOR SELECT USING (
+  is_app_admin() OR user_id = (SELECT current_app_user_id())
+);
+
+DROP POLICY IF EXISTS "rec_interactions_insert" ON public.recommendation_interactions;
+CREATE POLICY "rec_interactions_insert" ON public.recommendation_interactions
+FOR INSERT WITH CHECK (
+  is_app_admin() OR user_id = (SELECT current_app_user_id())
+);
+
+DROP POLICY IF EXISTS "rec_interactions_delete" ON public.recommendation_interactions;
+CREATE POLICY "rec_interactions_delete" ON public.recommendation_interactions
+FOR DELETE USING (
+  is_app_admin() OR user_id = (SELECT current_app_user_id())
+);
+
 COMMIT;
 

@@ -1,0 +1,106 @@
+import { Context } from 'hono';
+import { ApiResponse } from '../utils/ApiResponse';
+import { recommendationEngineService } from '../services/recommendationEngineService';
+
+export const recommendationController = {
+
+  /**
+   * GET /api/recommendations/jobs
+   * Retrieves personalized, multi-objective ranked jobs for the logged-in candidate.
+   */
+  getRecommendedJobs: async (c: Context) => {
+    try {
+      const authUser = c.get('user');
+      if (!authUser || !authUser.sub) {
+        return c.json(ApiResponse.error("Unauthorized: Candidate login required"), 401 as any);
+      }
+
+      const lat = c.req.query('lat') ? parseFloat(c.req.query('lat')!) : undefined;
+      const lng = c.req.query('lng') ? parseFloat(c.req.query('lng')!) : undefined;
+      const radiusKm = c.req.query('radiusKm') ? parseFloat(c.req.query('radiusKm')!) : undefined;
+      const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : 15;
+      const page = c.req.query('page') ? parseInt(c.req.query('page')!) : 1;
+
+      const results = await recommendationEngineService.getRecommendedJobsForWorker(
+        authUser.sub,
+        { lat, lng, radiusKm, limit, page }
+      );
+
+      return c.json(ApiResponse.ok(results));
+    } catch (err: any) {
+      console.error("Error in getRecommendedJobs controller:", err);
+      return c.json(ApiResponse.error(err.message || "Failed to retrieve recommended jobs"), 500 as any);
+    }
+  },
+
+  /**
+   * GET /api/recommendations/workers
+   * Retrieves top matched, pre-screened candidate profiles for an employer's active vacancies.
+   */
+  getRecommendedWorkers: async (c: Context) => {
+    try {
+      const authUser = c.get('user');
+      if (!authUser || !authUser.sub) {
+        return c.json(ApiResponse.error("Unauthorized: Employer login required"), 401 as any);
+      }
+
+      const jobId = c.req.query('jobId') || undefined;
+      const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : 15;
+      const page = c.req.query('page') ? parseInt(c.req.query('page')!) : 1;
+
+      const results = await recommendationEngineService.getRecommendedWorkersForEmployer(
+        authUser.sub,
+        { jobId, limit, page }
+      );
+
+      return c.json(ApiResponse.ok(results));
+    } catch (err: any) {
+      console.error("Error in getRecommendedWorkers controller:", err);
+      return c.json(ApiResponse.error(err.message || "Failed to retrieve recommended candidates"), 500 as any);
+    }
+  },
+
+  /**
+   * POST /api/recommendations/telemetry
+   * Ingests recommendation feedback interactions (VIEW, CLICK, SAVE, APPLY, INVITE, DISMISS)
+   */
+  recordTelemetry: async (c: Context) => {
+    try {
+      const authUser = c.get('user');
+      if (!authUser || !authUser.sub) {
+        return c.json(ApiResponse.error("Unauthorized"), 401 as any);
+      }
+
+      const body = await c.req.json();
+      const { interactionType, itemType, itemId, matchScore, metadata } = body;
+
+      const validInteractions = ['VIEW', 'CLICK', 'SAVE', 'APPLY', 'INVITE', 'DISMISS'];
+      if (!validInteractions.includes(interactionType)) {
+        return c.json(ApiResponse.error("Invalid interactionType"), 400 as any);
+      }
+
+      if (!['JOB', 'WORKER'].includes(itemType)) {
+        return c.json(ApiResponse.error("Invalid itemType"), 400 as any);
+      }
+
+      if (!itemId) {
+        return c.json(ApiResponse.error("itemId is required"), 400 as any);
+      }
+
+      const record = await recommendationEngineService.recordInteraction({
+        userId: authUser.sub,
+        interactionType,
+        itemType,
+        itemId,
+        matchScore: typeof matchScore === 'number' ? matchScore : undefined,
+        metadata
+      });
+
+      return c.json(ApiResponse.ok("Telemetry recorded successfully", { id: record.id }));
+    } catch (err: any) {
+      console.error("Error in recordTelemetry controller:", err);
+      return c.json(ApiResponse.error(err.message || "Failed to record telemetry"), 500 as any);
+    }
+  }
+};
+

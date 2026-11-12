@@ -190,12 +190,26 @@ export default function EmployerProfileDetailsPage() {
     || (user as any)?.profile_image_url 
     || (user as any)?.photoURL;
 
-  const lastLogoUrlRef = useRef(companyLogoUrl);
+  const [logoReady, setLogoReady] = useState(false);
+
   useEffect(() => {
-    if (companyLogoUrl !== lastLogoUrlRef.current) {
-      lastLogoUrlRef.current = companyLogoUrl;
-      setLogoLoadError(false);
+    if (!companyLogoUrl) {
+      setLogoReady(false);
+      return;
     }
+    let active = true;
+    const img = new Image();
+    img.src = companyLogoUrl;
+    img.referrerPolicy = 'no-referrer';
+    img.onload = () => {
+      if (active) setLogoReady(true);
+    };
+    img.onerror = () => {
+      if (active) setLogoReady(false);
+    };
+    return () => {
+      active = false;
+    };
   }, [companyLogoUrl]);
 
   const companyNameDisplay = profile?.companyName || user?.companyName || 'Corporate Partner';
@@ -246,16 +260,11 @@ export default function EmployerProfileDetailsPage() {
                   className="relative group cursor-pointer"
                 >
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white dark:bg-[#121215] rounded-3xl border border-slate-200/80 dark:border-zinc-800 flex items-center justify-center overflow-hidden shadow-2xs">
-                    {companyLogoUrl && !logoLoadError ? (
+                    {logoReady && companyLogoUrl ? (
                       <img 
                         src={companyLogoUrl} 
                         alt=""
                         referrerPolicy="no-referrer"
-                        crossOrigin="anonymous"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLElement).style.display = 'none';
-                          setLogoLoadError(true);
-                        }}
                         className="w-full h-full object-cover" 
                       />
                     ) : (

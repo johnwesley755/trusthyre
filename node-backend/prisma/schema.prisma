@@ -694,6 +694,21 @@ model worker_work_history {
   @@index([verification_status], map: "idx_worker_work_history_status")
 }
 
+model recommendation_interactions {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id          String    @db.VarChar(255)
+  interaction_type String    @db.VarChar(50) // 'VIEW', 'CLICK', 'SAVE', 'APPLY', 'INVITE', 'DISMISS'
+  item_type        String    @db.VarChar(20) // 'JOB', 'WORKER'
+  item_id          String    @db.VarChar(255)
+  match_score      Int?
+  metadata         Json?     @default("{}")
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([user_id, interaction_type], map: "idx_rec_interactions_user_type")
+  @@index([item_type, item_id], map: "idx_rec_interactions_item")
+  @@index([created_at], map: "idx_rec_interactions_created_at")
+}
+
 
 
 

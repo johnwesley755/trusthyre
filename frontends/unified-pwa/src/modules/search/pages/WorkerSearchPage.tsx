@@ -405,22 +405,11 @@ export const WorkerSearchPage = () => {
                         ? `${worker.experienceYears}+ ${t("Yrs Exp", "Yrs Exp")}`
                         : t('Verified Specialist', 'Verified Specialist');
 
-                    // Dynamic candidate-to-employer-job matching calculation
+                    // Dynamic candidate-to-employer matching calculation
                     const matchAnalysis = (() => {
-                      if (employerJobs && employerJobs.length > 0) {
-                        let topAnalysis = null;
-                        let topScore = -1;
-                        for (const job of employerJobs) {
-                          const a = calculateMatchScore(job, worker);
-                          if (a.overallScore > topScore) {
-                            topScore = a.overallScore;
-                            topAnalysis = a;
-                          }
-                        }
-                        if (topAnalysis) return topAnalysis;
-                      }
+                      if (worker.matchAnalysis) return worker.matchAnalysis;
 
-                      // Evaluation against active trade or search filter
+                      // 1. If employer has entered a search query or selected a trade/city filter, evaluate against that intent first
                       const activeTrade = (selectedTrade !== 'All' ? selectedTrade : '') || searchQuery;
                       if (activeTrade || city) {
                         const targetJob = {
@@ -432,20 +421,40 @@ export const WorkerSearchPage = () => {
                         return calculateMatchScore(targetJob, worker);
                       }
 
-                      // Profile readiness score when no specific job or filter is selected
-                      const skillsPoints = Math.min(45, skillList.length * 9);
-                      const expPoints = Math.min(25, (worker.experienceYears || 0) * 5 + 5);
-                      const verifPoints = worker.isVerified ? 20 : 5;
-                      const locPoints = (worker.city || worker.location) ? 10 : 0;
-                      const score = Math.min(99, Math.max(30, skillsPoints + expPoints + verifPoints + locPoints));
+                      // 2. When employer is viewing without search filter, evaluate against their active OPEN jobs
+                      const activeEmployerJobs = (employerJobs || []).filter(
+                        (j: any) => j.status === 'OPEN' || j.status === 'ACTIVE'
+                      );
+
+                      if (activeEmployerJobs.length > 0) {
+                        let topAnalysis = null;
+                        let topScore = -1;
+                        for (const job of activeEmployerJobs) {
+                          const a = calculateMatchScore(job, worker);
+                          if (a.overallScore > topScore) {
+                            topScore = a.overallScore;
+                            topAnalysis = a;
+                          }
+                        }
+                        if (topAnalysis && topScore >= 35) return topAnalysis;
+                      }
+
+                      // 3. Fallback: Distinct candidate profile capability & trust scoring
+                      // Evaluates verified skill count, years of experience, ID verification, and location
+                      const skillScore = Math.min(45, skillList.length * 9);
+                      const expYears = Number(worker.experienceYears || (worker as any).experience_years || 0);
+                      const expScore = Math.min(25, expYears * 6 + (expYears > 0 ? 10 : 0));
+                      const verifScore = (worker.isVerified || (worker as any).is_verified) ? 20 : 5;
+                      const locScore = (worker.city || worker.location) ? 10 : 0;
+                      const rawScore = Math.min(98, Math.max(25, skillScore + expScore + verifScore + locScore));
 
                       return {
-                        overallScore: score,
-                        scoreBand: (score >= 80 ? 'Excellent Match' : score >= 65 ? 'Strong Match' : score >= 45 ? 'Moderate Match' : 'Potential Match') as any,
+                        overallScore: rawScore,
+                        scoreBand: (rawScore >= 80 ? 'Excellent Match' : rawScore >= 65 ? 'Strong Match' : rawScore >= 45 ? 'Moderate Match' : 'Potential Match') as any,
                         matchingSkills: skillList.slice(0, 3),
                         missingSkills: [],
-                        matchSummary: `${skillList.length} verified skills • ${worker.experienceYears || 0} yrs exp`,
-                        breakdown: { skills: skillsPoints, experience: expPoints, location: locPoints, verification: verifPoints }
+                        matchSummary: `${skillList.length} verified skills • ${expYears} yrs exp`,
+                        breakdown: { skills: skillScore, experience: expScore, location: locScore, verification: verifScore }
                       };
                     })();
 

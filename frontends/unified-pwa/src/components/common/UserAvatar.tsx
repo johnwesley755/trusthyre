@@ -28,18 +28,35 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   showStatus = false,
   statusOnline = true,
 }) => {
-  const isKnownFailed = Boolean(src && failedImageUrls.has(src));
-  const [hasError, setHasError] = useState(isKnownFailed);
-  const currentSrcRef = useRef(src);
+  const [imgStatus, setImgStatus] = useState<'loading' | 'loaded' | 'error'>(() => {
+    if (!src || failedImageUrls.has(src)) return 'error';
+    return 'loading';
+  });
 
   useEffect(() => {
-    if (src !== currentSrcRef.current) {
-      currentSrcRef.current = src;
-      setHasError(Boolean(src && failedImageUrls.has(src)));
+    if (!src || failedImageUrls.has(src)) {
+      setImgStatus('error');
+      return;
     }
+
+    let active = true;
+    const img = new Image();
+    img.src = src;
+    img.referrerPolicy = 'no-referrer';
+    img.onload = () => {
+      if (active) setImgStatus('loaded');
+    };
+    img.onerror = () => {
+      failedImageUrls.add(src);
+      if (active) setImgStatus('error');
+    };
+
+    return () => {
+      active = false;
+    };
   }, [src]);
 
-  // Derive initial from name or default (e.g. John Wesley -> JW or J)
+  // Derive initials from name or default (e.g. John Wesley -> JW)
   const getInitials = (n?: string | null): string => {
     if (!n?.trim()) return 'U';
     const parts = n.trim().split(/\s+/).filter(Boolean);
@@ -50,7 +67,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   };
 
   const initials = getInitials(name);
-  const shouldShowImage = Boolean(src && !hasError && !isKnownFailed);
+  const isImageReady = imgStatus === 'loaded';
 
   return (
     <div 
@@ -60,17 +77,11 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
       <div
         className={`${sizeClasses[size]} rounded-full overflow-hidden flex items-center justify-center border-2 border-[#FACD15] shadow-sm bg-[#0A1931] text-[#FACD15] font-black select-none`}
       >
-        {shouldShowImage ? (
+        {isImageReady && src ? (
           <img
-            src={src || ''}
+            src={src}
             alt=""
             referrerPolicy="no-referrer"
-            crossOrigin="anonymous"
-            onError={(e) => {
-              if (src) failedImageUrls.add(src);
-              (e.currentTarget as HTMLElement).style.display = 'none';
-              setHasError(true);
-            }}
             className="w-full h-full object-cover"
           />
         ) : (
