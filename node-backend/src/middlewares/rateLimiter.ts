@@ -176,3 +176,14 @@ export const writeActionLimiter = createRateLimiter({
   max: 30,
   message: 'Too many submission requests. Please wait a moment before trying again.'
 });
+
+/**
+ * Admin Invitation Limiter: 5 attempts per 15 minutes
+ * Protects administrator invitation verification and onboarding from brute-forcing.
+ */
+export const invitationLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  message: 'Too many invitation attempts. Please wait 15 minutes before trying again.',
+  keyGenerator: (c) => `invitation:ip:${getClientIp(c)}`
+});

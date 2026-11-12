@@ -2,14 +2,16 @@ import { Hono } from 'hono';
 import * as adminController from '../controllers/adminController';
 import * as diagnosticController from '../controllers/diagnosticController';
 import { authenticateJWT, requireAdmin, requireSuperAdmin } from '../middlewares/auth';
+import { invitationLimiter } from '../middlewares/rateLimiter';
 
 const router = new Hono();
 
 /**
  * Public Invitation Endpoints (Accessible with valid token by prospective admin)
+ * Protected with invitationLimiter against automated brute-force attacks
  */
-router.get('/invitations/verify', adminController.getAdminInvitationByToken);
-router.post('/invitations/accept', adminController.acceptAdminInvitation);
+router.get('/invitations/verify', invitationLimiter, adminController.getAdminInvitationByToken);
+router.post('/invitations/accept', invitationLimiter, adminController.acceptAdminInvitation);
 
 /**
  * Security Boundary: All other administrative endpoints require valid authentication and ADMIN role.

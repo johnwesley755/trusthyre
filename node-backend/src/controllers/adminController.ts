@@ -78,6 +78,7 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationDispatcher } from '../services/notificationDispatcher';
 import { GoogleAnalyticsService } from '../services/googleAnalyticsService';
+import { validatePasswordStrength } from '../utils/validators';
 
 
 export const getAdminStats = async (c: Context) => {
@@ -961,8 +962,9 @@ export const acceptAdminInvitation = async (c: Context) => {
       return c.json(ApiResponse.error("Token and new password are required"), 400 as any);
     }
 
-    if (password.length < 8) {
-      return c.json(ApiResponse.error("Password must be at least 8 characters"), 400 as any);
+    const passwordCheck = validatePasswordStrength(password);
+    if (!passwordCheck.valid) {
+      return c.json(ApiResponse.error(passwordCheck.error || "Password does not meet complexity requirements"), 400 as any);
     }
 
     const rows: any[] = await prisma.$queryRaw`

@@ -2,6 +2,7 @@ import { Context } from 'hono';
 import prisma from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
+import { isAppAdmin } from '../utils/roles';
 
 const formatEmployerProfile = (profile: any, user?: any) => {
   if (!profile && !user) return null;
@@ -109,7 +110,7 @@ export const updateEmployerProfile = async (c: Context) => {
     const targetUserId = (paramId && paramId !== 'profile' && paramId !== 'me') ? paramId : authUser.sub;
 
     // Security fix 1.4: Prevent editing arbitrary users' profiles
-    if (targetUserId !== authUser.sub && authUser.role !== 'ADMIN') {
+    if (targetUserId !== authUser.sub && !isAppAdmin(authUser.role)) {
       return c.json(ApiResponse.error("Forbidden: You cannot edit another employer's profile"), 403 as any);
     }
 
@@ -132,8 +133,8 @@ export const updateEmployerProfile = async (c: Context) => {
     if (data.latitude !== undefined) dbData.latitude = data.latitude ? Number(data.latitude) : null;
     if (data.longitude !== undefined) dbData.longitude = data.longitude ? Number(data.longitude) : null;
 
-    // Security fix 1.5: Only ADMIN can change businessTier or isVerified directly
-    if (authUser.role === 'ADMIN') {
+    // Security fix 1.5: Only ADMIN / SUPER_ADMIN can change businessTier or isVerified directly
+    if (isAppAdmin(authUser.role)) {
       if (data.businessTier !== undefined || data.business_tier !== undefined) {
         dbData.business_tier = data.businessTier ?? data.business_tier;
       }

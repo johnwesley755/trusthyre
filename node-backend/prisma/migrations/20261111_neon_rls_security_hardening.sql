@@ -890,5 +890,28 @@ CREATE POLICY "interviews_delete" ON public.interviews
         OR is_app_admin()
     );
 
+-- ============================================================================
+-- 12. INTERNAL MIGRATION LEDGER: flyway_schema_history_auth
+-- Enforce strict RLS so migration metadata cannot be probed or altered
+-- ============================================================================
+ALTER TABLE public.flyway_schema_history_auth ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.flyway_schema_history_auth FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "flyway_schema_history_auth_admin_select" ON public.flyway_schema_history_auth;
+CREATE POLICY "flyway_schema_history_auth_admin_select" ON public.flyway_schema_history_auth
+    FOR SELECT USING (is_app_admin());
+
+DROP POLICY IF EXISTS "flyway_schema_history_auth_admin_insert" ON public.flyway_schema_history_auth;
+CREATE POLICY "flyway_schema_history_auth_admin_insert" ON public.flyway_schema_history_auth
+    FOR INSERT WITH CHECK (is_app_admin());
+
+DROP POLICY IF EXISTS "flyway_schema_history_auth_admin_update" ON public.flyway_schema_history_auth;
+CREATE POLICY "flyway_schema_history_auth_admin_update" ON public.flyway_schema_history_auth
+    FOR UPDATE USING (is_app_admin()) WITH CHECK (is_app_admin());
+
+DROP POLICY IF EXISTS "flyway_schema_history_auth_admin_delete" ON public.flyway_schema_history_auth;
+CREATE POLICY "flyway_schema_history_auth_admin_delete" ON public.flyway_schema_history_auth
+    FOR DELETE USING (is_app_admin());
+
 COMMIT;
 
