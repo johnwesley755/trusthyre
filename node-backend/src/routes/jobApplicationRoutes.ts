@@ -8,6 +8,7 @@ const router = new Hono();
 router.post('/', authenticateJWT, writeActionLimiter, jobApplicationController.applyForJob);
 router.post('/dispatch-offer', authenticateJWT, writeActionLimiter, jobApplicationController.dispatchOffer);
 router.get('/my', authenticateJWT, jobApplicationController.getMyApplications);
+router.get('/match/:jobId/:workerId?', authenticateJWT, jobApplicationController.getCandidateJobMatch);
 router.get('/employer-status/:workerId', authenticateJWT, jobApplicationController.getEmployerWorkerStatus);
 router.get('/job/:jobId', authenticateJWT, jobApplicationController.getJobApplications);
 router.post('/by-jobs', authenticateJWT, jobApplicationController.getApplicationsByJobs);

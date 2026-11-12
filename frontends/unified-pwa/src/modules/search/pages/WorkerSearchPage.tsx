@@ -35,6 +35,7 @@ import { SeoHead } from '../../../components/common/SeoHead';
 import { CandidateOutreachModal, type CandidateOutreachCandidate } from '../../../components/common/CandidateOutreachModal';
 import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
 import { jobService } from '../../../services/job.service';
+import { calculateMatchScore, getMatchScoreVisuals } from '../../../utils/matchScorer';
 import { Phone, MessageSquare, Sparkles as SparklesIcon, Zap } from 'lucide-react';
 
 const JOB_CATEGORIES = [
@@ -404,6 +405,53 @@ export const WorkerSearchPage = () => {
                         ? `${worker.experienceYears}+ ${t("Yrs Exp", "Yrs Exp")}`
                         : t('Verified Specialist', 'Verified Specialist');
 
+                    // Dynamic candidate-to-employer-job matching calculation
+                    const matchAnalysis = (() => {
+                      if (employerJobs && employerJobs.length > 0) {
+                        let topAnalysis = null;
+                        let topScore = -1;
+                        for (const job of employerJobs) {
+                          const a = calculateMatchScore(job, worker);
+                          if (a.overallScore > topScore) {
+                            topScore = a.overallScore;
+                            topAnalysis = a;
+                          }
+                        }
+                        if (topAnalysis) return topAnalysis;
+                      }
+
+                      // Evaluation against active trade or search filter
+                      const activeTrade = (selectedTrade !== 'All' ? selectedTrade : '') || searchQuery;
+                      if (activeTrade || city) {
+                        const targetJob = {
+                          title: activeTrade || 'Verified Specialist',
+                          requiredSkills: activeTrade ? [activeTrade] : [],
+                          city: city || undefined,
+                          experienceYearsRequired: experience !== 'all' ? (parseInt(experience) || 1) : 0
+                        };
+                        return calculateMatchScore(targetJob, worker);
+                      }
+
+                      // Profile readiness score when no specific job or filter is selected
+                      const skillsPoints = Math.min(45, skillList.length * 9);
+                      const expPoints = Math.min(25, (worker.experienceYears || 0) * 5 + 5);
+                      const verifPoints = worker.isVerified ? 20 : 5;
+                      const locPoints = (worker.city || worker.location) ? 10 : 0;
+                      const score = Math.min(99, Math.max(30, skillsPoints + expPoints + verifPoints + locPoints));
+
+                      return {
+                        overallScore: score,
+                        scoreBand: (score >= 80 ? 'Excellent Match' : score >= 65 ? 'Strong Match' : score >= 45 ? 'Moderate Match' : 'Potential Match') as any,
+                        matchingSkills: skillList.slice(0, 3),
+                        missingSkills: [],
+                        matchSummary: `${skillList.length} verified skills • ${worker.experienceYears || 0} yrs exp`,
+                        breakdown: { skills: skillsPoints, experience: expPoints, location: locPoints, verification: verifPoints }
+                      };
+                    })();
+
+                    const matchScore = matchAnalysis.overallScore;
+                    const visuals = getMatchScoreVisuals(matchScore);
+
                     return (
                       <div
                         key={worker.userId}
@@ -518,10 +566,13 @@ export const WorkerSearchPage = () => {
                               <span>{t("Available for Direct Hire", "Available for Direct Hire")}</span>
                             </span>
 
-                            {/* 🎯 AI Match Score Badge (Apna & WorkIndia model) */}
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-[11px] font-bold border border-amber-200 dark:border-amber-800 shadow-2xs">
-                              <SparklesIcon className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                              <span>{worker.trustScore ? `${Math.min(99, Math.max(88, Number(worker.trustScore)))}% Match` : '95% Match'}</span>
+                            {/* 🎯 Dynamic AI Match Score Badge */}
+                            <span 
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border shadow-2xs ${visuals.bg} ${visuals.text} ${visuals.border}`}
+                              title={`${visuals.badge}: ${matchAnalysis.matchSummary}`}
+                            >
+                              <SparklesIcon className="w-3 h-3 shrink-0" />
+                              <span>{matchScore}% Match</span>
                             </span>
                           </div>
 

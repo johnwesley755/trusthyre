@@ -1,6 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe, Phone, MessageCircle, Utensils, Home, Zap, Clock3, Fuel, Gift, Volume2, VolumeX } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe, Phone, MessageCircle, Utensils, Home, Zap, Clock3, Fuel, Gift, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { profileService } from '../../../services/profile.service';
+import { calculateMatchScore, getMatchScoreVisuals } from '../../../utils/matchScorer';
+import { queryKeys } from '../../../lib/queryKeys';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { useSavedStore } from '../../../hooks/useSavedStore';
 import { useAuth } from '../../../providers/AuthContext';
@@ -91,6 +95,22 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
   const isSaved = isJobSaved(job.id);
   const { user } = useAuth();
   const isEmployer = Boolean(user && user.role === 'EMPLOYER');
+  const isWorker = Boolean(user && user.role === 'WORKER');
+
+  const { data: workerProfile } = useQuery({
+    queryKey: queryKeys.workers.me,
+    queryFn: profileService.getWorkerProfile,
+    enabled: isWorker,
+    staleTime: 5 * 60 * 1000
+  });
+
+  const workerMatchAnalysis = useMemo(() => {
+    if (!isWorker || !workerProfile) return null;
+    return calculateMatchScore(job, workerProfile);
+  }, [isWorker, workerProfile, job]);
+
+  const matchVisuals = workerMatchAnalysis ? getMatchScoreVisuals(workerMatchAnalysis.overallScore) : null;
+
   const [imageError, setImageError] = useState(false);
   const [isPamphletOpen, setIsPamphletOpen] = useState(false);
   const [isWalkInPassOpen, setIsWalkInPassOpen] = useState(false);
@@ -273,6 +293,12 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                 <span>Verified Worksite</span>
               </span>
             )}
+            {workerMatchAnalysis && matchVisuals && (
+              <span className={`px-2 py-0.5 rounded-md backdrop-blur-md text-[10px] font-bold flex items-center gap-1 shadow-xs border ${matchVisuals.bg} ${matchVisuals.text} ${matchVisuals.border}`}>
+                <Sparkles className="w-3 h-3 shrink-0" />
+                <span>{workerMatchAnalysis.overallScore}% Match</span>
+              </span>
+            )}
           </div>
 
           {/* Top-Right Action Buttons on Mobile (when image is rendered on top) */}
@@ -397,6 +423,19 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900/50">
                       <Zap className="w-2.5 h-2.5 fill-emerald-600 text-emerald-600" />
                       <span>Responds fast</span>
+                    </span>
+                  </>
+                )}
+                {/* 🎯 Dynamic Candidate Match Score */}
+                {workerMatchAnalysis && matchVisuals && (
+                  <>
+                    <span className="text-[#e6e8ec] dark:text-zinc-700">•</span>
+                    <span 
+                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-2xs ${matchVisuals.bg} ${matchVisuals.text} ${matchVisuals.border}`}
+                      title={`${matchVisuals.badge}: ${workerMatchAnalysis.matchSummary}`}
+                    >
+                      <Sparkles className="w-2.5 h-2.5 shrink-0" />
+                      <span>{workerMatchAnalysis.overallScore}% Match</span>
                     </span>
                   </>
                 )}

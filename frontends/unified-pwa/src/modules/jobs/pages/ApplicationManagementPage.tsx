@@ -18,15 +18,17 @@ import {
   Briefcase, 
   ShieldCheck, 
   Search,
-  Building2,
   ChevronLeft,
   ArrowRight,
-  ExternalLink,
-  Award,
-  Send,
   Sparkles,
-  Edit
+  Edit,
+  Check,
+  ArrowUpDown,
+  FileText
 } from 'lucide-react';
+import { calculateMatchScore, getMatchScoreVisuals } from '../../../utils/matchScorer';
+import { CandidateResumeModal } from '../../profile/components/resume/CandidateResumeModal';
+import type { ResumeData } from '../../profile/components/resume/CandidateResumeView';
 import { useNavigate, Link, useSearchParams, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserAvatar } from '../../../components/common/UserAvatar';
@@ -73,6 +75,8 @@ export default function ApplicationManagementPage() {
   const [jobSearchQuery, setJobSearchQuery] = useState('');
   const [outreachCandidate, setOutreachCandidate] = useState<CandidateOutreachCandidate | null>(null);
   const [isOutreachModalOpen, setIsOutreachModalOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<'MATCH' | 'RECENT'>('MATCH');
+  const [previewResumeData, setPreviewResumeData] = useState<ResumeData | null>(null);
   const [schedulingApp, setSchedulingApp] = useState<{
     applicationId: string;
     candidateName: string;
@@ -96,14 +100,23 @@ export default function ApplicationManagementPage() {
   const allApplications = allApplicationsRaw;
 
   const selectedJobApplications = useMemo(() => {
-    return allApplications.filter(app => {
+    const filtered = allApplications.filter(app => {
       if (app.jobId !== selectedJobId) return false;
       if (statusFilter === 'ALL') return true;
       if (statusFilter === 'ACCEPTED') return app.status === 'ACCEPTED' || app.status === 'APPROVED';
       if (statusFilter === 'REJECTED') return app.status === 'REJECTED' || app.status === 'DECLINED';
       return app.status === statusFilter;
     });
-  }, [allApplications, selectedJobId, statusFilter]);
+
+    return filtered.sort((a, b) => {
+      if (sortBy === 'MATCH') {
+        const scoreA = a.matchScore ?? 0;
+        const scoreB = b.matchScore ?? 0;
+        if (scoreB !== scoreA) return scoreB - scoreA;
+      }
+      return new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime();
+    });
+  }, [allApplications, selectedJobId, statusFilter, sortBy]);
 
   const workerIds = useMemo(() => selectedJobApplications.map((app) => app.workerId), [selectedJobApplications]);
   
@@ -615,9 +628,24 @@ export default function ApplicationManagementPage() {
                 ))}
               </div>
 
-              <span className="text-xs font-semibold text-[#717784] px-2">
-                Showing {selectedJobApplications.length} candidate{selectedJobApplications.length === 1 ? '' : 's'}
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSortBy(prev => prev === 'MATCH' ? 'RECENT' : 'MATCH')}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 transition-all cursor-pointer ${
+                    sortBy === 'MATCH'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 shadow-2xs'
+                      : 'bg-white dark:bg-[#121215] text-slate-600 dark:text-zinc-400 border-[#e6e8ec] dark:border-zinc-800'
+                  }`}
+                  title="Toggle between Match Score and Date order"
+                >
+                  <ArrowUpDown className="w-3.5 h-3.5" />
+                  <span>{sortBy === 'MATCH' ? 'Sorted by Match Score' : 'Sorted by Date'}</span>
+                </button>
+                <span className="text-xs font-semibold text-[#717784] px-2 hidden sm:inline">
+                  Showing {selectedJobApplications.length} candidate{selectedJobApplications.length === 1 ? '' : 's'}
+                </span>
+              </div>
             </div>
 
             {/* Applicants List */}
@@ -643,6 +671,14 @@ export default function ApplicationManagementPage() {
                   const isOfferSent = app.status === 'OFFER_SENT';
                   const isDeclined = app.status === 'REJECTED' || app.status === 'DECLINED';
 
+                  // Dynamic Candidate-to-Job Matching Engine Analysis
+                  const matchAnalysis = app.matchAnalysis || calculateMatchScore(selectedJob, worker);
+                  const matchScore = app.matchScore ?? matchAnalysis.overallScore;
+                  const scoreBand = app.scoreBand ?? matchAnalysis.scoreBand;
+                  const matchingSkills = app.matchingSkills?.length ? app.matchingSkills : matchAnalysis.matchingSkills;
+                  const missingSkills = app.missingSkills?.length ? app.missingSkills : matchAnalysis.missingSkills;
+                  const visuals = getMatchScoreVisuals(matchScore);
+
                   return (
                     <div
                       key={app.id}
@@ -660,6 +696,14 @@ export default function ApplicationManagementPage() {
                             <h4 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">
                               {candidateName}
                             </h4>
+
+                            {/* Dynamic Match Score Badge */}
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${visuals.bg} ${visuals.text} border ${visuals.border}`}>
+                              <Sparkles className="w-3 h-3" />
+                              <span>{matchScore}% Match</span>
+                              <span className="opacity-80 font-medium hidden sm:inline">({scoreBand})</span>
+                            </span>
+
                             <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                               isVerified 
                                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50' 
@@ -691,6 +735,30 @@ export default function ApplicationManagementPage() {
                             <span>â€¢</span>
                             <span>{worker?.experienceYears ? `${worker.experienceYears}+ Years Exp` : 'Entry Level'}</span>
                           </div>
+
+                          {/* Dynamic Skills Alignment Chips */}
+                          {((matchingSkills && matchingSkills.length > 0) || (missingSkills && missingSkills.length > 0)) && (
+                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mr-0.5">Skills:</span>
+                              {matchingSkills.slice(0, 3).map((skill, idx) => (
+                                <span key={`ms-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
+                                  <Check className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
+                                  <span>{skill}</span>
+                                </span>
+                              ))}
+                              {missingSkills.slice(0, 2).map((skill, idx) => (
+                                <span key={`mis-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-50 dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 border border-slate-200 dark:border-zinc-800">
+                                  <span className="text-slate-400">•</span>
+                                  <span>Needs {skill}</span>
+                                </span>
+                              ))}
+                              {matchingSkills.length + missingSkills.length > 5 && (
+                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
+                                  +{matchingSkills.length + missingSkills.length - 5} more
+                                </span>
+                              )}
+                            </div>
+                          )}
 
                           {app.coverLetter && (
                             <p className="text-xs text-[#717784] dark:text-zinc-300 bg-[#fbfbfb] dark:bg-[#1C1C21] p-2.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 italic max-w-xl">
@@ -739,12 +807,46 @@ export default function ApplicationManagementPage() {
                           <span>Interview</span>
                         </button>
 
-                        <Link
-                          to={`/worker/${app.workerId}`}
-                          className="px-4 py-2 bg-[#f4f4f4] dark:bg-[#1C1C21] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-transparent dark:border-zinc-800 rounded-full text-xs font-semibold uppercase transition-all"
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPreviewResumeData({
+                              fullName: candidateName,
+                              phoneNumber: (worker as any)?.phoneNumber || (worker as any)?.phone,
+                              email: worker?.email,
+                              profileImageUrl: worker?.profileImageUrl,
+                              city: worker?.city || worker?.location,
+                              area: (worker as any)?.area,
+                              location: worker?.location || worker?.city,
+                              bio: worker?.bio,
+                              highestEducation: worker?.highestEducation || (worker as any)?.highest_education,
+                              degree: (worker as any)?.degree,
+                              specialization: (worker as any)?.specialization,
+                              englishProficiency: (worker as any)?.englishProficiency || (worker as any)?.english_proficiency,
+                              languagesKnown: (worker as any)?.languagesKnown || (worker as any)?.languages_known || [],
+                              skills: worker?.skills || [],
+                              preferredRoles: worker?.preferredRoles || (worker as any)?.preferred_roles || [],
+                              preferredCities: (worker as any)?.preferredCities || (worker as any)?.preferred_cities || [],
+                              willingToRelocate: Boolean(worker?.willingToRelocate || (worker as any)?.willing_to_relocate),
+                              trustScore: worker?.trustScore,
+                              level: worker?.level || 'L1',
+                              isVerified: isVerified,
+                              experienceYears: worker?.experienceYears || (worker as any)?.experience_years || 0,
+                              jobTitle: selectedJob?.title,
+                              matchScore: matchScore,
+                              matchBand: scoreBand,
+                              matchingSkills: matchingSkills,
+                              missingSkills: missingSkills,
+                              matchSummary: matchAnalysis.matchSummary,
+                              matchBreakdown: matchAnalysis.breakdown
+                            });
+                          }}
+                          className="px-4 py-2 bg-[#f4f4f4] dark:bg-[#1C1C21] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-transparent dark:border-zinc-800 rounded-full text-xs font-semibold uppercase transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                          title="Open Verified Resume"
                         >
-                          View CV
-                        </Link>
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>View CV</span>
+                        </button>
 
                         {!isApproved && !isOfferSent && !isDeclined && (
                           <>
@@ -882,6 +984,13 @@ export default function ApplicationManagementPage() {
           }}
         />
       )}
+
+      {/* Verified Candidate Resume Modal with Dynamic Match Breakdown */}
+      <CandidateResumeModal
+        isOpen={Boolean(previewResumeData)}
+        onClose={() => setPreviewResumeData(null)}
+        data={previewResumeData}
+      />
     </div>
   );
 }

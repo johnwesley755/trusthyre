@@ -1,6 +1,7 @@
 import apiClient from '../api/apiClient';
 import type { Job } from '../types';
 import type { WorkerPreferences } from '../modules/profile/components/PreferencesModal';
+import { calculateMatchScore } from '../utils/matchScorer';
 
 export interface RecommendedJob extends Job {
   matchPercentage: number;
@@ -25,46 +26,36 @@ export const recommendationService = {
       };
     })();
 
-    // 2. Score and rank jobs
+    // 2. Score and rank jobs using dynamic matching engine
     const scoredJobs: RecommendedJob[] = jobsList.map((job) => {
-      let score = 50; // Base score
+      const analysis = calculateMatchScore(job, {
+        skills: userPrefs.skills,
+        preferredRoles: userPrefs.skills,
+        city: userPrefs.preferredCity,
+        location: userPrefs.preferredCity,
+        preferredCities: [userPrefs.preferredCity],
+        experienceYears: 2,
+        isVerified: true
+      });
+
       const reasons: string[] = [];
-
-      // Skill match
-      const reqSkills = Array.isArray(job.requiredSkills) 
-        ? job.requiredSkills 
-        : typeof job.requiredSkills === 'string' 
-          ? (job.requiredSkills as string).split(',').map(s => s.trim()) 
-          : [];
-
-      const matchingSkills = userPrefs.skills.filter(s => 
-        reqSkills.some(rs => rs.toLowerCase().includes(s.toLowerCase())) ||
-        job.title.toLowerCase().includes(s.toLowerCase()) ||
-        job.description?.toLowerCase().includes(s.toLowerCase())
-      );
-
-      if (matchingSkills.length > 0) {
-        score += 30;
-        reasons.push(`Matches your skills: ${matchingSkills.join(', ')}`);
+      if (analysis.matchingSkills.length > 0) {
+        reasons.push(`Skills overlap: ${analysis.matchingSkills.join(', ')}`);
       }
-
-      // Location match
       if (job.city && userPrefs.preferredCity && job.city.toLowerCase().includes(userPrefs.preferredCity.toLowerCase())) {
-        score += 15;
-        reasons.push(`In your preferred city: ${job.city}`);
+        reasons.push(`Preferred location: ${job.city}`);
       }
-
-      // Budget match
       if (job.budget && job.budget >= userPrefs.minHourlyRate * 8) {
-        score += 5;
-        reasons.push(`Rate matches your expected pay`);
+        reasons.push(`Rate matches pay expectation`);
+      }
+      if (reasons.length === 0) {
+        reasons.push(analysis.matchSummary);
       }
 
-      const matchPercentage = Math.min(score, 99);
       return {
         ...job,
-        matchPercentage,
-        matchReasons: reasons.length > 0 ? reasons : ['Matches current workforce demand in your region']
+        matchPercentage: analysis.overallScore,
+        matchReasons: reasons
       };
     });
 

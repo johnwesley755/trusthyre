@@ -45,6 +45,18 @@ export interface ResumeData {
   experienceYears?: number;
   dob?: string;
   gender?: string;
+  jobTitle?: string;
+  matchScore?: number;
+  matchBand?: string;
+  matchingSkills?: string[];
+  missingSkills?: string[];
+  matchSummary?: string;
+  matchBreakdown?: {
+    skills: number;
+    experience: number;
+    location: number;
+    verification: number;
+  };
 }
 
 interface CandidateResumeViewProps {
@@ -206,6 +218,58 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
               )}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Dynamic Candidate-Job Match Insight Card (No-Print) */}
+      {data.matchScore !== undefined && (
+        <div className="no-print mb-5 p-4 rounded-xl bg-white border border-slate-200 shadow-xs" style={{ backgroundColor: "#ffffff", color: "#0f172a" }}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex flex-col items-center justify-center shrink-0 shadow-xs">
+                <span className="text-base font-extrabold leading-none">{data.matchScore}%</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider opacity-90">Match</span>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-900">
+                    {data.matchBand || 'Candidate Fit Analysis'}
+                  </span>
+                  {data.jobTitle && (
+                    <span className="text-[11px] text-slate-500 font-medium">â€¢ for {data.jobTitle}</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
+                  {data.matchSummary || `${data.matchScore}% qualification overlap with requirements.`}
+                </p>
+              </div>
+            </div>
+
+            {data.matchBreakdown && (
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 text-[10px] font-semibold text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                <div>Skills: <span className="text-emerald-700 font-bold">{data.matchBreakdown.skills}%</span></div>
+                <div className="sm:border-l sm:border-slate-200 sm:pl-2">Exp: <span className="text-slate-800 font-bold">{data.matchBreakdown.experience}%</span></div>
+                <div className="sm:border-l sm:border-slate-200 sm:pl-2">Location: <span className="text-slate-800 font-bold">{data.matchBreakdown.location}%</span></div>
+                <div className="sm:border-l sm:border-slate-200 sm:pl-2">Trust: <span className="text-slate-800 font-bold">{data.matchBreakdown.verification}%</span></div>
+              </div>
+            )}
+          </div>
+
+          {((data.matchingSkills && data.matchingSkills.length > 0) || (data.missingSkills && data.missingSkills.length > 0)) && (
+            <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-1.5 text-[11px]">
+              <span className="font-bold text-slate-400 uppercase text-[9px] tracking-wider mr-1">Skills:</span>
+              {data.matchingSkills?.slice(0, 5).map((s, i) => (
+                <span key={`ms-${i}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium text-[10px]">
+                  âœ“ {s}
+                </span>
+              ))}
+              {data.missingSkills?.slice(0, 3).map((s, i) => (
+                <span key={`mis-${i}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 font-medium text-[10px]">
+                  â€¢ Needs {s}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

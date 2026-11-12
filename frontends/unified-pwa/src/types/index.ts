@@ -153,6 +153,31 @@ export interface JobApplication {
   workerSkills?: string[];
   workerTrustScore?: number;
   workerProfileImageUrl?: string;
+  matchScore?: number;
+  match_score?: number;
+  scoreBand?: 'Excellent Match' | 'Strong Match' | 'Moderate Match' | 'Potential Match';
+  matchingSkills?: string[];
+  missingSkills?: string[];
+  matchSummary?: string;
+  matchBreakdown?: {
+    skills: number;
+    experience: number;
+    location: number;
+    verification: number;
+  };
+  matchAnalysis?: {
+    overallScore: number;
+    scoreBand: string;
+    matchingSkills: string[];
+    missingSkills: string[];
+    matchSummary: string;
+    breakdown: {
+      skills: number;
+      experience: number;
+      location: number;
+      verification: number;
+    };
+  };
 }
 
 export interface SkillTestQuestion {

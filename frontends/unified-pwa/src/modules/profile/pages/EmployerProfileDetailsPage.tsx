@@ -190,11 +190,23 @@ export default function EmployerProfileDetailsPage() {
     || (user as any)?.profile_image_url 
     || (user as any)?.photoURL;
 
+  const lastLogoUrlRef = useRef(companyLogoUrl);
   useEffect(() => {
-    setLogoLoadError(false);
+    if (companyLogoUrl !== lastLogoUrlRef.current) {
+      lastLogoUrlRef.current = companyLogoUrl;
+      setLogoLoadError(false);
+    }
   }, [companyLogoUrl]);
 
   const companyNameDisplay = profile?.companyName || user?.companyName || 'Corporate Partner';
+  const companyInitials = useMemo(() => {
+    if (!companyNameDisplay?.trim()) return 'CP';
+    const words = companyNameDisplay.trim().split(/\s+/).filter(Boolean);
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return companyNameDisplay.trim().slice(0, 2).toUpperCase();
+  }, [companyNameDisplay]);
   const industryDisplay = profile?.industry || 'Enterprise Hiring';
   const locationDisplay = profile?.city || profile?.location || profile?.address || 'Pan India';
   const websiteDisplay = profile?.companyWebsite || 'Not provided';
@@ -238,13 +250,19 @@ export default function EmployerProfileDetailsPage() {
                       <img 
                         src={companyLogoUrl} 
                         alt=""
-                        aria-label={companyNameDisplay}
                         referrerPolicy="no-referrer"
-                        onError={() => setLogoLoadError(true)}
+                        crossOrigin="anonymous"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                          setLogoLoadError(true);
+                        }}
                         className="w-full h-full object-cover" 
                       />
                     ) : (
-                      <Building2 className="w-10 h-10 text-[#0f2f63]/40 dark:text-zinc-600" />
+                      <div className="w-full h-full bg-gradient-to-br from-[#0f2f63] to-[#1e40af] dark:from-[#0047AB] dark:to-[#002266] flex flex-col items-center justify-center text-white relative select-none">
+                        <span className="text-xl sm:text-2xl font-black tracking-wider drop-shadow-xs">{companyInitials}</span>
+                        <Building2 className="w-4 h-4 text-white/50 absolute bottom-1.5" />
+                      </div>
                     )}
                   </div>
                   <div className="absolute bottom-0 right-0 w-8 h-8 bg-[#0f2f63] dark:bg-[#0066FF] hover:bg-[#2563c9] dark:hover:bg-[#0052cc] group-hover:scale-110 rounded-full border-2 border-white dark:border-[#09090B] flex items-center justify-center shadow-md transition-all">

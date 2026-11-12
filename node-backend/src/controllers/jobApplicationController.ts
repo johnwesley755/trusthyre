@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { NotificationDispatcher } from '../services/notificationDispatcher';
 import { formatJob } from './jobController';
 import { isAppAdmin } from '../utils/roles';
+import { calculateCandidateJobMatch } from '../services/matchScoreService';
 
 const extractTransitMode = (coverLetter?: string | null): string | null => {
   if (!coverLetter || typeof coverLetter !== 'string') return null;
@@ -36,6 +37,118 @@ const formatApplication = (app: any) => {
     jobBudget: formattedJob?.budget ?? rawJob?.budget,
     jobLocation: formattedJob?.location || rawJob?.location || formattedJob?.city || rawJob?.city,
   };
+};
+
+const enrichApplicationsWithMatchScore = async (applications: any[], initialJobMap?: Map<string, any>) => {
+  if (!applications || applications.length === 0) return applications;
+
+  const workerIds = Array.from(new Set(applications.map(a => a.worker_id || a.workerId).filter(Boolean)));
+  const jobIds = Array.from(new Set(applications.map(a => a.job_id || a.jobId).filter(Boolean)));
+
+  const [workerProfiles, userMetas, testResults, dbJobs] = await Promise.all([
+    workerIds.length > 0
+      ? prisma.worker_profiles.findMany({
+          where: {
+            OR: [
+              { user_id: { in: workerIds } },
+              { id: { in: workerIds } }
+            ]
+          }
+        })
+      : [],
+    workerIds.length > 0
+      ? prisma.user_metadata.findMany({
+          where: { id: { in: workerIds } },
+          select: { id: true, email_verified: true }
+        })
+      : [],
+    workerIds.length > 0
+      ? prisma.skill_test_results.findMany({
+          where: { worker_id: { in: workerIds } },
+          include: { skill_tests: { select: { title: true } } }
+        })
+      : [],
+    (!initialJobMap && jobIds.length > 0)
+      ? prisma.jobs.findMany({ where: { id: { in: jobIds } } })
+      : []
+  ]);
+
+  const profileMap = new Map<string, any>();
+  workerProfiles.forEach(p => {
+    if (p.user_id) profileMap.set(p.user_id, p);
+    if (p.id) profileMap.set(p.id, p);
+  });
+
+  const metaMap = new Map<string, any>();
+  userMetas.forEach(m => metaMap.set(m.id, m));
+
+  const testsByWorker = new Map<string, any[]>();
+  testResults.forEach(t => {
+    const list = testsByWorker.get(t.worker_id) || [];
+    list.push({
+      score: t.score,
+      passed: t.passed,
+      testTitle: t.skill_tests?.title
+    });
+    testsByWorker.set(t.worker_id, list);
+  });
+
+  const jobMap = initialJobMap || new Map<string, any>();
+  if (!initialJobMap) {
+    dbJobs.forEach(j => jobMap.set(j.id, j));
+  }
+
+  return applications.map(app => {
+    const formatted = formatApplication(app);
+    const workerId = app.worker_id || app.workerId;
+    const jobId = app.job_id || app.jobId;
+
+    const workerProfile = profileMap.get(workerId);
+    const userMeta = metaMap.get(workerId);
+    const workerTests = testsByWorker.get(workerId) || [];
+    const job = jobMap.get(jobId) || app.jobs || app.job;
+
+    if (job) {
+      const matchResult = calculateCandidateJobMatch(
+        {
+          id: job.id,
+          title: job.title,
+          industry: job.industry,
+          requiredSkills: (job as any).required_skills || (job as any).requiredSkills || (job as any).skills,
+          experienceYearsRequired: job.experience_years_required ?? (job as any).experienceYearsRequired,
+          city: job.city,
+          location: job.location,
+          description: job.description
+        },
+        {
+          userId: workerId,
+          skills: workerProfile?.skills,
+          preferredRoles: workerProfile?.preferred_roles || (workerProfile as any)?.preferredRoles,
+          experienceYears: workerProfile?.experience_years ?? (workerProfile as any)?.experienceYears,
+          city: workerProfile?.city,
+          location: workerProfile?.location,
+          preferredCities: workerProfile?.preferred_cities || (workerProfile as any)?.preferredCities,
+          willingToRelocate: workerProfile?.willing_to_relocate ?? (workerProfile as any)?.willingToRelocate,
+          isVerified: Boolean(userMeta?.email_verified || (workerProfile as any)?.is_verified || (workerProfile as any)?.isVerified),
+          bio: workerProfile?.bio,
+          highestEducation: workerProfile?.highest_education,
+          degree: workerProfile?.degree,
+          specialization: workerProfile?.specialization,
+          skillTestResults: workerTests
+        }
+      );
+
+      formatted.matchAnalysis = matchResult;
+      formatted.matchScore = matchResult.overallScore;
+      formatted.match_score = matchResult.overallScore;
+      formatted.scoreBand = matchResult.scoreBand;
+      formatted.matchingSkills = matchResult.matchingSkills;
+      formatted.missingSkills = matchResult.missingSkills;
+      formatted.matchBreakdown = matchResult.breakdown;
+    }
+
+    return formatted;
+  });
 };
 
 export const applyForJob = async (c: Context) => {
@@ -470,7 +583,8 @@ export const getMyApplications = async (c: Context) => {
       include: { jobs: true },
       orderBy: { applied_at: 'desc' }
     });
-    return c.json(ApiResponse.ok("My applications fetched", applications.map(formatApplication)));
+    const enriched = await enrichApplicationsWithMatchScore(applications);
+    return c.json(ApiResponse.ok("My applications fetched", enriched));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
@@ -506,7 +620,9 @@ export const getJobApplications = async (c: Context) => {
       where: { job_id: jobId },
       orderBy: { applied_at: 'desc' }
     });
-    return c.json(ApiResponse.ok("Job applications fetched", applications.map(formatApplication)));
+    const jobMap = new Map<string, any>([[job.id, job]]);
+    const enriched = await enrichApplicationsWithMatchScore(applications, jobMap);
+    return c.json(ApiResponse.ok("Job applications fetched", enriched));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
@@ -567,7 +683,80 @@ export const getApplicationsByJobs = async (c: Context) => {
       include: { jobs: true },
       orderBy: { applied_at: 'desc' }
     });
-    return c.json(ApiResponse.ok("Applications for jobs fetched", applications.map(formatApplication)));
+    const enriched = await enrichApplicationsWithMatchScore(applications);
+    return c.json(ApiResponse.ok("Applications for jobs fetched", enriched));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+export const getCandidateJobMatch = async (c: Context) => {
+  try {
+    const jobId = c.req.param('jobId');
+    const paramWorkerId = c.req.param('workerId');
+    const authUser = c.get('user');
+    const workerId = paramWorkerId || authUser?.sub;
+
+    if (!jobId || !workerId) {
+      return c.json(ApiResponse.error("Job ID and Worker ID are required"), 400 as any);
+    }
+
+    const [job, workerProfile, userMeta, testResults] = await Promise.all([
+      prisma.jobs.findUnique({ where: { id: jobId } }),
+      prisma.worker_profiles.findFirst({
+        where: {
+          OR: [
+            { user_id: workerId },
+            { id: workerId }
+          ]
+        }
+      }),
+      prisma.user_metadata.findUnique({
+        where: { id: workerId },
+        select: { id: true, email_verified: true }
+      }),
+      prisma.skill_test_results.findMany({
+        where: { worker_id: workerId },
+        include: { skill_tests: { select: { title: true } } }
+      })
+    ]);
+
+    if (!job) return c.json(ApiResponse.error("Job not found"), 404 as any);
+
+    const matchResult = calculateCandidateJobMatch(
+      {
+        id: job.id,
+        title: job.title,
+        industry: job.industry,
+        requiredSkills: (job as any).required_skills || (job as any).requiredSkills || (job as any).skills,
+        experienceYearsRequired: job.experience_years_required,
+        city: job.city,
+        location: job.location,
+        description: job.description
+      },
+      {
+        userId: workerId,
+        skills: workerProfile?.skills,
+        preferredRoles: workerProfile?.preferred_roles || (workerProfile as any)?.preferredRoles,
+        experienceYears: workerProfile?.experience_years ?? (workerProfile as any)?.experienceYears,
+        city: workerProfile?.city,
+        location: workerProfile?.location,
+        preferredCities: workerProfile?.preferred_cities || (workerProfile as any)?.preferredCities,
+        willingToRelocate: workerProfile?.willing_to_relocate ?? (workerProfile as any)?.willingToRelocate,
+        isVerified: Boolean(userMeta?.email_verified || (workerProfile as any)?.is_verified || (workerProfile as any)?.isVerified),
+        bio: workerProfile?.bio,
+        highestEducation: workerProfile?.highest_education,
+        degree: workerProfile?.degree,
+        specialization: workerProfile?.specialization,
+        skillTestResults: testResults.map(t => ({
+          score: t.score,
+          passed: t.passed,
+          testTitle: t.skill_tests?.title
+        }))
+      }
+    );
+
+    return c.json(ApiResponse.ok("Match score calculated", matchResult));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }

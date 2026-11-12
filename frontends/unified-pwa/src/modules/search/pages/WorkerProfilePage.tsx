@@ -1,10 +1,11 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { workerService } from '../../../services/worker.service';
 import { ratingService } from '../../../services/rating.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { useSavedStore } from '../../../hooks/useSavedStore';
 import { toast } from 'sonner';
+import { calculateMatchScore } from '../../../utils/matchScorer';
 import { 
   ShieldCheck, 
   ChevronLeft, 
@@ -149,6 +150,7 @@ export const WorkerProfilePage = () => {
   };
   const handleToggleSave = () => {
     if (!worker && !id) return;
+    const derivedTrustScore = worker?.trustScore || (worker?.verificationStatus === 'VERIFIED' ? 95 : (worker?.skills?.length ? 80 : 65));
     toggleSaveWorker({
       userId: worker?.userId || id || '',
       name: worker?.name || 'Specialist',
@@ -157,11 +159,15 @@ export const WorkerProfilePage = () => {
       city: worker?.city || worker?.location || 'Local Area',
       location: worker?.location || worker?.city || 'Local Area',
       experience: worker?.experience || 0,
-      trustScore: worker?.trustScore || 85,
+      trustScore: derivedTrustScore,
       isVerified: worker?.verificationStatus === 'VERIFIED',
       bio: worker?.bio,
     });
   };
+
+  const location = useLocation();
+  const contextJob = (location.state as any)?.job;
+  const contextMatchAnalysis = contextJob && worker ? calculateMatchScore(contextJob, worker) : undefined;
 
   if (isLoadingWorker) return <AppLoader variant="page" message="Loading Profile..." />;
 
@@ -203,6 +209,13 @@ export const WorkerProfilePage = () => {
     isVerified: isVerified,
     dob: w?.dob || '',
     gender: w?.gender || '',
+    jobTitle: contextJob?.title,
+    matchScore: contextMatchAnalysis?.overallScore,
+    matchBand: contextMatchAnalysis?.scoreBand,
+    matchingSkills: contextMatchAnalysis?.matchingSkills,
+    missingSkills: contextMatchAnalysis?.missingSkills,
+    matchSummary: contextMatchAnalysis?.matchSummary,
+    matchBreakdown: contextMatchAnalysis?.breakdown,
   };
 
   const currentTrade = w?.preferredRoles?.[0] || worker?.skills?.[0] || 'Verified Specialist';

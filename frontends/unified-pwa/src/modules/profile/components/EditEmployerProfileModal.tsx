@@ -239,13 +239,18 @@ export const EditEmployerProfileModal: React.FC<EditEmployerProfileModalProps> =
                     <img 
                       src={profileImageUrl} 
                       alt=""
-                      aria-label="Company Logo" 
                       referrerPolicy="no-referrer"
-                      onError={() => setLogoLoadError(true)}
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = 'none';
+                        setLogoLoadError(true);
+                      }}
                       className="w-full h-full object-cover" 
                     />
                   ) : (
-                    <Building2 className="w-8 h-8 text-slate-300 dark:text-zinc-600" />
+                    <div className="w-full h-full bg-gradient-to-br from-[#0f2f63] to-[#1e40af] dark:from-[#0047AB] dark:to-[#002266] flex items-center justify-center text-white font-black text-lg select-none">
+                      {formData.companyName ? formData.companyName.trim().slice(0, 2).toUpperCase() : <Building2 className="w-7 h-7 text-white/70" />}
+                    </div>
                   )}
                 </div>
 
