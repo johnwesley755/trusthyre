@@ -44,7 +44,8 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         {shouldShowImage ? (
           <img
             src={src}
-            alt={name || 'User Avatar'}
+            alt=""
+            aria-label={name || 'User Avatar'}
             referrerPolicy="no-referrer"
             onError={() => setHasError(true)}
             className="w-full h-full object-cover"

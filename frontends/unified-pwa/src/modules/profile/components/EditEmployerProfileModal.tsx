@@ -35,6 +35,7 @@ export const EditEmployerProfileModal: React.FC<EditEmployerProfileModalProps> =
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string>('');
   const [isProcessingLogo, setIsProcessingLogo] = useState<boolean>(false);
+  const [logoLoadError, setLogoLoadError] = useState<boolean>(false);
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -49,6 +50,7 @@ export const EditEmployerProfileModal: React.FC<EditEmployerProfileModalProps> =
   useEffect(() => {
     if (profile) {
       setProfileImageUrl(profile.profileImageUrl || (profile as any).profile_image_url || user?.profileImageUrl || '');
+      setLogoLoadError(false);
       setFormData({
         companyName: profile.companyName || '',
         industry: profile.industry || '',
@@ -233,8 +235,15 @@ export const EditEmployerProfileModal: React.FC<EditEmployerProfileModalProps> =
                 />
 
                 <div className="w-16 h-16 bg-white dark:bg-[#1C1C21] flex items-center justify-center rounded-2xl border border-[#e6e8ec] dark:border-zinc-700 overflow-hidden shrink-0 shadow-2xs">
-                  {profileImageUrl ? (
-                    <img src={profileImageUrl} alt="Company Logo" className="w-full h-full object-cover" />
+                  {profileImageUrl && !logoLoadError ? (
+                    <img 
+                      src={profileImageUrl} 
+                      alt=""
+                      aria-label="Company Logo" 
+                      referrerPolicy="no-referrer"
+                      onError={() => setLogoLoadError(true)}
+                      className="w-full h-full object-cover" 
+                    />
                   ) : (
                     <Building2 className="w-8 h-8 text-slate-300 dark:text-zinc-600" />
                   )}

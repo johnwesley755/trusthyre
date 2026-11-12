@@ -110,7 +110,17 @@ app.use('*', secureHeaders({
     scriptSrc: ["'self'", "'unsafe-inline'", 'https://www.googletagmanager.com', 'https://challenges.cloudflare.com'],
     styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
     fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-    imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com', 'https://trusthyre.com', 'https://*.google-analytics.com'],
+    imgSrc: [
+      "'self'",
+      'data:',
+      'blob:',
+      'https://res.cloudinary.com',
+      'https://trusthyre.com',
+      'https://*.google-analytics.com',
+      'https://*.googleusercontent.com',
+      'https://lh3.googleusercontent.com',
+      'https://images.unsplash.com'
+    ],
     connectSrc: ["'self'", 'http://localhost:*', 'http://127.0.0.1:*', 'ws://localhost:*', 'ws://127.0.0.1:*', 'https://api.trusthyre.com', 'https://*.firebaseio.com', 'https://fcm.googleapis.com', 'https://*.neon.tech', 'https://challenges.cloudflare.com'],
     frameAncestors: ["'none'"],
     objectSrc: ["'none'"],

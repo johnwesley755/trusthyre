@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useAuth, useUser } from "../../../providers/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -52,6 +52,7 @@ export default function EmployerProfileDetailsPage() {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [logoFeedback, setLogoFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [logoLoadError, setLogoLoadError] = useState(false);
 
   const { data: profile } = useQuery<EmployerProfile | null>({
     queryKey: queryKeys.employer.profile,
@@ -189,6 +190,10 @@ export default function EmployerProfileDetailsPage() {
     || (user as any)?.profile_image_url 
     || (user as any)?.photoURL;
 
+  useEffect(() => {
+    setLogoLoadError(false);
+  }, [companyLogoUrl]);
+
   const companyNameDisplay = profile?.companyName || user?.companyName || 'Corporate Partner';
   const industryDisplay = profile?.industry || 'Enterprise Hiring';
   const locationDisplay = profile?.city || profile?.location || profile?.address || 'Pan India';
@@ -229,10 +234,13 @@ export default function EmployerProfileDetailsPage() {
                   className="relative group cursor-pointer"
                 >
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white dark:bg-[#121215] rounded-3xl border border-slate-200/80 dark:border-zinc-800 flex items-center justify-center overflow-hidden shadow-2xs">
-                    {companyLogoUrl ? (
+                    {companyLogoUrl && !logoLoadError ? (
                       <img 
                         src={companyLogoUrl} 
-                        alt={companyNameDisplay} 
+                        alt=""
+                        aria-label={companyNameDisplay}
+                        referrerPolicy="no-referrer"
+                        onError={() => setLogoLoadError(true)}
                         className="w-full h-full object-cover" 
                       />
                     ) : (
