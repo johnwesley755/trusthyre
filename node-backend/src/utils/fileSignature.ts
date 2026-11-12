@@ -1,3 +1,5 @@
+import path from 'path';
+
 /**
  * Binary Magic-Byte File Signature Validator & Malware Threat Gate
  * Validates actual binary headers and deep content streams of uploaded buffers
@@ -183,13 +185,27 @@ export const validateFileSignature = (buffer: Buffer, declaredMime: string): Sig
 };
 
 /**
- * Sanitizes file names to prevent path traversal and null-byte injection
+ * Sanitizes file names to prevent path traversal, null-byte injection, and reserved characters.
+ * Uses path.posix.basename and single-character replacements to eliminate CWE-116
+ * (CodeQL js/incomplete-multi-character-sanitization) path traversal risks.
  */
 export const sanitizeFileName = (fileName: string): string => {
-  return fileName
-    .replace(/[\0\x00-\x1f\x7f]/g, '') // remove control chars & null bytes
-    .replace(/\.\.+[/\\]/g, '')        // remove path traversal sequences (../, ..\)
-    .replace(/[<>:"/\\|?*]/g, '_')     // replace reserved filename characters
-    .trim()
-    .slice(0, 100);                    // bound max filename length
+  if (!fileName || typeof fileName !== 'string') return 'file';
+
+  // 1. Strip all directory traversal paths by extracting only the final basename
+  const normalized = fileName.replace(/\\/g, '/');
+  const base = path.posix.basename(normalized);
+
+  // 2. Remove control characters & null bytes using single-character class
+  const withoutControlChars = base.replace(/[\0\x00-\x1f\x7f]/g, '');
+
+  // 3. Replace any remaining path separators, wildcards, and reserved filename characters with underscore
+  const safeChars = withoutControlChars.replace(/[<>:"/\\|?*]/g, '_');
+
+  // 4. Strip any leading dots so file cannot disguise as a hidden file or relative traversal
+  const trimmed = safeChars.replace(/^\.+/, '').trim();
+
+  // 5. Fallback if the entire filename was stripped, and bound max length to 100
+  const safeName = trimmed.length > 0 ? trimmed : 'file';
+  return safeName.slice(0, 100);
 };
