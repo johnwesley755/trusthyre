@@ -195,14 +195,21 @@ export const router = createBrowserRouter([
               },
             ]
           },
-          /* Employer Specific Routes (Protected by RoleGuard) */
+          /* Shared Authenticated Dashboard (Accessible to both Worker & Employer) */
           {
-            element: <RoleGuard allowedRoles={['EMPLOYER']} />,
+            element: <RoleGuard allowedRoles={['EMPLOYER', 'WORKER', 'ADMIN']} />,
             children: [
               {
                 path: '/dashboard',
                 element: <DashboardPage />,
               },
+            ]
+          },
+
+          /* Employer Specific Routes (Protected by RoleGuard) */
+          {
+            element: <RoleGuard allowedRoles={['EMPLOYER']} />,
+            children: [
               {
                 path: '/jobs',
                 element: <ApplicationManagementPage />,

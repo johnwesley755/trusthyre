@@ -1,67 +1,175 @@
 import apiClient from '../api/apiClient';
-import type { Job } from '../types';
-import type { WorkerPreferences } from '../modules/profile/components/PreferencesModal';
-import { calculateMatchScore } from '../utils/matchScorer';
 
-export interface RecommendedJob extends Job {
-  matchPercentage: number;
+export interface BackendJobRecommendationItem {
+  job: {
+    id: string;
+    title: string;
+    description?: string;
+    city?: string;
+    location?: string;
+    latitude?: number;
+    longitude?: number;
+    budget?: number;
+    payoutFrequency?: string;
+    experienceYearsRequired?: number;
+    isVerified?: boolean;
+    requiredSkills?: string[];
+    createdAt?: string;
+    employerProfile?: {
+      id?: string;
+      companyName?: string;
+      isVerified?: boolean;
+      city?: string;
+    } | null;
+  };
+  overallScore: number;
+  scoreBand: string;
+  distanceKm?: number | null;
   matchReasons: string[];
+  matchingSkills: string[];
+  missingSkills: string[];
+  breakdown: {
+    skills: number;
+    geo: number;
+    experience: number;
+    compensation: number;
+    verification: number;
+    activity: number;
+  };
+}
+
+export interface BackendJobRecommendationResponse {
+  recommendations: BackendJobRecommendationItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface BackendWorkerRecommendationItem {
+  worker: {
+    id: string;
+    userId: string;
+    name: string;
+    bio?: string;
+    skills: string[];
+    city?: string;
+    district?: string;
+    state?: string;
+    level?: string;
+    levelNumber?: number;
+    experienceYears?: number;
+    isVerified: boolean;
+    trustScore: number;
+    profileImageUrl?: string;
+    hourlyRate?: number;
+    isAvailable: boolean;
+  };
+  overallScore: number;
+  scoreBand: string;
+  distanceKm?: number | null;
+  matchReasons: string[];
+  matchingSkills: string[];
+  missingSkills: string[];
+  breakdown: {
+    skills: number;
+    geo: number;
+    experience: number;
+    compensation: number;
+    verification: number;
+    activity: number;
+  };
+}
+
+export interface BackendWorkerRecommendationResponse {
+  recommendations: BackendWorkerRecommendationItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  scopedJobId?: string | null;
+}
+
+export interface RecommendationTelemetryPayload {
+  interactionType: 'VIEW' | 'CLICK' | 'SAVE' | 'APPLY' | 'INVITE' | 'DISMISS';
+  itemType: 'JOB' | 'WORKER';
+  itemId: string;
+  matchScore?: number;
+  metadata?: Record<string, any>;
 }
 
 export const recommendationService = {
-  getRecommendedJobs: async (preferences?: WorkerPreferences): Promise<RecommendedJob[]> => {
-    // 1. Fetch available jobs
-    const res = await apiClient.get<any>('/api/search/jobs');
-    const jobsList: Job[] = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-
-    const userPrefs: WorkerPreferences = preferences || (() => {
-      const saved = localStorage.getItem('worker_job_preferences');
-      return saved ? JSON.parse(saved) : {
-        skills: ['Electrician', 'Plumber', 'Carpenter'],
-        minHourlyRate: 200,
-        maxDistanceKm: 25,
-        preferredCity: 'Chennai',
-        jobTypes: ['Full-time'],
-        availability: 'IMMEDIATE'
-      };
-    })();
-
-    // 2. Score and rank jobs using dynamic matching engine
-    const scoredJobs: RecommendedJob[] = jobsList.map((job) => {
-      const analysis = calculateMatchScore(job, {
-        skills: userPrefs.skills,
-        preferredRoles: userPrefs.skills,
-        city: userPrefs.preferredCity,
-        location: userPrefs.preferredCity,
-        preferredCities: [userPrefs.preferredCity],
-        experienceYears: 2,
-        isVerified: true
-      });
-
-      const reasons: string[] = [];
-      if (analysis.matchingSkills.length > 0) {
-        reasons.push(`Skills overlap: ${analysis.matchingSkills.join(', ')}`);
+  /**
+   * Fetches personalized recommended jobs for the authenticated worker from the backend engine.
+   * Gated: WORKER-only on backend.
+   */
+  getRecommendedJobs: async (params?: {
+    lat?: number;
+    lng?: number;
+    radiusKm?: number;
+    page?: number;
+    limit?: number;
+  }): Promise<BackendJobRecommendationResponse> => {
+    const res = await apiClient.get<any>('/api/recommendations/jobs', {
+      params: {
+        lat: params?.lat,
+        lng: params?.lng,
+        radiusKm: params?.radiusKm,
+        page: params?.page ?? 1,
+        limit: params?.limit ?? 10
       }
-      if (job.city && userPrefs.preferredCity && job.city.toLowerCase().includes(userPrefs.preferredCity.toLowerCase())) {
-        reasons.push(`Preferred location: ${job.city}`);
-      }
-      if (job.budget && job.budget >= userPrefs.minHourlyRate * 8) {
-        reasons.push(`Rate matches pay expectation`);
-      }
-      if (reasons.length === 0) {
-        reasons.push(analysis.matchSummary);
-      }
-
-      return {
-        ...job,
-        matchPercentage: analysis.overallScore,
-        matchReasons: reasons
-      };
     });
 
-    // Sort by match percentage descending
-    scoredJobs.sort((a, b) => b.matchPercentage - a.matchPercentage);
+    const data = res.data?.data || res.data;
+    return {
+      recommendations: Array.isArray(data?.recommendations) ? data.recommendations : [],
+      total: data?.total ?? 0,
+      page: data?.page ?? 1,
+      limit: data?.limit ?? 10,
+      totalPages: data?.totalPages ?? 1
+    };
+  },
 
-    return scoredJobs;
+  /**
+   * Fetches top candidate recommendations for an employer's active openings.
+   * Gated: EMPLOYER-only on backend.
+   */
+  getRecommendedWorkers: async (params?: {
+    jobId?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<BackendWorkerRecommendationResponse> => {
+    const res = await apiClient.get<any>('/api/recommendations/workers', {
+      params: {
+        jobId: params?.jobId,
+        page: params?.page ?? 1,
+        limit: params?.limit ?? 10
+      }
+    });
+
+    const data = res.data?.data || res.data;
+    return {
+      recommendations: Array.isArray(data?.recommendations) ? data.recommendations : [],
+      total: data?.total ?? 0,
+      page: data?.page ?? 1,
+      limit: data?.limit ?? 10,
+      totalPages: data?.totalPages ?? 1,
+      scopedJobId: data?.scopedJobId ?? null
+    };
+  },
+
+  /**
+   * Ingests recommendation telemetry feedback interactions.
+   * Types: VIEW, CLICK, SAVE, APPLY, INVITE, DISMISS.
+   */
+  recordTelemetry: async (payload: RecommendationTelemetryPayload): Promise<{ success: boolean; id?: string }> => {
+    try {
+      const res = await apiClient.post<any>('/api/recommendations/telemetry', payload);
+      return { success: true, id: res.data?.data?.id };
+    } catch (err: any) {
+      // Telemetry failures should degrade gracefully without crashing the UI
+      console.warn('Failed to record recommendation telemetry:', err?.message || err);
+      return { success: false };
+    }
   }
 };

@@ -27,6 +27,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onCl
   ];
 
   const workerMenuItems = [
+    { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
     { name: 'Find Jobs', icon: 'search', path: '/search' },
     { name: 'Applied Jobs', icon: 'work_history', path: '/applied-jobs' },
     { name: 'Activity Tracker', icon: 'monitoring', path: '/tracker' },

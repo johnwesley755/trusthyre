@@ -430,6 +430,16 @@ export const AppTopNavbar = () => {
                             <button
                               onClick={() => {
                                 setIsProfileMenuOpen(false);
+                                navigate('/dashboard');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <LayoutDashboard className="w-4 h-4 text-[#717784]" />
+                              <span>{t('Candidate Dashboard')}</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
                                 navigate('/profile');
                               }}
                               className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"

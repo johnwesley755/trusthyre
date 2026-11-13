@@ -12,14 +12,19 @@ import {
   PlusCircle, 
   ArrowRight, 
   Sparkles,
-  Bookmark,
-  History,
-  ChevronRight,
-  Send,
-  Building2,
-  BookOpen
+  Bookmark, 
+  History, 
+  ChevronRight, 
+  Send, 
+  Building2, 
+  BookOpen,
+  Award,
+  Compass,
+  Search
 } from "lucide-react";
 import { AppLoader } from '../../../components/common/AppLoader';
+import { RecommendedJobsSection } from '../components/RecommendedJobsSection';
+import { RecommendedWorkersSection } from '../components/RecommendedWorkersSection';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -37,118 +42,358 @@ export default function DashboardPage() {
   }
 
   const isEmployer = user?.role === 'EMPLOYER' || summary?.role === 'EMPLOYER';
-  const displayName = user?.firstName || summary?.companyName || 'Partner';
+  const displayName = user?.firstName || summary?.companyName || (isEmployer ? 'Hiring Partner' : 'Specialist');
 
-  const activeJobs = summary?.activeJobs ?? 0;
-  const totalApplicants = summary?.totalApplicants ?? 0;
-  const interviewingCount = summary?.interviewingCount ?? 0;
-  const totalHired = summary?.totalHired ?? 0;
-  const availableCandidates = summary?.availableWorkersCount ?? summary?.radarNearbyWorkersCount ?? 0;
+  // ==========================================================================
+  // EMPLOYER WORKSPACE VIEW
+  // ==========================================================================
+  if (isEmployer) {
+    const activeJobs = summary?.activeJobs ?? 0;
+    const totalApplicants = summary?.totalApplicants ?? 0;
+    const interviewingCount = summary?.interviewingCount ?? 0;
+    const totalHired = summary?.totalHired ?? 0;
+    const availableCandidates = summary?.availableWorkersCount ?? summary?.radarNearbyWorkersCount ?? 0;
+
+    return (
+      <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
+        <div className="max-w-7xl mx-auto space-y-6 pb-20">
+          
+          {/* 1. Hallmark Hero Header Banner */}
+          <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-6 sm:p-8 shadow-xs relative overflow-hidden">
+            <div className="relative z-10 space-y-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-2">
+                <div className="space-y-2 max-w-2xl">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0f2f63]/10 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 text-xs font-semibold">
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Employer Workspace</span>
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a0a0a] dark:text-zinc-100 tracking-tight text-balance">
+                    Welcome back, {displayName}
+                  </h1>
+                  <p className="text-[#717784] dark:text-zinc-400 text-sm leading-relaxed">
+                    Real-time talent operations, candidate application pipeline, and verified hiring overview.
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link
+                    to="/post-job"
+                    className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs sm:text-sm font-medium uppercase px-5 py-3 transition-all flex items-center gap-2 shadow-sm active:scale-95 cursor-pointer"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    <span>Post New Job</span>
+                  </Link>
+                  <Link
+                    to="/find-workers"
+                    className="rounded-full bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 text-xs sm:text-sm font-medium uppercase px-5 py-3 transition-all flex items-center gap-2 shadow-xs active:scale-95 cursor-pointer"
+                  >
+                    <Users className="w-4 h-4 text-[#717784] dark:text-zinc-400" />
+                    <span>Search Talent</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Primary 4 KPI Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {/* Active Openings */}
+            <div 
+              onClick={() => navigate('/jobs')}
+              className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-5 sm:p-6 shadow-xs hover:border-[#0f2f63]/40 dark:hover:border-zinc-700 transition-all cursor-pointer group space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Briefcase className="w-6 h-6" />
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-300 text-xs font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] dark:bg-sky-400 animate-pulse" />
+                  Live Now
+                </span>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
+                  {activeJobs}
+                </div>
+                <p className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 mt-1">
+                  Active Job Openings
+                </p>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-semibold text-[#0f2f63] dark:text-sky-400 group-hover:underline pt-1">
+                <span>Manage listings</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </div>
+
+            {/* Total Applicants Received */}
+            <div 
+              onClick={() => navigate('/jobs')}
+              className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-5 sm:p-6 shadow-xs hover:border-[#0f2f63]/40 dark:hover:border-zinc-700 transition-all cursor-pointer group space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Users className="w-6 h-6" />
+                </div>
+                <span className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">
+                  Total Pool
+                </span>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
+                  {totalApplicants}
+                </div>
+                <p className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 mt-1">
+                  Applicants Received
+                </p>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 group-hover:underline pt-1">
+                <span>View candidate queue</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </div>
+
+            {/* Under Review & Direct Offers */}
+            <div 
+              onClick={() => navigate('/jobs')}
+              className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-5 sm:p-6 shadow-xs hover:border-amber-400/60 dark:hover:border-amber-500/40 transition-all cursor-pointer group space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Clock className="w-6 h-6" />
+                </div>
+                <span className="px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs font-semibold">
+                  Action Needed
+                </span>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
+                  {interviewingCount}
+                </div>
+                <p className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 mt-1">
+                  Under Review & Offers
+                </p>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 group-hover:underline pt-1">
+                <span>Review pending</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </div>
+
+            {/* Confirmed & Dispatched Team */}
+            <div 
+              onClick={() => navigate('/jobs')}
+              className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-5 sm:p-6 shadow-xs hover:border-emerald-400/60 dark:hover:border-emerald-500/40 transition-all cursor-pointer group space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <UserCheck className="w-6 h-6" />
+                </div>
+                <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
+                  Active Shifts
+                </span>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
+                  {totalHired}
+                </div>
+                <p className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 mt-1">
+                  Hired & Dispatched
+                </p>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 group-hover:underline pt-1">
+                <span>View active team</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </div>
+          </div>
+
+          {/* 3. NEW: Recommended Talent for Active Job Openings */}
+          <RecommendedWorkersSection />
+
+          {/* 4. Operational Grid (2 Columns: Verified Directory & Quick Ops) */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-6 sm:p-8 shadow-xs space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-extrabold text-[#0a0a0a] dark:text-zinc-100">
+                        Verified Talent Directory
+                      </h3>
+                      <p className="text-xs text-[#717784] dark:text-zinc-400">
+                        Pre-screened trade technicians and skilled candidates ready for immediate hire
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold self-start sm:self-auto border border-emerald-100 dark:border-emerald-900/50">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Verified Database
+                  </span>
+                </div>
+
+                <div className="p-4 sm:p-5 rounded-[1.5rem] bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
+                      {availableCandidates > 0 ? `${availableCandidates} Verified Candidates Available` : 'Search Verified Candidates'}
+                    </div>
+                    <p className="text-xs text-[#717784] dark:text-zinc-400 mt-1">
+                      Pre-screened electricians, welders, plumbers, drivers, carpenters, and technical trades.
+                    </p>
+                  </div>
+                  <Link
+                    to="/find-workers"
+                    className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-medium uppercase px-4 py-2.5 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer shrink-0"
+                  >
+                    <span>Explore Candidates</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Operations Sidebar */}
+            <div className="space-y-6">
+              <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-6 sm:p-7 shadow-xs space-y-4">
+                <h3 className="text-sm font-extrabold uppercase text-[#0a0a0a] dark:text-zinc-100">
+                  Quick Operations
+                </h3>
+
+                <div className="space-y-2">
+                  <Link
+                    to="/post-job"
+                    className="flex items-center justify-between p-3.5 bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-[1.25rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#0f2f63]/10 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center">
+                        <PlusCircle className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">Post New Job</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-[#717784] dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+
+                  <Link
+                    to="/jobs"
+                    className="flex items-center justify-between p-3.5 bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-[1.25rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                        <Briefcase className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">Active Openings</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-[#717784] dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+
+                  <Link
+                    to="/saved-profiles"
+                    className="flex items-center justify-between p-3.5 bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-[1.25rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                        <Bookmark className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">Shortlisted Talent</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-[#717784] dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================================================
+  // WORKER DASHBOARD VIEW
+  // ==========================================================================
+  const appliedJobsCount = summary?.appliedJobs ?? 0;
+  const offersReceived = summary?.offersReceived ?? 0;
+  const approvedHired = summary?.approvedHired ?? 0;
+  const trustScore = summary?.trustScore ?? 85;
 
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <div className="max-w-7xl mx-auto space-y-6 pb-20">
         
-        {/* 1. Hallmark Hero Header Banner */}
+        {/* 1. Worker Hero Header Banner */}
         <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-6 sm:p-8 shadow-xs relative overflow-hidden">
-          
           <div className="relative z-10 space-y-4">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-2">
               <div className="space-y-2 max-w-2xl">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0f2f63]/10 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 text-xs font-semibold">
-                  <Building2 className="w-3.5 h-3.5" />
-                  <span>Employer Workspace</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>Verified Candidate Portal</span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a0a0a] dark:text-zinc-100 tracking-tight text-balance">
                   Welcome back, {displayName}
                 </h1>
                 <p className="text-[#717784] dark:text-zinc-400 text-sm leading-relaxed">
-                  Real-time talent operations, candidate application pipeline, and verified hiring overview.
+                  Track your job applications, interview invites, and view personalized opportunities matched to your trade skills.
                 </p>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-3">
                 <Link
-                  to="/post-job"
+                  to="/search"
                   className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs sm:text-sm font-medium uppercase px-5 py-3 transition-all flex items-center gap-2 shadow-sm active:scale-95 cursor-pointer"
                 >
-                  <PlusCircle className="w-4 h-4" />
-                  <span>Post New Job</span>
+                  <Search className="w-4 h-4" />
+                  <span>Browse Jobs</span>
                 </Link>
                 <Link
-                  to="/find-workers"
+                  to="/profile"
                   className="rounded-full bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 text-xs sm:text-sm font-medium uppercase px-5 py-3 transition-all flex items-center gap-2 shadow-xs active:scale-95 cursor-pointer"
                 >
-                  <Users className="w-4 h-4 text-[#717784] dark:text-zinc-400" />
-                  <span>Search Talent</span>
+                  <Award className="w-4 h-4 text-[#717784] dark:text-zinc-400" />
+                  <span>My Profile & Skills</span>
                 </Link>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 2. Primary 4 KPI Metrics Grid */}
+        {/* 2. Worker 4 Key Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          
-          {/* Active Openings */}
+          {/* Applications Submitted */}
           <div 
-            onClick={() => navigate('/jobs')}
+            onClick={() => navigate('/applied-jobs')}
             className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-5 sm:p-6 shadow-xs hover:border-[#0f2f63]/40 dark:hover:border-zinc-700 transition-all cursor-pointer group space-y-4"
           >
             <div className="flex items-center justify-between">
               <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Briefcase className="w-6 h-6" />
               </div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-300 text-xs font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] dark:bg-sky-400 animate-pulse" />
-                Live Now
+              <span className="px-3 py-1 rounded-full bg-blue-50 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-300 text-xs font-semibold">
+                In Review
               </span>
             </div>
             <div>
               <div className="text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
-                {activeJobs}
+                {appliedJobsCount}
               </div>
               <p className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 mt-1">
-                Active Job Openings
+                Applied Jobs
               </p>
             </div>
             <div className="flex items-center gap-1 text-xs font-semibold text-[#0f2f63] dark:text-sky-400 group-hover:underline pt-1">
-              <span>Manage listings</span>
+              <span>View application status</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
 
-          {/* Total Applicants Received */}
+          {/* Interview & Direct Offers */}
           <div 
-            onClick={() => navigate('/jobs')}
-            className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-5 sm:p-6 shadow-xs hover:border-[#0f2f63]/40 dark:hover:border-zinc-700 transition-all cursor-pointer group space-y-4"
-          >
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Users className="w-6 h-6" />
-              </div>
-              <span className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">
-                Total Pool
-              </span>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
-                {totalApplicants}
-              </div>
-              <p className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 mt-1">
-                Applicants Received
-              </p>
-            </div>
-            <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 group-hover:underline pt-1">
-              <span>View candidate queue</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          </div>
-
-          {/* Under Review & Direct Offers */}
-          <div 
-            onClick={() => navigate('/jobs')}
+            onClick={() => navigate('/applied-jobs')}
             className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-5 sm:p-6 shadow-xs hover:border-amber-400/60 dark:hover:border-amber-500/40 transition-all cursor-pointer group space-y-4"
           >
             <div className="flex items-center justify-between">
@@ -161,21 +406,21 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
-                {interviewingCount}
+                {offersReceived}
               </div>
               <p className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 mt-1">
-                Under Review & Offers
+                Offers & Interviews
               </p>
             </div>
             <div className="flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 group-hover:underline pt-1">
-              <span>Review pending</span>
+              <span>Review offers</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
 
-          {/* Confirmed & Dispatched Team */}
+          {/* Approved & Active Jobs */}
           <div 
-            onClick={() => navigate('/jobs')}
+            onClick={() => navigate('/tracker')}
             className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-5 sm:p-6 shadow-xs hover:border-emerald-400/60 dark:hover:border-emerald-500/40 transition-all cursor-pointer group space-y-4"
           >
             <div className="flex items-center justify-between">
@@ -183,208 +428,103 @@ export default function DashboardPage() {
                 <UserCheck className="w-6 h-6" />
               </div>
               <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
-                Active Shifts
+                Confirmed
               </span>
             </div>
             <div>
               <div className="text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
-                {totalHired}
+                {approvedHired}
               </div>
               <p className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 mt-1">
-                Hired & Dispatched
+                Active & Completed Shifts
               </p>
             </div>
             <div className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 group-hover:underline pt-1">
-              <span>View active team</span>
+              <span>Activity tracker</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
 
+          {/* Trust Score & Standing */}
+          <div 
+            onClick={() => navigate('/profile')}
+            className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-5 sm:p-6 shadow-xs hover:border-indigo-400/60 dark:hover:border-indigo-500/40 transition-all cursor-pointer group space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <span className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">
+                Verified
+              </span>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
+                {trustScore}
+              </div>
+              <p className="text-xs font-bold uppercase text-[#717784] dark:text-zinc-400 mt-1">
+                Trust Score
+              </p>
+            </div>
+            <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 group-hover:underline pt-1">
+              <span>View credentials</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </div>
         </div>
 
-        {/* 3. Operational Grid (2 Columns: Candidate Discovery + Trust & Quick Actions) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Left 2 Columns: Talent Discovery */}
-          <div className="lg:col-span-2 space-y-6">
-            
-            {/* Verified Candidate Discovery Card */}
-            <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-6 sm:p-8 shadow-xs space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center">
-                    <Users className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-extrabold text-[#0a0a0a] dark:text-zinc-100">
-                      Verified Talent Directory
-                    </h3>
-                    <p className="text-xs text-[#717784] dark:text-zinc-400">
-                      Pre-screened trade technicians and skilled candidates ready for immediate hire
-                    </p>
-                  </div>
-                </div>
+        {/* 3. NEW: Recommended Jobs Module for Worker */}
+        <RecommendedJobsSection />
 
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold self-start sm:self-auto border border-emerald-100 dark:border-emerald-900/50">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Verified Database
-                </span>
+        {/* 4. Worker Navigation Shortcuts */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Link
+            to="/saved-jobs"
+            className="flex items-center justify-between p-4 bg-[#f4f4f4] dark:bg-[#09090b] hover:bg-slate-100 dark:hover:bg-zinc-800/80 rounded-[1.5rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <Bookmark className="w-5 h-5" />
               </div>
-
-              <div className="p-4 sm:p-5 rounded-[1.5rem] bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <div className="text-2xl sm:text-3xl font-bold text-[#0a0a0a] dark:text-zinc-100 tabular-nums tracking-tight">
-                    {availableCandidates > 0 ? `${availableCandidates} Verified Candidates Available` : 'Search Verified Candidates'}
-                  </div>
-                  <p className="text-xs text-[#717784] dark:text-zinc-400 mt-1">
-                    Pre-screened electricians, welders, plumbers, drivers, carpenters, and technical trades.
-                  </p>
-                </div>
-                <Link
-                  to="/find-workers"
-                  className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-medium uppercase px-4 py-2.5 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer shrink-0"
-                >
-                  <span>Explore Candidates</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-
-              {/* Fast Category Filter Chips */}
-              <div className="space-y-2">
-                <span className="text-xs font-semibold text-[#717784] dark:text-zinc-400">
-                  Instant Search Shortcuts:
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {['Electrician', 'Plumber', 'Welder', 'Driver', 'Carpenter', 'Mechanic'].map((trade) => (
-                    <button
-                      key={trade}
-                      type="button"
-                      onClick={() => navigate(`/find-workers?trade=${encodeURIComponent(trade)}`)}
-                      className="px-3.5 py-1.5 rounded-full bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 text-[#0a0a0a] dark:text-zinc-200 text-xs font-medium transition-all cursor-pointer shadow-xs active:scale-95"
-                    >
-                      {trade}
-                    </button>
-                  ))}
-                </div>
+              <div>
+                <span className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200 block">Saved Jobs</span>
+                <span className="text-[11px] text-[#717784] dark:text-zinc-400">Bookmarked openings</span>
               </div>
             </div>
+            <ChevronRight className="w-4 h-4 text-[#717784] group-hover:translate-x-0.5 transition-transform" />
+          </Link>
 
-          </div>
-
-          {/* Right 1 Column: Quick Actions & Trust Hyre Guarantee */}
-          <div className="space-y-6">
-            
-            {/* Direct Shortcuts Card */}
-            <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-6 sm:p-7 shadow-xs space-y-4">
-              <h3 className="text-sm font-extrabold uppercase text-[#0a0a0a] dark:text-zinc-100">
-                Quick Operations
-              </h3>
-
-              <div className="space-y-2">
-                <Link
-                  to="/post-job"
-                  className="flex items-center justify-between p-3.5 bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-[1.25rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#0f2f63]/10 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center">
-                      <PlusCircle className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">Post New Job</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[#717784] dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-
-                <Link
-                  to="/jobs"
-                  className="flex items-center justify-between p-3.5 bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-[1.25rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                      <Briefcase className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">Active Openings</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[#717784] dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-
-                <Link
-                  to="/saved-profiles"
-                  className="flex items-center justify-between p-3.5 bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-[1.25rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                      <Bookmark className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">Shortlisted Talent</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[#717784] dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-
-                <Link
-                  to="/tracker"
-                  className="flex items-center justify-between p-3.5 bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-[1.25rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                      <History className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200">Activity History</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[#717784] dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-
-                <Link
-                  to="/blog"
-                  className="flex items-center justify-between p-3.5 bg-white dark:bg-[#121215] hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-[1.25rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center">
-                      <BookOpen className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 block">Hiring Articles & Blog</span>
-                      <span className="text-[10px] text-[#717784] dark:text-zinc-400 block">Salary benchmarks & hiring guides</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[#717784] dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
+          <Link
+            to="/tracker"
+            className="flex items-center justify-between p-4 bg-[#f4f4f4] dark:bg-[#09090b] hover:bg-slate-100 dark:hover:bg-zinc-800/80 rounded-[1.5rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <History className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200 block">Work History</span>
+                <span className="text-[11px] text-[#717784] dark:text-zinc-400">Verified attendance & shifts</span>
               </div>
             </div>
+            <ChevronRight className="w-4 h-4 text-[#717784] group-hover:translate-x-0.5 transition-transform" />
+          </Link>
 
-            {/* TrustHyre Protection Card */}
-            <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-6 sm:p-7 shadow-xs space-y-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                <h3 className="text-sm font-extrabold text-[#0a0a0a] dark:text-zinc-100">
-                  TrustHyre Protection
-                </h3>
+          <Link
+            to="/profile"
+            className="flex items-center justify-between p-4 bg-[#f4f4f4] dark:bg-[#09090b] hover:bg-slate-100 dark:hover:bg-zinc-800/80 rounded-[1.5rem] border border-[#e6e8ec] dark:border-zinc-800 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center">
+                <Award className="w-5 h-5" />
               </div>
-              <ul className="text-xs text-[#0a0a0a] dark:text-zinc-200 space-y-3 font-medium">
-                <li className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
-                  <span className="text-[#717784] dark:text-zinc-400">
-                    <strong className="text-[#0a0a0a] dark:text-zinc-200">Skill & Profile Check:</strong> Profile authentication & physical skill verification before candidate dispatch.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
-                  <span className="text-[#717784] dark:text-zinc-400">
-                    <strong className="text-[#0a0a0a] dark:text-zinc-200">Verified Work History:</strong> Permanent digital logs of completed shifts, attendance, and ratings.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
-                  <span className="text-[#717784] dark:text-zinc-400">
-                    <strong className="text-[#0a0a0a] dark:text-zinc-200">Reliable Replacement Support:</strong> Immediate candidate replacement assistance if a specialist cancels.
-                  </span>
-                </li>
-              </ul>
+              <div>
+                <span className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-200 block">Skills & Tests</span>
+                <span className="text-[11px] text-[#717784] dark:text-zinc-400">Practical trade certificates</span>
+              </div>
             </div>
-
-          </div>
-
+            <ChevronRight className="w-4 h-4 text-[#717784] group-hover:translate-x-0.5 transition-transform" />
+          </Link>
         </div>
 
       </div>
