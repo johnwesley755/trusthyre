@@ -34,6 +34,7 @@ import { blogRouter, adminBlogRouter } from './routes/blogRoutes';
 import { seoRouter } from './routes/seoRoutes';
 import recommendationRoutes from './routes/recommendationRoutes';
 import workOrderRoutes from './routes/workOrderRoutes';
+import { shiftRoutes, attendanceRoutes } from './routes/shiftAttendanceRoutes';
 import { SitemapService } from './services/sitemapService';
 
 
@@ -201,6 +202,8 @@ app.route('/api/seo', seoRouter);
 app.route('/api/interviews', interviewRoutes);
 app.route('/api/recommendations', recommendationRoutes);
 app.route('/api/work-orders', workOrderRoutes);
+app.route('/api/shifts', shiftRoutes);
+app.route('/api/attendance', attendanceRoutes);
 
 
 

@@ -30,6 +30,8 @@ import TermsPage from '../modules/landing/pages/TermsPage';
 import PrivacyPage from '../modules/landing/pages/PrivacyPage';
 import NotFoundPage from '../modules/landing/pages/NotFoundPage';
 import WorkOrdersPage from '../modules/work-orders/pages/WorkOrdersPage';
+import WorkerTodayShiftPage from '../modules/attendance/pages/WorkerTodayShiftPage';
+import EmployerShiftRegisterPage from '../modules/attendance/pages/EmployerShiftRegisterPage';
 
 import { AdminLoginPage } from '../modules/admin/pages/AdminLoginPage';
 import { AdminLayout } from '../modules/admin/layouts/AdminLayout';
@@ -244,6 +246,14 @@ export const router = createBrowserRouter([
                 element: <ApplicationManagementPage />,
               },
               {
+                path: '/attendance',
+                element: <EmployerShiftRegisterPage />,
+              },
+              {
+                path: '/shifts',
+                element: <EmployerShiftRegisterPage />,
+              },
+              {
                 path: '/find-workers',
                 element: <WorkerSearchPage />,
               },
@@ -269,6 +279,14 @@ export const router = createBrowserRouter([
               {
                 path: '/applied-jobs',
                 element: <AppliedJobsPage />,
+              },
+              {
+                path: '/attendance',
+                element: <WorkerTodayShiftPage />,
+              },
+              {
+                path: '/shifts',
+                element: <WorkerTodayShiftPage />,
               },
               {
                 path: '/tests',

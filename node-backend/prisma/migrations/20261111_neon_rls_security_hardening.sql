@@ -1027,5 +1027,88 @@ FOR DELETE USING (
   is_app_admin()
 );
 
+-- ============================================================================
+-- 33. SHIFTS
+-- ============================================================================
+ALTER TABLE IF EXISTS public.shifts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.shifts FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS shifts_select_policy ON public.shifts;
+CREATE POLICY shifts_select_policy ON public.shifts
+    FOR SELECT
+    USING (
+        (SELECT is_app_admin())
+        OR employer_id = (SELECT current_app_user_id())
+        OR worker_id = (SELECT current_app_user_id())
+        OR supervisor_id = (SELECT current_app_user_id())
+    );
+
+DROP POLICY IF EXISTS shifts_insert_policy ON public.shifts;
+CREATE POLICY shifts_insert_policy ON public.shifts
+    FOR INSERT
+    WITH CHECK (
+        (SELECT is_app_admin())
+        OR employer_id = (SELECT current_app_user_id())
+    );
+
+DROP POLICY IF EXISTS shifts_update_policy ON public.shifts;
+CREATE POLICY shifts_update_policy ON public.shifts
+    FOR UPDATE
+    USING (
+        (SELECT is_app_admin())
+        OR employer_id = (SELECT current_app_user_id())
+    );
+
+DROP POLICY IF EXISTS shifts_delete_policy ON public.shifts;
+CREATE POLICY shifts_delete_policy ON public.shifts
+    FOR DELETE
+    USING (
+        (SELECT is_app_admin())
+        OR employer_id = (SELECT current_app_user_id())
+    );
+
+-- ============================================================================
+-- 34. SHIFT ATTENDANCES
+-- ============================================================================
+ALTER TABLE IF EXISTS public.shift_attendances ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.shift_attendances FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS shift_attendances_select_policy ON public.shift_attendances;
+CREATE POLICY shift_attendances_select_policy ON public.shift_attendances
+    FOR SELECT
+    USING (
+        (SELECT is_app_admin())
+        OR worker_id = (SELECT current_app_user_id())
+        OR employer_id = (SELECT current_app_user_id())
+        OR supervisor_id = (SELECT current_app_user_id())
+    );
+
+DROP POLICY IF EXISTS shift_attendances_insert_policy ON public.shift_attendances;
+CREATE POLICY shift_attendances_insert_policy ON public.shift_attendances
+    FOR INSERT
+    WITH CHECK (
+        (SELECT is_app_admin())
+        OR worker_id = (SELECT current_app_user_id())
+        OR employer_id = (SELECT current_app_user_id())
+    );
+
+DROP POLICY IF EXISTS shift_attendances_update_policy ON public.shift_attendances;
+CREATE POLICY shift_attendances_update_policy ON public.shift_attendances
+    FOR UPDATE
+    USING (
+        (SELECT is_app_admin())
+        OR worker_id = (SELECT current_app_user_id())
+        OR employer_id = (SELECT current_app_user_id())
+        OR supervisor_id = (SELECT current_app_user_id())
+    );
+
+DROP POLICY IF EXISTS shift_attendances_delete_policy ON public.shift_attendances;
+CREATE POLICY shift_attendances_delete_policy ON public.shift_attendances
+    FOR DELETE
+    USING (
+        (SELECT is_app_admin())
+        OR employer_id = (SELECT current_app_user_id())
+    );
+
 COMMIT;
 

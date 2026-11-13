@@ -30,7 +30,8 @@ import {
   BookOpen,
   ShieldCheck,
   Building2,
-  BarChart3
+  BarChart3,
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../providers/TranslationContext';
@@ -414,6 +415,16 @@ export const AppTopNavbar = () => {
                             <button
                               onClick={() => {
                                 setIsProfileMenuOpen(false);
+                                navigate('/attendance');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <Clock className="w-4 h-4 text-[#717784]" />
+                              <span>{t('Shift Attendance')}</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
                                 navigate('/saved-profiles');
                               }}
                               className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
@@ -466,6 +477,26 @@ export const AppTopNavbar = () => {
                             >
                               <Briefcase className="w-4 h-4 text-[#717784]" />
                               <span>{t('Find Jobs')}</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/work-orders');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <FileText className="w-4 h-4 text-[#717784]" />
+                              <span>{t('Digital Work Orders')}</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/attendance');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <Clock className="w-4 h-4 text-[#717784]" />
+                              <span>{t('Today Shift & Attendance')}</span>
                             </button>
                             <button
                               onClick={() => {
