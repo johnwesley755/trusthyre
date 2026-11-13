@@ -1,23 +1,30 @@
 import { useCallback, useRef } from 'react';
 import { recommendationService, type RecommendationTelemetryPayload } from '../services/recommendation.service';
+import { useUser } from '../providers/AuthContext';
 
-// In-memory set to ensure VIEW interactions are recorded only once per session per item
-const recordedViewsCache = new Set<string>();
+// Session view cache keyed by user ID to prevent cross-user state bleed
+const userViewsCache = new Map<string, Set<string>>();
 
 export const useRecommendationTelemetry = () => {
+  const { user } = useUser();
+  const userId = user?.id || 'anonymous';
   const pendingTimeouts = useRef<Record<string, any>>({});
 
   /**
-   * Records a VIEW event deduplicated against previous views in the current user session.
+   * Records a VIEW event deduplicated against previous views for this specific user.
    */
   const recordView = useCallback((itemType: 'JOB' | 'WORKER', itemId: string, matchScore?: number) => {
     if (!itemId) return;
+    if (!userViewsCache.has(userId)) {
+      userViewsCache.set(userId, new Set<string>());
+    }
+    const userCache = userViewsCache.get(userId)!;
     const cacheKey = `${itemType}_VIEW_${itemId}`;
-    if (recordedViewsCache.has(cacheKey)) {
+    if (userCache.has(cacheKey)) {
       return; // Deduplicate
     }
 
-    recordedViewsCache.add(cacheKey);
+    userCache.add(cacheKey);
 
     // Debounce slightly to prevent micro-flicker re-renders triggering views
     if (pendingTimeouts.current[cacheKey]) {
@@ -30,10 +37,13 @@ export const useRecommendationTelemetry = () => {
         itemType,
         itemId,
         matchScore
+      }).catch(() => {
+        // Allow retry on failure
+        userCache.delete(cacheKey);
       });
       delete pendingTimeouts.current[cacheKey];
     }, 150);
-  }, []);
+  }, [userId]);
 
   /**
    * Records an explicit user interaction (CLICK, SAVE, APPLY, INVITE, DISMISS).

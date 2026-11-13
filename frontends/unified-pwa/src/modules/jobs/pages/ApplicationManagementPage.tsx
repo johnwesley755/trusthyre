@@ -48,6 +48,7 @@ import { toast } from 'sonner';
 import { RatingModal } from '@/components/common/RatingModal';
 import { Star, MessageSquare, Phone } from 'lucide-react';
 import { CandidateOutreachModal, type CandidateOutreachCandidate } from '../../../components/common/CandidateOutreachModal';
+import { CreateWorkOrderModal } from '../../work-orders/components/CreateWorkOrderModal';
 
 export default function ApplicationManagementPage() {
   const navigate = useNavigate();
@@ -83,6 +84,11 @@ export default function ApplicationManagementPage() {
     candidateName: string;
     jobTitle: string;
     defaultLocation?: string;
+  } | null>(null);
+  const [workOrderCandidate, setWorkOrderCandidate] = useState<{
+    candidate: { userId: string; fullName: string; skills?: string[]; city?: string };
+    job?: any;
+    applicationId?: string;
   } | null>(null);
 
   const { data: jobs = [], isLoading: isJobsLoading } = useQuery<import('../../../types').Job[]>({ 
@@ -908,11 +914,29 @@ export default function ApplicationManagementPage() {
                         )}
 
                         {isApproved && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-1">
                               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                               <span>Confirmed for Shift</span>
                             </span>
+                            <button
+                              type="button"
+                              onClick={() => setWorkOrderCandidate({
+                                candidate: {
+                                  userId: app.workerId,
+                                  fullName: candidateName,
+                                  skills: worker?.skills,
+                                  city: worker?.city
+                                },
+                                job: selectedJob,
+                                applicationId: app.id
+                              })}
+                              className="px-3.5 py-1.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-2xs"
+                              title="Issue Digital Work Order"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>Issue Work Order</span>
+                            </button>
                             <button
                               type="button"
                               onClick={() => setRatingTarget({
@@ -989,6 +1013,21 @@ export default function ApplicationManagementPage() {
           onSuccess={() => {
             queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
             queryClient.invalidateQueries({ queryKey: ['jobs', 'allEmployerApplications'] });
+          }}
+        />
+      )}
+
+      {/* Digital Work Order Creation Modal */}
+      {workOrderCandidate && (
+        <CreateWorkOrderModal
+          isOpen={Boolean(workOrderCandidate)}
+          onClose={() => setWorkOrderCandidate(null)}
+          candidate={workOrderCandidate.candidate}
+          job={workOrderCandidate.job}
+          applicationId={workOrderCandidate.applicationId}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['workOrders'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.jobs.allEmployerApplications(jobIds) });
           }}
         />
       )}

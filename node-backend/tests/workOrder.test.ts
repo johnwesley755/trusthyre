@@ -100,7 +100,7 @@ describe('Digital Work Order Foundation Unit & Workflow Tests', () => {
 
     expect(order).toBeDefined();
     expect(order.id).toBeDefined();
-    expect(order.order_number).toMatch(/^WO-\d{8}-\d{4}$/);
+    expect(order.order_number).toMatch(/^WO-\d{8}-\d{4}-[A-Z0-9]{4}$/);
     expect(order.status).toBe('DRAFT');
     expect(Number(order.wage_amount)).toBe(950);
     expect(Number(order.daily_working_hours)).toBe(8);

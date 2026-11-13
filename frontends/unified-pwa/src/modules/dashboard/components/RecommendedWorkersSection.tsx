@@ -23,7 +23,12 @@ export const RecommendedWorkersSection: React.FC = () => {
   });
 
   const activeJobs = useMemo(() => {
-    return employerJobs.filter((j: any) => j.status === 'OPEN' || !j.status);
+    const now = new Date();
+    return employerJobs.filter((j: any) => {
+      const isOpenOrActive = j.status === 'OPEN' || j.status === 'ACTIVE' || !j.status;
+      const isNotExpired = !j.expires_at || new Date(j.expires_at) > now;
+      return isOpenOrActive && isNotExpired;
+    });
   }, [employerJobs]);
 
   // Set default selected active job once loaded
@@ -80,11 +85,11 @@ export const RecommendedWorkersSection: React.FC = () => {
             <h2 className="text-base sm:text-lg font-extrabold text-[#0a0a0a] dark:text-zinc-100 flex items-center gap-2">
               <span>{t('Recommended Talent For Your Openings', 'Recommended Talent For Your Openings')}</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0f2f63]/10 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400">
-                AI Match
+                Match Score
               </span>
             </h2>
             <p className="text-xs text-[#717784] dark:text-zinc-400">
-              Screened candidates matching required trades, years of experience, and geographic radius
+              Ranked candidates matching required trades, years of experience, and geographic location
             </p>
           </div>
         </div>

@@ -10,6 +10,7 @@ import {
   ChevronRight, 
   Filter,
   Check,
+  X,
   AlertCircle
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -20,11 +21,24 @@ import { ShowQrOtpModal } from '../components/ShowQrOtpModal';
 import { CreateShiftModal } from '../components/CreateShiftModal';
 import { toast } from 'sonner';
 
+function getTodayIST(): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  return formatter.format(new Date());
+}
+
 export default function EmployerShiftRegisterPage() {
   const queryClient = useQueryClient();
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayIST());
   const [activeShiftForQr, setActiveShiftForQr] = useState<ShiftRegisterItem | null>(null);
   const [selectedWorkOrderForShift, setSelectedWorkOrderForShift] = useState<WorkOrder | null>(null);
+  const [isWorkOrderPickerOpen, setIsWorkOrderPickerOpen] = useState(false);
+  const [resolvingCorrectionItem, setResolvingCorrectionItem] = useState<ShiftRegisterItem | null>(null);
+  const [resolutionNotes, setResolutionNotes] = useState('');
 
   // 1. Fetch Today's Attendance Register
   const { data: registerItems = [], isLoading, refetch } = useQuery({
@@ -50,6 +64,24 @@ export default function EmployerShiftRegisterPage() {
     }
   };
 
+  // Resolve Correction
+  const handleResolveCorrection = async (decision: 'APPROVED' | 'REJECTED') => {
+    if (!resolvingCorrectionItem?.attendance) return;
+    try {
+      await shiftAttendanceService.resolveCorrection(
+        resolvingCorrectionItem.attendance.id,
+        decision,
+        resolutionNotes
+      );
+      toast.success(`Correction ${decision.toLowerCase()} successfully`);
+      setResolvingCorrectionItem(null);
+      setResolutionNotes('');
+      refetch();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to resolve correction');
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
       {/* Top Header */}
@@ -59,7 +91,7 @@ export default function EmployerShiftRegisterPage() {
             Shift Attendance Register
           </h1>
           <p className="text-xs text-[#717784] dark:text-zinc-400">
-            Daily site check-in board, rolling QR credentials, and attendance verification
+            Daily site check-in board, single-use PINs, rolling QR, and attendance verification
           </p>
         </div>
 
@@ -71,16 +103,14 @@ export default function EmployerShiftRegisterPage() {
             className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-semibold text-slate-800 dark:text-zinc-200"
           />
 
-          {acceptedOrders.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setSelectedWorkOrderForShift(acceptedOrders[0])}
-              className="px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-xl text-xs font-bold uppercase flex items-center gap-1.5 shadow-xs cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Schedule Shift</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setIsWorkOrderPickerOpen(true)}
+            className="px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-xl text-xs font-bold uppercase flex items-center gap-1.5 shadow-xs cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Schedule Shift</span>
+          </button>
         </div>
       </div>
 
@@ -117,6 +147,7 @@ export default function EmployerShiftRegisterPage() {
                         status === 'ON_BREAK' ? 'bg-amber-100 text-amber-800' :
                         status === 'APPROVED' ? 'bg-blue-100 text-blue-800' :
                         status === 'PENDING_APPROVAL' ? 'bg-indigo-100 text-indigo-800' :
+                        status === 'CORRECTION_REQUESTED' ? 'bg-rose-100 text-rose-800' :
                         'bg-slate-100 text-slate-700'
                       }`}>
                         {status.replace('_', ' ')}
@@ -149,6 +180,11 @@ export default function EmployerShiftRegisterPage() {
                           <span className="font-bold">{item.attendance.totalWorkMinutes} mins</span>
                         </div>
                       )}
+                      {item.attendance?.correctionReason && (
+                        <div className="pt-1 text-[11px] text-rose-600 dark:text-rose-400 font-semibold">
+                          Reason: {item.attendance.correctionReason}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -163,7 +199,7 @@ export default function EmployerShiftRegisterPage() {
                       <span>QR / PIN</span>
                     </button>
 
-                    {item.attendance && ['PENDING_APPROVAL', 'CHECKED_OUT', 'CORRECTION_REQUESTED'].includes(item.attendance.status) && (
+                    {item.attendance && (item.attendance.status === 'PENDING_APPROVAL' || item.attendance.status === 'CHECKED_OUT') && (
                       <button
                         type="button"
                         onClick={() => handleApprove(item.attendance!.id, item.worker.name)}
@@ -173,10 +209,109 @@ export default function EmployerShiftRegisterPage() {
                         <span>Approve</span>
                       </button>
                     )}
+
+                    {item.attendance && item.attendance.status === 'CORRECTION_REQUESTED' && (
+                      <button
+                        type="button"
+                        onClick={() => setResolvingCorrectionItem(item)}
+                        className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold uppercase flex items-center gap-1 shadow-2xs cursor-pointer"
+                      >
+                        <span>Review</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Work Order Selector Modal for Scheduling */}
+      {isWorkOrderPickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="w-full max-w-lg bg-white dark:bg-[#1C1C21] rounded-3xl p-6 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Select Accepted Work Order</h3>
+              <button
+                type="button"
+                onClick={() => setIsWorkOrderPickerOpen(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-slate-500">Choose which worker and agreement to schedule shifts for:</p>
+            
+            {acceptedOrders.length === 0 ? (
+              <p className="text-xs text-amber-600 py-4 text-center">No accepted work orders found. Issue a work order and wait for candidate acceptance first.</p>
+            ) : (
+              <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                {acceptedOrders.map((wo: WorkOrder) => (
+                  <div
+                    key={wo.id}
+                    onClick={() => {
+                      setSelectedWorkOrderForShift(wo);
+                      setIsWorkOrderPickerOpen(false);
+                    }}
+                    className="p-3 rounded-2xl border border-slate-200 dark:border-zinc-800 hover:border-[#0f2f63] dark:hover:border-sky-500 hover:bg-slate-50 dark:hover:bg-zinc-800/40 cursor-pointer transition-all flex items-center justify-between"
+                  >
+                    <div>
+                      <span className="text-[10px] font-bold text-[#0f2f63] dark:text-sky-400 block">{wo.order_number}</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">{wo.job_title}</span>
+                      <span className="text-[11px] text-slate-500 block">{wo.worksite_name} • ₹{Number(wo.wage_amount).toLocaleString('en-IN')}/{wo.wage_frequency?.toLowerCase()}</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Review & Resolve Correction Modal */}
+      {resolvingCorrectionItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="w-full max-w-md bg-white dark:bg-[#1C1C21] rounded-3xl p-6 space-y-4 shadow-xl">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Review Attendance Correction</h3>
+            <div className="text-xs space-y-1 text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/50 p-3 rounded-xl">
+              <div><strong>Worker:</strong> {resolvingCorrectionItem.worker.name}</div>
+              <div><strong>Job:</strong> {resolvingCorrectionItem.jobTitle}</div>
+              <div><strong>Correction Reason:</strong> {resolvingCorrectionItem.attendance?.correctionReason}</div>
+            </div>
+
+            <textarea
+              rows={2}
+              value={resolutionNotes}
+              onChange={(e) => setResolutionNotes(e.target.value)}
+              placeholder="Optional supervisor notes..."
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 text-xs text-slate-900 dark:text-white"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setResolvingCorrectionItem(null)}
+                className="px-3 py-1.5 text-xs font-semibold text-slate-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleResolveCorrection('REJECTED')}
+                className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-zinc-700 text-slate-800 dark:text-zinc-200 text-xs font-bold cursor-pointer"
+              >
+                Reject Correction
+              </button>
+              <button
+                type="button"
+                onClick={() => handleResolveCorrection('APPROVED')}
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold cursor-pointer"
+              >
+                Approve & Recalculate
+              </button>
+            </div>
           </div>
         </div>
       )}

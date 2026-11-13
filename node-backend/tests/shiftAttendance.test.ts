@@ -157,32 +157,38 @@ describe('Phase 4: Shift Scheduling and Attendance Unit & Integration Tests', ()
     ).rejects.toThrow(/Must be ACCEPTED/);
   });
 
-  test('3. Generate rolling QR code token with valid signature and sliding expiration', () => {
-    const { token, expiresAt } = ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId);
+  test('3. Generate rolling QR code token with valid signature and sliding expiration', async () => {
+    const { token, expiresAt } = await ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId, 'CHECK_IN');
     expect(token).toBeDefined();
     expect(typeof token).toBe('string');
     expect(expiresAt).toBeGreaterThan(Math.floor(Date.now() / 1000));
 
-    const isValid = ShiftAttendanceService.verifyQrToken(token, scheduledShiftId);
-    expect(isValid).toBe(true);
+    // Consuming or verifying via challenge table
+    const challenge = await prisma.attendance_challenges.findFirst({
+      where: { shift_id: scheduledShiftId, challenge_type: 'QR_CODE' }
+    });
+    expect(challenge).toBeDefined();
+    expect(challenge?.nonce).toBeDefined();
   });
 
-  test('4. Reject forged and expired QR code tokens', () => {
+  test('4. Reject forged and expired QR code tokens', async () => {
     // Forged signature
     const forgedToken = Buffer.from(JSON.stringify({
-      payload: `${scheduledShiftId}:${testEmployerId}:${Math.floor(Date.now() / 1000) + 60}`,
+      payload: `${scheduledShiftId}:${testEmployerId}:CHECK_IN:fake-nonce:${Math.floor(Date.now() / 1000) + 60}`,
       signature: 'bad-signature-hex-12345678'
     })).toString('base64');
 
-    expect(ShiftAttendanceService.verifyQrToken(forgedToken, scheduledShiftId)).toBe(false);
+    const isValid = await ShiftAttendanceService.verifyAndConsumeQrToken(forgedToken, scheduledShiftId, 'CHECK_IN');
+    expect(isValid).toBe(false);
 
     // Mismatched shiftId
-    const { token } = ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId);
-    expect(ShiftAttendanceService.verifyQrToken(token, 'other-shift-id')).toBe(false);
+    const { token } = await ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId, 'CHECK_IN');
+    const isOtherValid = await ShiftAttendanceService.verifyAndConsumeQrToken(token, 'other-shift-id', 'CHECK_IN');
+    expect(isOtherValid).toBe(false);
   });
 
   test('5. Check-in worker via valid QR token transitions to CHECKED_IN', async () => {
-    const { token } = ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId);
+    const { token } = await ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId, 'CHECK_IN');
 
     const checkedIn = await ShiftAttendanceService.checkIn(testWorkerUserId, {
       shiftId: scheduledShiftId,
@@ -199,7 +205,7 @@ describe('Phase 4: Shift Scheduling and Attendance Unit & Integration Tests', ()
   });
 
   test('6. Prevent duplicate check-in while shift is already in progress', async () => {
-    const { token } = ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId);
+    const { token } = await ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId, 'CHECK_IN');
 
     await expect(
       ShiftAttendanceService.checkIn(testWorkerUserId, {
@@ -221,7 +227,7 @@ describe('Phase 4: Shift Scheduling and Attendance Unit & Integration Tests', ()
   });
 
   test('8. Check-out worker transitions to PENDING_APPROVAL with calculated work minutes', async () => {
-    const { token } = ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId);
+    const { token } = await ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId, 'CHECK_OUT');
 
     const checkedOut = await ShiftAttendanceService.checkOut(testWorkerUserId, {
       shiftId: scheduledShiftId,
@@ -237,7 +243,7 @@ describe('Phase 4: Shift Scheduling and Attendance Unit & Integration Tests', ()
 
   test('9. Prevent check-out without prior active check-in', async () => {
     // Currently in PENDING_APPROVAL, subsequent check-out must fail
-    const { token } = ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId);
+    const { token } = await ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId, 'CHECK_OUT');
 
     await expect(
       ShiftAttendanceService.checkOut(testWorkerUserId, {
@@ -266,7 +272,7 @@ describe('Phase 4: Shift Scheduling and Attendance Unit & Integration Tests', ()
     expect(corrected.correction_reason).toContain('network glitch');
   });
 
-  test('11. Employer approves attendance and moves record to APPROVED', async () => {
+  test('11. Employer resolves correction request and approves attendance', async () => {
     const attendance = await prisma.shift_attendances.findUnique({
       where: {
         shift_id_worker_id: {
@@ -276,10 +282,14 @@ describe('Phase 4: Shift Scheduling and Attendance Unit & Integration Tests', ()
       }
     });
 
-    const approved = await ShiftAttendanceService.approveAttendance(testEmployerId, attendance!.id);
-    expect(approved.status).toBe('APPROVED');
-    expect(approved.approved_by).toBe(testEmployerId);
-    expect(approved.approved_at).toBeDefined();
+    const resolved = await ShiftAttendanceService.resolveCorrection(testEmployerId, attendance!.id, {
+      decision: 'ACCEPT',
+      notes: 'Verified site register entry; adjusted checkout time and approved.'
+    });
+    expect(resolved.status).toBe('APPROVED');
+    expect(resolved.approved_by).toBe(testEmployerId);
+    expect(resolved.approved_at).toBeDefined();
+    expect(resolved.correction_resolved_by).toBe(testEmployerId);
   });
 
   test('12. Employer shift attendance register retrieves complete shift roster', async () => {

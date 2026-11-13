@@ -419,8 +419,13 @@ export const scoreSkills = (
     const rawJobSkill = jobSkills[i];
     const jClean = normJob[i];
 
-    // Check direct or substring match
-    const isDirectMatch = normWorker.some(w => w === jClean || w.includes(jClean) || jClean.includes(w));
+    // Direct token/word boundary matching rather than arbitrary loose substrings
+    const isDirectMatch = normWorker.some(w => {
+      if (w === jClean) return true;
+      const wTokens = w.split(/\s+/);
+      const jTokens = jClean.split(/\s+/);
+      return jTokens.some(jt => wTokens.includes(jt)) || wTokens.some(wt => jTokens.includes(wt));
+    });
     if (isDirectMatch) {
       matching.push(rawJobSkill);
       continue;
@@ -688,6 +693,13 @@ export const recommendationEngineService = {
         }
       );
 
+      // P1.1 FIX: Enforce real radiusKm distance filter when coordinates are available
+      if (options.radiusKm && options.radiusKm > 0 && locEval.distanceKm !== null) {
+        if (locEval.distanceKm > options.radiusKm) {
+          continue; // Exclude job outside requested physical radius
+        }
+      }
+
       // 5c. Experience Alignment (Weight: 0.15)
       const expScore = scoreExperience(job.experience_years_required ?? 0, workerExp);
 
@@ -815,17 +827,33 @@ export const recommendationEngineService = {
     const limit = Math.min(Math.max(options.limit || 15, 1), 50);
     const page = Math.max(options.page || 1, 1);
 
-    // 1. Fetch Employer Profile and Target Job(s)
+    // 1. Fetch Employer Profile and Target Job(s) (strictly active and unexpired)
+    const now = new Date();
     let targetJobs: any[] = [];
     if (options.jobId) {
       const singleJob = await prisma.jobs.findFirst({
-        where: { id: options.jobId, employer_id: employerUserId },
+        where: {
+          id: options.jobId,
+          employer_id: employerUserId,
+          status: { in: ['OPEN', 'ACTIVE'] },
+          OR: [
+            { expires_at: null },
+            { expires_at: { gt: now } }
+          ]
+        },
         include: { job_required_skills: true }
       });
       if (singleJob) targetJobs = [singleJob];
     } else {
       targetJobs = await prisma.jobs.findMany({
-        where: { employer_id: employerUserId, status: { in: ['OPEN', 'ACTIVE'] } },
+        where: {
+          employer_id: employerUserId,
+          status: { in: ['OPEN', 'ACTIVE'] },
+          OR: [
+            { expires_at: null },
+            { expires_at: { gt: now } }
+          ]
+        },
         include: { job_required_skills: true },
         orderBy: { created_at: 'desc' },
         take: 10
@@ -887,7 +915,9 @@ export const recommendationEngineService = {
       const isVerified = verifiedUserSet.has(worker.user_id);
       const avgRating = ratingMap.get(worker.user_id) ?? null;
 
-      // Evaluate independent feature dimensions against the target job(s)
+      // P1.2 FIX: Select best matching job based on COMPLETE COMPOSITE WEIGHTED SCORE, not skills alone
+      let bestCompositeScore = 0;
+      let bestMatchingJobId: string | null = null;
       let bestSkillScore = 0;
       let bestMatchingSkills: string[] = [];
       let bestMissingSkills: string[] = [];
@@ -934,7 +964,16 @@ export const recommendationEngineService = {
             }
           );
 
-          if (skillEval.score > bestSkillScore) {
+          // Calculate full composite score for this specific job
+          const composite = 
+            skillEval.score * weights.skills +
+            locEval.score * weights.geo +
+            expScore * weights.experience +
+            wageEval.score * weights.compensation;
+
+          if (composite > bestCompositeScore) {
+            bestCompositeScore = composite;
+            bestMatchingJobId = job.id;
             bestSkillScore = skillEval.score;
             bestMatchingSkills = skillEval.matchingSkills;
             bestMissingSkills = skillEval.missingSkills;
