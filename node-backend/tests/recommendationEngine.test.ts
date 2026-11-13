@@ -10,7 +10,8 @@ import {
   scoreActivity,
   getNormalizedJobSkills,
   RECOMMENDATION_CONFIG,
-  TRADE_SYNONYMS
+  TRADE_SYNONYMS,
+  recommendationEngineService
 } from '../src/services/recommendationEngineService';
 
 describe('Phase 1: Recommendation Engine Backend Stabilization Unit Tests', () => {
@@ -281,6 +282,30 @@ describe('Phase 1: Recommendation Engine Backend Stabilization Unit Tests', () =
       expect(validTypes.includes('INVITE')).toBe(true);
       expect(validTypes.includes('DISMISS')).toBe(true);
       expect(validTypes.includes('UNKNOWN')).toBe(false);
+    });
+
+    test('8.2 Rejects client-forged APPLY telemetry without active job application', async () => {
+      // User has not applied to this job -> should throw Forbidden
+      await expect(
+        recommendationEngineService.recordInteraction({
+          userId: '00000000-0000-4000-a000-000000000000',
+          interactionType: 'APPLY',
+          itemType: 'JOB',
+          itemId: '00000000-0000-4000-a000-000000000001'
+        })
+      ).rejects.toThrow(/without an active job application/);
+    });
+
+    test('8.3 Rejects client-forged INVITE telemetry from non-employer', async () => {
+      // User is not an employer -> should throw Forbidden
+      await expect(
+        recommendationEngineService.recordInteraction({
+          userId: '00000000-0000-4000-a000-000000000000',
+          interactionType: 'INVITE',
+          itemType: 'WORKER',
+          itemId: '00000000-0000-4000-a000-000000000002'
+        })
+      ).rejects.toThrow(/Only verified employers/);
     });
   });
 

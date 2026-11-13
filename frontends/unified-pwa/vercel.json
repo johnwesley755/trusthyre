@@ -80,6 +80,39 @@
       "destination": "https://api.trusthyre.com/feed.xml"
     },
     {
+      "source": "/:city/:title/job/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "User-Agent",
+          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+        }
+      ],
+      "destination": "https://api.trusthyre.com/api/seo/prerender?path=/:city/:title/job/:id"
+    },
+    {
+      "source": "/jobs-in-:city",
+      "has": [
+        {
+          "type": "header",
+          "key": "User-Agent",
+          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+        }
+      ],
+      "destination": "https://api.trusthyre.com/api/seo/prerender?path=/jobs-in-:city"
+    },
+    {
+      "source": "/:city/:neighborhood-jobs",
+      "has": [
+        {
+          "type": "header",
+          "key": "User-Agent",
+          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+        }
+      ],
+      "destination": "https://api.trusthyre.com/api/seo/prerender?path=/:city/:neighborhood-jobs"
+    },
+    {
       "source": "/job/:id*",
       "has": [
         {

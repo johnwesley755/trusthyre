@@ -73,7 +73,8 @@ export const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
 
   const handleApplyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    recordAction('APPLY', 'JOB', job.id, overallScore);
+    // P2.2 FIX: Record CLICK on navigation; actual APPLY event is recorded upon application submission in job detail page
+    recordAction('CLICK', 'JOB', job.id, overallScore, { intent: 'APPLY_NAVIGATE' });
     navigate(`/job/${job.id}`);
   };
 

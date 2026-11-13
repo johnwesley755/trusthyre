@@ -5,6 +5,10 @@ Allow: /blog
 Allow: /blog/*
 Allow: /job/*
 Allow: /jobs/*
+Allow: /*/*/job/*
+Allow: /jobs-in-*
+Allow: /hire-*
+Allow: /*/*-jobs
 Allow: /search
 Allow: /find-workers
 Allow: /sitemap.xml

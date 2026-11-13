@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { requireAuth } from '../middlewares/auth';
+import { requireAuth, requireEmployer, requireShiftSupervisorOrEmployer } from '../middlewares/auth';
 import { shiftAttendanceController } from '../controllers/shiftAttendanceController';
 
 const shiftRoutes = new Hono();
@@ -12,21 +12,30 @@ attendanceRoutes.use('*', requireAuth);
 // ----------------------------------------------------------------------------
 // Shift Endpoints (/api/shifts)
 // ----------------------------------------------------------------------------
-shiftRoutes.post('/', shiftAttendanceController.createShifts);
-shiftRoutes.get('/employer', shiftAttendanceController.getEmployerShifts);
+shiftRoutes.post('/', requireEmployer, shiftAttendanceController.createShifts);
+shiftRoutes.get('/employer', requireShiftSupervisorOrEmployer, shiftAttendanceController.getEmployerShifts);
 shiftRoutes.get('/worker', shiftAttendanceController.getWorkerShifts);
 shiftRoutes.get('/:id', shiftAttendanceController.getShiftById);
 
 // ----------------------------------------------------------------------------
 // Attendance Endpoints (/api/attendance)
 // ----------------------------------------------------------------------------
-attendanceRoutes.post('/qr-token', shiftAttendanceController.generateQrToken);
-attendanceRoutes.post('/otp', shiftAttendanceController.generateOtpPin);
+// Credential generation strictly restricted to Employer / Assigned Supervisor role
+attendanceRoutes.post('/qr-token', requireShiftSupervisorOrEmployer, shiftAttendanceController.generateQrToken);
+attendanceRoutes.post('/otp', requireShiftSupervisorOrEmployer, shiftAttendanceController.generateOtpPin);
+
+// Manual attendance recording strictly restricted to Employer / Assigned Supervisor role
+attendanceRoutes.post('/manual-record', requireShiftSupervisorOrEmployer, shiftAttendanceController.recordManualAttendance);
+
+// Worker check-in, breaks, check-out, and correction requests
 attendanceRoutes.post('/check-in', shiftAttendanceController.checkIn);
 attendanceRoutes.post('/break', shiftAttendanceController.recordBreak);
 attendanceRoutes.post('/check-out', shiftAttendanceController.checkOut);
-attendanceRoutes.post('/:id/approve', shiftAttendanceController.approveAttendance);
 attendanceRoutes.post('/:id/correction', shiftAttendanceController.requestCorrection);
-attendanceRoutes.get('/register', shiftAttendanceController.getAttendanceRegister);
+
+// Employer/Assigned Supervisor approval & correction resolution
+attendanceRoutes.post('/:id/approve', requireShiftSupervisorOrEmployer, shiftAttendanceController.approveAttendance);
+attendanceRoutes.post('/:id/resolve-correction', requireShiftSupervisorOrEmployer, shiftAttendanceController.resolveCorrection);
+attendanceRoutes.get('/register', requireShiftSupervisorOrEmployer, shiftAttendanceController.getAttendanceRegister);
 
 export { shiftRoutes, attendanceRoutes };

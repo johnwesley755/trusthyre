@@ -17,9 +17,25 @@ export const recommendationController = {
         return c.json(ApiResponse.error("Unauthorized: Candidate login required"), 401 as any);
       }
 
-      const lat = c.req.query('lat') ? parseFloat(c.req.query('lat')!) : undefined;
-      const lng = c.req.query('lng') ? parseFloat(c.req.query('lng')!) : undefined;
-      const radiusKm = c.req.query('radiusKm') ? parseFloat(c.req.query('radiusKm')!) : undefined;
+      const latStr = c.req.query('lat');
+      const lngStr = c.req.query('lng');
+      const radiusKmStr = c.req.query('radiusKm');
+
+      const lat = latStr ? parseFloat(latStr) : undefined;
+      const lng = lngStr ? parseFloat(lngStr) : undefined;
+      const radiusKm = radiusKmStr ? parseFloat(radiusKmStr) : undefined;
+
+      // Validate coordinates and radius bounds if provided
+      if (lat !== undefined && (isNaN(lat) || lat < -90 || lat > 90)) {
+        return c.json(ApiResponse.error("Invalid latitude (-90 to 90)"), 400 as any);
+      }
+      if (lng !== undefined && (isNaN(lng) || lng < -180 || lng > 180)) {
+        return c.json(ApiResponse.error("Invalid longitude (-180 to 180)"), 400 as any);
+      }
+      if (radiusKm !== undefined && (isNaN(radiusKm) || radiusKm <= 0 || radiusKm > 1000)) {
+        return c.json(ApiResponse.error("Invalid radiusKm (1 to 1000 km)"), 400 as any);
+      }
+
       const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : 15;
       const page = c.req.query('page') ? parseInt(c.req.query('page')!) : 1;
 

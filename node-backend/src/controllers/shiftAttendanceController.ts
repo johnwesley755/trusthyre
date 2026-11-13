@@ -37,9 +37,8 @@ export const shiftAttendanceController = {
 
       const date = c.req.query('date');
       const status = c.req.query('status');
-      const workOrderId = c.req.query('workOrderId');
 
-      const shifts = await ShiftAttendanceService.getEmployerShifts(authUser.sub, { date, status, workOrderId });
+      const shifts = await ShiftAttendanceService.getEmployerShifts(authUser.sub, { date, status });
       return c.json(ApiResponse.ok(shifts));
     } catch (err: any) {
       console.error("Error getting employer shifts:", err);
@@ -95,22 +94,22 @@ export const shiftAttendanceController = {
 
   /**
    * POST /api/attendance/qr-token
-   * Employer generates short-lived HMAC QR token
+   * Employer/Supervisor generates short-lived HMAC QR token with nonce
    */
   generateQrToken: async (c: Context) => {
     try {
       const authUser = c.get('user');
       if (!authUser || !authUser.sub) {
-        return c.json(ApiResponse.error("Unauthorized: Employer login required"), 401 as any);
+        return c.json(ApiResponse.error("Unauthorized: Employer/Supervisor login required"), 401 as any);
       }
 
       const body = await c.req.json();
-      const { shiftId } = body;
+      const { shiftId, action } = body;
       if (!shiftId) {
         return c.json(ApiResponse.error("shiftId is required"), 400 as any);
       }
 
-      const tokenData = ShiftAttendanceService.generateQrToken(authUser.sub, shiftId);
+      const tokenData = await ShiftAttendanceService.generateQrToken(authUser.sub, shiftId, action || 'CHECK_IN');
       return c.json(ApiResponse.ok("QR token generated", tokenData));
     } catch (err: any) {
       console.error("Error generating QR token:", err);
@@ -120,22 +119,22 @@ export const shiftAttendanceController = {
 
   /**
    * POST /api/attendance/otp
-   * Employer generates 6-digit one-time PIN
+   * Employer/Supervisor generates 6-digit one-time PIN
    */
   generateOtpPin: async (c: Context) => {
     try {
       const authUser = c.get('user');
       if (!authUser || !authUser.sub) {
-        return c.json(ApiResponse.error("Unauthorized: Employer login required"), 401 as any);
+        return c.json(ApiResponse.error("Unauthorized: Employer/Supervisor login required"), 401 as any);
       }
 
       const body = await c.req.json();
-      const { shiftId } = body;
+      const { shiftId, action } = body;
       if (!shiftId) {
         return c.json(ApiResponse.error("shiftId is required"), 400 as any);
       }
 
-      const otpData = ShiftAttendanceService.generateOtpPin(authUser.sub, shiftId);
+      const otpData = await ShiftAttendanceService.generateOtpPin(authUser.sub, shiftId, action || 'CHECK_IN');
       return c.json(ApiResponse.ok("One-time PIN generated", otpData));
     } catch (err: any) {
       console.error("Error generating OTP:", err);
@@ -145,7 +144,7 @@ export const shiftAttendanceController = {
 
   /**
    * POST /api/attendance/check-in
-   * Worker checks in via QR token, OTP, or manual supervisor approval
+   * Worker checks in via QR token or OTP
    */
   checkIn: async (c: Context) => {
     try {
@@ -209,8 +208,28 @@ export const shiftAttendanceController = {
   },
 
   /**
+   * POST /api/attendance/manual-record
+   * Supervisor/Employer manually records attendance with mandatory justification
+   */
+  recordManualAttendance: async (c: Context) => {
+    try {
+      const authUser = c.get('user');
+      if (!authUser || !authUser.sub) {
+        return c.json(ApiResponse.error("Unauthorized: Employer/Supervisor login required"), 401 as any);
+      }
+
+      const body = await c.req.json();
+      const result = await ShiftAttendanceService.recordManualAttendance(authUser.sub, body);
+      return c.json(ApiResponse.ok("Manual attendance recorded successfully", result));
+    } catch (err: any) {
+      console.error("Error recording manual attendance:", err);
+      return c.json(ApiResponse.error(err.message || "Failed to record manual attendance"), 400 as any);
+    }
+  },
+
+  /**
    * POST /api/attendance/:id/approve
-   * Employer approves verified attendance
+   * Employer/Supervisor approves verified attendance
    */
   approveAttendance: async (c: Context) => {
     try {
@@ -254,6 +273,38 @@ export const shiftAttendanceController = {
     } catch (err: any) {
       console.error("Error requesting correction:", err);
       return c.json(ApiResponse.error(err.message || "Failed to request correction"), 400 as any);
+    }
+  },
+
+  /**
+   * POST /api/attendance/:id/resolve-correction
+   * Supervisor resolves time correction request (APPROVED or REJECTED)
+   */
+  resolveCorrection: async (c: Context) => {
+    try {
+      const authUser = c.get('user');
+      if (!authUser || !authUser.sub) {
+        return c.json(ApiResponse.error("Unauthorized: Employer/Supervisor login required"), 401 as any);
+      }
+
+      const id = c.req.param('id');
+      if (!id) {
+        return c.json(ApiResponse.error("Attendance ID required"), 400 as any);
+      }
+
+      const body = await c.req.json();
+      const { decision, notes } = body;
+      if (!decision || !['APPROVED', 'REJECTED'].includes(decision.toUpperCase())) {
+        return c.json(ApiResponse.error("Invalid decision. Must be APPROVED or REJECTED."), 400 as any);
+      }
+      const result = await ShiftAttendanceService.resolveCorrection(authUser.sub, id, {
+        decision: decision.toUpperCase() as 'APPROVED' | 'REJECTED',
+        notes
+      });
+      return c.json(ApiResponse.ok("Correction resolved successfully", result));
+    } catch (err: any) {
+      console.error("Error resolving correction:", err);
+      return c.json(ApiResponse.error(err.message || "Failed to resolve correction"), 400 as any);
     }
   },
 

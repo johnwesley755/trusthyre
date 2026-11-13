@@ -752,12 +752,16 @@ model work_orders {
   worker_response_notes String?
   accepted_at           DateTime?           @db.Timestamp(6)
   declined_at           DateTime?           @db.Timestamp(6)
+  terms_version         Int                 @default(1)
+  accepted_terms_version Int?
+  accepted_terms_hash   String?             @db.VarChar(64)
   created_at            DateTime?           @default(now()) @db.Timestamp(6)
   updated_at            DateTime?           @default(now()) @db.Timestamp(6)
   
   jobs                  jobs?               @relation(fields: [job_id], references: [id], onDelete: SetNull)
   job_applications      job_applications?   @relation(fields: [application_id], references: [id], onDelete: SetNull)
   events                work_order_events[]
+  terms_versions        work_order_terms_versions[]
   shifts                shifts[]
   shift_attendances     shift_attendances[]
 
@@ -805,6 +809,7 @@ model shifts {
 
   work_orders            work_orders         @relation(fields: [work_order_id], references: [id], onDelete: Cascade)
   attendances            shift_attendances[]
+  challenges             attendance_challenges[]
 
   @@index([work_order_id], map: "idx_shifts_work_order_id")
   @@index([employer_id], map: "idx_shifts_employer_id")
@@ -838,14 +843,19 @@ model shift_attendances {
   correction_reason            String?
   correction_proposed_check_in DateTime?    @db.Timestamp(6)
   correction_proposed_check_out DateTime?   @db.Timestamp(6)
+  last_break_start             DateTime?    @db.Timestamp(6)
   approved_by                  String?      @db.VarChar(255)
   approved_at                  DateTime?    @db.Timestamp(6)
+  correction_resolved_by       String?      @db.VarChar(255)
+  correction_resolved_at       DateTime?    @db.Timestamp(6)
+  correction_resolution_notes  String?
   events                       Json         @default("[]")
   created_at                   DateTime?    @default(now()) @db.Timestamp(6)
   updated_at                   DateTime?    @default(now()) @db.Timestamp(6)
 
   shifts                       shifts       @relation(fields: [shift_id], references: [id], onDelete: Cascade)
   work_orders                  work_orders  @relation(fields: [work_order_id], references: [id], onDelete: Cascade)
+  attendance_events            attendance_events[]
 
   @@unique([shift_id, worker_id], map: "uq_shift_attendance_shift_worker")
   @@index([worker_id], map: "idx_attendances_worker_id")
@@ -853,6 +863,61 @@ model shift_attendances {
   @@index([status], map: "idx_attendances_status")
   @@index([created_at(sort: Desc)], map: "idx_attendances_created_at")
 }
+
+model attendance_challenges {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shift_id        String    @db.Uuid
+  challenge_type  String    @db.VarChar(20)
+  intended_action String    @db.VarChar(20)
+  hashed_secret   String    @db.VarChar(255)
+  nonce           String    @unique @db.VarChar(64)
+  issuer_user_id  String    @db.VarChar(255)
+  expires_at      DateTime  @db.Timestamptz(6)
+  attempt_count   Int       @default(0)
+  max_attempts    Int       @default(3)
+  consumed_at     DateTime? @db.Timestamptz(6)
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+
+  shifts          shifts    @relation(fields: [shift_id], references: [id], onDelete: Cascade)
+
+  @@index([shift_id, intended_action, expires_at], map: "idx_attendance_challenges_shift_action")
+  @@index([nonce], map: "idx_attendance_challenges_nonce")
+}
+
+model work_order_terms_versions {
+  id                 String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  work_order_id      String      @db.Uuid
+  version_number     Int
+  terms_snapshot     Json
+  terms_hash         String      @db.VarChar(64)
+  created_by_user_id String      @db.VarChar(255)
+  change_summary     String?
+  created_at         DateTime?   @default(now()) @db.Timestamptz(6)
+
+  work_orders        work_orders @relation(fields: [work_order_id], references: [id], onDelete: Cascade)
+
+  @@unique([work_order_id, version_number], map: "uq_work_order_version")
+  @@index([work_order_id, version_number], map: "idx_work_order_terms_work_order")
+}
+
+model attendance_events {
+  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  attendance_id       String            @db.Uuid
+  event_type          String            @db.VarChar(50)
+  actor_user_id       String            @db.VarChar(255)
+  actor_role          String            @db.VarChar(50)
+  verification_method String?           @db.VarChar(50)
+  latitude            Float?
+  longitude           Float?
+  notes               String?
+  event_data          Json              @default("{}")
+  created_at          DateTime?         @default(now()) @db.Timestamptz(6)
+
+  attendances         shift_attendances @relation(fields: [attendance_id], references: [id], onDelete: Cascade)
+
+  @@index([attendance_id, created_at], map: "idx_attendance_events_attendance_id")
+}
+
 
 
 

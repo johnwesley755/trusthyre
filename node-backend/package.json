@@ -10,7 +10,7 @@
     "dev:cloudflare": "wrangler dev",
     "deploy": "wrangler deploy",
     "seed:admin": "ts-node prisma/seed-admin.ts",
-    "test": "ts-node tests/api_full_suite.ts",
+    "test": "bun test tests/recommendationEngine.test.ts tests/workOrder.test.ts tests/shiftAttendance.test.ts tests/seoPrerender.test.ts",
     "postinstall": "prisma generate"
   },
   "keywords": [],

@@ -95,24 +95,33 @@ export interface CreateShiftPayload {
 
 export interface CheckInPayload {
   shiftId: string;
-  method: 'QR_CODE' | 'ONE_TIME_PIN' | 'MANUAL_SUPERVISOR';
+  method: 'QR_CODE' | 'ONE_TIME_PIN';
   token?: string;
   otp?: string;
   latitude?: number;
   longitude?: number;
   notes?: string;
-  manualReason?: string;
 }
 
 export interface CheckOutPayload {
   shiftId: string;
-  method: 'QR_CODE' | 'ONE_TIME_PIN' | 'MANUAL_SUPERVISOR';
+  method: 'QR_CODE' | 'ONE_TIME_PIN';
   token?: string;
   otp?: string;
   latitude?: number;
   longitude?: number;
   notes?: string;
-  manualReason?: string;
+}
+
+export interface ManualSupervisorPayload {
+  shiftId: string;
+  workerId: string;
+  action: 'CHECK_IN' | 'CHECK_OUT';
+  manualReason: string;
+  timestamp?: string;
+  latitude?: number;
+  longitude?: number;
+  notes?: string;
 }
 
 export const shiftAttendanceService = {
@@ -142,14 +151,26 @@ export const shiftAttendanceService = {
   },
 
   // Employer: Generate rolling QR token
-  generateQrToken: async (shiftId: string): Promise<{ token: string; expiresAt: number }> => {
-    const res = await apiClient.post('/api/attendance/qr-token', { shiftId });
+  generateQrToken: async (shiftId: string, action: 'CHECK_IN' | 'CHECK_OUT' = 'CHECK_IN'): Promise<{ token: string; expiresAt: number }> => {
+    const res = await apiClient.post('/api/attendance/qr-token', { shiftId, action });
     return res.data?.data;
   },
 
   // Employer: Generate 6-digit PIN
-  generateOtpPin: async (shiftId: string): Promise<{ otp: string; expiresAt: number }> => {
-    const res = await apiClient.post('/api/attendance/otp', { shiftId });
+  generateOtpPin: async (shiftId: string, action: 'CHECK_IN' | 'CHECK_OUT' = 'CHECK_IN'): Promise<{ otp: string; expiresAt: number }> => {
+    const res = await apiClient.post('/api/attendance/otp', { shiftId, action });
+    return res.data?.data;
+  },
+
+  // Supervisor: Record Manual Attendance with reason
+  recordManualAttendance: async (payload: ManualSupervisorPayload): Promise<ShiftAttendance> => {
+    const res = await apiClient.post('/api/attendance/manual-record', payload);
+    return res.data?.data;
+  },
+
+  // Supervisor: Resolve correction
+  resolveCorrection: async (attendanceId: string, decision: 'APPROVED' | 'REJECTED', notes?: string): Promise<ShiftAttendance> => {
+    const res = await apiClient.post(`/api/attendance/${attendanceId}/resolve-correction`, { decision, notes });
     return res.data?.data;
   },
 

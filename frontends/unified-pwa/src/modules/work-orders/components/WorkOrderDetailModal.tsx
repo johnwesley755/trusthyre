@@ -54,7 +54,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
 
       toast.success(
         action === 'ACCEPT' 
-          ? 'Digital Work Order signed & accepted!' 
+          ? 'Work order terms accepted successfully.' 
           : action === 'DECLINE' 
           ? 'Work order declined' 
           : 'Clarification request sent to employer'
@@ -146,7 +146,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
                 className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5" />
-                <span>Accept & Sign Terms</span>
+                <span>Accept Work Order Terms</span>
               </button>
             </div>
           )}

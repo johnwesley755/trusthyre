@@ -100,7 +100,7 @@ describe('Digital Work Order Foundation Unit & Workflow Tests', () => {
 
     expect(order).toBeDefined();
     expect(order.id).toBeDefined();
-    expect(order.order_number).toMatch(/^WO-\d{8}-\d{4}$/);
+    expect(order.order_number).toMatch(/^WO-\d{8}-\d{4}-[A-Z0-9]{4}$/);
     expect(order.status).toBe('DRAFT');
     expect(Number(order.wage_amount)).toBe(950);
     expect(Number(order.daily_working_hours)).toBe(8);
@@ -170,6 +170,21 @@ describe('Digital Work Order Foundation Unit & Workflow Tests', () => {
 
     expect(amended.status).toBe('SENT'); // Reset from ACCEPTED to SENT
     expect(amended.accepted_at).toBeNull();
+  });
+
+  test('8. Concurrency: Prevent parallel contradictory transitions with CAS', async () => {
+    // Both ACCEPT and DECLINE dispatched concurrently on SENT work order
+    const results = await Promise.allSettled([
+      WorkOrderService.respondToWorkOrder(testWorkerUserId, createdOrderId, 'ACCEPT', 'Accepting fast'),
+      WorkOrderService.respondToWorkOrder(testWorkerUserId, createdOrderId, 'DECLINE', 'Declining fast')
+    ]);
+
+    const fulfilled = results.filter(r => r.status === 'fulfilled');
+    const rejected = results.filter(r => r.status === 'rejected');
+
+    // Exactly one must succeed and one must be rejected with conflict
+    expect(fulfilled.length).toBe(1);
+    expect(rejected.length).toBe(1);
   });
 });
 
