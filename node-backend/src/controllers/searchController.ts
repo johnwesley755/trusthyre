@@ -413,7 +413,10 @@ export const searchWorkers = async (c: Context) => {
       orderBy: { updated_at: 'desc' }
     });
 
-    const userIds = workers.map(w => w.user_id).filter(Boolean);
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const userIds = workers
+      .map(w => w.user_id)
+      .filter((id): id is string => Boolean(id) && UUID_REGEX.test(id));
 
     const [userMetaList, verifications] = await Promise.all([
       prisma.user_metadata.findMany({

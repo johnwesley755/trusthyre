@@ -173,7 +173,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
   const hasPhoto = Boolean(data.profileImageUrl && !imageError);
   const locationString = formatLocation(data);
   const primaryHeadline = data.preferredRoles && data.preferredRoles.length > 0
-    ? data.preferredRoles.join('  •  ')
+    ? data.preferredRoles.join(' \u2022 ')
     : (skillsList[0] || 'Professional Candidate');
 
   return (
@@ -187,7 +187,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
             </div>
             <div>
               <p className="text-sm font-bold text-slate-900">Verified Candidate Resume</p>
-              <p className="text-xs text-slate-500">Standard Executive ATS Format • Clean Printable Document</p>
+              <p className="text-xs text-slate-500">Standard Executive ATS Format &bull; Clean Printable Document</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -238,7 +238,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
                   </span>
                   {data.jobTitle && (
                     <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
-                      <span>•</span>
+                      <span>&bull;</span>
                       <span>for {data.jobTitle}</span>
                     </span>
                   )}
@@ -270,7 +270,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
               ))}
               {data.missingSkills?.slice(0, 3).map((s, i) => (
                 <span key={`mis-${i}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 font-medium text-[10px]">
-                  <span className="text-slate-400 font-bold">•</span>
+                  <span className="text-slate-400 font-bold">&bull;</span>
                   <span>Needs {s}</span>
                 </span>
               ))}
@@ -307,7 +307,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
               )}
 
               {data.phoneNumber && (data.email || locationString) && (
-                <span className="text-slate-300">•</span>
+                <span className="text-slate-300">&bull;</span>
               )}
 
               {data.email && (
@@ -318,7 +318,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
               )}
 
               {data.email && locationString && (
-                <span className="text-slate-300">•</span>
+                <span className="text-slate-300">&bull;</span>
               )}
 
               {locationString && (
@@ -335,7 +335,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
                 <ShieldCheck className="w-3.5 h-3.5 text-slate-800" />
                 Verified Candidate Profile
               </span>
-              <span className="text-slate-300">•</span>
+              <span className="text-slate-300">&bull;</span>
               <span>Available for Placement</span>
             </div>
           </div>
@@ -377,7 +377,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-6 text-xs text-[#374151] font-medium">
                 {skillsList.map((skill, idx) => (
                   <div key={idx} className="flex items-start gap-2">
-                    <span className="text-slate-900 font-bold leading-none mt-0.5">•</span>
+                    <span className="text-slate-900 font-bold leading-none mt-0.5">&bull;</span>
                     <span className="leading-tight">{skill}</span>
                   </div>
                 ))}
@@ -418,7 +418,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
                   <p className="text-xs text-[#4B5563] mt-0.5">
                     {data.experienceYears && data.experienceYears > 0 
                       ? `${data.experienceYears}+ Years Practical Industry Experience`
-                      : 'Entry-Level / Fresher — Trained & Prepared for Placement'}
+                      : 'Entry-Level / Fresher \u2014 Trained & Prepared for Placement'}
                   </p>
                 </div>
                 <span className="text-[11px] font-semibold text-slate-600 sm:text-right">
@@ -444,7 +444,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
                 </p>
                 {data.collegeName && (
                   <p className="text-xs text-[#4B5563]">
-                    {data.collegeName} {data.specialization ? `• ${data.specialization}` : ''}
+                    {data.collegeName} {data.specialization ? ` \u2022 ${data.specialization}` : ''}
                   </p>
                 )}
                 {data.schoolMedium && (
@@ -509,7 +509,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
 
         {/* RESUME FOOTER */}
         <footer className="mt-10 pt-3 border-t border-slate-300 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 font-medium">
-          <span>TrustHyre Candidate Network • Candidate Identity & Record Verified</span>
+          <span>TrustHyre Candidate Network &bull; Candidate Identity & Record Verified</span>
           <span className="mt-1 sm:mt-0 font-semibold text-slate-600">trusthyre.com/candidate</span>
         </footer>
       </div>

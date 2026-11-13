@@ -952,5 +952,80 @@ FOR DELETE USING (
   is_app_admin() OR user_id = (SELECT current_app_user_id())
 );
 
+-- ============================================================================
+-- 31. TABLE: work_orders
+-- ============================================================================
+ALTER TABLE IF EXISTS public.work_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.work_orders FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "work_orders_select_policy" ON public.work_orders;
+CREATE POLICY "work_orders_select_policy" ON public.work_orders
+FOR SELECT USING (
+  is_app_admin()
+  OR employer_id = (SELECT current_app_user_id())
+  OR worker_id = (SELECT current_app_user_id())
+);
+
+DROP POLICY IF EXISTS "work_orders_insert_policy" ON public.work_orders;
+CREATE POLICY "work_orders_insert_policy" ON public.work_orders
+FOR INSERT WITH CHECK (
+  is_app_admin()
+  OR employer_id = (SELECT current_app_user_id())
+);
+
+DROP POLICY IF EXISTS "work_orders_update_policy" ON public.work_orders;
+CREATE POLICY "work_orders_update_policy" ON public.work_orders
+FOR UPDATE USING (
+  is_app_admin()
+  OR employer_id = (SELECT current_app_user_id())
+  OR worker_id = (SELECT current_app_user_id())
+) WITH CHECK (
+  is_app_admin()
+  OR employer_id = (SELECT current_app_user_id())
+  OR worker_id = (SELECT current_app_user_id())
+);
+
+DROP POLICY IF EXISTS "work_orders_delete_policy" ON public.work_orders;
+CREATE POLICY "work_orders_delete_policy" ON public.work_orders
+FOR DELETE USING (
+  is_app_admin()
+);
+
+-- ============================================================================
+-- 32. TABLE: work_order_events
+-- ============================================================================
+ALTER TABLE IF EXISTS public.work_order_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.work_order_events FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "work_order_events_select_policy" ON public.work_order_events;
+CREATE POLICY "work_order_events_select_policy" ON public.work_order_events
+FOR SELECT USING (
+  is_app_admin()
+  OR EXISTS (
+    SELECT 1 FROM public.work_orders wo
+    WHERE wo.id = work_order_events.work_order_id
+    AND (wo.employer_id = (SELECT current_app_user_id()) OR wo.worker_id = (SELECT current_app_user_id()))
+  )
+);
+
+DROP POLICY IF EXISTS "work_order_events_insert_policy" ON public.work_order_events;
+CREATE POLICY "work_order_events_insert_policy" ON public.work_order_events
+FOR INSERT WITH CHECK (
+  is_app_admin()
+  OR actor_id = (SELECT current_app_user_id())
+);
+
+DROP POLICY IF EXISTS "work_order_events_update_policy" ON public.work_order_events;
+CREATE POLICY "work_order_events_update_policy" ON public.work_order_events
+FOR UPDATE USING (
+  is_app_admin()
+);
+
+DROP POLICY IF EXISTS "work_order_events_delete_policy" ON public.work_order_events;
+CREATE POLICY "work_order_events_delete_policy" ON public.work_order_events
+FOR DELETE USING (
+  is_app_admin()
+);
+
 COMMIT;
 

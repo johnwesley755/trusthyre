@@ -348,7 +348,7 @@ export default function ApplicationManagementPage() {
 
                             <div className="text-right shrink-0">
                               <span className="font-bold text-sm text-emerald-700 dark:text-emerald-400">
-                                â‚¹{(job.budget || 0).toLocaleString('en-IN')}
+                                ₹{(job.budget || 0).toLocaleString('en-IN')}
                               </span>
                               <span className="block text-[10px] text-[#717784] dark:text-zinc-400">Direct Posting</span>
                             </div>
@@ -509,7 +509,7 @@ export default function ApplicationManagementPage() {
 
                         <div className="flex flex-wrap items-center gap-3 text-xs text-[#717784] dark:text-zinc-400">
                           <span className="font-semibold text-emerald-700 dark:text-emerald-400">
-                            â‚¹{(selectedJob?.budget || 0).toLocaleString('en-IN')} / month
+                            ₹{(selectedJob?.budget || 0).toLocaleString('en-IN')} / month
                           </span>
                           <span>•</span>
                           <span className="flex items-center gap-1">
@@ -769,7 +769,6 @@ export default function ApplicationManagementPage() {
 
                           {(app.voiceNoteUrl || (app as any).voice_note_url) && (
                             <div className="flex items-center gap-3 bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 rounded-xl p-2.5 max-w-md">
-                              <span className="text-base">ðŸŽ™ï¸</span>
                               <div className="flex-1">
                                 <span className="text-[11px] font-bold text-sky-950 dark:text-sky-200 block">Candidate Voice Introduction</span>
                                 <audio 
@@ -785,7 +784,6 @@ export default function ApplicationManagementPage() {
 
                       {/* Action Buttons */}
                       <div className="flex flex-wrap items-center gap-2 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-[#e6e8ec] dark:border-zinc-800">
-                        {/* ðŸ’¬ Quick WhatsApp Outreach / Call Modal */}
                         <button
                           type="button"
                           onClick={() => {
@@ -965,7 +963,6 @@ export default function ApplicationManagementPage() {
         />
       )}
 
-      {/* ðŸš€ 1-Tap WhatsApp Interview Outreach Modal */}
       {isOutreachModalOpen && outreachCandidate && (
         <CandidateOutreachModal
           isOpen={isOutreachModalOpen}
