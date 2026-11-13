@@ -1,12 +1,14 @@
 import { Context } from 'hono';
 import { ApiResponse } from '../utils/ApiResponse';
 import { recommendationEngineService } from '../services/recommendationEngineService';
+import prisma from '../config/prisma';
 
 export const recommendationController = {
 
   /**
    * GET /api/recommendations/jobs
    * Retrieves personalized, multi-objective ranked jobs for the logged-in candidate.
+   * Gated: WORKER-only.
    */
   getRecommendedJobs: async (c: Context) => {
     try {
@@ -36,6 +38,8 @@ export const recommendationController = {
   /**
    * GET /api/recommendations/workers
    * Retrieves top matched, pre-screened candidate profiles for an employer's active vacancies.
+   * Gated: EMPLOYER-only.
+   * Enforces job ownership when jobId parameter is provided.
    */
   getRecommendedWorkers: async (c: Context) => {
     try {
@@ -45,6 +49,24 @@ export const recommendationController = {
       }
 
       const jobId = c.req.query('jobId') || undefined;
+
+      // Enforce job ownership check
+      if (jobId) {
+        const job = await prisma.jobs.findUnique({
+          where: { id: jobId },
+          select: { id: true, employer_id: true }
+        });
+
+        if (!job) {
+          return c.json(ApiResponse.error("Job opening not found"), 404 as any);
+        }
+
+        const isAdmin = authUser.role === 'ADMIN' || authUser.role === 'SUPER_ADMIN';
+        if (job.employer_id !== authUser.sub && !isAdmin) {
+          return c.json(ApiResponse.error("Forbidden: You do not have permission to view recommendations for this job posting"), 403 as any);
+        }
+      }
+
       const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : 15;
       const page = c.req.query('page') ? parseInt(c.req.query('page')!) : 1;
 
@@ -76,31 +98,37 @@ export const recommendationController = {
 
       const validInteractions = ['VIEW', 'CLICK', 'SAVE', 'APPLY', 'INVITE', 'DISMISS'];
       if (!validInteractions.includes(interactionType)) {
-        return c.json(ApiResponse.error("Invalid interactionType"), 400 as any);
+        return c.json(ApiResponse.error("Invalid interactionType. Must be VIEW, CLICK, SAVE, APPLY, INVITE, or DISMISS"), 400 as any);
       }
 
       if (!['JOB', 'WORKER'].includes(itemType)) {
-        return c.json(ApiResponse.error("Invalid itemType"), 400 as any);
+        return c.json(ApiResponse.error("Invalid itemType. Must be JOB or WORKER"), 400 as any);
       }
 
       if (!itemId) {
         return c.json(ApiResponse.error("itemId is required"), 400 as any);
       }
 
-      const record = await recommendationEngineService.recordInteraction({
-        userId: authUser.sub,
-        interactionType,
-        itemType,
-        itemId,
-        matchScore: typeof matchScore === 'number' ? matchScore : undefined,
-        metadata
-      });
+      try {
+        const record = await recommendationEngineService.recordInteraction({
+          userId: authUser.sub,
+          interactionType,
+          itemType,
+          itemId,
+          matchScore: typeof matchScore === 'number' ? matchScore : undefined,
+          metadata
+        });
 
-      return c.json(ApiResponse.ok("Telemetry recorded successfully", { id: record.id }));
+        return c.json(ApiResponse.ok("Telemetry recorded successfully", { id: record.id }));
+      } catch (err: any) {
+        if (err.message && err.message.includes('does not exist')) {
+          return c.json(ApiResponse.error(err.message), 404 as any);
+        }
+        throw err;
+      }
     } catch (err: any) {
       console.error("Error in recordTelemetry controller:", err);
       return c.json(ApiResponse.error(err.message || "Failed to record telemetry"), 500 as any);
     }
   }
 };
-

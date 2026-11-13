@@ -29,6 +29,7 @@ import { SettingsPage } from '../modules/settings/pages/SettingsPage';
 import TermsPage from '../modules/landing/pages/TermsPage';
 import PrivacyPage from '../modules/landing/pages/PrivacyPage';
 import NotFoundPage from '../modules/landing/pages/NotFoundPage';
+import WorkOrdersPage from '../modules/work-orders/pages/WorkOrdersPage';
 
 import { AdminLoginPage } from '../modules/admin/pages/AdminLoginPage';
 import { AdminLayout } from '../modules/admin/layouts/AdminLayout';
@@ -195,14 +196,29 @@ export const router = createBrowserRouter([
               },
             ]
           },
-          /* Employer Specific Routes (Protected by RoleGuard) */
+          /* Shared Authenticated Dashboard (Accessible to both Worker & Employer) */
           {
-            element: <RoleGuard allowedRoles={['EMPLOYER']} />,
+            element: <RoleGuard allowedRoles={['EMPLOYER', 'WORKER', 'ADMIN']} />,
             children: [
               {
                 path: '/dashboard',
                 element: <DashboardPage />,
               },
+              {
+                path: '/work-orders',
+                element: <WorkOrdersPage />,
+              },
+              {
+                path: '/work-orders/:id',
+                element: <WorkOrdersPage />,
+              },
+            ]
+          },
+
+          /* Employer Specific Routes (Protected by RoleGuard) */
+          {
+            element: <RoleGuard allowedRoles={['EMPLOYER']} />,
+            children: [
               {
                 path: '/jobs',
                 element: <ApplicationManagementPage />,

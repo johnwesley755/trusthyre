@@ -65,18 +65,20 @@ model job_applications {
   voice_note_url         String?   @db.VarChar(500)
   jobs                   jobs      @relation(fields: [job_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   interviews             interviews[]
+  work_orders            work_orders[]
 
   @@index([job_id], map: "idx_job_applications_job_id")
   @@index([worker_id], map: "idx_job_applications_worker_id")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model job_required_skills {
   job_id String @db.Uuid
   skill  String @db.VarChar(255)
   jobs   jobs   @relation(fields: [job_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@ignore
+  @@id([job_id, skill])
+  @@index([job_id], map: "idx_job_required_skills_job_id")
+  @@index([skill], map: "idx_job_required_skills_skill")
 }
 
 model job_search_index {
@@ -138,12 +140,14 @@ model jobs {
   walking_minutes_to_transit Int?                  @default(5)
   landmark                   String?               @db.VarChar(255)
   job_applications           job_applications[]
-  job_required_skills       job_required_skills[] @ignore
+  job_required_skills       job_required_skills[]
   saved_jobs                saved_jobs[]
   interviews                interviews[]
+  work_orders               work_orders[]
 
   @@index([employer_id], map: "idx_jobs_employer_id")
   @@index([status], map: "idx_jobs_status")
+  @@index([status, expires_at], map: "idx_jobs_status_expires_at")
   @@index([is_external, status], map: "idx_jobs_external_status")
   @@index([source_hash], map: "idx_jobs_source_hash")
   @@index([source_name, external_id], map: "idx_jobs_source_external_id")
@@ -413,6 +417,7 @@ model worker_profiles {
   @@index([user_id], map: "idx_worker_profiles_user_id")
   @@index([city, area], map: "idx_worker_profiles_city_area")
   @@index([state, district], map: "idx_worker_profiles_state_district")
+  @@index([is_available, city], map: "idx_worker_profiles_avail_city")
 }
 
 model worker_search_index {
@@ -707,6 +712,74 @@ model recommendation_interactions {
   @@index([user_id, interaction_type], map: "idx_rec_interactions_user_type")
   @@index([item_type, item_id], map: "idx_rec_interactions_item")
   @@index([created_at], map: "idx_rec_interactions_created_at")
+}
+
+model work_orders {
+  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_number          String              @unique @db.VarChar(50)
+  job_id                String?             @db.Uuid
+  application_id        String?             @db.Uuid
+  employer_id           String              @db.VarChar(255)
+  worker_id             String              @db.VarChar(255)
+  
+  job_title             String              @db.VarChar(255)
+  work_description      String?
+  worksite_name         String              @db.VarChar(255)
+  worksite_address      String
+  city                  String              @db.VarChar(100)
+  district              String?             @db.VarChar(100)
+  taluk                 String?             @db.VarChar(100)
+  latitude              Float?
+  longitude             Float?
+  
+  start_date            DateTime            @db.Date
+  expected_end_date     DateTime?           @db.Date
+  work_duration_days    Int?
+  shift_timing          String              @db.VarChar(100)
+  weekly_rest_day       String?             @default("SUNDAY") @db.VarChar(50)
+  daily_working_hours   Decimal             @default(8.00) @db.Decimal(4, 2)
+  overtime_terms        String?
+  
+  wage_amount           Decimal             @db.Decimal(10, 2)
+  wage_frequency        String              @default("DAILY") @db.VarChar(50)
+  food_provided         Boolean?            @default(false)
+  accommodation_provided Boolean?           @default(false)
+  transport_provided    Boolean?            @default(false)
+  other_benefits        String?
+  agreed_deductions     String?
+  
+  status                String              @default("DRAFT") @db.VarChar(50)
+  worker_response_notes String?
+  accepted_at           DateTime?           @db.Timestamp(6)
+  declined_at           DateTime?           @db.Timestamp(6)
+  created_at            DateTime?           @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?           @default(now()) @db.Timestamp(6)
+  
+  jobs                  jobs?               @relation(fields: [job_id], references: [id], onDelete: SetNull)
+  job_applications      job_applications?   @relation(fields: [application_id], references: [id], onDelete: SetNull)
+  events                work_order_events[]
+
+  @@index([employer_id], map: "idx_work_orders_employer_id")
+  @@index([worker_id], map: "idx_work_orders_worker_id")
+  @@index([status], map: "idx_work_orders_status")
+  @@index([job_id], map: "idx_work_orders_job_id")
+  @@index([created_at(sort: Desc)], map: "idx_work_orders_created_at")
+}
+
+model work_order_events {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  work_order_id  String      @db.Uuid
+  actor_id       String      @db.VarChar(255)
+  actor_role     String      @db.VarChar(50)
+  event_type     String      @db.VarChar(50)
+  notes          String?
+  snapshot       Json?
+  created_at     DateTime?   @default(now()) @db.Timestamp(6)
+
+  work_orders    work_orders @relation(fields: [work_order_id], references: [id], onDelete: Cascade)
+
+  @@index([work_order_id], map: "idx_work_order_events_wo_id")
+  @@index([created_at(sort: Desc)], map: "idx_work_order_events_created_at")
 }
 
 
