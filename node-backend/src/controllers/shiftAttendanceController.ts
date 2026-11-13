@@ -293,7 +293,14 @@ export const shiftAttendanceController = {
       }
 
       const body = await c.req.json();
-      const result = await ShiftAttendanceService.resolveCorrection(authUser.sub, id, body);
+      const { decision, notes } = body;
+      if (!decision || !['APPROVED', 'REJECTED'].includes(decision.toUpperCase())) {
+        return c.json(ApiResponse.error("Invalid decision. Must be APPROVED or REJECTED."), 400 as any);
+      }
+      const result = await ShiftAttendanceService.resolveCorrection(authUser.sub, id, {
+        decision: decision.toUpperCase() as 'APPROVED' | 'REJECTED',
+        notes
+      });
       return c.json(ApiResponse.ok("Correction resolved successfully", result));
     } catch (err: any) {
       console.error("Error resolving correction:", err);

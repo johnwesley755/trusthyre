@@ -88,26 +88,29 @@ export class WorkOrderService {
    */
   public static computeTermsHash(terms: Record<string, any>): string {
     const canonicalStr = JSON.stringify({
-      jobTitle: terms.job_title || terms.jobTitle,
-      workDescription: terms.work_description || terms.workDescription,
-      worksiteName: terms.worksite_name || terms.worksiteName,
-      worksiteAddress: terms.worksite_address || terms.worksiteAddress,
-      city: terms.city,
-      district: terms.district,
-      taluk: terms.taluk,
+      jobTitle: (terms.job_title || terms.jobTitle || '').trim(),
+      workDescription: (terms.work_description || terms.workDescription || '').trim(),
+      worksiteName: (terms.worksite_name || terms.worksiteName || '').trim(),
+      worksiteAddress: (terms.worksite_address || terms.worksiteAddress || '').trim(),
+      city: (terms.city || '').trim(),
+      district: (terms.district || '').trim(),
+      taluk: (terms.taluk || '').trim(),
+      latitude: terms.latitude ?? null,
+      longitude: terms.longitude ?? null,
       startDate: terms.start_date || terms.startDate,
-      expectedEndDate: terms.expected_end_date || terms.expectedEndDate,
-      shiftTiming: terms.shift_timing || terms.shiftTiming,
-      weeklyRestDay: terms.weekly_rest_day || terms.weeklyRestDay,
-      dailyWorkingHours: Number(terms.daily_working_hours || terms.dailyWorkingHours),
-      overtimeTerms: terms.overtime_terms || terms.overtimeTerms,
-      wageAmount: Number(terms.wage_amount || terms.wageAmount),
+      expectedEndDate: terms.expected_end_date !== undefined ? (terms.expected_end_date || null) : (terms.expectedEndDate || null),
+      workDurationDays: terms.work_duration_days ?? terms.workDurationDays ?? null,
+      shiftTiming: (terms.shift_timing || terms.shiftTiming || '').trim(),
+      weeklyRestDay: (terms.weekly_rest_day || terms.weeklyRestDay || '').trim(),
+      dailyWorkingHours: Number(terms.daily_working_hours || terms.dailyWorkingHours || 0),
+      overtimeTerms: (terms.overtime_terms || terms.overtimeTerms || '').trim(),
+      wageAmount: Number(terms.wage_amount || terms.wageAmount || 0),
       wageFrequency: terms.wage_frequency || terms.wageFrequency,
       foodProvided: Boolean(terms.food_provided ?? terms.foodProvided),
       accommodationProvided: Boolean(terms.accommodation_provided ?? terms.accommodationProvided),
       transportProvided: Boolean(terms.transport_provided ?? terms.transportProvided),
-      otherBenefits: terms.other_benefits || terms.otherBenefits,
-      agreedDeductions: terms.agreed_deductions || terms.agreedDeductions
+      otherBenefits: (terms.other_benefits || terms.otherBenefits || '').trim(),
+      agreedDeductions: (terms.agreed_deductions || terms.agreedDeductions || '').trim()
     });
     return crypto.createHash('sha256').update(canonicalStr).digest('hex');
   }
@@ -176,6 +179,23 @@ export class WorkOrderService {
       }
       if (input.jobId && application.job_id !== input.jobId) {
         throw new Error("Application jobId mismatch with provided jobId");
+      }
+
+      // Constrain application status: must be eligible for hiring
+      const eligibleStatuses = ['SHORTLISTED', 'INTERVIEWING', 'OFFER_EXTENDED', 'ACCEPTED', 'PENDING'];
+      if (!eligibleStatuses.includes(application.status?.toUpperCase() || '')) {
+        throw new Error(`Cannot issue work order for application in "${application.status}" state. Only active or shortlisted applications are eligible.`);
+      }
+
+      // Prevent duplicate active work orders for the same application
+      const existingActiveOrder = await prisma.work_orders.findFirst({
+        where: {
+          application_id: input.applicationId,
+          status: { notIn: ['CANCELLED', 'DECLINED'] }
+        }
+      });
+      if (existingActiveOrder) {
+        throw new Error(`An active work order (${existingActiveOrder.order_number}) already exists for this application.`);
       }
     }
 
@@ -361,6 +381,14 @@ export class WorkOrderService {
     }
 
     return prisma.$transaction(async (tx) => {
+      // Optimistic concurrency verification inside transaction
+      const currentOrder = await tx.work_orders.findUnique({
+        where: { id: orderId }
+      });
+      if (!currentOrder || currentOrder.status !== 'SENT') {
+        throw new Error(`Conflict: Work order status changed to "${currentOrder?.status || 'UNKNOWN'}" before action could be completed.`);
+      }
+
       const updated = await tx.work_orders.update({
         where: { id: orderId },
         data: {
@@ -368,7 +396,7 @@ export class WorkOrderService {
           worker_response_notes: notes || null,
           accepted_at: action === 'ACCEPT' ? now : undefined,
           declined_at: action === 'DECLINE' ? now : undefined,
-          accepted_terms_version: action === 'ACCEPT' ? order.terms_version : null,
+          accepted_terms_version: action === 'ACCEPT' ? currentOrder.terms_version : null,
           accepted_terms_hash: action === 'ACCEPT' ? currentTermsHash : null,
           updated_at: now
         }
@@ -427,6 +455,11 @@ export class WorkOrderService {
       (input.worksiteName !== undefined && input.worksiteName.trim() !== order.worksite_name) ||
       (input.worksiteAddress !== undefined && input.worksiteAddress.trim() !== order.worksite_address) ||
       (input.city !== undefined && input.city.trim() !== order.city) ||
+      (input.district !== undefined && input.district.trim() !== (order.district || '')) ||
+      (input.taluk !== undefined && input.taluk.trim() !== (order.taluk || '')) ||
+      (input.latitude !== undefined && input.latitude !== order.latitude) ||
+      (input.longitude !== undefined && input.longitude !== order.longitude) ||
+      (input.workDurationDays !== undefined && input.workDurationDays !== order.work_duration_days) ||
       (input.startDate !== undefined && new Date(input.startDate).getTime() !== new Date(order.start_date).getTime()) ||
       (input.expectedEndDate !== undefined && (input.expectedEndDate ? new Date(input.expectedEndDate).getTime() : 0) !== (order.expected_end_date ? new Date(order.expected_end_date).getTime() : 0)) ||
       (input.shiftTiming !== undefined && input.shiftTiming.trim() !== order.shift_timing) ||
@@ -447,6 +480,14 @@ export class WorkOrderService {
     const nextVersion = order.terms_version + 1;
 
     return prisma.$transaction(async (tx) => {
+      // Optimistic concurrency check: re-verify status inside transaction
+      const currentOrder = await tx.work_orders.findUnique({
+        where: { id: orderId }
+      });
+      if (!currentOrder || ['COMPLETED', 'CANCELLED', 'DECLINED'].includes(currentOrder.status)) {
+        throw new Error(`Conflict: Work order was already cancelled or completed`);
+      }
+
       const updated = await tx.work_orders.update({
         where: { id: orderId },
         data: {
@@ -457,12 +498,12 @@ export class WorkOrderService {
           city: input.city?.trim(),
           district: input.district !== undefined ? input.district?.trim() : undefined,
           taluk: input.taluk !== undefined ? input.taluk?.trim() : undefined,
-          latitude: input.latitude,
-          longitude: input.longitude,
+          latitude: input.latitude !== undefined ? input.latitude : undefined,
+          longitude: input.longitude !== undefined ? input.longitude : undefined,
           
           start_date: input.startDate ? new Date(input.startDate) : undefined,
-          expected_end_date: input.expectedEndDate ? new Date(input.expectedEndDate) : undefined,
-          work_duration_days: input.workDurationDays,
+          expected_end_date: input.expectedEndDate !== undefined ? (input.expectedEndDate ? new Date(input.expectedEndDate) : null) : undefined,
+          work_duration_days: input.workDurationDays !== undefined ? input.workDurationDays : undefined,
           shift_timing: input.shiftTiming?.trim(),
           weekly_rest_day: input.weeklyRestDay?.trim(),
           daily_working_hours: input.dailyWorkingHours,
@@ -478,9 +519,9 @@ export class WorkOrderService {
           
           status: newStatus,
           terms_version: nextVersion,
-          accepted_at: (wasActive && isMaterialChange) ? null : order.accepted_at,
-          accepted_terms_version: (wasActive && isMaterialChange) ? null : order.accepted_terms_version,
-          accepted_terms_hash: (wasActive && isMaterialChange) ? null : order.accepted_terms_hash,
+          accepted_at: (wasActive && isMaterialChange) ? null : currentOrder.accepted_at,
+          accepted_terms_version: (wasActive && isMaterialChange) ? null : currentOrder.accepted_terms_version,
+          accepted_terms_hash: (wasActive && isMaterialChange) ? null : currentOrder.accepted_terms_hash,
           updated_at: new Date()
         }
       });
@@ -512,22 +553,44 @@ export class WorkOrderService {
         }
       });
 
-      // P3.7 FIX: If amended materially, cancel all future scheduled shifts to prevent mismatch
+      // P3.7 FIX: If amended materially, cancel all future scheduled shifts and invalidate attendance challenges
       if (wasActive && isMaterialChange) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        await tx.shifts.updateMany({
+        const affectedShifts = await tx.shifts.findMany({
           where: {
             work_order_id: orderId,
             shift_date: { gte: today },
             status: 'SCHEDULED'
           },
-          data: {
-            status: 'CANCELLED',
-            notes: 'Automatically cancelled due to material work order amendment. Needs rescheduling after re-acceptance.'
-          }
+          select: { id: true }
         });
+
+        const affectedShiftIds = affectedShifts.map(s => s.id);
+
+        if (affectedShiftIds.length > 0) {
+          // Invalidate active challenges for these cancelled shifts
+          await tx.attendance_challenges.updateMany({
+            where: {
+              shift_id: { in: affectedShiftIds },
+              consumed_at: null
+            },
+            data: {
+              consumed_at: new Date()
+            }
+          });
+
+          await tx.shifts.updateMany({
+            where: {
+              id: { in: affectedShiftIds }
+            },
+            data: {
+              status: 'CANCELLED',
+              notes: 'Automatically cancelled due to material work order amendment. Needs rescheduling after re-acceptance.'
+            }
+          });
+        }
       }
 
       if (isMaterialChange && wasActive) {
@@ -565,6 +628,14 @@ export class WorkOrderService {
     const isEmployer = order.employer_id === userId;
 
     return prisma.$transaction(async (tx) => {
+      // Optimistic check inside transaction
+      const currentOrder = await tx.work_orders.findUnique({
+        where: { id: orderId }
+      });
+      if (!currentOrder || ['COMPLETED', 'CANCELLED'].includes(currentOrder.status)) {
+        throw new Error(`Conflict: Work order is already cancelled or completed`);
+      }
+
       const updated = await tx.work_orders.update({
         where: { id: orderId },
         data: {
@@ -583,21 +654,41 @@ export class WorkOrderService {
         }
       });
 
-      // P3.7 FIX: Cancel all future scheduled shifts for this work order
+      // P3.7 FIX: Cancel all future scheduled shifts and invalidate challenge credentials
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      await tx.shifts.updateMany({
+      const affectedShifts = await tx.shifts.findMany({
         where: {
           work_order_id: orderId,
           shift_date: { gte: today },
           status: 'SCHEDULED'
         },
-        data: {
-          status: 'CANCELLED',
-          notes: `Work order cancelled: ${reason || 'Mutual cancellation'}`
-        }
+        select: { id: true }
       });
+
+      const affectedShiftIds = affectedShifts.map(s => s.id);
+      if (affectedShiftIds.length > 0) {
+        await tx.attendance_challenges.updateMany({
+          where: {
+            shift_id: { in: affectedShiftIds },
+            consumed_at: null
+          },
+          data: {
+            consumed_at: new Date()
+          }
+        });
+
+        await tx.shifts.updateMany({
+          where: {
+            id: { in: affectedShiftIds }
+          },
+          data: {
+            status: 'CANCELLED',
+            notes: `Work order cancelled: ${reason || 'Mutual cancellation'}`
+          }
+        });
+      }
 
       const recipientUserId = isEmployer ? order.worker_id : order.employer_id;
       await NotificationDispatcher.dispatch({

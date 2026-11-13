@@ -264,8 +264,10 @@ describe('Phase 4: Shift Scheduling and Attendance Unit & Integration Tests', ()
       }
     });
 
+    const proposedCheckOut = new Date(Date.now() + 60 * 60 * 1000).toISOString();
     const corrected = await ShiftAttendanceService.requestCorrection(testWorkerUserId, attendance!.id, {
-      reason: 'Shift check-out was logged 30 minutes late due to network glitch on site'
+      reason: 'Shift check-out was logged 30 minutes late due to network glitch on site',
+      proposedCheckOut
     });
 
     expect(corrected.status).toBe('CORRECTION_REQUESTED');
@@ -283,7 +285,7 @@ describe('Phase 4: Shift Scheduling and Attendance Unit & Integration Tests', ()
     });
 
     const resolved = await ShiftAttendanceService.resolveCorrection(testEmployerId, attendance!.id, {
-      decision: 'ACCEPT',
+      decision: 'APPROVED',
       notes: 'Verified site register entry; adjusted checkout time and approved.'
     });
     expect(resolved.status).toBe('APPROVED');
@@ -304,5 +306,41 @@ describe('Phase 4: Shift Scheduling and Attendance Unit & Integration Tests', ()
     expect(shiftItem).toBeDefined();
     expect(shiftItem?.attendance?.status).toBe('APPROVED');
     expect(shiftItem?.worker.userId).toBe(testWorkerUserId);
+  });
+
+  test('13. Concurrency: Prevent parallel double-consumption of the same QR token', async () => {
+    // Generate fresh challenge QR token
+    const { token } = await ShiftAttendanceService.generateQrToken(testEmployerId, scheduledShiftId, 'CHECK_IN');
+
+    // Run two simultaneous consumptions with Promise.all
+    const [result1, result2] = await Promise.all([
+      ShiftAttendanceService.verifyAndConsumeQrToken(token, scheduledShiftId, 'CHECK_IN'),
+      ShiftAttendanceService.verifyAndConsumeQrToken(token, scheduledShiftId, 'CHECK_IN')
+    ]);
+
+    // Exactly one should succeed (true), and one must fail (false)
+    const successCount = (result1 ? 1 : 0) + (result2 ? 1 : 0);
+    expect(successCount).toBe(1);
+
+    // Further consumption should also fail
+    const result3 = await ShiftAttendanceService.verifyAndConsumeQrToken(token, scheduledShiftId, 'CHECK_IN');
+    expect(result3).toBe(false);
+  });
+
+  test('14. Concurrency: Atomic OTP attempt counter increments and enforces max attempts', async () => {
+    const { otp } = await ShiftAttendanceService.generateOtpPin(testEmployerId, scheduledShiftId, 'CHECK_IN');
+
+    // Dispatch 4 parallel bad OTP attempts
+    const badOtp = '000000';
+    await Promise.all([
+      ShiftAttendanceService.verifyAndConsumeOtpPin(scheduledShiftId, badOtp, 'CHECK_IN'),
+      ShiftAttendanceService.verifyAndConsumeOtpPin(scheduledShiftId, badOtp, 'CHECK_IN'),
+      ShiftAttendanceService.verifyAndConsumeOtpPin(scheduledShiftId, badOtp, 'CHECK_IN'),
+      ShiftAttendanceService.verifyAndConsumeOtpPin(scheduledShiftId, badOtp, 'CHECK_IN')
+    ]);
+
+    // Verify challenge is locked against even a correct code now if attempts reached max
+    const validOtpAttempt = await ShiftAttendanceService.verifyAndConsumeOtpPin(scheduledShiftId, otp, 'CHECK_IN');
+    expect(validOtpAttempt).toBe(false);
   });
 });

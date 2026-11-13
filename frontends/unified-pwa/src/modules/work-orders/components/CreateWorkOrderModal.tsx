@@ -83,6 +83,8 @@ export const CreateWorkOrderModal: React.FC<CreateWorkOrderModalProps> = ({
   const [otherBenefits, setOtherBenefits] = useState('');
   const [agreedDeductions, setAgreedDeductions] = useState('');
 
+  const [isConfirmedAcknowledged, setIsConfirmedAcknowledged] = useState(false);
+
   // Reset & re-populate state whenever selected candidate or job changes
   useEffect(() => {
     if (isOpen) {
@@ -110,8 +112,9 @@ export const CreateWorkOrderModal: React.FC<CreateWorkOrderModalProps> = ({
       setOtherBenefits('');
       setAgreedDeductions('');
       setIsPreviewMode(false);
+      setIsConfirmedAcknowledged(false);
     }
-  }, [isOpen, candidate.userId, job?.id]);
+  }, [isOpen, candidate.userId, job?.id, job?.title, job?.description, job?.location, job?.budget, job?.payoutFrequency]);
 
   const handleSubmit = async (autoSend: boolean) => {
     if (!jobTitle.trim()) {
@@ -132,6 +135,17 @@ export const CreateWorkOrderModal: React.FC<CreateWorkOrderModalProps> = ({
     }
     if (!dailyWorkingHours || Number(dailyWorkingHours) <= 0) {
       toast.error('Daily working hours must be greater than zero');
+      return;
+    }
+
+    if (autoSend && !isPreviewMode) {
+      setIsPreviewMode(true);
+      toast.info('Please review the work order terms and acknowledge before sending.');
+      return;
+    }
+
+    if (autoSend && !isConfirmedAcknowledged) {
+      toast.error('Please check the confirmation box acknowledging these terms are agreed.');
       return;
     }
 
@@ -252,8 +266,17 @@ export const CreateWorkOrderModal: React.FC<CreateWorkOrderModalProps> = ({
             {agreedDeductions && <div className="col-span-2"><strong>Deductions:</strong> {agreedDeductions}</div>}
           </div>
 
-          <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 rounded-xl text-amber-900 dark:text-amber-300 text-[11px]">
-            Please confirm that these employment terms accurately reflect what was negotiated before issuing the work order.
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-xl text-amber-900 dark:text-amber-300 text-[11px] space-y-2">
+            <div>Please review and confirm that these employment terms accurately reflect what was negotiated before issuing the work order.</div>
+            <label className="flex items-center gap-2 font-bold cursor-pointer pt-1 text-slate-900 dark:text-white">
+              <input
+                type="checkbox"
+                checked={isConfirmedAcknowledged}
+                onChange={(e) => setIsConfirmedAcknowledged(e.target.checked)}
+                className="rounded border-slate-300 text-[#0f2f63] focus:ring-0"
+              />
+              <span>I have reviewed these terms and confirm they represent our agreed employment conditions.</span>
+            </label>
           </div>
         </div>
       ) : (

@@ -693,10 +693,19 @@ export const recommendationEngineService = {
         }
       );
 
-      // P1.1 FIX: Enforce real radiusKm distance filter when coordinates are available
-      if (options.radiusKm && options.radiusKm > 0 && locEval.distanceKm !== null) {
-        if (locEval.distanceKm > options.radiusKm) {
-          continue; // Exclude job outside requested physical radius
+      // Enforce real radiusKm distance filter
+      if (options.radiusKm && options.radiusKm > 0) {
+        if (locEval.distanceKm !== null) {
+          if (locEval.distanceKm > options.radiusKm) {
+            continue; // Exclude job outside requested physical radius
+          }
+        } else {
+          // If coordinates are missing on either worker or job, strict radius cannot be verified.
+          // Only permit if city strictly matches; otherwise exclude unverified radius jobs.
+          const isSameCity = workerProfile?.city && job.city && workerProfile.city.trim().toLowerCase() === job.city.trim().toLowerCase();
+          if (!isSameCity) {
+            continue; // Exclude unverified distance outside same city
+          }
         }
       }
 

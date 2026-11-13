@@ -359,10 +359,27 @@ export const ShiftAttendanceService = {
   },
 
   /**
-   * Verify HMAC QR token with timing-safe check and atomic single-use nonce consumption
+   * Helper: accurately calculate gross and net work minutes, accounting for active breaks
    */
-  verifyAndConsumeQrToken: async (token: string, expectedShiftId: string, action: 'CHECK_IN' | 'CHECK_OUT'): Promise<boolean> => {
+  calculateNetWorkMinutes: (checkInTime: Date, checkOutTime: Date, totalBreakMinutes: number, currentStatus: string, lastBreakStart?: Date | null): { grossMinutes: number; totalBreakMinutes: number; netWorkMinutes: number } => {
+    let accumulatedBreak = totalBreakMinutes || 0;
+    if (currentStatus === 'ON_BREAK' && lastBreakStart) {
+      const activeBreakMins = Math.max(0, Math.round((checkOutTime.getTime() - new Date(lastBreakStart).getTime()) / 60000));
+      accumulatedBreak += activeBreakMins;
+    }
+    const checkInMs = new Date(checkInTime).getTime();
+    const grossMinutes = Math.max(0, Math.round((checkOutTime.getTime() - checkInMs) / 60000));
+    const netWorkMinutes = Math.max(0, grossMinutes - accumulatedBreak);
+    return { grossMinutes, totalBreakMinutes: accumulatedBreak, netWorkMinutes };
+  },
+
+  /**
+   * Verify HMAC QR token with timing-safe check and atomic single-use nonce consumption.
+   * Can run within an existing Prisma transaction client (tx) or standard prisma client.
+   */
+  verifyAndConsumeQrToken: async (token: string, expectedShiftId: string, action: 'CHECK_IN' | 'CHECK_OUT', txClient?: any): Promise<boolean> => {
     try {
+      const db = txClient || prisma;
       const secret = getQrSigningSecret();
       const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
       const { payload, signature } = decoded;
@@ -386,21 +403,27 @@ export const ShiftAttendanceService = {
       const now = Math.floor(Date.now() / 1000);
       if (now > expiresAt) return false;
 
-      // Consume nonce atomically from attendance_challenges table
-      const challenge = await prisma.attendance_challenges.findUnique({
-        where: { nonce }
+      // Hash signature to compare with stored challenge hash
+      const hashedSignature = crypto.createHash('sha256').update(signature).digest('hex');
+
+      // Atomic single-step conditional updateMany: protects against double consumption & concurrency races
+      const updateResult = await db.attendance_challenges.updateMany({
+        where: {
+          nonce: nonce,
+          consumed_at: null,
+          expires_at: { gt: new Date() },
+          shift_id: expectedShiftId,
+          intended_action: action,
+          challenge_type: 'QR_CODE',
+          issuer_user_id: issuerId,
+          hashed_secret: hashedSignature
+        },
+        data: {
+          consumed_at: new Date()
+        }
       });
 
-      if (!challenge || challenge.consumed_at !== null || challenge.shift_id !== expectedShiftId) {
-        return false; // Already consumed or missing
-      }
-
-      await prisma.attendance_challenges.update({
-        where: { id: challenge.id },
-        data: { consumed_at: new Date() }
-      });
-
-      return true;
+      return updateResult.count > 0;
     } catch {
       return false;
     }
@@ -437,13 +460,36 @@ export const ShiftAttendanceService = {
   },
 
   /**
-   * Verify and atomically consume OTP PIN from database
+   * Verify and atomically consume OTP PIN from database.
+   * Atomically increments attempt_count and enforces attempt_count < max_attempts.
    */
-  verifyAndConsumeOtpPin: async (shiftId: string, enteredOtp: string, action: 'CHECK_IN' | 'CHECK_OUT'): Promise<boolean> => {
+  verifyAndConsumeOtpPin: async (shiftId: string, enteredOtp: string, action: 'CHECK_IN' | 'CHECK_OUT', txClient?: any): Promise<boolean> => {
+    const db = txClient || prisma;
     const hashedInput = crypto.createHash('sha256').update(enteredOtp.trim()).digest('hex');
     const now = new Date();
 
-    const activeChallenges = await prisma.attendance_challenges.findMany({
+    // 1. Atomically consume if hash matches and attempt_count < max_attempts
+    const updateResult = await db.attendance_challenges.updateMany({
+      where: {
+        shift_id: shiftId,
+        challenge_type: 'ONE_TIME_PIN',
+        intended_action: action,
+        consumed_at: null,
+        expires_at: { gt: now },
+        attempt_count: { lt: 3 },
+        hashed_secret: hashedInput
+      },
+      data: {
+        consumed_at: now
+      }
+    });
+
+    if (updateResult.count > 0) {
+      return true;
+    }
+
+    // 2. If no matching challenge was consumed, atomically increment attempt_count on active PINs
+    await db.attendance_challenges.updateMany({
       where: {
         shift_id: shiftId,
         challenge_type: 'ONE_TIME_PIN',
@@ -451,30 +497,10 @@ export const ShiftAttendanceService = {
         consumed_at: null,
         expires_at: { gt: now }
       },
-      orderBy: { created_at: 'desc' }
+      data: {
+        attempt_count: { increment: 1 }
+      }
     });
-
-    if (activeChallenges.length === 0) return false;
-
-    for (const challenge of activeChallenges) {
-      if (challenge.attempt_count >= challenge.max_attempts) {
-        continue;
-      }
-
-      if (challenge.hashed_secret === hashedInput) {
-        // Atomic consumption
-        await prisma.attendance_challenges.update({
-          where: { id: challenge.id },
-          data: { consumed_at: now }
-        });
-        return true;
-      } else {
-        await prisma.attendance_challenges.update({
-          where: { id: challenge.id },
-          data: { attempt_count: challenge.attempt_count + 1 }
-        });
-      }
-    }
 
     return false;
   },
@@ -510,41 +536,44 @@ export const ShiftAttendanceService = {
       throw new Error("Forbidden: You are not assigned to this shift");
     }
 
-    // 2. Verify verification credential
-    if (input.method === 'QR_CODE') {
-      if (!input.token) throw new Error("QR token required for QR check-in");
-      const valid = await ShiftAttendanceService.verifyAndConsumeQrToken(input.token, shift.id, 'CHECK_IN');
-      if (!valid) throw new Error("Invalid or expired QR code token. Please scan the current supervisor QR code.");
-    } else if (input.method === 'ONE_TIME_PIN') {
-      if (!input.otp) throw new Error("PIN required for PIN check-in");
-      const valid = await ShiftAttendanceService.verifyAndConsumeOtpPin(shift.id, input.otp, 'CHECK_IN');
-      if (!valid) throw new Error("Invalid, expired, or locked one-time PIN. Ask supervisor for an active code.");
-    }
-
-    let attendance = await prisma.shift_attendances.findUnique({
-      where: {
-        shift_id_worker_id: {
-          shift_id: shift.id,
-          worker_id: workerUserId
-        }
-      }
-    });
-
-    if (attendance && attendance.status !== 'NOT_STARTED') {
-      throw new Error(`Cannot check in. Current attendance status is already: ${attendance.status}`);
-    }
-
-    const now = new Date();
-    const eventAudit = {
-      event: 'CHECKED_IN',
-      method: input.method,
-      timestamp: now.toISOString(),
-      lat: input.latitude || null,
-      lng: input.longitude || null,
-      notes: input.notes || null
-    };
-
+    // Execute within a single atomic transaction: credential check + conditional state update + event audit
     return prisma.$transaction(async (tx) => {
+      // 2. Verify and atomically consume credential inside transaction
+      if (input.method === 'QR_CODE') {
+        if (!input.token) throw new Error("QR token required for QR check-in");
+        const valid = await ShiftAttendanceService.verifyAndConsumeQrToken(input.token, shift.id, 'CHECK_IN', tx);
+        if (!valid) throw new Error("Invalid, expired, or already used QR code. Please scan the current supervisor QR code.");
+      } else if (input.method === 'ONE_TIME_PIN') {
+        if (!input.otp) throw new Error("PIN required for PIN check-in");
+        const valid = await ShiftAttendanceService.verifyAndConsumeOtpPin(shift.id, input.otp, 'CHECK_IN', tx);
+        if (!valid) throw new Error("Invalid, expired, or locked one-time PIN. Ask supervisor for an active code.");
+      }
+
+      const now = new Date();
+      const eventAudit = {
+        event: 'CHECKED_IN',
+        method: input.method,
+        timestamp: now.toISOString(),
+        lat: input.latitude || null,
+        lng: input.longitude || null,
+        notes: input.notes || null
+      };
+
+      // 3. Conditional State Update: must be NOT_STARTED or newly created
+      // Atomic upsert with check on current status
+      const existingAttendance = await tx.shift_attendances.findUnique({
+        where: {
+          shift_id_worker_id: {
+            shift_id: shift.id,
+            worker_id: workerUserId
+          }
+        }
+      });
+
+      if (existingAttendance && existingAttendance.status !== 'NOT_STARTED') {
+        throw new Error(`Cannot check in. Current attendance status is already: ${existingAttendance.status}`);
+      }
+
       const updated = await tx.shift_attendances.upsert({
         where: {
           shift_id_worker_id: {
@@ -559,7 +588,7 @@ export const ShiftAttendanceService = {
           check_in_lat: input.latitude || null,
           check_in_lng: input.longitude || null,
           check_in_notes: input.notes || null,
-          events: attendance ? ([...(attendance.events as any[]), eventAudit] as any) : ([eventAudit] as any)
+          events: existingAttendance ? ([...(existingAttendance.events as any[]), eventAudit] as any) : ([eventAudit] as any)
         },
         create: {
           shift_id: shift.id,
@@ -605,46 +634,46 @@ export const ShiftAttendanceService = {
   },
 
   recordBreak: async (workerUserId: string, shiftId: string, action: 'START' | 'END') => {
-    const attendance = await prisma.shift_attendances.findUnique({
-      where: {
-        shift_id_worker_id: {
-          shift_id: shiftId,
-          worker_id: workerUserId
+    return prisma.$transaction(async (tx) => {
+      const attendance = await tx.shift_attendances.findUnique({
+        where: {
+          shift_id_worker_id: {
+            shift_id: shiftId,
+            worker_id: workerUserId
+          }
+        }
+      });
+
+      if (!attendance) {
+        throw new Error("Attendance record not found for this shift");
+      }
+
+      const now = new Date();
+      let nextStatus = attendance.status;
+      let totalBreak = attendance.total_break_minutes;
+
+      if (action === 'START') {
+        if (attendance.status !== 'CHECKED_IN') {
+          throw new Error(`Cannot start break while in status: ${attendance.status}`);
+        }
+        nextStatus = 'ON_BREAK';
+      } else {
+        if (attendance.status !== 'ON_BREAK') {
+          throw new Error(`Cannot end break while in status: ${attendance.status}`);
+        }
+        nextStatus = 'CHECKED_IN';
+        const breakStart = attendance.last_break_start || attendance.break_start_time;
+        if (breakStart) {
+          const breakMins = Math.max(0, Math.round((now.getTime() - new Date(breakStart).getTime()) / 60000));
+          totalBreak += breakMins;
         }
       }
-    });
 
-    if (!attendance) {
-      throw new Error("Attendance record not found for this shift");
-    }
+      const eventAudit = {
+        event: action === 'START' ? 'BREAK_STARTED' : 'BREAK_ENDED',
+        timestamp: now.toISOString()
+      };
 
-    const now = new Date();
-    let nextStatus = attendance.status;
-    let totalBreak = attendance.total_break_minutes;
-
-    if (action === 'START') {
-      if (attendance.status !== 'CHECKED_IN') {
-        throw new Error(`Cannot start break while in status: ${attendance.status}`);
-      }
-      nextStatus = 'ON_BREAK';
-    } else {
-      if (attendance.status !== 'ON_BREAK') {
-        throw new Error(`Cannot end break while in status: ${attendance.status}`);
-      }
-      nextStatus = 'CHECKED_IN';
-      const breakStart = attendance.last_break_start || attendance.break_start_time;
-      if (breakStart) {
-        const breakMins = Math.max(0, Math.round((now.getTime() - new Date(breakStart).getTime()) / 60000));
-        totalBreak += breakMins;
-      }
-    }
-
-    const eventAudit = {
-      event: action === 'START' ? 'BREAK_STARTED' : 'BREAK_ENDED',
-      timestamp: now.toISOString()
-    };
-
-    return prisma.$transaction(async (tx) => {
       const updated = await tx.shift_attendances.update({
         where: { id: attendance.id },
         data: {
@@ -690,58 +719,52 @@ export const ShiftAttendanceService = {
       throw new Error("Forbidden: You are not assigned to this shift");
     }
 
-    const attendance = await prisma.shift_attendances.findUnique({
-      where: {
-        shift_id_worker_id: {
-          shift_id: shift.id,
-          worker_id: workerUserId
-        }
-      }
-    });
-
-    if (!attendance || !['CHECKED_IN', 'ON_BREAK'].includes(attendance.status)) {
-      throw new Error(`Cannot check out without an active check-in (current status: ${attendance?.status || 'NONE'}).`);
-    }
-
-    // 2. Verify verification credential
-    if (input.method === 'QR_CODE') {
-      if (!input.token) throw new Error("QR token required for QR check-out");
-      const valid = await ShiftAttendanceService.verifyAndConsumeQrToken(input.token, shift.id, 'CHECK_OUT');
-      if (!valid) throw new Error("Invalid or expired QR code token. Please scan the current supervisor QR code.");
-    } else if (input.method === 'ONE_TIME_PIN') {
-      if (!input.otp) throw new Error("PIN required for PIN check-out");
-      const valid = await ShiftAttendanceService.verifyAndConsumeOtpPin(shift.id, input.otp, 'CHECK_OUT');
-      if (!valid) throw new Error("Invalid, expired, or locked one-time PIN. Ask supervisor for an active code.");
-    }
-
-    const now = new Date();
-    let accumulatedBreakMinutes = attendance.total_break_minutes;
-
-    // Handle check-out while on break: close active break duration accurately
-    if (attendance.status === 'ON_BREAK') {
-      const breakStart = attendance.last_break_start || attendance.break_start_time;
-      if (breakStart) {
-        const activeBreakMins = Math.max(0, Math.round((now.getTime() - new Date(breakStart).getTime()) / 60000));
-        accumulatedBreakMinutes += activeBreakMins;
-      }
-    }
-
-    const checkInMs = attendance.check_in_time ? new Date(attendance.check_in_time).getTime() : now.getTime();
-    const grossMinutes = Math.max(0, Math.round((now.getTime() - checkInMs) / 60000));
-    const netWorkMinutes = Math.max(0, grossMinutes - accumulatedBreakMinutes);
-
-    const eventAudit = {
-      event: 'CHECKED_OUT',
-      method: input.method,
-      timestamp: now.toISOString(),
-      lat: input.latitude || null,
-      lng: input.longitude || null,
-      netWorkMinutes: netWorkMinutes,
-      totalBreakMinutes: accumulatedBreakMinutes,
-      notes: input.notes || null
-    };
-
     return prisma.$transaction(async (tx) => {
+      // 2. Load attendance inside transaction to avoid stale status races
+      const attendance = await tx.shift_attendances.findUnique({
+        where: {
+          shift_id_worker_id: {
+            shift_id: shift.id,
+            worker_id: workerUserId
+          }
+        }
+      });
+
+      if (!attendance || !['CHECKED_IN', 'ON_BREAK'].includes(attendance.status)) {
+        throw new Error(`Cannot check out without an active check-in (current status: ${attendance?.status || 'NONE'}).`);
+      }
+
+      // 3. Atomically verify & consume credential inside the transaction
+      if (input.method === 'QR_CODE') {
+        if (!input.token) throw new Error("QR token required for QR check-out");
+        const valid = await ShiftAttendanceService.verifyAndConsumeQrToken(input.token, shift.id, 'CHECK_OUT', tx);
+        if (!valid) throw new Error("Invalid, expired, or already used QR code token. Please scan the current supervisor QR code.");
+      } else if (input.method === 'ONE_TIME_PIN') {
+        if (!input.otp) throw new Error("PIN required for PIN check-out");
+        const valid = await ShiftAttendanceService.verifyAndConsumeOtpPin(shift.id, input.otp, 'CHECK_OUT', tx);
+        if (!valid) throw new Error("Invalid, expired, or locked one-time PIN. Ask supervisor for an active code.");
+      }
+
+      const now = new Date();
+      const { grossMinutes, totalBreakMinutes: accumulatedBreakMinutes, netWorkMinutes } = ShiftAttendanceService.calculateNetWorkMinutes(
+        attendance.check_in_time || now,
+        now,
+        attendance.total_break_minutes,
+        attendance.status,
+        attendance.last_break_start
+      );
+
+      const eventAudit = {
+        event: 'CHECKED_OUT',
+        method: input.method,
+        timestamp: now.toISOString(),
+        lat: input.latitude || null,
+        lng: input.longitude || null,
+        netWorkMinutes: netWorkMinutes,
+        totalBreakMinutes: accumulatedBreakMinutes,
+        notes: input.notes || null
+      };
+
       const updated = await tx.shift_attendances.update({
         where: { id: attendance.id },
         data: {
@@ -837,6 +860,10 @@ export const ShiftAttendanceService = {
       };
 
       if (input.action === 'CHECK_IN') {
+        if (attendance && attendance.status !== 'NOT_STARTED') {
+          throw new Error(`Cannot manually check in worker. Current attendance status is already: ${attendance.status}`);
+        }
+
         attendance = await tx.shift_attendances.upsert({
           where: {
             shift_id_worker_id: {
@@ -866,19 +893,25 @@ export const ShiftAttendanceService = {
         });
       } else {
         if (!attendance || !['CHECKED_IN', 'ON_BREAK'].includes(attendance.status)) {
-          throw new Error("Cannot manual check-out without prior check-in");
+          throw new Error(`Cannot manual check-out without prior active check-in (current status: ${attendance?.status || 'NONE'}).`);
         }
 
-        const checkInMs = attendance.check_in_time ? new Date(attendance.check_in_time).getTime() : now.getTime();
-        const grossMinutes = Math.max(0, Math.round((now.getTime() - checkInMs) / 60000));
-        const netWorkMinutes = Math.max(0, grossMinutes - attendance.total_break_minutes);
+        const { grossMinutes, totalBreakMinutes: accumulatedBreakMinutes, netWorkMinutes } = ShiftAttendanceService.calculateNetWorkMinutes(
+          attendance.check_in_time || now,
+          now,
+          attendance.total_break_minutes,
+          attendance.status,
+          attendance.last_break_start
+        );
 
         attendance = await tx.shift_attendances.update({
           where: { id: attendance.id },
           data: {
             status: 'APPROVED',
             check_out_time: now,
+            total_break_minutes: accumulatedBreakMinutes,
             total_work_minutes: netWorkMinutes,
+            last_break_start: null,
             approved_by: supervisorUserId,
             approved_at: now,
             manual_reason: input.manualReason,
@@ -1059,6 +1092,10 @@ export const ShiftAttendanceService = {
 
     const now = new Date();
 
+    if (input.decision !== 'APPROVED' && input.decision !== 'REJECTED') {
+      throw new Error(`Invalid decision: "${input.decision}". Must be APPROVED or REJECTED.`);
+    }
+
     if (input.decision === 'REJECTED') {
       const eventAudit = {
         event: 'CORRECTION_REJECTED',
@@ -1071,7 +1108,7 @@ export const ShiftAttendanceService = {
         const updated = await tx.shift_attendances.update({
           where: { id: attendanceId },
           data: {
-            status: 'CHECKED_OUT', // revert to checked out pending review
+            status: 'PENDING_APPROVAL', // revert to pending approval
             correction_resolved_by: supervisorUserId,
             correction_resolved_at: now,
             correction_resolution_notes: input.notes || null,
@@ -1094,16 +1131,28 @@ export const ShiftAttendanceService = {
       });
     }
 
-    // APPROVE decision: Apply proposed timestamps and recalculate work minutes
-    const appliedCheckIn = attendance.correction_proposed_check_in || attendance.check_in_time || now;
-    const appliedCheckOut = attendance.correction_proposed_check_out || attendance.check_out_time || now;
-
-    if (new Date(appliedCheckOut) < new Date(appliedCheckIn)) {
-      throw new Error("Invalid timestamps: Check-out time must follow check-in time");
+    // APPROVE decision: Must have at least one meaningful proposed correction
+    if (!attendance.correction_proposed_check_in && !attendance.correction_proposed_check_out) {
+      throw new Error("Cannot approve correction: Worker did not provide proposed check-in or check-out times.");
     }
 
-    const grossMinutes = Math.max(0, Math.round((new Date(appliedCheckOut).getTime() - new Date(appliedCheckIn).getTime()) / 60000));
-    const recalculatedWorkMinutes = Math.max(0, grossMinutes - attendance.total_break_minutes);
+    const appliedCheckIn = attendance.correction_proposed_check_in || attendance.check_in_time;
+    const appliedCheckOut = attendance.correction_proposed_check_out || attendance.check_out_time;
+
+    if (!appliedCheckIn || !appliedCheckOut) {
+      throw new Error("Incomplete correction: Both check-in and check-out timestamps must be established.");
+    }
+
+    if (new Date(appliedCheckOut) <= new Date(appliedCheckIn)) {
+      throw new Error("Invalid timestamps: Corrected check-out time must follow check-in time.");
+    }
+
+    const { grossMinutes, totalBreakMinutes: accumulatedBreakMinutes, netWorkMinutes: recalculatedWorkMinutes } = ShiftAttendanceService.calculateNetWorkMinutes(
+      new Date(appliedCheckIn),
+      new Date(appliedCheckOut),
+      attendance.total_break_minutes,
+      'CHECKED_OUT' // treat as checked out
+    );
 
     const eventAudit = {
       event: 'CORRECTION_APPROVED',

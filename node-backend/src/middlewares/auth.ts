@@ -81,6 +81,18 @@ export const requireEmployer = async (c: Context, next: Next) => {
   await next();
 };
 
+/**
+ * Route-level check permitting Employers, Admins, or Supervisors.
+ * Fine-grained per-shift supervisor assignment is validated in the controller/service layer.
+ */
+export const requireShiftSupervisorOrEmployer = async (c: Context, next: Next) => {
+  const user = c.get('user');
+  if (!user || (!['EMPLOYER', 'SUPERVISOR', 'ADMIN', 'SUPER_ADMIN'].includes(user.role?.toUpperCase()))) {
+    return c.json({ success: false, message: 'Forbidden: Employer or Supervisor access required' }, 403 as any);
+  }
+  await next();
+};
+
 export const requireSuperAdmin = async (c: Context, next: Next) => {
   const user = c.get('user');
   if (!user || user.role !== 'SUPER_ADMIN') {

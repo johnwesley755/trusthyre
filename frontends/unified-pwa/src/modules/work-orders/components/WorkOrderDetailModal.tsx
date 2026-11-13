@@ -54,7 +54,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
 
       toast.success(
         action === 'ACCEPT' 
-          ? 'Digital Work Order signed & accepted!' 
+          ? 'Work order terms accepted successfully.' 
           : action === 'DECLINE' 
           ? 'Work order declined' 
           : 'Clarification request sent to employer'
