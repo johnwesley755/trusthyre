@@ -462,6 +462,8 @@ export const ShiftAttendanceService = {
   /**
    * Verify and atomically consume OTP PIN from database.
    * Atomically increments attempt_count and enforces attempt_count < max_attempts.
+   * IMPORTANT: The attempt counter increment is executed on root prisma client, ensuring
+   * it persists across database transactions even if the calling checkIn/checkOut rolls back.
    */
   verifyAndConsumeOtpPin: async (shiftId: string, enteredOtp: string, action: 'CHECK_IN' | 'CHECK_OUT', txClient?: any): Promise<boolean> => {
     const db = txClient || prisma;
@@ -489,7 +491,9 @@ export const ShiftAttendanceService = {
     }
 
     // 2. If no matching challenge was consumed, atomically increment attempt_count on active PINs
-    await db.attendance_challenges.updateMany({
+    // Must execute on ROOT prisma client so that when caller throws and rolls back txClient,
+    // the recorded failed attempt count still persists in PostgreSQL!
+    await prisma.attendance_challenges.updateMany({
       where: {
         shift_id: shiftId,
         challenge_type: 'ONE_TIME_PIN',
@@ -559,8 +563,8 @@ export const ShiftAttendanceService = {
         notes: input.notes || null
       };
 
-      // 3. Conditional State Update: must be NOT_STARTED or newly created
-      // Atomic upsert with check on current status
+      // 3. Conditional Compare-and-Set (CAS) State Update
+      // Ensure row exists and status is strictly NOT_STARTED; if no row exists, create it
       const existingAttendance = await tx.shift_attendances.findUnique({
         where: {
           shift_id_worker_id: {
@@ -570,41 +574,49 @@ export const ShiftAttendanceService = {
         }
       });
 
-      if (existingAttendance && existingAttendance.status !== 'NOT_STARTED') {
-        throw new Error(`Cannot check in. Current attendance status is already: ${existingAttendance.status}`);
+      let updatedId = existingAttendance?.id;
+
+      if (existingAttendance) {
+        const updateResult = await tx.shift_attendances.updateMany({
+          where: {
+            id: existingAttendance.id,
+            status: 'NOT_STARTED' // CAS: only succeed if status hasn't moved
+          },
+          data: {
+            status: 'CHECKED_IN',
+            verification_method: input.method,
+            check_in_time: now,
+            check_in_lat: input.latitude || null,
+            check_in_lng: input.longitude || null,
+            check_in_notes: input.notes || null,
+            events: ([...(existingAttendance.events as any[]), eventAudit] as any)
+          }
+        });
+
+        if (updateResult.count === 0) {
+          throw new Error("Conflict: Shift has already been checked in by a concurrent request.");
+        }
+      } else {
+        const created = await tx.shift_attendances.create({
+          data: {
+            shift_id: shift.id,
+            work_order_id: shift.work_order_id,
+            worker_id: workerUserId,
+            employer_id: shift.employer_id,
+            supervisor_id: shift.supervisor_id,
+            status: 'CHECKED_IN',
+            verification_method: input.method,
+            check_in_time: now,
+            check_in_lat: input.latitude || null,
+            check_in_lng: input.longitude || null,
+            check_in_notes: input.notes || null,
+            events: [eventAudit] as any
+          }
+        });
+        updatedId = created.id;
       }
 
-      const updated = await tx.shift_attendances.upsert({
-        where: {
-          shift_id_worker_id: {
-            shift_id: shift.id,
-            worker_id: workerUserId
-          }
-        },
-        update: {
-          status: 'CHECKED_IN',
-          verification_method: input.method,
-          check_in_time: now,
-          check_in_lat: input.latitude || null,
-          check_in_lng: input.longitude || null,
-          check_in_notes: input.notes || null,
-          events: existingAttendance ? ([...(existingAttendance.events as any[]), eventAudit] as any) : ([eventAudit] as any)
-        },
-        create: {
-          shift_id: shift.id,
-          work_order_id: shift.work_order_id,
-          worker_id: workerUserId,
-          employer_id: shift.employer_id,
-          supervisor_id: shift.supervisor_id,
-          status: 'CHECKED_IN',
-          verification_method: input.method,
-          check_in_time: now,
-          check_in_lat: input.latitude || null,
-          check_in_lng: input.longitude || null,
-          check_in_notes: input.notes || null,
-          events: [eventAudit] as any
-        }
-      });
+      const updated = await tx.shift_attendances.findUniqueOrThrow({ where: { id: updatedId! } });
 
       // Write to immutable attendance_events log
       await tx.attendance_events.create({
@@ -674,8 +686,12 @@ export const ShiftAttendanceService = {
         timestamp: now.toISOString()
       };
 
-      const updated = await tx.shift_attendances.update({
-        where: { id: attendance.id },
+      // CAS update: condition on current status
+      const updateResult = await tx.shift_attendances.updateMany({
+        where: {
+          id: attendance.id,
+          status: action === 'START' ? 'CHECKED_IN' : 'ON_BREAK'
+        },
         data: {
           status: nextStatus,
           break_start_time: action === 'START' ? now : attendance.break_start_time,
@@ -685,6 +701,12 @@ export const ShiftAttendanceService = {
           events: [...(attendance.events as any[]), eventAudit] as any
         }
       });
+
+      if (updateResult.count === 0) {
+        throw new Error("Conflict: Break state has been modified by a concurrent request.");
+      }
+
+      const updated = await tx.shift_attendances.findUniqueOrThrow({ where: { id: attendance.id } });
 
       await tx.attendance_events.create({
         data: {
@@ -765,8 +787,12 @@ export const ShiftAttendanceService = {
         notes: input.notes || null
       };
 
-      const updated = await tx.shift_attendances.update({
-        where: { id: attendance.id },
+      // CAS update: condition on current status in CHECKED_IN or ON_BREAK
+      const updateResult = await tx.shift_attendances.updateMany({
+        where: {
+          id: attendance.id,
+          status: { in: ['CHECKED_IN', 'ON_BREAK'] }
+        },
         data: {
           status: 'PENDING_APPROVAL',
           check_out_time: now,
@@ -779,6 +805,12 @@ export const ShiftAttendanceService = {
           events: [...(attendance.events as any[]), eventAudit] as any
         }
       });
+
+      if (updateResult.count === 0) {
+        throw new Error("Conflict: Shift has already been checked out by a concurrent request.");
+      }
+
+      const updated = await tx.shift_attendances.findUniqueOrThrow({ where: { id: attendance.id } });
 
       await tx.attendance_events.create({
         data: {
@@ -860,37 +892,42 @@ export const ShiftAttendanceService = {
       };
 
       if (input.action === 'CHECK_IN') {
-        if (attendance && attendance.status !== 'NOT_STARTED') {
-          throw new Error(`Cannot manually check in worker. Current attendance status is already: ${attendance.status}`);
-        }
-
-        attendance = await tx.shift_attendances.upsert({
-          where: {
-            shift_id_worker_id: {
-              shift_id: shift.id,
-              worker_id: input.workerId
+        let updatedId = attendance?.id;
+        if (attendance) {
+          const updateResult = await tx.shift_attendances.updateMany({
+            where: {
+              id: attendance.id,
+              status: 'NOT_STARTED'
+            },
+            data: {
+              status: 'CHECKED_IN',
+              verification_method: 'MANUAL_SUPERVISOR',
+              check_in_time: now,
+              manual_reason: input.manualReason,
+              events: ([...(attendance.events as any[]), eventAudit] as any)
             }
-          },
-          update: {
-            status: 'CHECKED_IN',
-            verification_method: 'MANUAL_SUPERVISOR',
-            check_in_time: now,
-            manual_reason: input.manualReason,
-            events: attendance ? ([...(attendance.events as any[]), eventAudit] as any) : ([eventAudit] as any)
-          },
-          create: {
-            shift_id: shift.id,
-            work_order_id: shift.work_order_id,
-            worker_id: input.workerId,
-            employer_id: shift.employer_id,
-            supervisor_id: supervisorUserId,
-            status: 'CHECKED_IN',
-            verification_method: 'MANUAL_SUPERVISOR',
-            check_in_time: now,
-            manual_reason: input.manualReason,
-            events: [eventAudit] as any
+          });
+          if (updateResult.count === 0) {
+            throw new Error("Conflict: Worker was already checked in by a concurrent request.");
           }
-        });
+        } else {
+          const created = await tx.shift_attendances.create({
+            data: {
+              shift_id: shift.id,
+              work_order_id: shift.work_order_id,
+              worker_id: input.workerId,
+              employer_id: shift.employer_id,
+              supervisor_id: supervisorUserId,
+              status: 'CHECKED_IN',
+              verification_method: 'MANUAL_SUPERVISOR',
+              check_in_time: now,
+              manual_reason: input.manualReason,
+              events: [eventAudit] as any
+            }
+          });
+          updatedId = created.id;
+        }
+        attendance = await tx.shift_attendances.findUniqueOrThrow({ where: { id: updatedId! } });
       } else {
         if (!attendance || !['CHECKED_IN', 'ON_BREAK'].includes(attendance.status)) {
           throw new Error(`Cannot manual check-out without prior active check-in (current status: ${attendance?.status || 'NONE'}).`);
@@ -904,8 +941,11 @@ export const ShiftAttendanceService = {
           attendance.last_break_start
         );
 
-        attendance = await tx.shift_attendances.update({
-          where: { id: attendance.id },
+        const updateResult = await tx.shift_attendances.updateMany({
+          where: {
+            id: attendance.id,
+            status: { in: ['CHECKED_IN', 'ON_BREAK'] }
+          },
           data: {
             status: 'APPROVED',
             check_out_time: now,
@@ -918,6 +958,12 @@ export const ShiftAttendanceService = {
             events: [...(attendance.events as any[]), eventAudit] as any
           }
         });
+
+        if (updateResult.count === 0) {
+          throw new Error("Conflict: Shift has already been checked out by a concurrent request.");
+        }
+
+        attendance = await tx.shift_attendances.findUniqueOrThrow({ where: { id: attendance.id } });
       }
 
       await tx.attendance_events.create({
@@ -968,8 +1014,11 @@ export const ShiftAttendanceService = {
     };
 
     return prisma.$transaction(async (tx) => {
-      const updated = await tx.shift_attendances.update({
-        where: { id: attendanceId },
+      const updateResult = await tx.shift_attendances.updateMany({
+        where: {
+          id: attendanceId,
+          status: { in: ['CHECKED_OUT', 'PENDING_APPROVAL'] }
+        },
         data: {
           status: 'APPROVED',
           approved_by: employerUserId,
@@ -977,6 +1026,12 @@ export const ShiftAttendanceService = {
           events: [...(attendance.events as any[]), eventAudit] as any
         }
       });
+
+      if (updateResult.count === 0) {
+        throw new Error("Conflict: Attendance record has already been approved or modified by another request.");
+      }
+
+      const updated = await tx.shift_attendances.findUniqueOrThrow({ where: { id: attendanceId } });
 
       await tx.attendance_events.create({
         data: {
@@ -1105,8 +1160,11 @@ export const ShiftAttendanceService = {
       };
 
       return prisma.$transaction(async (tx) => {
-        const updated = await tx.shift_attendances.update({
-          where: { id: attendanceId },
+        const updateResult = await tx.shift_attendances.updateMany({
+          where: {
+            id: attendanceId,
+            status: 'CORRECTION_REQUESTED'
+          },
           data: {
             status: 'PENDING_APPROVAL', // revert to pending approval
             correction_resolved_by: supervisorUserId,
@@ -1115,6 +1173,12 @@ export const ShiftAttendanceService = {
             events: [...(attendance.events as any[]), eventAudit] as any
           }
         });
+
+        if (updateResult.count === 0) {
+          throw new Error("Conflict: Correction request was already resolved by another request.");
+        }
+
+        const updated = await tx.shift_attendances.findUniqueOrThrow({ where: { id: attendanceId } });
 
         await tx.attendance_events.create({
           data: {
@@ -1167,8 +1231,11 @@ export const ShiftAttendanceService = {
     };
 
     return prisma.$transaction(async (tx) => {
-      const updated = await tx.shift_attendances.update({
-        where: { id: attendanceId },
+      const updateResult = await tx.shift_attendances.updateMany({
+        where: {
+          id: attendanceId,
+          status: 'CORRECTION_REQUESTED'
+        },
         data: {
           status: 'APPROVED',
           check_in_time: appliedCheckIn,
@@ -1182,6 +1249,12 @@ export const ShiftAttendanceService = {
           events: [...(attendance.events as any[]), eventAudit] as any
         }
       });
+
+      if (updateResult.count === 0) {
+        throw new Error("Conflict: Correction request was already resolved by another request.");
+      }
+
+      const updated = await tx.shift_attendances.findUniqueOrThrow({ where: { id: attendanceId } });
 
       await tx.attendance_events.create({
         data: {

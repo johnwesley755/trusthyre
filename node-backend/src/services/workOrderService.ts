@@ -381,26 +381,29 @@ export class WorkOrderService {
     }
 
     return prisma.$transaction(async (tx) => {
-      // Optimistic concurrency verification inside transaction
-      const currentOrder = await tx.work_orders.findUnique({
-        where: { id: orderId }
-      });
-      if (!currentOrder || currentOrder.status !== 'SENT') {
-        throw new Error(`Conflict: Work order status changed to "${currentOrder?.status || 'UNKNOWN'}" before action could be completed.`);
-      }
-
-      const updated = await tx.work_orders.update({
-        where: { id: orderId },
+      // Optimistic Compare-and-Set (CAS) update: requires status to be exactly 'SENT' and matching terms_version
+      const updateResult = await tx.work_orders.updateMany({
+        where: {
+          id: orderId,
+          status: 'SENT',
+          terms_version: order.terms_version
+        },
         data: {
           status: nextStatus,
           worker_response_notes: notes || null,
           accepted_at: action === 'ACCEPT' ? now : undefined,
           declined_at: action === 'DECLINE' ? now : undefined,
-          accepted_terms_version: action === 'ACCEPT' ? currentOrder.terms_version : null,
+          accepted_terms_version: action === 'ACCEPT' ? order.terms_version : null,
           accepted_terms_hash: action === 'ACCEPT' ? currentTermsHash : null,
           updated_at: now
         }
       });
+
+      if (updateResult.count === 0) {
+        throw new Error("Conflict: Work order was modified or answered by another concurrent request.");
+      }
+
+      const updated = await tx.work_orders.findUniqueOrThrow({ where: { id: orderId } });
 
       await tx.work_order_events.create({
         data: {
@@ -480,16 +483,13 @@ export class WorkOrderService {
     const nextVersion = order.terms_version + 1;
 
     return prisma.$transaction(async (tx) => {
-      // Optimistic concurrency check: re-verify status inside transaction
-      const currentOrder = await tx.work_orders.findUnique({
-        where: { id: orderId }
-      });
-      if (!currentOrder || ['COMPLETED', 'CANCELLED', 'DECLINED'].includes(currentOrder.status)) {
-        throw new Error(`Conflict: Work order was already cancelled or completed`);
-      }
-
-      const updated = await tx.work_orders.update({
-        where: { id: orderId },
+      // Optimistic CAS update: condition on exact terms_version and non-terminal status
+      const updateResult = await tx.work_orders.updateMany({
+        where: {
+          id: orderId,
+          terms_version: order.terms_version,
+          status: { notIn: ['COMPLETED', 'CANCELLED', 'DECLINED'] }
+        },
         data: {
           job_title: input.jobTitle?.trim(),
           work_description: input.workDescription !== undefined ? input.workDescription?.trim() : undefined,
@@ -519,12 +519,18 @@ export class WorkOrderService {
           
           status: newStatus,
           terms_version: nextVersion,
-          accepted_at: (wasActive && isMaterialChange) ? null : currentOrder.accepted_at,
-          accepted_terms_version: (wasActive && isMaterialChange) ? null : currentOrder.accepted_terms_version,
-          accepted_terms_hash: (wasActive && isMaterialChange) ? null : currentOrder.accepted_terms_hash,
+          accepted_at: (wasActive && isMaterialChange) ? null : order.accepted_at,
+          accepted_terms_version: (wasActive && isMaterialChange) ? null : order.accepted_terms_version,
+          accepted_terms_hash: (wasActive && isMaterialChange) ? null : order.accepted_terms_hash,
           updated_at: new Date()
         }
       });
+
+      if (updateResult.count === 0) {
+        throw new Error("Conflict: Work order terms were modified by another concurrent request.");
+      }
+
+      const updated = await tx.work_orders.findUniqueOrThrow({ where: { id: orderId } });
 
       const newTermsHash = this.computeTermsHash(updated);
 
@@ -628,21 +634,23 @@ export class WorkOrderService {
     const isEmployer = order.employer_id === userId;
 
     return prisma.$transaction(async (tx) => {
-      // Optimistic check inside transaction
-      const currentOrder = await tx.work_orders.findUnique({
-        where: { id: orderId }
-      });
-      if (!currentOrder || ['COMPLETED', 'CANCELLED'].includes(currentOrder.status)) {
-        throw new Error(`Conflict: Work order is already cancelled or completed`);
-      }
-
-      const updated = await tx.work_orders.update({
-        where: { id: orderId },
+      // Optimistic CAS cancellation: condition on current status not in terminal states
+      const updateResult = await tx.work_orders.updateMany({
+        where: {
+          id: orderId,
+          status: { notIn: ['COMPLETED', 'CANCELLED'] }
+        },
         data: {
           status: 'CANCELLED',
           updated_at: new Date()
         }
       });
+
+      if (updateResult.count === 0) {
+        throw new Error("Conflict: Work order was already cancelled or completed by another request.");
+      }
+
+      const updated = await tx.work_orders.findUniqueOrThrow({ where: { id: orderId } });
 
       await tx.work_order_events.create({
         data: {

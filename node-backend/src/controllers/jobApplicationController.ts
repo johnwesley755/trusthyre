@@ -235,6 +235,20 @@ export const applyForJob = async (c: Context) => {
       data: { jobId: String(jobId) }
     });
 
+    // Record server-verified recommendation conversion telemetry
+    try {
+      await recommendationEngineService.recordInteraction({
+        userId: workerId,
+        interactionType: 'APPLY',
+        itemType: 'JOB',
+        itemId: jobId,
+        isServerVerified: true,
+        metadata: { source: 'job_application_submission', applicationId: application.id }
+      });
+    } catch (telemetryErr) {
+      console.warn('[jobApplicationController] Telemetry recording warning:', telemetryErr);
+    }
+
     return c.json(ApiResponse.ok("Application submitted successfully", formatApplication(application)));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);

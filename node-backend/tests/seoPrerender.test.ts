@@ -148,4 +148,17 @@ describe('SEO & Prerender Canonical & Hierarchy Test Suite', () => {
     expect(xml).toContain(`<loc>${expectedUrl}</loc>`);
     expect(xml).not.toContain(`<loc>https://trusthyre.com/job/${testJobId}</loc>`);
   });
+
+  it('5. Vercel routes pass path-to-regexp parser validation', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const { pathToRegexp } = require('path-to-regexp');
+    const vercelConfigPath = path.resolve(__dirname, '../../frontends/unified-pwa/vercel.json');
+    const config = JSON.parse(fs.readFileSync(vercelConfigPath, 'utf8'));
+
+    expect(Array.isArray(config.rewrites)).toBe(true);
+    for (const rewrite of config.rewrites) {
+      expect(() => pathToRegexp(rewrite.source)).not.toThrow();
+    }
+  });
 });

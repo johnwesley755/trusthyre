@@ -1098,7 +1098,8 @@ export const recommendationEngineService = {
 
   /**
    * Telemetry recording for implicit and explicit recommendation interactions.
-   * Validates item existence before writing to database.
+   * Validates item existence and strictly gates conversion events (APPLY, INVITE)
+   * so they cannot be forged without a real application or authorized employer role.
    */
   recordInteraction: async (data: {
     userId: string;
@@ -1107,7 +1108,34 @@ export const recommendationEngineService = {
     itemId: string;
     matchScore?: number;
     metadata?: any;
+    isServerVerified?: boolean;
   }) => {
+    // 1. Anti-Forgery Gating on Conversion Telemetry
+    if (data.interactionType === 'APPLY' && !data.isServerVerified) {
+      // Must verify an actual job application exists between user and job
+      const application = await prisma.job_applications.findFirst({
+        where: {
+          job_id: data.itemId,
+          worker_id: data.userId
+        },
+        select: { id: true }
+      });
+      if (!application) {
+        throw new Error("Forbidden: Cannot record APPLY telemetry without an active job application.");
+      }
+    }
+
+    if (data.interactionType === 'INVITE' && !data.isServerVerified) {
+      // Must verify the recording user is an employer with at least one active job
+      const employerProfile = await prisma.employer_profiles.findFirst({
+        where: { user_id: data.userId },
+        select: { id: true }
+      });
+      if (!employerProfile) {
+        throw new Error("Forbidden: Only verified employers can record candidate INVITE telemetry.");
+      }
+    }
+
     // Validate that target item actually exists
     if (data.itemType === 'JOB') {
       const job = await prisma.jobs.findUnique({
