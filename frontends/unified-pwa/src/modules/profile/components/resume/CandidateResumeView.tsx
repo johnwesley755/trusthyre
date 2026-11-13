@@ -11,7 +11,8 @@ import {
   Printer,
   Loader2,
   Award,
-  Globe
+  Globe,
+  Check
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { toast } from 'sonner';
@@ -236,7 +237,10 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
                     {data.matchBand || 'Candidate Fit Analysis'}
                   </span>
                   {data.jobTitle && (
-                    <span className="text-[11px] text-slate-500 font-medium">â€¢ for {data.jobTitle}</span>
+                    <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+                      <span>•</span>
+                      <span>for {data.jobTitle}</span>
+                    </span>
                   )}
                 </div>
                 <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
@@ -260,12 +264,14 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
               <span className="font-bold text-slate-400 uppercase text-[9px] tracking-wider mr-1">Skills:</span>
               {data.matchingSkills?.slice(0, 5).map((s, i) => (
                 <span key={`ms-${i}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium text-[10px]">
-                  âœ“ {s}
+                  <Check className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
+                  <span>{s}</span>
                 </span>
               ))}
               {data.missingSkills?.slice(0, 3).map((s, i) => (
                 <span key={`mis-${i}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 font-medium text-[10px]">
-                  â€¢ Needs {s}
+                  <span className="text-slate-400 font-bold">•</span>
+                  <span>Needs {s}</span>
                 </span>
               ))}
             </div>

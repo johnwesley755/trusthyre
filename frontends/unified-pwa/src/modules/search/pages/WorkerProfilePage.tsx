@@ -33,7 +33,8 @@ import {
   Building2,
   BadgeCheck
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { jobService } from '../../../services/job.service';
 import { UserAvatar } from '../../../components/common/UserAvatar';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
@@ -166,7 +167,33 @@ export const WorkerProfilePage = () => {
   };
 
   const location = useLocation();
-  const contextJob = (location.state as any)?.job;
+  const stateJob = (location.state as any)?.job;
+
+  const { data: employerJobs = [] } = useQuery<any[]>({
+    queryKey: ['employer', 'myJobs'],
+    queryFn: jobService.getEmployerJobs,
+    enabled: user?.role === 'EMPLOYER' && !stateJob,
+  });
+
+  const contextJob = useMemo(() => {
+    if (stateJob) return stateJob;
+    if (employerJobs && employerJobs.length > 0) {
+      let topJob = employerJobs[0];
+      let topScore = -1;
+      for (const j of employerJobs) {
+        if (worker) {
+          const a = calculateMatchScore(j, worker);
+          if (a.overallScore > topScore) {
+            topScore = a.overallScore;
+            topJob = j;
+          }
+        }
+      }
+      return topJob;
+    }
+    return null;
+  }, [stateJob, employerJobs, worker]);
+
   const contextMatchAnalysis = contextJob && worker ? calculateMatchScore(contextJob, worker) : undefined;
 
   if (isLoadingWorker) return <AppLoader variant="page" message="Loading Profile..." />;

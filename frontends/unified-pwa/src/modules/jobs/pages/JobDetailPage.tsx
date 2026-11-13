@@ -6,7 +6,8 @@ import { jobService } from '../../../services/job.service';
 import { applicationService } from '../../../services/application.service';
 import { profileService } from '../../../services/profile.service';
 import { queryKeys } from '../../../lib/queryKeys';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { calculateMatchScore, getMatchScoreVisuals } from '../../../utils/matchScorer';
 import { SeoHead, buildJobPostingJsonLd, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
 import { getEffectiveCoverUrl, resolveTradeCover, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
 import { formatMissingProfileFields, getMissingProfileFields } from '../../../utils/profileCompletion';
@@ -228,6 +229,16 @@ export default function JobDetailPage() {
     staleTime: 1000 * 60 * 5,
     enabled: user?.role === 'WORKER'
   });
+
+  // Indeed-style dynamic profile & skills match analysis for worker
+  const matchAnalysis = useMemo(() => {
+    if (!job || !profile || user?.role !== 'WORKER') return null;
+    return calculateMatchScore(job, profile);
+  }, [job, profile, user]);
+
+  const matchVisuals = useMemo(() => {
+    return matchAnalysis ? getMatchScoreVisuals(matchAnalysis.overallScore) : null;
+  }, [matchAnalysis]);
 
   const cleanJobCity = (job?.city ? job.city.split(',')[0].trim() : '') || 'Chennai';
   const cleanJobCitySlug = cleanJobCity.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '') || 'chennai';
@@ -1183,6 +1194,102 @@ export default function JobDetailPage() {
                       <p className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-100">{additionalDetails.experience}</p>
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Indeed-style Profile Qualifications & Skills Match for Worker */}
+            {matchAnalysis && matchVisuals && (
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-[1.75rem] p-6 sm:p-8 border border-[#e6e8ec] dark:border-zinc-800 space-y-4 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e6e8ec] dark:border-zinc-800 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-extrabold text-sm ${matchVisuals.bg} ${matchVisuals.text} border ${matchVisuals.border} shadow-2xs shrink-0`}>
+                      <span className="text-base leading-none">{matchAnalysis.overallScore}%</span>
+                      <span className="text-[8px] uppercase tracking-wider opacity-85">Match</span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-[#0a0a0a] dark:text-zinc-100 flex items-center gap-1.5">
+                        <span>How your profile matches this job</span>
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                      </h3>
+                      <p className="text-xs text-[#717784] dark:text-zinc-400 mt-0.5">
+                        {matchAnalysis.matchSummary}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs font-semibold self-start sm:self-auto">
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
+                      <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                      <span>{matchAnalysis.matchingSkills.length} Matching Skills</span>
+                    </span>
+                    {matchAnalysis.missingSkills.length > 0 && (
+                      <span className="px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 flex items-center gap-1">
+                        <span>{matchAnalysis.missingSkills.length} Missing</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Skills Match vs Missing Badges */}
+                <div className="space-y-3 pt-1">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block mb-2">
+                      Your Matching Skills
+                    </span>
+                    {matchAnalysis.matchingSkills.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {matchAnalysis.matchingSkills.map((skill, idx) => (
+                          <span 
+                            key={`ms-${idx}`}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-2xs"
+                          >
+                            <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span>{skill}</span>
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500 italic">None of your listed skills explicitly overlap with this role.</p>
+                    )}
+                  </div>
+
+                  {matchAnalysis.missingSkills.length > 0 && (
+                    <div className="pt-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#717784] dark:text-zinc-400 block mb-2">
+                        Missing Skills / Learnable Competencies
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {matchAnalysis.missingSkills.map((skill, idx) => (
+                          <span 
+                            key={`mis-${idx}`}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white dark:bg-[#121215] border border-dashed border-amber-300 dark:border-amber-700/60 text-xs font-medium text-slate-700 dark:text-zinc-300 shadow-2xs"
+                          >
+                            <span className="text-amber-500 font-bold">•</span>
+                            <span>Needs {skill}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Experience & Location breakdown chips */}
+                  <div className="pt-3 border-t border-[#e6e8ec] dark:border-zinc-800 flex flex-wrap items-center gap-3 text-xs text-[#717784] dark:text-zinc-400">
+                    <span className="flex items-center gap-1">
+                      <Briefcase className="w-3.5 h-3.5 text-[#0f2f63] dark:text-blue-400" />
+                      <span>Experience Fit: <strong className="text-slate-800 dark:text-zinc-200">{matchAnalysis.breakdown.experience}%</strong></span>
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-blue-400" />
+                      <span>Location Proximity: <strong className="text-slate-800 dark:text-zinc-200">{matchAnalysis.breakdown.location}%</strong></span>
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#0f2f63] dark:text-blue-400" />
+                      <span>Verification Standing: <strong className="text-slate-800 dark:text-zinc-200">{matchAnalysis.breakdown.verification}%</strong></span>
+                    </span>
+                  </div>
                 </div>
               </div>
             )}

@@ -309,6 +309,21 @@ FOR ALL USING (
   )
 );
 
+-- Ensure primary key & performance index on job_required_skills
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'job_required_skills_pkey' 
+      AND conrelid = 'public.job_required_skills'::regclass
+  ) THEN
+    ALTER TABLE public.job_required_skills ADD CONSTRAINT job_required_skills_pkey PRIMARY KEY (job_id, skill);
+  END IF;
+END $$;
+CREATE INDEX IF NOT EXISTS idx_job_required_skills_skill ON public.job_required_skills (skill);
+CREATE INDEX IF NOT EXISTS idx_jobs_status_expires_at ON public.jobs (status, expires_at);
+CREATE INDEX IF NOT EXISTS idx_worker_profiles_avail_city ON public.worker_profiles (is_available, city);
+
 
 -- 3.2 job_applications
 ALTER TABLE public.job_applications ADD COLUMN IF NOT EXISTS voice_note_url character varying(500);

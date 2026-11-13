@@ -62,6 +62,22 @@ export const requireAdmin = async (c: Context, next: Next) => {
   await next();
 };
 
+export const requireWorker = async (c: Context, next: Next) => {
+  const user = c.get('user');
+  if (!user || (user.role !== 'WORKER' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+    return c.json({ success: false, message: 'Forbidden: Candidate/Worker access required' }, 403 as any);
+  }
+  await next();
+};
+
+export const requireEmployer = async (c: Context, next: Next) => {
+  const user = c.get('user');
+  if (!user || (user.role !== 'EMPLOYER' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+    return c.json({ success: false, message: 'Forbidden: Employer access required' }, 403 as any);
+  }
+  await next();
+};
+
 export const requireSuperAdmin = async (c: Context, next: Next) => {
   const user = c.get('user');
   if (!user || user.role !== 'SUPER_ADMIN') {

@@ -70,13 +70,14 @@ model job_applications {
   @@index([worker_id], map: "idx_job_applications_worker_id")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model job_required_skills {
   job_id String @db.Uuid
   skill  String @db.VarChar(255)
   jobs   jobs   @relation(fields: [job_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@ignore
+  @@id([job_id, skill])
+  @@index([job_id], map: "idx_job_required_skills_job_id")
+  @@index([skill], map: "idx_job_required_skills_skill")
 }
 
 model job_search_index {
@@ -138,12 +139,13 @@ model jobs {
   walking_minutes_to_transit Int?                  @default(5)
   landmark                   String?               @db.VarChar(255)
   job_applications           job_applications[]
-  job_required_skills       job_required_skills[] @ignore
+  job_required_skills       job_required_skills[]
   saved_jobs                saved_jobs[]
   interviews                interviews[]
 
   @@index([employer_id], map: "idx_jobs_employer_id")
   @@index([status], map: "idx_jobs_status")
+  @@index([status, expires_at], map: "idx_jobs_status_expires_at")
   @@index([is_external, status], map: "idx_jobs_external_status")
   @@index([source_hash], map: "idx_jobs_source_hash")
   @@index([source_name, external_id], map: "idx_jobs_source_external_id")
@@ -413,6 +415,7 @@ model worker_profiles {
   @@index([user_id], map: "idx_worker_profiles_user_id")
   @@index([city, area], map: "idx_worker_profiles_city_area")
   @@index([state, district], map: "idx_worker_profiles_state_district")
+  @@index([is_available, city], map: "idx_worker_profiles_avail_city")
 }
 
 model worker_search_index {
