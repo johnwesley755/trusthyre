@@ -32,6 +32,9 @@ export const authenticateJWT = async (c: Context, next: Next) => {
   }
 };
 
+// Alias requireAuth to authenticateJWT for semantic consistency across routes
+export const requireAuth = authenticateJWT;
+
 export const optionalAuth = async (c: Context, next: Next) => {
   const authHeader = c.req.header('authorization');
   if (authHeader) {
