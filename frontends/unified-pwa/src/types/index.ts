@@ -22,6 +22,8 @@ export interface User {
   profile_image_url?: string;
   identity_verified?: boolean;
   email_verified?: boolean;
+  referralCode?: string;
+  referral_code?: string;
 }
 
 export interface WorkerProfile {

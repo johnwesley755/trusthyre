@@ -24,7 +24,8 @@ export interface WhatsAppJobData {
 export function buildJobWhatsAppMessage(
   job: WhatsAppJobData,
   language: string = 'en',
-  originUrl: string = typeof window !== 'undefined' ? window.location.origin : 'https://trusthyre.com'
+  originUrl: string = typeof window !== 'undefined' ? window.location.origin : 'https://trusthyre.com',
+  referralCode?: string | null
 ): string {
   const salaryText = job.budget && Number(job.budget) > 0
     ? `₹${Number(job.budget).toLocaleString('en-IN')} / month`
@@ -53,7 +54,8 @@ export function buildJobWhatsAppMessage(
       })
     : '/search';
 
-  const shareUrl = `${originUrl}${jobPath}?utm_source=whatsapp&utm_medium=viral_share`;
+  const refParams = referralCode ? `&ref=${encodeURIComponent(referralCode)}&src=job_share` : '';
+  const shareUrl = `${originUrl}${jobPath}?utm_source=whatsapp&utm_medium=viral_share${refParams}`;
 
   if (language === 'ta') {
     return `🔥 *உடனடி வேலைவாய்ப்பு (Urgent Opening)*
@@ -117,7 +119,8 @@ ${shareUrl}
  */
 export function buildEmployerBroadcastMessage(
   job: WhatsAppJobData,
-  originUrl: string = typeof window !== 'undefined' ? window.location.origin : 'https://trusthyre.com'
+  originUrl: string = typeof window !== 'undefined' ? window.location.origin : 'https://trusthyre.com',
+  referralCode?: string | null
 ): string {
   const salaryText = job.budget && Number(job.budget) > 0
     ? `₹${Number(job.budget).toLocaleString('en-IN')}/month`
@@ -125,7 +128,8 @@ export function buildEmployerBroadcastMessage(
 
   const city = job.city || job.location || 'India';
   const company = job.companyName || 'Our Company';
-  const shareUrl = `${originUrl}/job/${job.id}?utm_source=whatsapp&utm_medium=employer_broadcast`;
+  const refParams = referralCode ? `&ref=${encodeURIComponent(referralCode)}&src=whatsapp_bulletin` : '';
+  const shareUrl = `${originUrl}/job/${job.id}?utm_source=whatsapp&utm_medium=employer_broadcast${refParams}`;
 
   return `📢 *WE ARE HIRING / வேலைக்கு ஆட்கள் தேவை!*
 ━━━━━━━━━━━━━━━━━━━━━
@@ -248,9 +252,11 @@ export function buildWorkerSkillBadgeShareMessage(
     trustScore?: number;
     level?: string;
   },
-  originUrl: string = typeof window !== 'undefined' ? window.location.origin : 'https://trusthyre.com'
+  originUrl: string = typeof window !== 'undefined' ? window.location.origin : 'https://trusthyre.com',
+  referralCode?: string | null
 ): string {
-  const profileUrl = `${originUrl}/worker/${worker.id}?utm_source=whatsapp&utm_medium=skill_badge`;
+  const refParams = referralCode ? `&ref=${encodeURIComponent(referralCode)}&src=skill_card` : '';
+  const profileUrl = `${originUrl}/worker/${worker.id}?utm_source=whatsapp&utm_medium=skill_badge${refParams}`;
   const skills = Array.isArray(worker.skills)
     ? worker.skills.slice(0, 3).join(', ')
     : worker.skills || 'Verified Trade Skills';

@@ -358,21 +358,29 @@ export default function JobDetailPage() {
   const isSaved = isJobSaved(id || '');
 
   const handleShare = async () => {
+    const userRef = (user as any)?.referralCode || (user as any)?.referral_code;
+    const shareUrl = new URL(window.location.href);
+    if (userRef) {
+      shareUrl.searchParams.set('ref', userRef);
+      shareUrl.searchParams.set('src', 'job_share');
+    }
+    const finalUrl = shareUrl.toString();
+
     const shareData = {
       title: `${job?.title || 'Job Opening'} - TrustHyre`,
       text: `Check out this verified job opening on TrustHyre: ${job?.title}`,
-      url: window.location.href,
+      url: finalUrl,
     };
     try {
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(finalUrl);
         toast.success('Job link copied to clipboard!');
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(finalUrl);
         toast.success('Job link copied to clipboard!');
       }
     }
@@ -381,6 +389,7 @@ export default function JobDetailPage() {
   const handleWhatsAppShare = () => {
     if (!job) return;
     const company = (job as any)?.employerProfile?.companyName || (job as any)?.employerName || 'Verified Employer';
+    const userRef = (user as any)?.referralCode || (user as any)?.referral_code;
     const message = buildJobWhatsAppMessage(
       {
         id: id || (job as any).id,
@@ -393,7 +402,9 @@ export default function JobDetailPage() {
         skills: (job as any).skills,
         industry: job.industry,
       },
-      language
+      language,
+      typeof window !== 'undefined' ? window.location.origin : 'https://trusthyre.com',
+      userRef
     );
     openWhatsAppShare(message);
   };

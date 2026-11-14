@@ -6,6 +6,7 @@ import { auth, googleProvider, signInWithPopup, signOut as firebaseSignOut } fro
 import { onAuthStateChanged } from 'firebase/auth';
 import apiClient from '../api/apiClient';
 import { secureStorage } from '../utils/secureStorage';
+import { getStoredReferral, clearStoredReferral } from '../utils/referralStorage';
 
 interface AuthContextType {
   user: User | null;
@@ -87,6 +88,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const firstName = nameParts[0] || (targetRole === 'EMPLOYER' ? 'Employer' : 'Worker');
     const lastName = nameParts.slice(1).join(' ') || '';
 
+    const storedReferral = getStoredReferral();
+
     const syncRes = await apiClient.post('/api/auth/oauth-sync', {
       idToken,
       email: fbUser.email,
@@ -94,10 +97,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       lastName,
       profileImageUrl: fbUser.photoURL,
       role: targetRole,
+      referralCode: storedReferral?.referralCode || null,
+      referralSource: storedReferral?.referralSource || 'direct_invite'
     });
 
     const payload = syncRes.data?.data || syncRes.data;
     if (payload?.token && payload?.user) {
+      clearStoredReferral();
       setAuthError(null);
       login(payload.token, payload.user);
       return payload.user;

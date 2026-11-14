@@ -325,10 +325,35 @@ model user_metadata {
   role               String?   @db.VarChar(50)
   email_verified     Boolean?  @default(false)
   onboarded          Boolean?  @default(false)
+  referral_code      String?   @unique @db.VarChar(32)
   created_at         DateTime? @db.Timestamp(6)
   updated_at         DateTime? @db.Timestamp(6)
   reset_token        String?   @db.VarChar(255)
   reset_token_expiry DateTime? @db.Timestamp(6)
+
+  referrer_attributions referral_attributions[] @relation("ReferrerAttributions")
+  referred_attribution  referral_attributions?  @relation("ReferredAttribution")
+}
+
+model referral_attributions {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  referrer_user_id   String    @db.Uuid
+  referred_user_id   String    @unique @db.Uuid
+  referral_code      String    @db.VarChar(32)
+  source             String    @default("direct_invite") @db.VarChar(50)
+  signup_role        String    @db.VarChar(20)
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  activated_at       DateTime? @db.Timestamptz(6)
+  activation_type    String?   @db.VarChar(50)
+
+  referrer           user_metadata @relation("ReferrerAttributions", fields: [referrer_user_id], references: [id], onDelete: Cascade)
+  referred           user_metadata @relation("ReferredAttribution", fields: [referred_user_id], references: [id], onDelete: Cascade)
+
+  @@index([referrer_user_id], map: "idx_referral_attributions_referrer")
+  @@index([referral_code], map: "idx_referral_attributions_code")
+  @@index([source], map: "idx_referral_attributions_source")
+  @@index([signup_role], map: "idx_referral_attributions_role")
+  @@index([created_at], map: "idx_referral_attributions_created")
 }
 
 model user_settings {

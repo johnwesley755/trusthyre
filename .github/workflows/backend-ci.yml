@@ -78,6 +78,7 @@ jobs:
           PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261114_audit_hardening_part4.sql
           PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261114_audit_hardening_part5.sql
           PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261114_neon_app_role_rls_setup.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261114_trackable_referral_system.sql
           PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -c "ALTER ROLE trusthire_app WITH PASSWORD 'apptestpassword';"
 
       - name: TypeScript Compilation Check

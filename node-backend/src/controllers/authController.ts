@@ -12,11 +12,12 @@ import { SearchAlertService } from '../services/searchAlertService';
 import { isHoneypotTriggered, isFormSubmittedTooFast } from '../middlewares/botDetection';
 import { TurnstileService } from '../services/turnstileService';
 import { getClientIp } from '../middlewares/rateLimiter';
+import { ReferralService } from '../services/referralService';
 
 export const register = async (c: Context) => {
   try {
     const body = (await c.req.json().catch(() => ({})));
-    const { email, password, firstName, lastName, role, phoneNumber, otp, form_ts, turnstileToken } = body;
+    const { email, password, firstName, lastName, role, phoneNumber, otp, form_ts, turnstileToken, referralCode, referralSource } = body;
 
     // Bot Gate 1: Honeypot trap check (Shadow drop)
     if (isHoneypotTriggered(body)) {
@@ -151,6 +152,21 @@ export const register = async (c: Context) => {
         }
       }).catch((e: any) => console.warn("Employer profile initial sync:", e.message));
     }
+
+    // Record referral attribution if registered via referral link
+    if (!existing && referralCode) {
+      await ReferralService.recordAttribution({
+        referredUserId: user.id,
+        referralCode: String(referralCode),
+        source: referralSource ? String(referralSource) : null,
+        signupRole: assignedRole
+      }).catch((refErr: any) => console.warn('[register] Referral attribution error:', refErr.message));
+    }
+
+    // Auto-generate referral code for the newly registered user in background
+    ReferralService.getOrCreateUserReferralCode(user.id).catch((err: any) => 
+      console.warn('[register] Background referral code generation failed:', err.message)
+    );
 
     const token = jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '30d' });
 
@@ -548,7 +564,7 @@ function parseJwtPayload(token: string): any {
 
 export const oauthSync = async (c: Context) => {
   try {
-    const { idToken, email, firstName, lastName, profileImageUrl, role } = (await c.req.json());
+    const { idToken, email, firstName, lastName, profileImageUrl, role, referralCode, referralSource } = (await c.req.json());
 
     let verifiedEmail: string | null = null;
     const clientEmail = email ? String(email).trim().toLowerCase() : null;
@@ -671,6 +687,21 @@ export const oauthSync = async (c: Context) => {
           }
         }).catch((e: any) => console.warn("Worker profile auto-creation notice:", e.message));
       }
+
+      // Record referral attribution ONLY for genuinely newly created accounts
+      if (referralCode) {
+        await ReferralService.recordAttribution({
+          referredUserId: newId,
+          referralCode: String(referralCode),
+          source: referralSource ? String(referralSource) : null,
+          signupRole: requestedRole
+        }).catch((refErr: any) => console.warn('[oauthSync] Referral attribution error:', refErr.message));
+      }
+
+      // Auto-generate referral code for the newly registered user in background
+      ReferralService.getOrCreateUserReferralCode(newId).catch((err: any) => 
+        console.warn('[oauthSync] Background referral code generation failed:', err.message)
+      );
     } else {
       user = await prisma.user_metadata.update({
         where: { id: user.id },

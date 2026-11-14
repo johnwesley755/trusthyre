@@ -88,21 +88,29 @@ export const WorkerProfilePage = () => {
   const isSaved = isWorkerSaved(worker?.userId || id || '');
 
   const handleShare = async () => {
+    const userRef = (user as any)?.referralCode || (user as any)?.referral_code;
+    const shareUrl = new URL(window.location.href);
+    if (userRef) {
+      shareUrl.searchParams.set('ref', userRef);
+      shareUrl.searchParams.set('src', 'worker_share');
+    }
+    const finalUrl = shareUrl.toString();
+
     const shareData = {
       title: `${worker?.name || 'Worker Specialist'} - TrustHyre Profile`,
       text: `Check out ${worker?.name || 'this candidate'}'s verified profile on TrustHyre`,
-      url: window.location.href,
+      url: finalUrl,
     };
     try {
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(finalUrl);
         toast.success('Worker profile link copied to clipboard!');
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(finalUrl);
         toast.success('Worker profile link copied to clipboard!');
       }
     }
@@ -139,14 +147,19 @@ export const WorkerProfilePage = () => {
 
   const handleShareSkillBadge = () => {
     if (!worker) return;
-    const message = buildWorkerSkillBadgeShareMessage({
-      id: id || (worker as any).id || (worker as any).userId,
-      name: worker.name || 'Specialist',
-      skills: worker.skills,
-      city: worker.city || worker.location,
-      trustScore: worker.trustScore,
-      level: String((worker as any).level || 'L1 Verified'),
-    });
+    const userRef = (user as any)?.referralCode || (user as any)?.referral_code;
+    const message = buildWorkerSkillBadgeShareMessage(
+      {
+        id: id || (worker as any).id || (worker as any).userId,
+        name: worker.name || 'Specialist',
+        skills: worker.skills,
+        city: worker.city || worker.location,
+        trustScore: worker.trustScore,
+        level: String((worker as any).level || 'L1 Verified'),
+      },
+      typeof window !== 'undefined' ? window.location.origin : 'https://trusthyre.com',
+      userRef
+    );
     openWhatsAppShare(message);
   };
   const handleToggleSave = () => {

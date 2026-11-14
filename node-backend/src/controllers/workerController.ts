@@ -4,6 +4,7 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
 import { SearchAlertService } from '../services/searchAlertService';
 import { isAppAdmin } from '../utils/roles';
+import { ReferralService } from '../services/referralService';
 
 const maskPhoneNumber = (phone: string | null | undefined): string | null => {
   if (!phone) return null;
@@ -311,6 +312,11 @@ export const updateProfile = async (c: Context) => {
           }
         });
       }
+
+      // Mark referral activation for worker onboarding
+      ReferralService.markActivated(userId, 'WORKER_ONBOARDING_COMPLETED').catch((err: any) =>
+        console.warn('[workerController] Error marking worker onboarding activation:', err.message)
+      );
     }
 
     // Trigger Enterprise Candidate Reverse Search Alert Matching (Naukri Resdex model)
