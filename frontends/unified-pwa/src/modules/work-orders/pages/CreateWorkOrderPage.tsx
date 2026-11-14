@@ -92,7 +92,7 @@ export default function CreateWorkOrderPage() {
     enabled: Boolean(workerId),
   });
 
-  const candidateName = worker?.fullName || (worker as any)?.user?.name || 'Assigned Candidate';
+  const candidateName = worker?.name || (worker as any)?.fullName || (worker as any)?.user?.name || 'Assigned Candidate';
 
   useEffect(() => {
     if (job) {
