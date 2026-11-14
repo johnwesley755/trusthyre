@@ -284,8 +284,8 @@ describe('Phase 1: Recommendation Engine Backend Stabilization Unit Tests', () =
       expect(validTypes.includes('UNKNOWN')).toBe(false);
     });
 
-    test('8.2 Rejects client-forged APPLY telemetry without active job application', async () => {
-      // User has not applied to this job -> should throw Forbidden
+    test('8.2 Rejects direct client-submitted APPLY conversion telemetry', async () => {
+      // Client-invoked APPLY without isServerVerified -> should throw Forbidden
       await expect(
         recommendationEngineService.recordInteraction({
           userId: '00000000-0000-4000-a000-000000000000',
@@ -293,11 +293,11 @@ describe('Phase 1: Recommendation Engine Backend Stabilization Unit Tests', () =
           itemType: 'JOB',
           itemId: '00000000-0000-4000-a000-000000000001'
         })
-      ).rejects.toThrow(/without an active job application/);
+      ).rejects.toThrow(/Direct client submission of APPLY conversion telemetry is disallowed/);
     });
 
-    test('8.3 Rejects client-forged INVITE telemetry from non-employer', async () => {
-      // User is not an employer -> should throw Forbidden
+    test('8.3 Rejects direct client-submitted INVITE conversion telemetry', async () => {
+      // Client-invoked INVITE without isServerVerified -> should throw Forbidden
       await expect(
         recommendationEngineService.recordInteraction({
           userId: '00000000-0000-4000-a000-000000000000',
@@ -305,7 +305,7 @@ describe('Phase 1: Recommendation Engine Backend Stabilization Unit Tests', () =
           itemType: 'WORKER',
           itemId: '00000000-0000-4000-a000-000000000002'
         })
-      ).rejects.toThrow(/Only verified employers/);
+      ).rejects.toThrow(/Direct client submission of INVITE conversion telemetry is disallowed/);
     });
   });
 

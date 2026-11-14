@@ -485,6 +485,41 @@ describe('Phase 4: Shift Scheduling and Attendance Unit & Integration Tests', ()
     expect(event).toBeDefined();
     expect(event?.actor_role).toBe('EMPLOYER');
 
+    // Runtime validation tests for manual attendance
+    await expect(
+      ShiftAttendanceService.recordManualAttendance(testEmployerId, {
+        shiftId: manualShift.id,
+        workerId: testWorkerUserId,
+        action: 'INVALID_ACTION' as any,
+        manualReason: 'Valid reason here'
+      })
+    ).rejects.toThrow(/Invalid manual attendance action/);
+
+    await expect(
+      ShiftAttendanceService.recordManualAttendance(testEmployerId, {
+        shiftId: manualShift.id,
+        workerId: testWorkerUserId,
+        action: 'CHECK_OUT',
+        manualReason: 'Valid reason here',
+        timestamp: new Date(Date.now() + 1000000).toISOString()
+      })
+    ).rejects.toThrow(/timestamp cannot be in the future/);
+
+    // Test Correction Request Status Restriction (Already Approved rejection)
+    const approvedAtt = await prisma.shift_attendances.update({
+      where: { id: manualAtt.id },
+      data: {
+        status: 'APPROVED'
+      }
+    });
+
+    await expect(
+      ShiftAttendanceService.requestCorrection(testWorkerUserId, approvedAtt.id, {
+        reason: 'Attempting to correct already approved record',
+        proposedCheckIn: new Date().toISOString()
+      })
+    ).rejects.toThrow(/already approved/);
+
     // Cleanup
     await prisma.attendance_events.deleteMany({ where: { attendance_id: manualAttRecord.id } });
     await prisma.shift_attendances.deleteMany({ where: { shift_id: manualShift.id } });

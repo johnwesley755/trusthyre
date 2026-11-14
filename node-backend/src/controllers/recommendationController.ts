@@ -112,9 +112,13 @@ export const recommendationController = {
       const body = await c.req.json();
       const { interactionType, itemType, itemId, matchScore, metadata } = body;
 
-      const validInteractions = ['VIEW', 'CLICK', 'SAVE', 'APPLY', 'INVITE', 'DISMISS'];
-      if (!validInteractions.includes(interactionType)) {
-        return c.json(ApiResponse.error("Invalid interactionType. Must be VIEW, CLICK, SAVE, APPLY, INVITE, or DISMISS"), 400 as any);
+      const validClientInteractions = ['VIEW', 'CLICK', 'SAVE', 'DISMISS'];
+      if (interactionType === 'APPLY' || interactionType === 'INVITE') {
+        return c.json(ApiResponse.error(`Direct client logging of ${interactionType} conversion telemetry is disallowed. These events are recorded automatically by the server upon offer dispatch or application submission.`), 403 as any);
+      }
+
+      if (!validClientInteractions.includes(interactionType)) {
+        return c.json(ApiResponse.error("Invalid interactionType. Must be VIEW, CLICK, SAVE, or DISMISS"), 400 as any);
       }
 
       if (!['JOB', 'WORKER'].includes(itemType)) {

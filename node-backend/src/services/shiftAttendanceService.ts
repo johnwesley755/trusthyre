@@ -403,6 +403,15 @@ export const ShiftAttendanceService = {
       const now = Math.floor(Date.now() / 1000);
       if (now > expiresAt) return false;
 
+      // Verify issuer is still authorized for this shift (employer or assigned supervisor)
+      const shift = await db.shifts.findUnique({
+        where: { id: expectedShiftId },
+        select: { employer_id: true, supervisor_id: true }
+      });
+      if (!shift || (shift.employer_id !== issuerId && shift.supervisor_id !== issuerId)) {
+        return false;
+      }
+
       // Hash signature to compare with stored challenge hash
       const hashedSignature = crypto.createHash('sha256').update(signature).digest('hex');
 
@@ -847,8 +856,23 @@ export const ShiftAttendanceService = {
    * Dedicated supervisor manual attendance recording with mandatory justification
    */
   recordManualAttendance: async (supervisorUserId: string, input: ManualSupervisorAttendanceInput) => {
+    // 1. Strict Action Validation
+    if (input.action !== 'CHECK_IN' && input.action !== 'CHECK_OUT') {
+      throw new Error(`Invalid manual attendance action: "${input.action}". Must be either CHECK_IN or CHECK_OUT.`);
+    }
+
     if (!input.manualReason || input.manualReason.trim().length < 10) {
       throw new Error("Mandatory reason required for supervisor manual attendance (min 10 characters).");
+    }
+
+    // 2. Strict Timestamp Validation
+    const now = input.timestamp ? new Date(input.timestamp) : new Date();
+    if (isNaN(now.getTime())) {
+      throw new Error("Invalid attendance timestamp format.");
+    }
+    // Allow at most 60s future clock skew
+    if (now.getTime() > Date.now() + 60000) {
+      throw new Error("Attendance timestamp cannot be in the future.");
     }
 
     const shift = await prisma.shifts.findUnique({
@@ -870,8 +894,6 @@ export const ShiftAttendanceService = {
       throw new Error("Worker is not assigned to this shift");
     }
 
-    const now = input.timestamp ? new Date(input.timestamp) : new Date();
-
     return prisma.$transaction(async (tx) => {
       let attendance = await tx.shift_attendances.findUnique({
         where: {
@@ -881,6 +903,16 @@ export const ShiftAttendanceService = {
           }
         }
       });
+
+      // 3. For CHECK_OUT, verify chronological order
+      if (input.action === 'CHECK_OUT') {
+        if (!attendance || !['CHECKED_IN', 'ON_BREAK'].includes(attendance.status)) {
+          throw new Error(`Cannot manual check-out without prior active check-in (current status: ${attendance?.status || 'NONE'}).`);
+        }
+        if (attendance.check_in_time && now.getTime() < new Date(attendance.check_in_time).getTime()) {
+          throw new Error("Check-out timestamp cannot be earlier than check-in time.");
+        }
+      }
 
       const eventAudit = {
         event: input.action === 'CHECK_IN' ? 'SUPERVISOR_MANUAL_CHECK_IN' : 'SUPERVISOR_MANUAL_CHECK_OUT',
@@ -1062,6 +1094,8 @@ export const ShiftAttendanceService = {
 
   /**
    * Worker requests attendance time correction
+   * Only allowed for completed, checked-out, or pending approval records.
+   * Atomic CAS prevents overwriting approved records or racing requests.
    */
   requestCorrection: async (workerUserId: string, attendanceId: string, input: AttendanceCorrectionInput) => {
     const attendance = await prisma.shift_attendances.findUnique({
@@ -1077,8 +1111,18 @@ export const ShiftAttendanceService = {
       throw new Error("Forbidden: You are not the worker on this record");
     }
 
-    if (attendance.status === 'NOT_STARTED') {
-      throw new Error("Cannot request correction for an unstarted shift");
+    const eligibleStatuses = ['CHECKED_OUT', 'COMPLETED', 'PENDING_APPROVAL'];
+    if (!eligibleStatuses.includes(attendance.status)) {
+      if (attendance.status === 'NOT_STARTED') {
+        throw new Error("Cannot request correction for an unstarted shift");
+      }
+      if (attendance.status === 'CORRECTION_REQUESTED') {
+        throw new Error("A correction request is already pending for this shift.");
+      }
+      if (attendance.status === 'APPROVED') {
+        throw new Error("Cannot request correction for an already approved attendance record.");
+      }
+      throw new Error(`Cannot request correction for attendance in "${attendance.status}" status.`);
     }
 
     if (!input.reason || input.reason.trim().length < 5) {
@@ -1095,17 +1139,27 @@ export const ShiftAttendanceService = {
     };
 
     return prisma.$transaction(async (tx) => {
-      const updated = await tx.shift_attendances.update({
-        where: { id: attendanceId },
+      const updateResult = await tx.shift_attendances.updateMany({
+        where: {
+          id: attendanceId,
+          worker_id: workerUserId,
+          status: { in: eligibleStatuses }
+        },
         data: {
           status: 'CORRECTION_REQUESTED',
           correction_reason: input.reason,
           correction_requested_time: now,
           correction_proposed_check_in: input.proposedCheckIn ? new Date(input.proposedCheckIn) : null,
           correction_proposed_check_out: input.proposedCheckOut ? new Date(input.proposedCheckOut) : null,
-          events: [...(attendance.events as any[]), eventAudit] as any
+          events: ([...(attendance.events as any[]), eventAudit] as any)
         }
       });
+
+      if (updateResult.count === 0) {
+        throw new Error("Conflict: Attendance record cannot be corrected from its current state or was modified concurrently.");
+      }
+
+      const updated = await tx.shift_attendances.findUniqueOrThrow({ where: { id: attendanceId } });
 
       await tx.attendance_events.create({
         data: {

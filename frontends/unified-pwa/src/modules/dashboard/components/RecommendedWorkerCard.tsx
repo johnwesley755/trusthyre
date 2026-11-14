@@ -77,7 +77,7 @@ export const RecommendedWorkerCard: React.FC<RecommendedWorkerCardProps> = ({
 
   const handleInvite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    recordAction('INVITE', 'WORKER', worker.userId || worker.id, overallScore);
+    // INVITE telemetry is strictly emitted server-side on successful offer dispatch
     onInviteClick?.(worker);
   };
 
