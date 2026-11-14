@@ -25,18 +25,20 @@
         anonymize_ip: true
       });
     </script>
-    <!-- Immediate Synchronous Canonical & URL Hydration -->
-    <link rel="canonical" id="trusthyre-canonical" href="https://trusthyre.com/" />
+    <!-- Dynamic Canonical & URL Hydration (SSR prerender injects route-specific canonical for crawlers; client hydrates per route) -->
     <script>
       (function() {
         try {
           var origin = 'https://trusthyre.com';
           var cleanPath = window.location.pathname.replace(/\/+$/, '') || '/';
           var fullCanonical = origin + cleanPath;
-          var link = document.getElementById('trusthyre-canonical') || document.querySelector('link[rel="canonical"]');
-          if (link) {
-            link.setAttribute('href', fullCanonical);
+          var link = document.querySelector('link[rel="canonical"]');
+          if (!link) {
+            link = document.createElement('link');
+            link.setAttribute('rel', 'canonical');
+            document.head.appendChild(link);
           }
+          link.setAttribute('href', fullCanonical);
           var ogUrl = document.querySelector('meta[property="og:url"]');
           if (ogUrl) {
             ogUrl.setAttribute('content', fullCanonical);

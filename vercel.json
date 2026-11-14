@@ -85,7 +85,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/search"
@@ -96,7 +96,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/jobs-in-:city"
@@ -107,7 +107,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/jobs-in-:city/:trade"
@@ -118,7 +118,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/hire-workers-in-:city"
@@ -129,7 +129,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/hire-:trade-in-:city"
@@ -140,7 +140,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/job/:id*"
@@ -151,7 +151,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/:city/:title/job/:id"
@@ -162,7 +162,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/:city/:neighborhood-jobs"
@@ -173,7 +173,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/:city/:neighborhood-jobs/:trade"
@@ -184,7 +184,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/blog/category/:slug*"
@@ -195,7 +195,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/blog/:slug*"
@@ -206,7 +206,7 @@
         {
           "type": "header",
           "key": "User-Agent",
-          "value": "(?i).*(googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp).*"
         }
       ],
       "destination": "https://api.trusthyre.com/api/seo/prerender?path=/blog"

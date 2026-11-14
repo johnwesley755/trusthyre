@@ -149,16 +149,75 @@ describe('SEO & Prerender Canonical & Hierarchy Test Suite', () => {
     expect(xml).not.toContain(`<loc>https://trusthyre.com/job/${testJobId}</loc>`);
   });
 
-  it('5. Vercel routes pass path-to-regexp parser validation', () => {
+  it('5. Vercel routes pass path-to-regexp parser validation and include Google-InspectionTool', () => {
     const fs = require('fs');
     const path = require('path');
     const { pathToRegexp } = require('path-to-regexp');
-    const vercelConfigPath = path.resolve(__dirname, '../../frontends/unified-pwa/vercel.json');
-    const config = JSON.parse(fs.readFileSync(vercelConfigPath, 'utf8'));
+    
+    // Check both frontend and root vercel.json configurations
+    const rootConfigPath = path.resolve(__dirname, '../../vercel.json');
+    const frontendConfigPath = path.resolve(__dirname, '../../frontends/unified-pwa/vercel.json');
 
-    expect(Array.isArray(config.rewrites)).toBe(true);
-    for (const rewrite of config.rewrites) {
-      expect(() => pathToRegexp(rewrite.source)).not.toThrow();
+    for (const configPath of [rootConfigPath, frontendConfigPath]) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      expect(Array.isArray(config.rewrites)).toBe(true);
+
+      for (const rewrite of config.rewrites) {
+        expect(() => pathToRegexp(rewrite.source)).not.toThrow();
+        if (rewrite.has && Array.isArray(rewrite.has)) {
+          for (const condition of rewrite.has) {
+            if (condition.key === 'User-Agent') {
+              expect(condition.value).toContain('google-inspectiontool');
+              expect(condition.value).toContain('googlebot');
+            }
+          }
+        }
+      }
     }
+  });
+
+  it('6. Strips tracking and referral query parameters from canonical URL in prerender', async () => {
+    const dirtyPath = `/chennai/master-electrician-in-guindy/job/${testJobId}?ref=TH-ABC123&utm_source=whatsapp&utm_medium=referral`;
+    const req = new Request(`http://localhost/api/seo/prerender?path=${encodeURIComponent(dirtyPath)}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Google-InspectionTool/1.0)'
+      }
+    });
+
+    const res = await app.fetch(req, process.env, {});
+    expect(res.status).toBe(200);
+
+    const html = await res.text();
+    const expectedCanonical = `https://trusthyre.com/chennai/master-electrician-in-guindy/job/${testJobId}`;
+    expect(html).toContain(`<link rel="canonical" href="${expectedCanonical}">`);
+    expect(html).not.toContain('utm_source');
+    expect(html).not.toContain('ref=TH-ABC123');
+  });
+
+  it('7. Returns exact canonical link and JobPosting JSON-LD when called with Google-InspectionTool user agent', async () => {
+    const hierarchicalPath = `/chennai/master-electrician-in-guindy/job/${testJobId}`;
+    const req = new Request(`http://localhost/api/seo/prerender?path=${encodeURIComponent(hierarchicalPath)}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Google-InspectionTool/1.0)'
+      }
+    });
+
+    const res = await app.fetch(req, process.env, {});
+    expect(res.status).toBe(200);
+
+    const html = await res.text();
+    const expectedCanonical = `https://trusthyre.com/chennai/master-electrician-in-guindy/job/${testJobId}`;
+    
+    // Exactly one canonical tag
+    const canonicalMatches = html.match(/<link\s+rel="canonical"\s+href="[^"]+"/g);
+    expect(canonicalMatches).not.toBeNull();
+    expect(canonicalMatches?.length).toBe(1);
+    expect(canonicalMatches?.[0]).toBe(`<link rel="canonical" href="${expectedCanonical}"`);
+
+    // Structured data
+    expect(html).toContain('"@type": "JobPosting"');
+    expect(html).toContain('"title": "Master Electrician"');
   });
 });
