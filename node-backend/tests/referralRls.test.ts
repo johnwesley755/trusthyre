@@ -10,10 +10,17 @@ describe('Referral System RLS Tenant Isolation Tests', () => {
   const referredUserBId = crypto.randomUUID();
 
   // Connect as the restricted application role (NOBYPASSRLS)
+  // Dynamically derive database name and host from DATABASE_URL
+  const baseDbUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgrespassword@localhost:5432/trusthire_test_db?schema=public';
+  const urlObj = new URL(baseDbUrl);
+  urlObj.username = 'trusthire_app';
+  urlObj.password = 'apptestpassword';
+  const appDbUrl = urlObj.toString();
+
   const appClient = new PrismaClient({
     datasources: {
       db: {
-        url: 'postgresql://trusthire_app:apptestpassword@localhost:5432/trusthire_auth_db?schema=public'
+        url: appDbUrl
       }
     }
   });
