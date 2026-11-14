@@ -65,6 +65,12 @@ jobs:
       - name: Push Schema to Test Database
         run: npx prisma db push --skip-generate
 
+      - name: Apply Raw RLS Security Migrations
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261111_neon_rls_security_hardening.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261114_neon_app_role_rls_setup.sql
+
       - name: TypeScript Compilation Check
         run: npx tsc --noEmit
 

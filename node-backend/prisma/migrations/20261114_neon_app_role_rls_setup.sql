@@ -13,10 +13,12 @@ BEGIN
   ELSE
     ALTER ROLE trusthire_app WITH NOBYPASSRLS;
   END IF;
+
+  -- Dynamic GRANT CONNECT ON DATABASE because PostgreSQL grammar requires a static identifier
+  EXECUTE format('GRANT CONNECT ON DATABASE %I TO trusthire_app', current_database());
 END
 $$;
 
-GRANT CONNECT ON DATABASE current_database() TO trusthire_app;
 GRANT USAGE ON SCHEMA public TO trusthire_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO trusthire_app;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO trusthire_app;
@@ -82,7 +84,36 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION public.consume_otp_challenge(
+    p_shift_id uuid,
+    p_action text,
+    p_hashed_secret text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_rows_affected integer;
+BEGIN
+    UPDATE public.attendance_challenges
+    SET consumed_at = clock_timestamp()
+    WHERE shift_id = p_shift_id
+      AND challenge_type = 'ONE_TIME_PIN'
+      AND intended_action = p_action
+      AND consumed_at IS NULL
+      AND expires_at > clock_timestamp()
+      AND attempt_count < max_attempts
+      AND hashed_secret = p_hashed_secret;
+
+    GET DIAGNOSTICS v_rows_affected = ROW_COUNT;
+    RETURN v_rows_affected > 0;
+END;
+$$;
+
 GRANT EXECUTE ON FUNCTION public.consume_attendance_challenge TO trusthire_app, PUBLIC;
+GRANT EXECUTE ON FUNCTION public.consume_otp_challenge TO trusthire_app, PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_challenge_failed_attempt TO trusthire_app, PUBLIC;
 
 -- 3. UNIQUE CONSTRAINT ON JOB APPLICATIONS

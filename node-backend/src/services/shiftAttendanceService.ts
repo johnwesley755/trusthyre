@@ -415,7 +415,25 @@ export const ShiftAttendanceService = {
       // Hash signature to compare with stored challenge hash
       const hashedSignature = crypto.createHash('sha256').update(signature).digest('hex');
 
-      // Atomic single-step conditional updateMany: protects against double consumption & concurrency races
+      // Attempt consumption via SECURITY DEFINER stored procedure (for NOBYPASSRLS application role)
+      try {
+        const queryRes: any = await db.$queryRaw`
+          SELECT public.consume_attendance_challenge(
+            ${nonce},
+            ${expectedShiftId}::uuid,
+            ${action},
+            ${issuerId},
+            ${hashedSignature}
+          ) AS consumed;
+        `;
+        if (queryRes && queryRes.length > 0 && queryRes[0].consumed !== undefined) {
+          return Boolean(queryRes[0].consumed);
+        }
+      } catch (procErr: any) {
+        // Fallback to updateMany if function is not defined (e.g. initial dev test without raw migrations)
+      }
+
+      // Atomic single-step conditional updateMany fallback
       const updateResult = await db.attendance_challenges.updateMany({
         where: {
           nonce: nonce,
@@ -480,40 +498,67 @@ export const ShiftAttendanceService = {
     const now = new Date();
 
     // 1. Atomically consume if hash matches and attempt_count < max_attempts
-    const updateResult = await db.attendance_challenges.updateMany({
-      where: {
-        shift_id: shiftId,
-        challenge_type: 'ONE_TIME_PIN',
-        intended_action: action,
-        consumed_at: null,
-        expires_at: { gt: now },
-        attempt_count: { lt: 3 },
-        hashed_secret: hashedInput
-      },
-      data: {
-        consumed_at: now
+    try {
+      const queryRes: any = await db.$queryRaw`
+        SELECT public.consume_otp_challenge(
+          ${shiftId}::uuid,
+          ${action},
+          ${hashedInput}
+        ) AS consumed;
+      `;
+      if (queryRes && queryRes.length > 0 && queryRes[0].consumed !== undefined) {
+        if (Boolean(queryRes[0].consumed)) return true;
       }
-    });
+    } catch {
+      // Fallback to updateMany
+      const updateResult = await db.attendance_challenges.updateMany({
+        where: {
+          shift_id: shiftId,
+          challenge_type: 'ONE_TIME_PIN',
+          intended_action: action,
+          consumed_at: null,
+          expires_at: { gt: now },
+          attempt_count: { lt: 3 },
+          hashed_secret: hashedInput
+        },
+        data: {
+          consumed_at: now
+        }
+      });
 
-    if (updateResult.count > 0) {
-      return true;
+      if (updateResult.count > 0) {
+        return true;
+      }
     }
 
     // 2. If no matching challenge was consumed, atomically increment attempt_count on active PINs
     // Must execute on ROOT prisma client so that when caller throws and rolls back txClient,
     // the recorded failed attempt count still persists in PostgreSQL!
-    await prisma.attendance_challenges.updateMany({
-      where: {
-        shift_id: shiftId,
-        challenge_type: 'ONE_TIME_PIN',
-        intended_action: action,
-        consumed_at: null,
-        expires_at: { gt: now }
-      },
-      data: {
-        attempt_count: { increment: 1 }
+    try {
+      const incRes: any = await prisma.$queryRaw`
+        SELECT public.record_challenge_failed_attempt(
+          ${shiftId}::uuid,
+          ${action}
+        ) AS new_attempts;
+      `;
+      if (incRes && incRes.length > 0 && incRes[0].new_attempts !== undefined) {
+        return false;
       }
-    });
+    } catch {
+      // Fallback to updateMany
+      await prisma.attendance_challenges.updateMany({
+        where: {
+          shift_id: shiftId,
+          challenge_type: 'ONE_TIME_PIN',
+          intended_action: action,
+          consumed_at: null,
+          expires_at: { gt: now }
+        },
+        data: {
+          attempt_count: { increment: 1 }
+        }
+      });
+    }
 
     return false;
   },

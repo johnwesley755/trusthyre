@@ -1151,9 +1151,21 @@ DROP POLICY IF EXISTS attendance_challenges_update_policy ON public.attendance_c
 CREATE POLICY attendance_challenges_update_policy ON public.attendance_challenges
 FOR UPDATE USING (
     (SELECT is_app_admin())
+    OR shift_id IN (
+        SELECT s.id FROM public.shifts s
+        WHERE s.employer_id = (SELECT current_app_user_id())
+           OR s.supervisor_id = (SELECT current_app_user_id())
+           OR s.worker_id = (SELECT current_app_user_id())
+    )
 )
 WITH CHECK (
     (SELECT is_app_admin())
+    OR shift_id IN (
+        SELECT s.id FROM public.shifts s
+        WHERE s.employer_id = (SELECT current_app_user_id())
+           OR s.supervisor_id = (SELECT current_app_user_id())
+           OR s.worker_id = (SELECT current_app_user_id())
+    )
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_work_orders_active_application 
@@ -1229,7 +1241,36 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION public.consume_otp_challenge(
+    p_shift_id uuid,
+    p_action text,
+    p_hashed_secret text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_rows_affected integer;
+BEGIN
+    UPDATE public.attendance_challenges
+    SET consumed_at = clock_timestamp()
+    WHERE shift_id = p_shift_id
+      AND challenge_type = 'ONE_TIME_PIN'
+      AND intended_action = p_action
+      AND consumed_at IS NULL
+      AND expires_at > clock_timestamp()
+      AND attempt_count < max_attempts
+      AND hashed_secret = p_hashed_secret;
+
+    GET DIAGNOSTICS v_rows_affected = ROW_COUNT;
+    RETURN v_rows_affected > 0;
+END;
+$$;
+
 GRANT EXECUTE ON FUNCTION public.consume_attendance_challenge TO PUBLIC;
+GRANT EXECUTE ON FUNCTION public.consume_otp_challenge TO PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_challenge_failed_attempt TO PUBLIC;
 
 COMMIT;

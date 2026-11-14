@@ -16,6 +16,7 @@ export interface RequestScope {
   ctx?: any;
   currentUserId?: string;
   currentUserRole?: string;
+  _insideRlsWrapper?: boolean;
 }
 
 export const requestContextStorage = new AsyncLocalStorage<RequestScope>();
@@ -30,6 +31,22 @@ const attachRetryExtension = (client: PrismaClient): PrismaClient => {
   return (client as any).$extends({
     query: {
       async $allOperations({ operation, model, args, query }: any) {
+        // Automatically wire request-bound RLS user ID & role if active
+        const store = requestContextStorage.getStore();
+        if (store?.currentUserId && !store._insideRlsWrapper) {
+          store._insideRlsWrapper = true;
+          try {
+            return await withRlsContext(
+              client,
+              store.currentUserId,
+              store.currentUserRole || 'WORKER',
+              async () => query(args)
+            );
+          } finally {
+            store._insideRlsWrapper = false;
+          }
+        }
+
         let attempts = 3;
         let delay = 600;
 

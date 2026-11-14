@@ -57,14 +57,30 @@ BEFORE UPDATE ON public.attendance_challenges
 FOR EACH ROW
 EXECUTE FUNCTION public.trg_enforce_challenge_column_immutability();
 
--- 3. RESTRICT ATTENDANCE CHALLENGES UPDATE RLS POLICY
--- Participants cannot directly update challenge rows; updates must go through server-side logic
+-- 3. ATTENDANCE CHALLENGES UPDATE RLS POLICY
+-- Shifts participants (worker/employer/supervisor) can consume or update attempts,
+-- while the database trigger (trg_attendance_challenges_immutability) strictly enforces that:
+--   1. Secrets, nonces, limits, expiry, issuer and shift_id are IMMUTABLE.
+--   2. consumed_at cannot be unconsumed or reset once set.
+--   3. attempt_count can NEVER decrease.
 DROP POLICY IF EXISTS attendance_challenges_update_policy ON public.attendance_challenges;
 CREATE POLICY attendance_challenges_update_policy ON public.attendance_challenges
 FOR UPDATE USING (
     (SELECT is_app_admin())
+    OR shift_id IN (
+        SELECT s.id FROM public.shifts s
+        WHERE s.employer_id = (SELECT current_app_user_id())
+           OR s.supervisor_id = (SELECT current_app_user_id())
+           OR s.worker_id = (SELECT current_app_user_id())
+    )
 ) WITH CHECK (
     (SELECT is_app_admin())
+    OR shift_id IN (
+        SELECT s.id FROM public.shifts s
+        WHERE s.employer_id = (SELECT current_app_user_id())
+           OR s.supervisor_id = (SELECT current_app_user_id())
+           OR s.worker_id = (SELECT current_app_user_id())
+    )
 );
 
 -- 4. DEDUPLICATION INDEX ON RECOMMENDATION INTERACTIONS FOR INVITE EVENTS
