@@ -36,8 +36,33 @@ function MapEvents({ onLocationSelect, setMarkerPos, setIsDetecting }: {
 function ChangeView({ center }: { center: [number, number] }) {
   const map = useMap();
   useEffect(() => {
-    map.setView(center, map.getZoom());
+    map.setView(center, Math.max(map.getZoom(), 14));
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+    return () => clearTimeout(timer);
   }, [center, map]);
+  return null;
+}
+
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    // Run invalidateSize across multiple ticks to account for CSS animations / layout shifts
+    const timers = [
+      setTimeout(() => map.invalidateSize(), 100),
+      setTimeout(() => map.invalidateSize(), 300),
+      setTimeout(() => map.invalidateSize(), 800)
+    ];
+
+    const handleResize = () => map.invalidateSize();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [map]);
   return null;
 }
 
@@ -48,18 +73,21 @@ const reverseGeocode = async (
     setIsDetecting: (val: boolean) => void
 ) => {
     setIsDetecting(true);
+    console.log(`[LocationPicker] Starting reverse geocode for coords: lat=${lat}, lon=${lon}`);
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
             { headers: { 'Accept-Language': 'en' } }
         );
+        console.log(`[LocationPicker] Nominatim HTTP status: ${response.status}`);
         const data = await response.json();
-        const addr = data.address;
-        const city = addr.city || addr.town || addr.village || addr.suburb || addr.county || "";
+        console.log(`[LocationPicker] Nominatim response:`, data);
+        const addr = data.address || {};
+        const city = addr.city || addr.town || addr.village || addr.suburb || addr.state_district || addr.county || "";
         const displayAddr = data.display_name || "Custom Location";
         onLocationSelect(lat, lon, displayAddr, city);
     } catch (err) {
-        console.error("Reverse geocoding failed:", err);
+        console.error("[LocationPicker] Reverse geocoding network error:", err);
         onLocationSelect(lat, lon, "Custom Selected Location", "");
     } finally {
         setIsDetecting(false);
@@ -77,21 +105,45 @@ export function LocationPicker({ onLocationSelect, initialPos }: LocationPickerP
   }, [initialPos, markerPos]);
 
   const handleDetect = () => {
-    if (navigator.geolocation) {
-      setIsDetecting(true);
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          setMarkerPos([latitude, longitude]);
-          reverseGeocode(latitude, longitude, onLocationSelect, setIsDetecting);
-        },
-        (err) => {
-          console.error(err);
-          setIsDetecting(false);
-          alert("Location detection failed. Please select manually.");
-        }
-      );
+    console.log("[LocationPicker] Detect Location button clicked");
+    if (!navigator.geolocation) {
+      console.warn("[LocationPicker] navigator.geolocation not found on window object");
+      alert("Geolocation is not supported by your browser. Please click directly on the map.");
+      return;
     }
+
+    setIsDetecting(true);
+
+    const onCoordsSuccess = (pos: GeolocationPosition) => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      console.log(`[LocationPicker] Geolocation success: lat=${latitude}, lon=${longitude}, accuracy=${accuracy}m`);
+      setMarkerPos([latitude, longitude]);
+      reverseGeocode(latitude, longitude, onLocationSelect, setIsDetecting);
+    };
+
+    console.log("[LocationPicker] Requesting high-accuracy GPS coordinates...");
+    navigator.geolocation.getCurrentPosition(
+      onCoordsSuccess,
+      (err) => {
+        console.warn(`[LocationPicker] High accuracy GPS error (Code ${err.code}): ${err.message}. Retrying with standard accuracy...`);
+        navigator.geolocation.getCurrentPosition(
+          onCoordsSuccess,
+          (fallbackErr) => {
+            console.error(`[LocationPicker] Standard accuracy error (Code ${fallbackErr.code}): ${fallbackErr.message}`);
+            setIsDetecting(false);
+            if (fallbackErr.code === 1) {
+              alert("Location permission was denied. Please click the lock icon in your browser address bar to allow location access.");
+            } else if (fallbackErr.code === 2) {
+              alert("Position unavailable. Please click directly on the map to set your worksite pin.");
+            } else {
+              alert("Location detection timed out. Please click directly on the map to set your worksite pin.");
+            }
+          },
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+        );
+      },
+      { enableHighAccuracy: true, timeout: 6000, maximumAge: 60000 }
+    );
   };
 
   return (
@@ -127,6 +179,7 @@ export function LocationPicker({ onLocationSelect, initialPos }: LocationPickerP
           <Marker position={markerPos} />
           <MapEvents onLocationSelect={onLocationSelect} setMarkerPos={setMarkerPos} setIsDetecting={setIsDetecting} />
           <ChangeView center={markerPos} />
+          <MapResizer />
         </MapContainer>
         
         {isDetecting && (

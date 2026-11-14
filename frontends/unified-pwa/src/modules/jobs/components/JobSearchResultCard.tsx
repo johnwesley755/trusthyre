@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe, Phone, MessageCircle, Utensils, Home, Zap, Clock3, Fuel, Gift, Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { Bookmark, MapPin, CheckCircle2, ArrowRight, ShieldCheck, Clock, Calendar, ExternalLink, Globe, Phone, MessageCircle, Utensils, Home, Zap, Clock3, Fuel, Gift, Volume2, VolumeX, Sparkles, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { profileService } from '../../../services/profile.service';
@@ -12,7 +12,7 @@ import { useTranslation } from '../../../providers/TranslationContext';
 import { buildJobWhatsAppMessage, openWhatsAppShare, buildWorkerToEmployerApplicationMessage, openWhatsAppDirectChat } from '../../../utils/whatsappTemplate.utils';
 import { TranslateText } from '../../../components/common/TranslateText';
 import { getEffectiveCoverUrl, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
-import { generateJobSeoSlug, generateHierarchicalJobUrl } from '../../../utils/seoSlug.utils';
+import { generateHierarchicalJobUrl } from '../../../utils/seoSlug.utils';
 import { JobPamphletModal } from '../../../components/common/JobPamphletModal';
 import { WalkInPassModal } from '../../../components/common/WalkInPassModal';
 import { InterviewPrepKitModal } from '../../../components/common/InterviewPrepKitModal';
@@ -445,6 +445,21 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
 
           {/* Desktop/Default Action Buttons */}
           <div className={`${effectiveCoverUrl ? 'hidden md:flex' : 'flex'} items-center gap-1.5 shrink-0`}>
+            {/* 📋 Prep Kit Icon Button */}
+            {!isExpired && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsPrepKitOpen(true);
+                }}
+                className="p-2.5 rounded-full border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all cursor-pointer items-center justify-center flex shadow-2xs active:scale-95"
+                title="View Required Documents & 5 Trial Interview Questions"
+              >
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </button>
+            )}
+
             {/* 🔊 1-Tap Vernacular Audio Job Briefing (WorkIndia / Apna Accessibility Winner) */}
             <button
               type="button"
@@ -517,7 +532,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           </div>
         </div>
 
-        {/* Blue-Collar Perks & Benefits Highlights (WorkIndia & Apna viral features) */}
+        {/* Blue-Collar Perks & Benefits Highlights (Clean, compact 1-line scroll or wrap) */}
         {(() => {
           const perksList: string[] = Array.isArray(job.perks) && job.perks.length > 0 
             ? job.perks 
@@ -531,82 +546,100 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
           const companyTransport = Boolean(job.companyTransportProvided ?? job.company_transport_provided ?? job.additionalDetails?.companyTransportProvided);
           const walkMins = job.walkingMinutesToTransit || job.walking_minutes_to_transit || job.additionalDetails?.walkingMinutesToTransit || 5;
 
+          const allBadges: React.ReactNode[] = [];
+
+          if (companyTransport) {
+            allBadges.push(
+              <span key="transport" className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-800 shrink-0">
+                <Fuel className="w-2.5 h-2.5 text-purple-600 dark:text-purple-400" />
+                <span>Cab Provided</span>
+              </span>
+            );
+          }
+
+          if (nearestMetro) {
+            allBadges.push(
+              <span key="metro" className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs bg-blue-50 dark:bg-sky-950/40 text-blue-900 dark:text-sky-300 border-blue-200 dark:border-sky-800 shrink-0">
+                <MapPin className="w-2.5 h-2.5 text-blue-600 dark:text-sky-400" />
+                <span>{walkMins}m to Metro</span>
+              </span>
+            );
+          } else if (nearestBus) {
+            allBadges.push(
+              <span key="bus" className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-800 shrink-0">
+                <MapPin className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
+                <span>Near Bus</span>
+              </span>
+            );
+          }
+
+          if (payoutFreq && payoutFreq !== 'MONTHLY') {
+            allBadges.push(
+              <span key="payout" className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 shrink-0">
+                <Zap className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
+                <span>{payoutFreq} Pay</span>
+              </span>
+            );
+          }
+
+          if (hasGuarantee) {
+            allBadges.push(
+              <span key="guarantee" className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs bg-blue-50 dark:bg-sky-950/40 text-[#0066ff] dark:text-sky-300 border-blue-200 dark:border-sky-800 shrink-0">
+                <ShieldCheck className="w-2.5 h-2.5 text-[#0066ff] dark:text-sky-400" />
+                <span>Joining Guarantee</span>
+              </span>
+            );
+          }
+
+          perksList.forEach((p, idx) => {
+            const perk = String(p).toLowerCase();
+            let icon = <Gift className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />;
+            let label = p;
+            let bg = "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800";
+
+            if (perk.includes('food') || perk.includes('meal')) {
+              icon = <Utensils className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />;
+              label = "Free Food";
+              bg = "bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-800";
+            } else if (perk.includes('room') || perk.includes('accommodation') || perk.includes('lodging')) {
+              icon = <Home className="w-2.5 h-2.5 text-indigo-600 dark:text-indigo-400" />;
+              label = "Room Provided";
+              bg = "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800";
+            } else if (perk.includes('daily') || perk.includes('weekly')) {
+              icon = <Zap className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />;
+              label = "Daily Pay";
+              bg = "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800";
+            } else if (perk.includes('ot') || perk.includes('overtime')) {
+              icon = <Clock3 className="w-2.5 h-2.5 text-blue-600 dark:text-sky-400" />;
+              label = "Overtime Pay";
+              bg = "bg-blue-50 dark:bg-sky-950/40 text-blue-900 dark:text-sky-300 border-blue-200 dark:border-sky-800";
+            } else if (perk.includes('travel') || perk.includes('petrol') || perk.includes('fuel')) {
+              icon = <Fuel className="w-2.5 h-2.5 text-purple-600 dark:text-purple-400" />;
+              label = "Travel Allowance";
+              bg = "bg-purple-50 dark:bg-purple-950/40 text-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-800";
+            }
+
+            allBadges.push(
+              <span
+                key={`perk-${idx}`}
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs shrink-0 ${bg}`}
+              >
+                {icon}
+                <span>{label}</span>
+              </span>
+            );
+          });
+
+          if (allBadges.length === 0) return null;
+
           return (
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-              {/* 🚇 Smart Commute & Transit-Aware Badges */}
-              {companyTransport && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-purple-50 text-purple-900 border-purple-200">
-                  <Fuel className="w-3 h-3 text-purple-600" />
-                  <span>Company Cab/Van Provided (இலவச வாகனம்)</span>
+              {allBadges.slice(0, 4)}
+              {allBadges.length > 4 && (
+                <span className="text-[10px] font-bold text-[#717784] dark:text-zinc-400 px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700">
+                  +{allBadges.length - 4} more
                 </span>
               )}
-
-              {nearestMetro && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-blue-50 text-blue-900 border-blue-200">
-                  <MapPin className="w-3 h-3 text-blue-600" />
-                  <span>{walkMins}m to {nearestMetro} Metro</span>
-                </span>
-              )}
-
-              {nearestBus && !nearestMetro && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-amber-50 text-amber-900 border-amber-200">
-                  <MapPin className="w-3 h-3 text-amber-600" />
-                  <span>Near {nearestBus} Bus Stop</span>
-                </span>
-              )}
-
-              {payoutFreq && payoutFreq !== 'MONTHLY' && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-emerald-50 text-emerald-900 border-emerald-200">
-                  <Zap className="w-3 h-3 text-emerald-600" />
-                  <span>{payoutFreq} Payout</span>
-                </span>
-              )}
-
-              {hasGuarantee && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs bg-[#eff6ff] text-[#0066ff] border-[#dbeafe]">
-                  <ShieldCheck className="w-3 h-3 text-[#0066ff]" />
-                  <span>Joining Guarantee</span>
-                </span>
-              )}
-
-              {perksList.map((p, idx) => {
-                const perk = String(p).toLowerCase();
-                let icon = <Gift className="w-3 h-3 text-emerald-600" />;
-                let label = p;
-                let bg = "bg-emerald-50 text-emerald-800 border-emerald-200";
-
-                if (perk.includes('food') || perk.includes('meal')) {
-                  icon = <Utensils className="w-3 h-3 text-amber-600" />;
-                  label = "Free Food / Meals";
-                  bg = "bg-amber-50 text-amber-900 border-amber-200";
-                } else if (perk.includes('room') || perk.includes('accommodation') || perk.includes('lodging')) {
-                  icon = <Home className="w-3 h-3 text-indigo-600" />;
-                  label = "Room / Stay Provided";
-                  bg = "bg-indigo-50 text-indigo-900 border-indigo-200";
-                } else if (perk.includes('daily') || perk.includes('weekly')) {
-                  icon = <Zap className="w-3 h-3 text-emerald-600" />;
-                  label = "Daily / Weekly Pay";
-                  bg = "bg-emerald-50 text-emerald-900 border-emerald-200";
-                } else if (perk.includes('ot') || perk.includes('overtime')) {
-                  icon = <Clock3 className="w-3 h-3 text-blue-600" />;
-                  label = "Overtime (OT) Pay";
-                  bg = "bg-blue-50 text-blue-900 border-blue-200";
-                } else if (perk.includes('travel') || perk.includes('petrol') || perk.includes('fuel')) {
-                  icon = <Fuel className="w-3 h-3 text-purple-600" />;
-                  label = "Travel Allowance";
-                  bg = "bg-purple-50 text-purple-900 border-purple-200";
-                }
-
-                return (
-                  <span
-                    key={idx}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs ${bg}`}
-                  >
-                    {icon}
-                    <span>{label}</span>
-                  </span>
-                );
-              })}
             </div>
           );
         })()}
@@ -636,7 +669,7 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {/* 🎟️ 1-Tap Walk-In Admit Pass Button (When Walk-In is active) */}
             {!isExpired && (job.isWalkInInterview || (job.additionalDetails as any)?.isWalkInInterview) && (
               <button
@@ -645,49 +678,28 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                   e.stopPropagation();
                   setIsWalkInPassOpen(true);
                 }}
-                className="rounded-full bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
+                className="rounded-full bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 text-xs font-bold uppercase px-3 py-1.5 transition-all flex items-center gap-1 shadow-xs cursor-pointer shrink-0"
                 title="Get 1-Tap Walk-In Interview Pass"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-slate-950" />
-                <span>Walk-In Pass</span>
+                <span>Walk-In</span>
               </button>
             )}
 
-            {/* 📋 1-Tap Interview Prep & Document Checklist Modal */}
-            {!isExpired && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsPrepKitOpen(true);
-                }}
-                className="rounded-full bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-800 border border-emerald-300 text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0"
-                title="View Required Documents & 5 Trial Interview Questions"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Prep Kit</span>
-              </button>
-            )}
-
-            {/* 📞 One-Tap Direct Call HR (WorkIndia & Apna Viral Conversion Feature) */}
+            {/* 📞 One-Tap Direct Call HR */}
             {!isExpired && (job.allowDirectCall ?? true) && (job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber) && (
-              <div className="flex items-center gap-1">
-                <a
-                  href={`tel:${job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer no-underline shrink-0"
-                  title="Call Recruiter Directly (10 AM - 5 PM)"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Call HR</span>
-                </a>
-                <span className="hidden lg:inline-flex items-center px-2 py-1 rounded-md bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200" title="Active Recruiter Window">
-                  10am-5pm
-                </span>
-              </div>
+              <a
+                href={`tel:${job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber}`}
+                onClick={(e) => e.stopPropagation()}
+                className="rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold uppercase px-3.5 py-1.5 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer no-underline shrink-0"
+                title="Call Recruiter Directly (10 AM - 5 PM)"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>Call HR</span>
+              </a>
             )}
 
-            {/* 💬 Apply / Chat on WhatsApp */}
+            {/* 💬 Compact WhatsApp Icon Button */}
             {!isExpired && (job.allowDirectWhatsapp ?? true) && (job.contactWhatsapp || job.contactPhone || (job as any).phoneNumber || (job as any).employerProfile?.phoneNumber) && (
               <button
                 type="button"
@@ -714,21 +726,20 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                   );
                   openWhatsAppDirectChat(fullPhone, msg);
                 }}
-                className="rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
+                className="w-8 h-8 rounded-full bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white transition-all flex items-center justify-center shadow-xs cursor-pointer shrink-0"
                 title="Apply & Chat Directly on WhatsApp"
               >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">WhatsApp</span>
+                <MessageCircle className="w-4 h-4 fill-current" />
               </button>
             )}
 
             {job.hasApplied ? (
-              <span className="px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-xs border border-emerald-100 flex items-center gap-1.5 shadow-2xs">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Applied ({job.applicationStatus || 'Under Review'})</span>
+              <span className="px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-semibold text-xs border border-emerald-100 dark:border-emerald-800 flex items-center gap-1 shadow-2xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Applied</span>
               </span>
             ) : isExpired ? (
-              <span className="px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-500 font-semibold text-xs border border-slate-200 flex items-center gap-1.5 cursor-not-allowed">
+              <span className="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 font-semibold text-xs border border-slate-200 dark:border-zinc-700 flex items-center gap-1 cursor-not-allowed">
                 <Clock className="w-3.5 h-3.5 text-rose-500" />
                 <span>Expired</span>
               </span>
@@ -738,9 +749,9 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-bold uppercase px-4 py-2 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer no-underline"
+                className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-bold uppercase px-3.5 py-1.5 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer no-underline"
               >
-                <span>Apply on {job.sourceName || 'Portal'}</span>
+                <span>Apply</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             ) : (
@@ -755,13 +766,13 @@ export const JobSearchResultCard: React.FC<JobSearchResultCardProps> = ({
                   }
                 }}
                 disabled={isApplying}
-                className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-bold uppercase px-4 py-2 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-sky-600 dark:hover:bg-sky-500 text-white text-xs font-bold uppercase px-4 py-1.5 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
               >
                 {isApplying ? (
                   <AppLoader variant="inline" size="sm" />
                 ) : (
                   <>
-                    <span>Apply Now</span>
+                    <span>Apply</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                   </>
                 )}

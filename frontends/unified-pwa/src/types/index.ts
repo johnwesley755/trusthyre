@@ -22,6 +22,8 @@ export interface User {
   profile_image_url?: string;
   identity_verified?: boolean;
   email_verified?: boolean;
+  referralCode?: string;
+  referral_code?: string;
 }
 
 export interface WorkerProfile {
@@ -177,6 +179,17 @@ export interface JobApplication {
       location: number;
       verification: number;
     };
+  };
+  interview?: {
+    id: string;
+    scheduledAt: string;
+    interviewType: 'IN_PERSON' | 'PHONE' | 'WHATSAPP_VIDEO' | string;
+    locationAddress?: string | null;
+    contactPerson?: string | null;
+    contactPhone?: string | null;
+    instructions?: string | null;
+    status: string;
+    rescheduleNote?: string | null;
   };
 }
 

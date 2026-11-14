@@ -16,6 +16,17 @@ const mapApp = (app: any): JobApplication => ({
   job: app.job || app.jobs,
   jobs: app.jobs || app.job,
   jobTitle: app.job?.title || app.jobs?.title || app.jobTitle,
+  interview: app.interview ? {
+    id: app.interview.id,
+    scheduledAt: app.interview.scheduledAt || app.interview.scheduled_at,
+    interviewType: app.interview.interviewType || app.interview.interview_type,
+    locationAddress: app.interview.locationAddress || app.interview.location_address,
+    contactPerson: app.interview.contactPerson || app.interview.contact_person,
+    contactPhone: app.interview.contactPhone || app.interview.contact_phone,
+    instructions: app.interview.instructions,
+    status: app.interview.status,
+    rescheduleNote: app.interview.rescheduleNote || app.interview.reschedule_note,
+  } : undefined,
 });
 
 export const applicationService = {

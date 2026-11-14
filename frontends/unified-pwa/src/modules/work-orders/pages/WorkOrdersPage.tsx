@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
 import { 
   FileText, 
   PlusCircle, 
@@ -13,7 +14,8 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  MessageSquare
 } from 'lucide-react';
 import { useUser } from '../../../providers/AuthContext';
 import { workOrderService, type WorkOrder } from '../../../services/workOrder.service';
@@ -23,6 +25,7 @@ import { Link } from 'react-router-dom';
 
 export default function WorkOrdersPage() {
   const { user } = useUser();
+  const { id: routeOrderId } = useParams<{ id?: string }>();
   const isEmployer = user?.role === 'EMPLOYER';
 
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -42,6 +45,24 @@ export default function WorkOrdersPage() {
 
   const workOrders = data?.workOrders || [];
 
+  // Auto-open specific work order if URL route param id is provided (e.g. from notification link /work-orders/:id)
+  useEffect(() => {
+    if (routeOrderId) {
+      const matched = workOrders.find((w: WorkOrder) => w.id === routeOrderId);
+      if (matched) {
+        setSelectedOrder(matched);
+        setIsDetailModalOpen(true);
+      } else {
+        workOrderService.getWorkOrderById(routeOrderId).then((ord) => {
+          if (ord) {
+            setSelectedOrder(ord);
+            setIsDetailModalOpen(true);
+          }
+        }).catch(() => {});
+      }
+    }
+  }, [routeOrderId, workOrders]);
+
   const handleOpenDetail = (order: WorkOrder) => {
     setSelectedOrder(order);
     setIsDetailModalOpen(true);
@@ -60,7 +81,7 @@ export default function WorkOrdersPage() {
 
   return (
     <div className="w-full min-h-screen p-3 sm:p-6 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100">
-      <div className="max-w-6xl mx-auto space-y-6 pb-20">
+      <div className="max-w-7xl mx-auto space-y-6 pb-20">
 
         {/* 1. Header Banner */}
         <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -159,6 +180,17 @@ export default function WorkOrdersPage() {
                         <span>{order.shift_timing}</span>
                       </span>
                     </div>
+
+                    {/* Candidate Clarification Alert Badge on Card */}
+                    {order.worker_response_notes && (
+                      <div className="mt-2 p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-start gap-1.5 text-amber-800 dark:text-amber-300">
+                        <MessageSquare className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                        <div className="text-[11px] leading-tight">
+                          <strong className="font-bold">Candidate Note: </strong>
+                          <span className="line-clamp-2">{order.worker_response_notes}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

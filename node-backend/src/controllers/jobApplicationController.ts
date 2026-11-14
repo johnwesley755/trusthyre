@@ -45,8 +45,9 @@ const enrichApplicationsWithMatchScore = async (applications: any[], initialJobM
 
   const workerIds = Array.from(new Set(applications.map(a => a.worker_id || a.workerId).filter(Boolean)));
   const jobIds = Array.from(new Set(applications.map(a => a.job_id || a.jobId).filter(Boolean)));
+  const appIds = Array.from(new Set(applications.map(a => a.id).filter(Boolean)));
 
-  const [workerProfiles, userMetas, testResults, dbJobs] = await Promise.all([
+  const [workerProfiles, userMetas, testResults, dbJobs, latestInterviews] = await Promise.all([
     workerIds.length > 0
       ? prisma.worker_profiles.findMany({
           where: {
@@ -71,8 +72,21 @@ const enrichApplicationsWithMatchScore = async (applications: any[], initialJobM
       : [],
     (!initialJobMap && jobIds.length > 0)
       ? prisma.jobs.findMany({ where: { id: { in: jobIds } } })
+      : [],
+    appIds.length > 0
+      ? prisma.interviews.findMany({
+          where: { application_id: { in: appIds } },
+          orderBy: { created_at: 'desc' }
+        })
       : []
   ]);
+
+  const interviewsByApp = new Map<string, any>();
+  latestInterviews.forEach(interview => {
+    if (!interviewsByApp.has(interview.application_id)) {
+      interviewsByApp.set(interview.application_id, interview);
+    }
+  });
 
   const profileMap = new Map<string, any>();
   workerProfiles.forEach(p => {
@@ -146,6 +160,21 @@ const enrichApplicationsWithMatchScore = async (applications: any[], initialJobM
       formatted.matchingSkills = matchResult.matchingSkills;
       formatted.missingSkills = matchResult.missingSkills;
       formatted.matchBreakdown = matchResult.breakdown;
+    }
+
+    const latestInterview = interviewsByApp.get(app.id);
+    if (latestInterview) {
+      formatted.interview = {
+        id: latestInterview.id,
+        scheduledAt: latestInterview.scheduled_at,
+        interviewType: latestInterview.interview_type,
+        locationAddress: latestInterview.location_address,
+        contactPerson: latestInterview.contact_person,
+        contactPhone: latestInterview.contact_phone,
+        instructions: latestInterview.instructions,
+        status: latestInterview.status,
+        rescheduleNote: latestInterview.reschedule_note,
+      };
     }
 
     return formatted;
@@ -509,9 +538,19 @@ export const updateApplicationStatus = async (c: Context) => {
       }
     });
 
+    const workerProfile = await prisma.worker_profiles.findFirst({
+      where: {
+        OR: [
+          { user_id: authUser.sub },
+          { id: authUser.sub }
+        ]
+      }
+    });
+
     const isEmployerOwner = application.jobs?.employer_id === authUser.sub ||
       Boolean(employerProfile && (application.jobs?.employer_id === employerProfile.id || application.jobs?.employer_id === employerProfile.user_id));
-    const isApplicant = application.worker_id === authUser.sub;
+    const isApplicant = application.worker_id === authUser.sub ||
+      Boolean(workerProfile && (application.worker_id === workerProfile.id || application.worker_id === workerProfile.user_id));
     const isAdmin = isAppAdmin(authUser.role);
 
     if (!isEmployerOwner && !isApplicant && !isAdmin) {

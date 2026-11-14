@@ -41,6 +41,7 @@ import { PhoneDisplay } from "../../../components/common/PhoneDisplay";
 import { ratingService } from "../../../services/rating.service";
 import { ReviewsList } from "../../../components/common/ReviewsList";
 import { Star } from "lucide-react";
+import { ReferralDashboardSection } from "../components/ReferralDashboardSection";
 
 export default function EmployerProfileDetailsPage() {
   const { user } = useUser();
@@ -784,6 +785,9 @@ export default function EmployerProfileDetailsPage() {
                 </div>
               </div>
             )}
+
+        {/* TRACKABLE COMMUNITY REFERRAL SYSTEM */}
+        <ReferralDashboardSection userRole="EMPLOYER" className="mt-8" />
 
       </main>
 

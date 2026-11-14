@@ -33,6 +33,12 @@ export interface WorkOrder {
   transport_provided?: boolean | null;
   other_benefits?: string | null;
   agreed_deductions?: string | null;
+  custom_terms_and_conditions?: string | null;
+  attachment_urls?: string[];
+  employer_signature_url?: string | null;
+  employer_signed_at?: string | null;
+  worker_signature_url?: string | null;
+  worker_signed_at?: string | null;
   
   status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED';
   worker_response_notes?: string | null;
@@ -101,6 +107,9 @@ export interface CreateWorkOrderPayload {
   transportProvided?: boolean;
   otherBenefits?: string;
   agreedDeductions?: string;
+  customTermsAndConditions?: string;
+  attachmentUrls?: string[];
+  employerSignatureUrl?: string;
   
   autoSend?: boolean;
 }
@@ -163,8 +172,12 @@ export const workOrderService = {
   /**
    * Worker: Respond with ACCEPT, DECLINE, or CLARIFY
    */
-  respondToWorkOrder: async (id: string, action: 'ACCEPT' | 'DECLINE' | 'CLARIFY', notes?: string): Promise<WorkOrder> => {
-    const res = await apiClient.post<any>(`/api/work-orders/${id}/respond`, { action, notes });
+  respondToWorkOrder: async (id: string, action: 'ACCEPT' | 'DECLINE' | 'CLARIFY', notes?: string, signatureUrl?: string): Promise<WorkOrder> => {
+    const res = await apiClient.post<any>(`/api/work-orders/${id}/respond`, { 
+      action, 
+      notes,
+      signatureUrl 
+    });
     return res.data?.data || res.data;
   },
 

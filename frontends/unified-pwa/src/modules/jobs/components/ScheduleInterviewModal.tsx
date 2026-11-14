@@ -73,8 +73,7 @@ export const ScheduleInterviewModal: React.FC<ScheduleInterviewModalProps> = ({
     },
     onSuccess: () => {
       toast.success(`Interview invitation dispatched to ${candidateName}!`);
-      queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      queryClient.invalidateQueries({ queryKey: ['interviews'] });
+      // Notify parent to perform specific, targeted query invalidations only
       if (onSuccess) onSuccess();
       onClose();
     },

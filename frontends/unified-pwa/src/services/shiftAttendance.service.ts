@@ -129,84 +129,85 @@ export const shiftAttendanceService = {
   // Employer: Create shifts
   createShifts: async (payload: CreateShiftPayload): Promise<Shift[]> => {
     const res = await apiClient.post('/api/shifts', payload);
-    return res.data?.data || [];
+    return res.data?.data || res.data || [];
   },
 
   // Employer: Get scheduled shifts
-  getEmployerShifts: async (params?: { date?: string; status?: string; workOrderId?: string }): Promise<Shift[]> => {
+  getEmployerShifts: async (params?: { date?: string; month?: string; status?: string; workOrderId?: string }): Promise<Shift[]> => {
     const res = await apiClient.get('/api/shifts/employer', { params });
-    return res.data?.data || [];
+    return res.data?.data || res.data || [];
   },
 
   // Worker: Get my shifts
-  getWorkerShifts: async (params?: { date?: string; status?: string }): Promise<Shift[]> => {
+  getWorkerShifts: async (params?: { date?: string; month?: string; status?: string }): Promise<Shift[]> => {
     const res = await apiClient.get('/api/shifts/worker', { params });
-    return res.data?.data || [];
+    return res.data?.data || res.data || [];
   },
 
   // Single shift
   getShiftById: async (shiftId: string): Promise<Shift> => {
     const res = await apiClient.get(`/api/shifts/${shiftId}`);
-    return res.data?.data;
+    return res.data?.data || res.data;
   },
 
   // Employer: Generate rolling QR token
   generateQrToken: async (shiftId: string, action: 'CHECK_IN' | 'CHECK_OUT' = 'CHECK_IN'): Promise<{ token: string; expiresAt: number }> => {
     const res = await apiClient.post('/api/attendance/qr-token', { shiftId, action });
-    return res.data?.data;
+    return res.data?.data || res.data;
   },
 
   // Employer: Generate 6-digit PIN
   generateOtpPin: async (shiftId: string, action: 'CHECK_IN' | 'CHECK_OUT' = 'CHECK_IN'): Promise<{ otp: string; expiresAt: number }> => {
     const res = await apiClient.post('/api/attendance/otp', { shiftId, action });
-    return res.data?.data;
+    return res.data?.data || res.data;
   },
 
   // Supervisor: Record Manual Attendance with reason
   recordManualAttendance: async (payload: ManualSupervisorPayload): Promise<ShiftAttendance> => {
     const res = await apiClient.post('/api/attendance/manual-record', payload);
-    return res.data?.data;
+    return res.data?.data || res.data;
   },
 
   // Supervisor: Resolve correction
   resolveCorrection: async (attendanceId: string, decision: 'APPROVED' | 'REJECTED', notes?: string): Promise<ShiftAttendance> => {
     const res = await apiClient.post(`/api/attendance/${attendanceId}/resolve-correction`, { decision, notes });
-    return res.data?.data;
+    return res.data?.data || res.data;
   },
 
   // Worker: Check In
   checkIn: async (payload: CheckInPayload): Promise<ShiftAttendance> => {
     const res = await apiClient.post('/api/attendance/check-in', payload);
-    return res.data?.data;
+    return res.data?.data || res.data;
   },
 
   // Worker: Break toggle
   recordBreak: async (shiftId: string, action: 'START' | 'END'): Promise<ShiftAttendance> => {
     const res = await apiClient.post('/api/attendance/break', { shiftId, action });
-    return res.data?.data;
+    return res.data?.data || res.data;
   },
 
   // Worker: Check Out
   checkOut: async (payload: CheckOutPayload): Promise<ShiftAttendance> => {
     const res = await apiClient.post('/api/attendance/check-out', payload);
-    return res.data?.data;
+    return res.data?.data || res.data;
   },
 
   // Employer: Approve Attendance
   approveAttendance: async (attendanceId: string): Promise<ShiftAttendance> => {
     const res = await apiClient.post(`/api/attendance/${attendanceId}/approve`);
-    return res.data?.data;
+    return res.data?.data || res.data;
   },
 
   // Worker: Request Attendance Correction
   requestCorrection: async (attendanceId: string, payload: { proposedCheckIn?: string; proposedCheckOut?: string; reason: string }): Promise<ShiftAttendance> => {
     const res = await apiClient.post(`/api/attendance/${attendanceId}/correction`, payload);
-    return res.data?.data;
+    return res.data?.data || res.data;
   },
 
-  // Employer: Daily/Weekly Shift Register
-  getAttendanceRegister: async (dateStr?: string): Promise<ShiftRegisterItem[]> => {
-    const res = await apiClient.get('/api/attendance/register', { params: { date: dateStr } });
-    return res.data?.data || [];
+  // Employer: Daily/Weekly/Monthly Shift Register
+  getAttendanceRegister: async (params?: { date?: string; month?: string } | string): Promise<ShiftRegisterItem[]> => {
+    const queryParams = typeof params === 'string' ? { date: params } : params;
+    const res = await apiClient.get('/api/attendance/register', { params: queryParams });
+    return res.data?.data || res.data || [];
   }
 };

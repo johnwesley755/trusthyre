@@ -52,12 +52,12 @@ export const PostJobSuccessModal: React.FC<PostJobSuccessModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm font-['Onest',system-ui,sans-serif]">
-      <div className="w-full max-w-lg bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-white dark:text-zinc-100 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative border border-slate-200 dark:border-zinc-800 border-[#e6e8ec] animate-[fadeRise_0.3s_ease-out]">
+      <div className="w-full max-w-lg bg-white dark:bg-[#121215] text-[#0A1931] dark:text-zinc-100 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative border border-[#e6e8ec] dark:border-zinc-800 animate-[fadeRise_0.3s_ease-out]">
         
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] hover:bg-slate-100 transition cursor-pointer"
+          className="absolute top-5 right-5 p-2 rounded-full text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800/80 transition cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -65,42 +65,42 @@ export const PostJobSuccessModal: React.FC<PostJobSuccessModalProps> = ({
         {/* Top Celebration Badge */}
         <div className="text-center space-y-2">
           {job.coverImageUrl ? (
-            <div className="w-full h-32 sm:h-36 rounded-2xl overflow-hidden border border-[#e6e8ec] relative shadow-inner mb-2 bg-slate-900">
+            <div className="w-full h-32 sm:h-36 rounded-2xl overflow-hidden border border-[#e6e8ec] dark:border-zinc-800 relative shadow-inner mb-2 bg-slate-900">
               <img
                 src={job.coverImageUrl}
                 alt={job.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <span className="absolute bottom-2 left-3 px-2 py-0.5 rounded-full bg-emerald-600/90 text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Custom Workplace Photo</span>
               </span>
             </div>
           ) : (
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-100 shadow-2xs">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-100 dark:border-emerald-900/50 shadow-2xs">
               <CheckCircle2 className="w-7 h-7" />
             </div>
           )}
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-[#0f2f63] text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 dark:bg-sky-950/50 text-[#0f2f63] dark:text-sky-300 border border-blue-100 dark:border-sky-900/50 text-xs font-bold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400" />
             Job Opening Published Live!
           </span>
-          <h2 className="text-2xl font-extrabold text-[#0a0a0a] tracking-tight">
+          <h2 className="text-2xl font-extrabold text-[#0a0a0a] dark:text-white tracking-tight">
             {job.title}
           </h2>
           <p className="text-xs text-[#717784] dark:text-zinc-400 flex items-center justify-center gap-2">
             <span>{job.companyName || 'Verified Employer'}</span>
             <span>•</span>
             <span className="flex items-center gap-0.5">
-              <MapPin className="w-3 h-3 text-[#0f2f63]" />
+              <MapPin className="w-3 h-3 text-[#0f2f63] dark:text-sky-400" />
               {job.city || job.location || 'India'}
             </span>
           </p>
         </div>
 
         {/* WhatsApp Broadcast Card */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-emerald-50/40 to-slate-50 border border-emerald-200/80 space-y-3">
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-emerald-50/40 to-slate-50 dark:from-emerald-950/40 dark:via-zinc-900 dark:to-zinc-900/90 border border-emerald-200/80 dark:border-emerald-800/40 space-y-3">
           <div className="flex items-start gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#25D366] text-white flex items-center justify-center shrink-0 shadow-xs">
               <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -108,10 +108,10 @@ export const PostJobSuccessModal: React.FC<PostJobSuccessModalProps> = ({
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-bold text-emerald-950">
+              <h3 className="text-sm font-bold text-emerald-950 dark:text-emerald-300">
                 Receive Applicants 3x Faster via WhatsApp
               </h3>
-              <p className="text-xs text-emerald-900/80 leading-relaxed mt-0.5">
+              <p className="text-xs text-emerald-900/80 dark:text-emerald-200/80 leading-relaxed mt-0.5">
                 Broadcast this opening directly to your trade groups, contractors, and local vendor circles. Workers can tap and apply instantly without registration barriers.
               </p>
             </div>
@@ -132,7 +132,7 @@ export const PostJobSuccessModal: React.FC<PostJobSuccessModalProps> = ({
         <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
           <button
             onClick={handleCopyLink}
-            className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0a0a0a] font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-2"
+            className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-[#0a0a0a] dark:text-zinc-100 font-semibold text-xs border border-transparent dark:border-zinc-700 transition cursor-pointer flex items-center justify-center gap-2"
           >
             <Copy className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-400" />
             <span>{copied ? 'Link Copied!' : 'Copy Direct Link'}</span>
@@ -140,7 +140,7 @@ export const PostJobSuccessModal: React.FC<PostJobSuccessModalProps> = ({
 
           <button
             onClick={onClose}
-            className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#0f2f63] hover:bg-[#2563c9] text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2 active:scale-95 shadow-xs"
+            className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-sky-600 dark:hover:bg-sky-500 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2 active:scale-95 shadow-xs"
           >
             <span>Manage Candidates</span>
             <ArrowRight className="w-3.5 h-3.5" />

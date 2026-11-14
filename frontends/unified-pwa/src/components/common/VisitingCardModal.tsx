@@ -34,6 +34,7 @@ export interface VisitingCardData {
   ratingCount?: number;
   trustScore?: number;
   isVerified?: boolean;
+  referralCode?: string;
 }
 
 interface VisitingCardModalProps {
@@ -59,7 +60,10 @@ export const VisitingCardModal: React.FC<VisitingCardModalProps> = ({
     ? `${parsedPhone.countryCode} ${parsedPhone.formattedNumber}`
     : data.phoneNumber || 'Available on TrustHyre';
 
-  const shareUrl = `${window.location.origin}/worker/${data.id || ''}`;
+  const baseWorkerUrl = `${window.location.origin}/worker/${data.id || ''}`;
+  const shareUrl = data.referralCode
+    ? `${baseWorkerUrl}?ref=${encodeURIComponent(data.referralCode)}&src=visiting_card`
+    : baseWorkerUrl;
 
   const handleDownload = async () => {
     if (!cardRef.current || isGenerating) return;

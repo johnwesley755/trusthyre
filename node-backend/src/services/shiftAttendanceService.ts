@@ -209,11 +209,19 @@ export const ShiftAttendanceService = {
     return createdShifts;
   },
 
-  getEmployerShifts: async (employerUserId: string, filters: { date?: string; status?: string }) => {
+  getEmployerShifts: async (employerUserId: string, filters: { date?: string; month?: string; status?: string }) => {
     const where: any = { employer_id: employerUserId };
 
-    if (filters.date) {
-      where.shift_date = new Date(filters.date);
+    if (filters.month && filters.month.match(/^\d{4}-\d{2}$/)) {
+      const [year, month] = filters.month.split('-').map(Number);
+      const startOfMonth = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+      const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+      where.shift_date = { gte: startOfMonth, lte: endOfMonth };
+    } else if (filters.date) {
+      const parsedDate = new Date(filters.date);
+      const startOfDay = new Date(Date.UTC(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth(), parsedDate.getUTCDate(), 0, 0, 0, 0));
+      const endOfDay = new Date(Date.UTC(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth(), parsedDate.getUTCDate(), 23, 59, 59, 999));
+      where.shift_date = { gte: startOfDay, lte: endOfDay };
     }
     if (filters.status && filters.status !== 'ALL') {
       where.status = filters.status;
@@ -236,12 +244,21 @@ export const ShiftAttendanceService = {
     });
   },
 
-  getWorkerShifts: async (workerUserId: string, filters: { date?: string; status?: string }) => {
+  getWorkerShifts: async (workerUserId: string, filters: { date?: string; month?: string; status?: string }) => {
     const where: any = { worker_id: workerUserId };
 
-    if (filters.date) {
-      where.shift_date = new Date(filters.date);
+    if (filters.month && filters.month.match(/^\d{4}-\d{2}$/)) {
+      const [year, month] = filters.month.split('-').map(Number);
+      const startOfMonth = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+      const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+      where.shift_date = { gte: startOfMonth, lte: endOfMonth };
+    } else if (filters.date) {
+      const parsedDate = new Date(filters.date);
+      const startOfDay = new Date(Date.UTC(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth(), parsedDate.getUTCDate(), 0, 0, 0, 0));
+      const endOfDay = new Date(Date.UTC(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth(), parsedDate.getUTCDate(), 23, 59, 59, 999));
+      where.shift_date = { gte: startOfDay, lte: endOfDay };
     }
+
     if (filters.status && filters.status !== 'ALL') {
       where.status = filters.status;
     }
@@ -1387,14 +1404,23 @@ export const ShiftAttendanceService = {
     });
   },
 
-  getAttendanceRegister: async (employerUserId: string, dateStr?: string) => {
-    const date = dateStr ? new Date(dateStr) : new Date();
+  getAttendanceRegister: async (employerUserId: string, dateStr?: string, monthStr?: string) => {
+    const where: any = { employer_id: employerUserId };
+
+    if (monthStr && monthStr.match(/^\d{4}-\d{2}$/)) {
+      const [year, month] = monthStr.split('-').map(Number);
+      const startOfMonth = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+      const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+      where.shift_date = { gte: startOfMonth, lte: endOfMonth };
+    } else if (dateStr) {
+      const parsedDate = new Date(dateStr);
+      const startOfDay = new Date(Date.UTC(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth(), parsedDate.getUTCDate(), 0, 0, 0, 0));
+      const endOfDay = new Date(Date.UTC(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth(), parsedDate.getUTCDate(), 23, 59, 59, 999));
+      where.shift_date = { gte: startOfDay, lte: endOfDay };
+    }
 
     const shifts = await prisma.shifts.findMany({
-      where: {
-        employer_id: employerUserId,
-        shift_date: date
-      },
+      where,
       include: {
         work_orders: {
           select: {
@@ -1406,7 +1432,7 @@ export const ShiftAttendanceService = {
         },
         attendances: true
       },
-      orderBy: { start_time: 'asc' }
+      orderBy: [{ shift_date: 'desc' }, { start_time: 'asc' }]
     });
 
     const workerIds = shifts.map(s => s.worker_id);

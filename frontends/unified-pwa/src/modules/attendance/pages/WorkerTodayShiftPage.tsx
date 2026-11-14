@@ -24,8 +24,16 @@ function getTodayIST(): string {
   return formatter.format(new Date());
 }
 
+function getCurrentMonth(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
 export default function WorkerTodayShiftPage() {
-  const [activeTab, setActiveTab] = useState<'TODAY' | 'HISTORY'>('TODAY');
+  const [activeTab, setActiveTab] = useState<'TODAY' | 'MONTH' | 'HISTORY'>('TODAY');
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonth());
   const [pinInputs, setPinInputs] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [correctionReason, setCorrectionReason] = useState('');
@@ -37,14 +45,15 @@ export default function WorkerTodayShiftPage() {
 
   // Fetch shifts
   const { data: shifts = [], isLoading, refetch } = useQuery({
-    queryKey: ['workerShifts', activeTab, todayStr],
+    queryKey: ['workerShifts', activeTab, activeTab === 'MONTH' ? selectedMonth : todayStr],
     queryFn: () => shiftAttendanceService.getWorkerShifts({
-      date: activeTab === 'TODAY' ? todayStr : undefined
+      date: activeTab === 'TODAY' ? todayStr : undefined,
+      month: activeTab === 'MONTH' ? selectedMonth : undefined
     })
   });
 
   // Filter out cancelled shifts for active working list
-  const activeTodayShifts = shifts.filter(s => s.status !== 'CANCELLED');
+  const activeShifts = shifts.filter(s => s.status !== 'CANCELLED');
 
   const handlePinChange = (shiftId: string, val: string) => {
     setPinInputs(prev => ({ ...prev, [shiftId]: val.replace(/\D/g, '') }));
@@ -140,7 +149,7 @@ export default function WorkerTodayShiftPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -152,46 +161,68 @@ export default function WorkerTodayShiftPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-1 bg-[#f4f4f4] dark:bg-[#121215] p-1 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800">
-          <button
-            type="button"
-            onClick={() => setActiveTab('TODAY')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-              activeTab === 'TODAY'
-                ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-400 shadow-2xs'
-                : 'text-[#717784]'
-            }`}
-          >
-            Today's Shifts ({activeTodayShifts.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('HISTORY')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-              activeTab === 'HISTORY'
-                ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-400 shadow-2xs'
-                : 'text-[#717784]'
-            }`}
-          >
-            Attendance History
-          </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {activeTab === 'MONTH' && (
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-semibold text-slate-800 dark:text-zinc-200 cursor-pointer"
+            />
+          )}
+
+          <div className="flex items-center gap-1 bg-[#f4f4f4] dark:bg-[#121215] p-1 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800">
+            <button
+              type="button"
+              onClick={() => setActiveTab('TODAY')}
+              className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'TODAY'
+                  ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-400 shadow-2xs'
+                  : 'text-[#717784]'
+              }`}
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('MONTH')}
+              className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'MONTH'
+                  ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-400 shadow-2xs'
+                  : 'text-[#717784]'
+              }`}
+            >
+              Monthly Schedule
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('HISTORY')}
+              className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'HISTORY'
+                  ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-400 shadow-2xs'
+                  : 'text-[#717784]'
+              }`}
+            >
+              All History
+            </button>
+          </div>
         </div>
       </div>
 
       {isLoading ? (
         <AppLoader variant="skeleton" message="Loading shift schedules..." />
       ) : activeTab === 'TODAY' ? (
-        activeTodayShifts.length === 0 ? (
+        activeShifts.length === 0 ? (
           <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-10 text-center space-y-3">
             <Calendar className="w-10 h-10 text-[#717784] mx-auto" />
             <h3 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">No Shifts Scheduled for Today</h3>
             <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-sm mx-auto">
-              Your employer will schedule your shifts after work order agreement. Check back later or view past history.
+              Your employer will schedule your shifts after work order agreement. Check the <b>Monthly Schedule</b> tab or view past history.
             </p>
           </div>
         ) : (
           <div className="space-y-6">
-            {activeTodayShifts.map((shift) => {
+            {activeShifts.map((shift) => {
               const attendance = shift.attendances?.[0] || null;
               const status = attendance?.status || 'NOT_STARTED';
               const pinVal = pinInputs[shift.id] || '';
@@ -255,28 +286,42 @@ export default function WorkerTodayShiftPage() {
 
                   {/* Shift Actions */}
                   {status === 'NOT_STARTED' && (
-                    <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-2">
-                      <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
-                        <KeyRound className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
-                        <span>Enter Supervisor 6-Digit PIN to Check In</span>
-                      </span>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          maxLength={6}
-                          placeholder="6-digit PIN"
-                          value={pinVal}
-                          onChange={(e) => handlePinChange(shift.id, e.target.value)}
-                          className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 text-center tracking-widest text-base font-bold font-mono focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handlePinCheckIn(shift)}
-                          disabled={isSubmitting || pinVal.length !== 6}
-                          className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase shadow-sm cursor-pointer disabled:opacity-50"
-                        >
-                          Check In
-                        </button>
+                    <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-3">
+                      {/* Explanatory helper card */}
+                      <div className="p-3 bg-blue-50/70 dark:bg-sky-950/20 border border-blue-200/80 dark:border-sky-900/40 rounded-2xl flex items-start gap-2.5">
+                        <KeyRound className="w-4 h-4 text-[#0f2f63] dark:text-sky-400 shrink-0 mt-0.5" />
+                        <div className="text-xs space-y-0.5">
+                          <span className="font-bold text-[#0f2f63] dark:text-sky-300 block">
+                            How to get your 6-digit Check-In PIN:
+                          </span>
+                          <p className="text-slate-600 dark:text-zinc-300 leading-relaxed text-[11px]">
+                            When you arrive at the worksite, ask your site supervisor or employer for today's check-in PIN. The supervisor generates this 6-digit PIN in real-time from their <b>Shift Attendance Register</b> by tapping <b>"QR / PIN"</b> on this shift. PINs expire in 10 minutes.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-800 dark:text-zinc-200 block">
+                          Enter 6-Digit PIN from Supervisor
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            maxLength={6}
+                            placeholder="• • • • • •"
+                            value={pinVal}
+                            onChange={(e) => handlePinChange(shift.id, e.target.value)}
+                            className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 text-center tracking-widest text-base font-bold font-mono focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handlePinCheckIn(shift)}
+                            disabled={isSubmitting || pinVal.length !== 6}
+                            className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase shadow-sm cursor-pointer disabled:opacity-50"
+                          >
+                            Check In
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -344,6 +389,74 @@ export default function WorkerTodayShiftPage() {
                       <span className="text-[11px] text-amber-800 dark:text-amber-300">
                         Recorded: {attendance.total_work_minutes} work minutes, {attendance.total_break_minutes} break minutes.
                       </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )
+      ) : activeTab === 'MONTH' ? (
+        activeShifts.length === 0 ? (
+          <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-10 text-center space-y-3">
+            <Calendar className="w-10 h-10 text-[#717784] mx-auto" />
+            <h3 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">
+              No Shifts Scheduled for {new Date(selectedMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
+            </h3>
+            <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-sm mx-auto">
+              Shifts scheduled by your employer for this month will appear here with dates, timings, and status.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {activeShifts.map((s) => {
+              const att = s.attendances?.[0];
+              const shiftStatus = att?.status || s.status;
+              return (
+                <div
+                  key={s.id}
+                  className="rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#0c0c0e] p-5 flex flex-col justify-between gap-3 shadow-2xs"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-zinc-800 text-xs font-bold text-[#0f2f63] dark:text-sky-400">
+                        {new Date(s.shift_date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
+                      </span>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        shiftStatus === 'APPROVED' ? 'bg-blue-100 text-blue-800' :
+                        shiftStatus === 'CHECKED_IN' ? 'bg-emerald-100 text-emerald-800' :
+                        shiftStatus === 'PENDING_APPROVAL' ? 'bg-amber-100 text-amber-800' :
+                        'bg-slate-100 text-slate-700'
+                      }`}>
+                        {shiftStatus.replace('_', ' ')}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-bold text-[#0a0a0a] dark:text-zinc-100">
+                        {s.work_orders?.job_title}
+                      </h4>
+                      <p className="text-xs text-[#717784]">
+                        {s.worksite_name} • {s.city}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-zinc-400 pt-1">
+                      <Clock className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
+                      <span>{s.start_time} - {s.end_time}</span>
+                      <span className="text-[#717784]">• ₹{s.work_orders?.wage_amount}</span>
+                    </div>
+                  </div>
+
+                  {att && (att.status === 'PENDING_APPROVAL' || att.status === 'CHECKED_OUT') && (
+                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAttendanceId(att.id)}
+                        className="px-3 py-1.5 text-[11px] font-semibold text-[#0f2f63] dark:text-sky-400 bg-slate-100 dark:bg-zinc-800 rounded-lg hover:bg-slate-200 cursor-pointer"
+                      >
+                        Request Correction
+                      </button>
                     </div>
                   )}
                 </div>

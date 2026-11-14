@@ -36,9 +36,10 @@ export const shiftAttendanceController = {
       }
 
       const date = c.req.query('date');
+      const month = c.req.query('month');
       const status = c.req.query('status');
 
-      const shifts = await ShiftAttendanceService.getEmployerShifts(authUser.sub, { date, status });
+      const shifts = await ShiftAttendanceService.getEmployerShifts(authUser.sub, { date, month, status });
       return c.json(ApiResponse.ok(shifts));
     } catch (err: any) {
       console.error("Error getting employer shifts:", err);
@@ -58,9 +59,10 @@ export const shiftAttendanceController = {
       }
 
       const date = c.req.query('date');
+      const month = c.req.query('month');
       const status = c.req.query('status');
 
-      const shifts = await ShiftAttendanceService.getWorkerShifts(authUser.sub, { date, status });
+      const shifts = await ShiftAttendanceService.getWorkerShifts(authUser.sub, { date, month, status });
       return c.json(ApiResponse.ok(shifts));
     } catch (err: any) {
       console.error("Error getting worker shifts:", err);
@@ -320,7 +322,8 @@ export const shiftAttendanceController = {
       }
 
       const date = c.req.query('date');
-      const register = await ShiftAttendanceService.getAttendanceRegister(authUser.sub, date);
+      const month = c.req.query('month');
+      const register = await ShiftAttendanceService.getAttendanceRegister(authUser.sub, date, month);
       return c.json(ApiResponse.ok(register));
     } catch (err: any) {
       console.error("Error fetching attendance register:", err);

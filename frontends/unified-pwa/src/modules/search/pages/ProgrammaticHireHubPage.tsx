@@ -313,7 +313,7 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
       <div className="bg-[#0f2f63] dark:bg-[#09090b] text-white pt-10 pb-16 px-4 sm:px-6 relative overflow-hidden border-b border-transparent dark:border-zinc-800">
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto space-y-4">
+        <div className="max-w-7xl mx-auto space-y-4">
           {/* Breadcrumb pills */}
           <div className="flex flex-wrap items-center gap-2 text-xs text-blue-200/80 dark:text-zinc-400 font-medium">
             <Link to="/" className="hover:text-white transition">Home</Link>
@@ -374,7 +374,7 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
       </div>
 
       {/* Main Body */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Main Candidates Column (2 Cols) */}

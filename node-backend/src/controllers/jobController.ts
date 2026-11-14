@@ -5,6 +5,7 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationDispatcher } from '../services/notificationDispatcher';
 import { SearchAlertService } from '../services/searchAlertService';
+import { ReferralService } from '../services/referralService';
 
 const ALLOWED_JOB_STATUSES = ['OPEN', 'ACTIVE', 'IN_PROGRESS', 'COMPLETED', 'EXPIRED', 'CANCELLED', 'CLOSED'];
 
@@ -318,6 +319,11 @@ export const createJob = async (c: Context) => {
       experience_years_required: job.experience_years_required
     }).catch((err: any) => {
       console.warn('[SearchAlertService] Reverse match execution notice:', err.message);
+    });
+
+    // 3. Mark referral activation if this is the employer's first published job
+    ReferralService.markActivated(employerId, 'EMPLOYER_FIRST_JOB_POSTED').catch((err: any) => {
+      console.warn('[jobController] Error marking employer first job activation:', err.message);
     });
 
     return c.json(ApiResponse.ok("Job created", formatJob({ ...job, required_skills: requiredSkillsStr })));

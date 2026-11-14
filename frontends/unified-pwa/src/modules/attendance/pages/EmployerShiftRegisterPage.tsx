@@ -31,8 +31,17 @@ function getTodayIST(): string {
   return formatter.format(new Date());
 }
 
+function getCurrentMonth(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
 export default function EmployerShiftRegisterPage() {
   const queryClient = useQueryClient();
+  const [viewMode, setViewMode] = useState<'MONTH' | 'DAY'>('MONTH');
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonth());
   const [selectedDate, setSelectedDate] = useState<string>(getTodayIST());
   const [activeShiftForQr, setActiveShiftForQr] = useState<ShiftRegisterItem | null>(null);
   const [selectedWorkOrderForShift, setSelectedWorkOrderForShift] = useState<WorkOrder | null>(null);
@@ -40,10 +49,12 @@ export default function EmployerShiftRegisterPage() {
   const [resolvingCorrectionItem, setResolvingCorrectionItem] = useState<ShiftRegisterItem | null>(null);
   const [resolutionNotes, setResolutionNotes] = useState('');
 
-  // 1. Fetch Today's Attendance Register
+  // 1. Fetch Attendance Register (Monthly or Daily)
   const { data: registerItems = [], isLoading, refetch } = useQuery({
-    queryKey: ['attendanceRegister', selectedDate],
-    queryFn: () => shiftAttendanceService.getAttendanceRegister(selectedDate)
+    queryKey: ['attendanceRegister', viewMode, viewMode === 'MONTH' ? selectedMonth : selectedDate],
+    queryFn: () => shiftAttendanceService.getAttendanceRegister(
+      viewMode === 'MONTH' ? { month: selectedMonth } : { date: selectedDate }
+    )
   });
 
   // 2. Fetch Accepted Work Orders for scheduling new shifts
@@ -83,7 +94,7 @@ export default function EmployerShiftRegisterPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -95,13 +106,49 @@ export default function EmployerShiftRegisterPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-semibold text-slate-800 dark:text-zinc-200"
-          />
+        <div className="flex flex-wrap items-center gap-2">
+          {/* View Mode Toggle */}
+          <div className="flex items-center p-0.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-900 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setViewMode('MONTH')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === 'MONTH'
+                  ? 'bg-white dark:bg-[#121215] text-[#0f2f63] dark:text-sky-400 shadow-xs font-bold'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
+              }`}
+            >
+              Monthly View
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('DAY')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === 'DAY'
+                  ? 'bg-white dark:bg-[#121215] text-[#0f2f63] dark:text-sky-400 shadow-xs font-bold'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
+              }`}
+            >
+              Daily View
+            </button>
+          </div>
+
+          {/* Date / Month Picker */}
+          {viewMode === 'MONTH' ? (
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-semibold text-slate-800 dark:text-zinc-200 cursor-pointer"
+            />
+          ) : (
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-semibold text-slate-800 dark:text-zinc-200 cursor-pointer"
+            />
+          )}
 
           <button
             type="button"
@@ -121,7 +168,9 @@ export default function EmployerShiftRegisterPage() {
         <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-10 text-center space-y-3">
           <Users className="w-10 h-10 text-[#717784] mx-auto" />
           <h3 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">
-            No Shifts Scheduled for {new Date(selectedDate).toLocaleDateString('en-IN', { dateStyle: 'medium' })}
+            {viewMode === 'MONTH'
+              ? `No Shifts Scheduled for ${new Date(selectedMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}`
+              : `No Shifts Scheduled for ${new Date(selectedDate).toLocaleDateString('en-IN', { dateStyle: 'medium' })}`}
           </h3>
           <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-md mx-auto">
             Schedule shifts for candidates who have accepted your digital work orders.
@@ -139,9 +188,14 @@ export default function EmployerShiftRegisterPage() {
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-[#0f2f63] dark:text-sky-400 uppercase tracking-wider">
-                        {item.orderNumber}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-[#0f2f63] dark:text-sky-400 uppercase tracking-wider">
+                          {item.orderNumber}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-[10px] font-semibold text-slate-700 dark:text-zinc-300">
+                          {new Date(item.shiftDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                        </span>
+                      </div>
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                         status === 'CHECKED_IN' ? 'bg-emerald-100 text-emerald-800' :
                         status === 'ON_BREAK' ? 'bg-amber-100 text-amber-800' :

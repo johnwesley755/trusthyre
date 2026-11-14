@@ -21,6 +21,7 @@ import {
   Languages
 } from 'lucide-react';
 import { SeoHead } from '../../../components/common/SeoHead';
+import { getStoredReferral, clearStoredReferral } from '../../../utils/referralStorage';
 
 type SignUpStage = 'FORM' | 'OTP';
 
@@ -104,7 +105,10 @@ export const SignUpPage = () => {
     const handleRoleToggle = (newRole: 'WORKER' | 'EMPLOYER') => {
         if (stage === 'OTP') return; // Prevent role flipping mid-verification
         setActiveRole(newRole);
-        setSearchParams({ role: newRole.toLowerCase() });
+        // Preserve existing query params (such as ref and src) when switching roles
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('role', newRole.toLowerCase());
+        setSearchParams(newParams);
         setError('');
     };
 
@@ -205,26 +209,30 @@ export const SignUpPage = () => {
 
         const cleanPhone = phoneNumber.replace(/\D/g, '');
         const cleanEmail = email.trim().toLowerCase();
+        const storedReferral = getStoredReferral();
 
         try {
+            const basePayload = {
+                email: cleanEmail,
+                password,
+                phoneNumber: `+91${cleanPhone}`,
+                otp: cleanOtp,
+                referralCode: storedReferral?.referralCode || searchParams.get('ref') || null,
+                referralSource: storedReferral?.referralSource || searchParams.get('src') || 'direct_invite'
+            };
+
             const payload = activeRole === 'WORKER' 
                 ? {
+                    ...basePayload,
                     role: 'WORKER',
-                    email: cleanEmail,
-                    password,
                     firstName: firstName.trim(),
                     lastName: lastName.trim(),
-                    phoneNumber: `+91${cleanPhone}`,
-                    otp: cleanOtp
                 }
                 : {
+                    ...basePayload,
                     role: 'EMPLOYER',
-                    email: cleanEmail,
-                    password,
                     firstName: companyName.trim() || 'Business',
                     lastName: 'Employer',
-                    phoneNumber: `+91${cleanPhone}`,
-                    otp: cleanOtp
                 };
 
             const response = await apiClient.post('/api/auth/register', payload);
@@ -233,6 +241,7 @@ export const SignUpPage = () => {
             const token = responseData.token;
 
             if (token && userData) {
+                clearStoredReferral();
                 login(token, userData);
                 const isAdminUser = userData.role === 'ADMIN' || userData.role === 'SUPER_ADMIN' || userData.email?.toLowerCase() === 'admin@trusthyre.com';
                 navigate(isAdminUser ? '/admin/dashboard' : userData.role === 'WORKER' ? '/onboarding' : '/find-workers', { replace: true });

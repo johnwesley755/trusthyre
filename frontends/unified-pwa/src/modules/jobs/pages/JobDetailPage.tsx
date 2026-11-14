@@ -42,6 +42,7 @@ import {
   Star,
   Phone,
   MessageCircle,
+  CalendarClock,
   Utensils,
   Home,
   Zap,
@@ -337,19 +338,25 @@ export default function JobDetailPage() {
       queryClient.setQueryData<any[]>(queryKeys.jobs.myApplications, (old = []) => 
         (old || []).map((app: any) => app.id === variables.id ? { ...app, status: variables.status } : app)
       );
+      queryClient.setQueriesData<any[]>(
+        { queryKey: ['jobs', 'allEmployerApplications'] },
+        (old = []) => (old || []).map((app: any) => app.id === variables.id ? { ...app, status: variables.status } : app)
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
       queryClient.invalidateQueries({ queryKey: ['recommendedJobs'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.jobs.myApplications });
+      queryClient.invalidateQueries({ queryKey: ['jobs', 'allEmployerApplications'] });
       toast.success(`Application updated: ${variables.status}`);
     },
     onError: (err: any) => {
-      toast.error(err?.message || 'Failed to update application status.');
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to update application status.');
     }
   });
 
   const existingApplication = myApplications.find((application) => application.jobId === id);
   const isApplied = hasJustApplied || !!existingApplication;
   const applicationStatus = existingApplication?.status || (hasJustApplied ? 'PENDING' : null);
+  const isInterviewScheduled = applicationStatus === 'INTERVIEW_SCHEDULED';
   const isOfferSent = applicationStatus === 'OFFER_SENT';
   const isApproved = applicationStatus === 'ACCEPTED' || applicationStatus === 'APPROVED' || applicationStatus === 'COMPLETED';
   const isDeclined = applicationStatus === 'REJECTED' || applicationStatus === 'DECLINED';
@@ -358,21 +365,29 @@ export default function JobDetailPage() {
   const isSaved = isJobSaved(id || '');
 
   const handleShare = async () => {
+    const userRef = (user as any)?.referralCode || (user as any)?.referral_code;
+    const shareUrl = new URL(window.location.href);
+    if (userRef) {
+      shareUrl.searchParams.set('ref', userRef);
+      shareUrl.searchParams.set('src', 'job_share');
+    }
+    const finalUrl = shareUrl.toString();
+
     const shareData = {
       title: `${job?.title || 'Job Opening'} - TrustHyre`,
       text: `Check out this verified job opening on TrustHyre: ${job?.title}`,
-      url: window.location.href,
+      url: finalUrl,
     };
     try {
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(finalUrl);
         toast.success('Job link copied to clipboard!');
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(finalUrl);
         toast.success('Job link copied to clipboard!');
       }
     }
@@ -381,6 +396,7 @@ export default function JobDetailPage() {
   const handleWhatsAppShare = () => {
     if (!job) return;
     const company = (job as any)?.employerProfile?.companyName || (job as any)?.employerName || 'Verified Employer';
+    const userRef = (user as any)?.referralCode || (user as any)?.referral_code;
     const message = buildJobWhatsAppMessage(
       {
         id: id || (job as any).id,
@@ -393,7 +409,9 @@ export default function JobDetailPage() {
         skills: (job as any).skills,
         industry: job.industry,
       },
-      language
+      language,
+      typeof window !== 'undefined' ? window.location.origin : 'https://trusthyre.com',
+      userRef
     );
     openWhatsAppShare(message);
   };
@@ -564,16 +582,16 @@ export default function JobDetailPage() {
       <main className="max-w-7xl mx-auto space-y-6 pb-12">
         
         {/* Navigation Breadcrumb Bar */}
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
           <button 
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f4f4f4] dark:bg-[#121215] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 text-xs font-medium transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f4f4f4] dark:bg-[#121215] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 text-xs font-medium transition-all cursor-pointer shrink-0"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             <span>{isEmployer ? 'Back' : 'Back to Search'}</span>
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar max-w-full py-0.5">
             {/* 🔊 1-Tap Audio Job Briefing (Zero cost speech synthesis) */}
             <button
               onClick={() => {
@@ -598,7 +616,7 @@ export default function JobDetailPage() {
                   );
                 }
               }}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-95 ${
+              className={`inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full border text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0 ${
                 isPlayingAudio
                   ? 'bg-amber-500 border-amber-600 text-slate-950 animate-pulse ring-2 ring-amber-300'
                   : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40'
@@ -610,13 +628,13 @@ export default function JobDetailPage() {
               ) : (
                 <Volume2 className="w-3.5 h-3.5" />
               )}
-              <span>{isPlayingAudio ? 'Stop Audio' : 'Listen Job'}</span>
+              <span className="hidden xs:inline">{isPlayingAudio ? 'Stop' : 'Listen'}</span>
             </button>
 
             {/* 📋 1-Tap Interview Prep & Document Checklist */}
             <button
               onClick={() => setIsPrepKitOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
+              className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
               title="Interview Prep & Mandatory Document Checklist"
             >
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -627,44 +645,44 @@ export default function JobDetailPage() {
             {isEmployer && (
               <button
                 onClick={() => setIsPamphletModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
                 title="Download & share high-contrast WhatsApp hiring flyer"
               >
                 <Zap className="w-3.5 h-3.5 fill-white text-white" />
-                <span>Hiring Flyer</span>
+                <span className="hidden sm:inline">Flyer</span>
               </button>
             )}
 
-            {/* WhatsApp Viral Referral Share Button */}
+            {/* WhatsApp Viral Referral Share Button (Icon-focused on small mobile) */}
             <button
               onClick={handleWhatsAppShare}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] dark:text-[#25D366] border border-[#25D366]/30 text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-2xs"
+              className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] dark:text-[#25D366] border border-[#25D366]/30 text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-2xs shrink-0"
               title="Share Job on WhatsApp"
             >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
               </svg>
-              <span>Share on WhatsApp</span>
+              <span className="hidden sm:inline">WhatsApp</span>
             </button>
 
             <button
               onClick={handleShare}
-              className="p-2 rounded-full bg-[#f4f4f4] dark:bg-[#121215] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 transition-all cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-full bg-[#f4f4f4] dark:bg-[#121215] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 transition-all cursor-pointer shrink-0"
               title="Share Job"
             >
-              <Share2 className="w-4 h-4 text-[#717784] dark:text-zinc-400" />
+              <Share2 className="w-3.5 h-3.5 text-[#717784] dark:text-zinc-400" />
             </button>
             {!isEmployer && (
               <button
                 onClick={handleToggleSave}
-                className={`p-2 rounded-full border transition-all cursor-pointer ${
+                className={`p-1.5 sm:p-2 rounded-full border transition-all cursor-pointer shrink-0 ${
                   isSaved
                     ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-[#0f2f63] dark:text-blue-400'
                     : 'bg-[#f4f4f4] dark:bg-[#121215] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 border-[#e6e8ec] dark:border-zinc-800 text-[#717784] dark:text-zinc-400'
                 }`}
                 title={isSaved ? 'Remove from Saved' : 'Save Job'}
               >
-                <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
               </button>
             )}
           </div>
@@ -1467,6 +1485,8 @@ export default function JobDetailPage() {
                       ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' 
                       : isOfferSent 
                       ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800 animate-pulse'
+                      : isInterviewScheduled
+                      ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800'
                       : isDeclined 
                       ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800'
                       : isApplied 
@@ -1479,6 +1499,8 @@ export default function JobDetailPage() {
                       ? 'Confirmed & Hired' 
                       : isOfferSent 
                       ? 'Offer Received' 
+                      : isInterviewScheduled
+                      ? 'Interview Scheduled'
                       : isDeclined 
                       ? 'Closed' 
                       : isApplied 
@@ -1508,13 +1530,19 @@ export default function JobDetailPage() {
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
                           isOfferSent || isApproved 
                             ? 'bg-emerald-500 text-white' 
+                            : isInterviewScheduled
+                            ? 'bg-sky-500 text-white ring-2 ring-sky-300 dark:ring-sky-700 animate-pulse'
                             : 'bg-[#0f2f63] dark:bg-blue-600 text-white animate-pulse'
                         }`}>
-                          {isOfferSent || isApproved ? '✓' : '2'}
+                          {isOfferSent || isApproved ? '✓' : isInterviewScheduled ? '📅' : '2'}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-100">Employer Review</p>
-                          <p className="text-[10px] text-[#717784] dark:text-zinc-400">Under active review by hiring team</p>
+                          <p className="text-xs font-bold text-[#0a0a0a] dark:text-zinc-100">
+                            {isInterviewScheduled ? 'Interview Scheduled' : 'Employer Review'}
+                          </p>
+                          <p className="text-[10px] text-[#717784] dark:text-zinc-400">
+                            {isInterviewScheduled ? 'Employer has scheduled an interview session' : 'Under active review by hiring team'}
+                          </p>
                         </div>
                       </div>
 
@@ -1534,6 +1562,76 @@ export default function JobDetailPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Interview Scheduled Alert Box */}
+                    {isInterviewScheduled && (
+                      <div className="pt-2 border-t border-[#e6e8ec] dark:border-zinc-800 space-y-2.5">
+                        <div className="bg-sky-50 dark:bg-sky-950/50 p-3.5 rounded-xl border border-sky-200 dark:border-sky-800/60 space-y-2">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-1.5">
+                              <CalendarClock className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                              <p className="text-xs font-bold text-sky-950 dark:text-sky-200">
+                                Interview Session Scheduled
+                              </p>
+                            </div>
+                            {existingApplication?.interview?.interviewType && (
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                existingApplication.interview.interviewType === 'PHONE'
+                                  ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                                  : existingApplication.interview.interviewType === 'WHATSAPP_VIDEO'
+                                  ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                  : 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800'
+                              }`}>
+                                {existingApplication.interview.interviewType === 'PHONE' && '📞 Phone Interview'}
+                                {existingApplication.interview.interviewType === 'WHATSAPP_VIDEO' && '📹 Video Call Interview'}
+                                {existingApplication.interview.interviewType === 'IN_PERSON' && '🏢 Direct Walk-In / In-Person'}
+                                {!['PHONE', 'WHATSAPP_VIDEO', 'IN_PERSON'].includes(existingApplication.interview.interviewType) && (existingApplication.interview.interviewType || 'Interview')}
+                              </span>
+                            )}
+                          </div>
+
+                          {existingApplication?.interview ? (
+                            <div className="text-[11px] text-slate-700 dark:text-zinc-300 space-y-1 bg-white/70 dark:bg-zinc-900/60 p-2.5 rounded-lg border border-sky-100 dark:border-sky-900/40">
+                              <p className="font-semibold text-sky-900 dark:text-sky-300 flex items-center gap-1.5">
+                                <span>🗓 Scheduled For:</span>
+                                <span>
+                                  {new Date(existingApplication.interview.scheduledAt).toLocaleString('en-IN', {
+                                    weekday: 'short',
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                              </p>
+                              {existingApplication.interview.locationAddress && (
+                                <p className="flex items-start gap-1.5 text-slate-600 dark:text-zinc-400">
+                                  <span className="font-medium shrink-0">📍 Venue:</span>
+                                  <span>{existingApplication.interview.locationAddress}</span>
+                                </p>
+                              )}
+                              {existingApplication.interview.contactPerson && (
+                                <p className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
+                                  <span className="font-medium shrink-0">👤 Contact:</span>
+                                  <span>{existingApplication.interview.contactPerson} {existingApplication.interview.contactPhone ? `(${existingApplication.interview.contactPhone})` : ''}</span>
+                                </p>
+                              )}
+                              {existingApplication.interview.instructions && (
+                                <p className="flex items-start gap-1.5 text-slate-600 dark:text-zinc-400 italic">
+                                  <span className="font-medium not-italic shrink-0">📝 Note:</span>
+                                  <span>"{existingApplication.interview.instructions}"</span>
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-[11px] text-slate-600 dark:text-zinc-300 leading-relaxed">
+                              The employer has scheduled an interview with you. Check your messages and notifications for coordinates and instructions.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Offer Received Actions */}
                     {isOfferSent && existingApplication?.id && (

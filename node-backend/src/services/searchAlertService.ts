@@ -326,21 +326,15 @@ export class SearchAlertService {
 
       // Update cooldown timestamp and increment match count for matched alerts
       if (matchedAlertIds.length > 0) {
-        await prisma.$executeRaw`
-          UPDATE user_search_alerts
-          SET last_notified_at = NOW(),
-              match_count = match_count + 1,
-              updated_at = NOW()
-          WHERE id IN (${matchedAlertIds.join("','")}::uuid)
-        `.catch(err => {
-          // If bulk cast fails, fallback to individual updates
-          for (const id of matchedAlertIds) {
-            prisma.$executeRaw`
-              UPDATE user_search_alerts
-              SET last_notified_at = NOW(), match_count = match_count + 1, updated_at = NOW()
-              WHERE id = ${id}::uuid
-            `.catch(() => {});
-          }
+        await prisma.user_search_alerts.updateMany({
+          where: { id: { in: matchedAlertIds } },
+          data: {
+            last_notified_at: new Date(),
+            match_count: { increment: 1 },
+            updated_at: new Date(),
+          },
+        }).catch(err => {
+          console.warn('[SearchAlertService] Error updating matched alert counts:', err?.message || err);
         });
       }
     } catch (err: any) {
@@ -475,13 +469,14 @@ export class SearchAlertService {
       );
 
       if (matchedAlertIds.length > 0) {
-        for (const id of matchedAlertIds) {
-          prisma.$executeRaw`
-            UPDATE user_search_alerts
-            SET last_notified_at = NOW(), match_count = match_count + 1, updated_at = NOW()
-            WHERE id = ${id}::uuid
-          `.catch(() => {});
-        }
+        await prisma.user_search_alerts.updateMany({
+          where: { id: { in: matchedAlertIds } },
+          data: {
+            last_notified_at: new Date(),
+            match_count: { increment: 1 },
+            updated_at: new Date(),
+          },
+        }).catch(() => {});
       }
     } catch (err: any) {
       console.warn('[SearchAlertService] Error during candidate reverse match evaluation:', err.message);

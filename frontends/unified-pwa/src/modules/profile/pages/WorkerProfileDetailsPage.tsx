@@ -46,6 +46,7 @@ import { ratingService } from "../../../services/rating.service";
 import { ReviewsList } from "../../../components/common/ReviewsList";
 import { RatingModal } from "../../../components/common/RatingModal";
 import { VisitingCardModal } from "../../../components/common/VisitingCardModal";
+import { ReferralDashboardSection } from "../components/ReferralDashboardSection";
 
 export default function WorkerProfileDetailsPage() {
   const { user } = useUser();
@@ -924,6 +925,9 @@ export default function WorkerProfileDetailsPage() {
           </div>
 
         </div>
+
+        {/* 4. TRACKABLE COMMUNITY REFERRAL SYSTEM */}
+        <ReferralDashboardSection userRole="WORKER" />
       </main>
 
       {/* QUICK EDIT MODAL */}
@@ -956,7 +960,8 @@ export default function WorkerProfileDetailsPage() {
             ? verifiedReviews.reduce((acc: number, r: any) => acc + (r.score || 5), 0) / verifiedReviews.length
             : 5.0,
           ratingCount: verifiedReviews.length,
-          isVerified: isVerified
+          isVerified: isVerified,
+          referralCode: (user as any)?.referralCode || (user as any)?.referral_code
         }}
       />
 
