@@ -203,8 +203,22 @@ export class WorkOrderService {
     const initialStatus = input.autoSend ? 'SENT' : 'DRAFT';
     const termsHash = this.computeTermsHash(input);
 
-    return prisma.$transaction(async (tx) => {
-      const workOrder = await tx.work_orders.create({
+    try {
+      return await prisma.$transaction(async (tx) => {
+        // Enforce application-level concurrency check within transaction boundary
+        if (input.applicationId) {
+          const inTxExisting = await tx.work_orders.findFirst({
+            where: {
+              application_id: input.applicationId,
+              status: { notIn: ['CANCELLED', 'DECLINED'] }
+            }
+          });
+          if (inTxExisting) {
+            throw new Error(`An active work order (${inTxExisting.order_number}) already exists for this application.`);
+          }
+        }
+
+        const workOrder = await tx.work_orders.create({
         data: {
           order_number: orderNumber,
           job_id: input.jobId || null,
@@ -281,31 +295,49 @@ export class WorkOrderService {
 
       return workOrder;
     });
+    } catch (err: any) {
+      if (err.code === 'P2002' || (err.message && err.message.includes('uq_work_orders_active_application'))) {
+        throw new Error("An active work order already exists for this application.");
+      }
+      throw err;
+    }
   }
 
   /**
    * 2. Send Draft Work Order
+   * Atomic CAS constrained by id, employer_id, and status: DRAFT
    */
   public static async sendWorkOrder(employerId: string, orderId: string) {
-    const order = await prisma.work_orders.findUnique({
-      where: { id: orderId }
-    });
-    if (!order) throw new Error("Work order not found");
-    if (order.employer_id !== employerId) {
-      throw new Error("Forbidden: You do not own this work order");
-    }
-    if (order.status !== 'DRAFT') {
-      throw new Error(`Cannot send work order in status: ${order.status}`);
-    }
-
     return prisma.$transaction(async (tx) => {
-      const updated = await tx.work_orders.update({
-        where: { id: orderId },
+      const order = await tx.work_orders.findUnique({
+        where: { id: orderId }
+      });
+      if (!order) throw new Error("Work order not found");
+      if (order.employer_id !== employerId) {
+        throw new Error("Forbidden: You do not own this work order");
+      }
+      if (order.status !== 'DRAFT') {
+        throw new Error(`Cannot send work order in status: ${order.status}`);
+      }
+
+      // Atomic Compare-And-Set to eliminate concurrency race condition
+      const updateResult = await tx.work_orders.updateMany({
+        where: {
+          id: orderId,
+          employer_id: employerId,
+          status: 'DRAFT'
+        },
         data: {
           status: 'SENT',
           updated_at: new Date()
         }
       });
+
+      if (updateResult.count === 0) {
+        throw new Error("Conflict: Work order was already sent or is not in DRAFT status.");
+      }
+
+      const updated = await tx.work_orders.findUniqueOrThrow({ where: { id: orderId } });
 
       await tx.work_order_events.create({
         data: {

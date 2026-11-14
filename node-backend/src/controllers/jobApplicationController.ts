@@ -319,6 +319,20 @@ export const dispatchOffer = async (c: Context) => {
           data: { jobId: String(jobId), applicationId: String(existing.id) }
         }).catch(() => {});
 
+        // Server-side verified INVITE telemetry recording
+        try {
+          await recommendationEngineService.recordInteraction({
+            userId: employerId,
+            interactionType: 'INVITE',
+            itemType: 'WORKER',
+            itemId: canonicalWorkerId,
+            isServerVerified: true,
+            metadata: { source: 'dispatch_offer', jobId, applicationId: existing.id }
+          });
+        } catch (telemetryErr) {
+          console.warn('[dispatchOffer] Telemetry recording warning:', telemetryErr);
+        }
+
         return c.json(ApiResponse.ok("Offer dispatched successfully by updating applicant status", formatApplication(updated)));
       }
       if (existing.status === 'OFFER_SENT') {
@@ -353,6 +367,20 @@ export const dispatchOffer = async (c: Context) => {
       link: "/applied-jobs",
       data: { jobId: String(jobId) }
     });
+
+    // Server-side verified INVITE telemetry recording
+    try {
+      await recommendationEngineService.recordInteraction({
+        userId: employerId,
+        interactionType: 'INVITE',
+        itemType: 'WORKER',
+        itemId: canonicalWorkerId,
+        isServerVerified: true,
+        metadata: { source: 'dispatch_offer', jobId, applicationId: application.id }
+      });
+    } catch (telemetryErr) {
+      console.warn('[dispatchOffer] Telemetry recording warning:', telemetryErr);
+    }
 
     return c.json(ApiResponse.ok("Offer dispatched successfully", formatApplication(application)));
   } catch (err: any) {

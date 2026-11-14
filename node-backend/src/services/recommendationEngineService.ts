@@ -1110,29 +1110,26 @@ export const recommendationEngineService = {
     metadata?: any;
     isServerVerified?: boolean;
   }) => {
-    // 1. Anti-Forgery Gating on Conversion Telemetry
-    if (data.interactionType === 'APPLY' && !data.isServerVerified) {
-      // Must verify an actual job application exists between user and job
-      const application = await prisma.job_applications.findFirst({
-        where: {
-          job_id: data.itemId,
-          worker_id: data.userId
-        },
-        select: { id: true }
-      });
-      if (!application) {
-        throw new Error("Forbidden: Cannot record APPLY telemetry without an active job application.");
-      }
+    // 1. Anti-Forgery Gating on Conversion Telemetry (APPLY, INVITE)
+    // Conversion events MUST be server-verified directly from core workflows (apply / dispatchOffer).
+    if ((data.interactionType === 'APPLY' || data.interactionType === 'INVITE') && !data.isServerVerified) {
+      throw new Error(`Forbidden: Direct client submission of ${data.interactionType} conversion telemetry is disallowed. Events are recorded server-side upon workflow execution.`);
     }
 
-    if (data.interactionType === 'INVITE' && !data.isServerVerified) {
-      // Must verify the recording user is an employer with at least one active job
-      const employerProfile = await prisma.employer_profiles.findFirst({
-        where: { user_id: data.userId },
-        select: { id: true }
+    // 2. Replay Prevention & Deduplication for APPLY Telemetry
+    if (data.interactionType === 'APPLY' && data.metadata?.applicationId) {
+      const existing = await prisma.recommendation_interactions.findFirst({
+        where: {
+          interaction_type: 'APPLY',
+          metadata: {
+            path: ['applicationId'],
+            equals: data.metadata.applicationId
+          }
+        }
       });
-      if (!employerProfile) {
-        throw new Error("Forbidden: Only verified employers can record candidate INVITE telemetry.");
+      if (existing) {
+        // Return existing record idempotently without logging duplicate telemetry
+        return existing;
       }
     }
 
