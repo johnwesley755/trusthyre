@@ -6,6 +6,7 @@ import { NotificationDispatcher } from '../services/notificationDispatcher';
 import { formatJob } from './jobController';
 import { isAppAdmin } from '../utils/roles';
 import { calculateCandidateJobMatch } from '../services/matchScoreService';
+import { recommendationEngineService } from '../services/recommendationEngineService';
 
 const extractTransitMode = (coverLetter?: string | null): string | null => {
   if (!coverLetter || typeof coverLetter !== 'string') return null;
