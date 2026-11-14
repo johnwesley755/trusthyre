@@ -32,6 +32,9 @@ export interface CreateWorkOrderInput {
   transportProvided?: boolean;
   otherBenefits?: string;
   agreedDeductions?: string;
+  customTermsAndConditions?: string;
+  attachmentUrls?: string[];
+  employerSignatureUrl?: string;
 
   autoSend?: boolean;
 }
@@ -251,6 +254,10 @@ export class WorkOrderService {
           transport_provided: Boolean(input.transportProvided),
           other_benefits: input.otherBenefits?.trim() || null,
           agreed_deductions: input.agreedDeductions?.trim() || null,
+          custom_terms_and_conditions: input.customTermsAndConditions?.trim() || null,
+          attachment_urls: Array.isArray(input.attachmentUrls) ? input.attachmentUrls : [],
+          employer_signature_url: input.employerSignatureUrl?.trim() || null,
+          employer_signed_at: input.employerSignatureUrl ? new Date() : null,
           
           status: initialStatus,
           terms_version: 1
@@ -374,7 +381,8 @@ export class WorkOrderService {
     workerUserId: string,
     orderId: string,
     action: 'ACCEPT' | 'DECLINE' | 'CLARIFY',
-    notes?: string
+    notes?: string,
+    workerSignatureUrl?: string
   ) {
     const order = await prisma.work_orders.findUnique({
       where: { id: orderId }
@@ -427,6 +435,8 @@ export class WorkOrderService {
           declined_at: action === 'DECLINE' ? now : undefined,
           accepted_terms_version: action === 'ACCEPT' ? order.terms_version : null,
           accepted_terms_hash: action === 'ACCEPT' ? currentTermsHash : null,
+          worker_signature_url: action === 'ACCEPT' && workerSignatureUrl ? workerSignatureUrl.trim() : undefined,
+          worker_signed_at: action === 'ACCEPT' && workerSignatureUrl ? now : undefined,
           updated_at: now
         }
       });
@@ -796,6 +806,13 @@ export class WorkOrderService {
           terms_version: true,
           accepted_terms_version: true,
           accepted_at: true,
+          worker_response_notes: true,
+          employer_signature_url: true,
+          employer_signed_at: true,
+          worker_signature_url: true,
+          worker_signed_at: true,
+          attachment_urls: true,
+          custom_terms_and_conditions: true,
           created_at: true,
           updated_at: true,
           jobs: { select: { id: true, title: true, city: true } }
@@ -876,6 +893,13 @@ export class WorkOrderService {
           terms_version: true,
           accepted_terms_version: true,
           accepted_at: true,
+          worker_response_notes: true,
+          employer_signature_url: true,
+          employer_signed_at: true,
+          worker_signature_url: true,
+          worker_signed_at: true,
+          attachment_urls: true,
+          custom_terms_and_conditions: true,
           created_at: true,
           updated_at: true,
           jobs: { select: { id: true, title: true, city: true } }

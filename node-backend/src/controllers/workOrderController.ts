@@ -133,13 +133,14 @@ export const workOrderController = {
         return c.json(ApiResponse.error("Work order ID is required"), 400 as any);
       }
       const body = await c.req.json();
-      const { action, notes } = body;
+      const { action, notes, signatureUrl, workerSignatureUrl } = body;
 
       if (!['ACCEPT', 'DECLINE', 'CLARIFY'].includes(action)) {
         return c.json(ApiResponse.error("Invalid action. Must be ACCEPT, DECLINE, or CLARIFY"), 400 as any);
       }
 
-      const updated = await WorkOrderService.respondToWorkOrder(authUser.sub, id, action, notes);
+      const effectiveSignature = workerSignatureUrl || signatureUrl;
+      const updated = await WorkOrderService.respondToWorkOrder(authUser.sub, id, action, notes, effectiveSignature);
       return c.json(ApiResponse.ok(`Work order response recorded: ${action}`, updated));
     } catch (err: any) {
       console.error("Error responding to work order:", err);

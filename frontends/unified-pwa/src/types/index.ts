@@ -180,6 +180,17 @@ export interface JobApplication {
       verification: number;
     };
   };
+  interview?: {
+    id: string;
+    scheduledAt: string;
+    interviewType: 'IN_PERSON' | 'PHONE' | 'WHATSAPP_VIDEO' | string;
+    locationAddress?: string | null;
+    contactPerson?: string | null;
+    contactPhone?: string | null;
+    instructions?: string | null;
+    status: string;
+    rescheduleNote?: string | null;
+  };
 }
 
 export interface SkillTestQuestion {

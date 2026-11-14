@@ -76,11 +76,19 @@ export default function AppliedJobsPage() {
       queryClient.setQueryData<any[]>(queryKeys.jobs.myApplications, (old = []) => 
         (old || []).map((app: any) => app.id === variables.id ? { ...app, status: variables.status } : app)
       );
+      queryClient.setQueriesData<any[]>(
+        { queryKey: ['jobs', 'allEmployerApplications'] },
+        (old = []) => (old || []).map((app: any) => app.id === variables.id ? { ...app, status: variables.status } : app)
+      );
+      queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
+      queryClient.invalidateQueries({ queryKey: ['recommendedJobs'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.jobs.myApplications });
+      queryClient.invalidateQueries({ queryKey: ['jobs', 'allEmployerApplications'] });
 
       toast.success(`Application updated: ${variables.status}`);
     },
     onError: (err: any) => {
-      toast.error(err?.message || 'Failed to update application.');
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to update application.');
     }
   });
 
@@ -408,15 +416,68 @@ export default function AppliedJobsPage() {
                     {/* Interview Invitation Alert Box */}
                     {app.status === 'INTERVIEW_SCHEDULED' && (
                       <div className="bg-sky-50 dark:bg-sky-950/50 p-3.5 rounded-xl border border-sky-200 dark:border-sky-800/60 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <CalendarClock className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                          <p className="text-xs font-bold text-sky-950 dark:text-sky-200">
-                            Interview Invitation Received
-                          </p>
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2">
+                            <CalendarClock className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                            <p className="text-xs font-bold text-sky-950 dark:text-sky-200">
+                              Interview Invitation Scheduled
+                            </p>
+                          </div>
+                          {app.interview?.interviewType && (
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              app.interview.interviewType === 'PHONE'
+                                ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                                : app.interview.interviewType === 'WHATSAPP_VIDEO'
+                                ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                : 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800'
+                            }`}>
+                              {app.interview.interviewType === 'PHONE' && '📞 Phone Interview'}
+                              {app.interview.interviewType === 'WHATSAPP_VIDEO' && '📹 Video Call Interview'}
+                              {app.interview.interviewType === 'IN_PERSON' && '🏢 Direct Walk-In / In-Person'}
+                              {!['PHONE', 'WHATSAPP_VIDEO', 'IN_PERSON'].includes(app.interview.interviewType) && (app.interview.interviewType || 'Interview')}
+                            </span>
+                          )}
                         </div>
-                        <p className="text-[11px] text-slate-600 dark:text-zinc-300 leading-relaxed">
-                          The employer has invited you to coordinate an interview session. Check your notifications for venue details and timing.
-                        </p>
+
+                        {app.interview ? (
+                          <div className="text-[11px] text-slate-700 dark:text-zinc-300 space-y-1 bg-white/70 dark:bg-zinc-900/60 p-2.5 rounded-lg border border-sky-100 dark:border-sky-900/40">
+                            <p className="font-semibold text-sky-900 dark:text-sky-300 flex items-center gap-1.5">
+                              <span>🗓 Scheduled For:</span>
+                              <span>
+                                {new Date(app.interview.scheduledAt).toLocaleString('en-IN', {
+                                  weekday: 'short',
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </p>
+                            {app.interview.locationAddress && (
+                              <p className="flex items-start gap-1.5 text-slate-600 dark:text-zinc-400">
+                                <span className="font-medium shrink-0">📍 Venue:</span>
+                                <span>{app.interview.locationAddress}</span>
+                              </p>
+                            )}
+                            {app.interview.contactPerson && (
+                              <p className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
+                                <span className="font-medium shrink-0">👤 Contact:</span>
+                                <span>{app.interview.contactPerson} {app.interview.contactPhone ? `(${app.interview.contactPhone})` : ''}</span>
+                              </p>
+                            )}
+                            {app.interview.instructions && (
+                              <p className="flex items-start gap-1.5 text-slate-600 dark:text-zinc-400 italic">
+                                <span className="font-medium not-italic shrink-0">📝 Note:</span>
+                                <span>"{app.interview.instructions}"</span>
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-slate-600 dark:text-zinc-300 leading-relaxed">
+                            The employer has invited you to coordinate an interview session. Check your notifications for venue details and timing.
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -464,14 +525,14 @@ export default function AppliedJobsPage() {
         ) : (
           <div className="bg-white dark:bg-[#121215] rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 overflow-hidden shadow-2xs">
             <Table>
-              <TableHeader className="bg-[#fbfbfb]">
-                <TableRow>
-                  <TableHead className="font-bold text-xs text-[#0a0a0a]">Job & Employer</TableHead>
-                  <TableHead className="font-bold text-xs text-[#0a0a0a]">Location</TableHead>
-                  <TableHead className="font-bold text-xs text-[#0a0a0a]">Applied Date</TableHead>
-                  <TableHead className="font-bold text-xs text-[#0a0a0a]">Compensation</TableHead>
-                  <TableHead className="font-bold text-xs text-[#0a0a0a]">Status</TableHead>
-                  <TableHead className="font-bold text-xs text-[#0a0a0a] text-right">Action</TableHead>
+              <TableHeader className="bg-[#fbfbfb] dark:bg-[#09090b]">
+                <TableRow className="border-b border-[#e6e8ec] dark:border-zinc-800">
+                  <TableHead className="font-bold text-xs text-[#0a0a0a] dark:text-zinc-200">Job & Employer</TableHead>
+                  <TableHead className="font-bold text-xs text-[#0a0a0a] dark:text-zinc-200">Location</TableHead>
+                  <TableHead className="font-bold text-xs text-[#0a0a0a] dark:text-zinc-200">Applied Date</TableHead>
+                  <TableHead className="font-bold text-xs text-[#0a0a0a] dark:text-zinc-200">Compensation</TableHead>
+                  <TableHead className="font-bold text-xs text-[#0a0a0a] dark:text-zinc-200">Status</TableHead>
+                  <TableHead className="font-bold text-xs text-[#0a0a0a] dark:text-zinc-200 text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -484,23 +545,29 @@ export default function AppliedJobsPage() {
                   const employerName = (job as any)?.employerProfile?.companyName || (job as any)?.employerName || 'Verified Enterprise';
 
                   return (
-                    <TableRow key={app.id} className="hover:bg-[#f4f4f4]/60">
+                    <TableRow key={app.id} className="hover:bg-[#f4f4f4]/60 dark:hover:bg-zinc-800/40 border-b border-[#e6e8ec]/80 dark:border-zinc-800/80">
                       <TableCell>
-                        <div>
-                          <p className="font-bold text-xs text-[#0a0a0a]">{job?.title || 'Job Opening'}</p>
-                          <p className="text-[11px] text-[#717784]">{employerName}</p>
+                        <div className="space-y-0.5">
+                          <p className="font-bold text-xs text-[#0a0a0a] dark:text-zinc-100">{job?.title || 'Job Opening'}</p>
+                          <p className="text-[11px] text-[#717784] dark:text-zinc-400 font-medium">{employerName}</p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs text-[#717784]">{job?.location || job?.city || 'Local area'}</TableCell>
-                      <TableCell className="text-xs text-[#717784]">
+                      <TableCell className="text-xs text-[#717784] dark:text-zinc-400">{job?.location || job?.city || 'Local area'}</TableCell>
+                      <TableCell className="text-xs text-[#717784] dark:text-zinc-400">
                         {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent'}
                       </TableCell>
-                      <TableCell className="text-xs font-semibold text-emerald-700">
+                      <TableCell className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                         {job?.budget ? `₹${Number(job.budget).toLocaleString('en-IN')}` : 'Standard'}
                       </TableCell>
                       <TableCell>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          isHired ? 'bg-emerald-50 text-emerald-800' : isOffer ? 'bg-amber-50 text-amber-800' : isDeclined ? 'bg-rose-50 text-rose-800' : 'bg-blue-50 text-blue-800'
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-2xs ${
+                          isHired 
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' 
+                            : isOffer 
+                            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800 animate-pulse' 
+                            : isDeclined 
+                            ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800' 
+                            : 'bg-blue-50 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-300 border-blue-200 dark:border-sky-800'
                         }`}>
                           {status}
                         </span>
@@ -519,7 +586,7 @@ export default function AppliedJobsPage() {
                                   jobTitle: job?.title
                                 });
                               }}
-                              className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-[11px] font-bold transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-2xs"
+                              className="px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 rounded-full text-[11px] font-bold transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-2xs"
                             >
                               <Star className="w-3 h-3 fill-amber-400 text-amber-500" />
                               <span>Rate</span>
@@ -527,7 +594,7 @@ export default function AppliedJobsPage() {
                           )}
                           <button
                             onClick={() => navigate(`/job/${app.jobId}`)}
-                            className="px-3 py-1 bg-[#f4f4f4] hover:bg-[#0f2f63] hover:text-white text-xs font-semibold rounded-full transition-all cursor-pointer"
+                            className="px-3.5 py-1 bg-[#f4f4f4] dark:bg-zinc-800 hover:bg-[#0f2f63] hover:text-white dark:hover:bg-sky-600 text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 border border-transparent dark:border-zinc-700 rounded-full transition-all cursor-pointer active:scale-95 shadow-2xs"
                           >
                             Details
                           </button>

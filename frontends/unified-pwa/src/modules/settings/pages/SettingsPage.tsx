@@ -422,7 +422,7 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#000000] pb-24 pt-6 px-4 sm:px-6 lg:px-8 font-['Onest',system-ui,sans-serif] text-slate-900 dark:text-zinc-100 transition-colors duration-200">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
 
         {/* Top Header & Breadcrumb Bar */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-zinc-800 dark:border-zinc-800">

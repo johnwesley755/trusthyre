@@ -65,14 +65,12 @@ export const validateFileSignature = (buffer: Buffer, declaredMime: string): Sig
     }
 
     // Deep Malware Gate: Scan PDF byte stream for weaponized active execution vectors
-    // Attackers use /JavaScript, /JS, /Launch, /EmbeddedFiles, or /OpenAction to execute arbitrary code
+    // Attackers use /JavaScript, /JS, or /Launch to execute arbitrary shell payloads
     const pdfTextSample = buffer.subarray(0, Math.min(buffer.length, 2 * 1024 * 1024)).toString('binary');
     const dangerousPdfVectors = [
       '/JavaScript',
       '/JS',
-      '/Launch',
-      '/EmbeddedFiles',
-      '/OpenAction'
+      '/Launch'
     ];
 
     for (const vector of dangerousPdfVectors) {

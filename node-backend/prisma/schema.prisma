@@ -781,6 +781,12 @@ model work_orders {
   terms_version         Int                 @default(1)
   accepted_terms_version Int?
   accepted_terms_hash   String?             @db.VarChar(64)
+  employer_signature_url String?            @db.Text
+  employer_signed_at    DateTime?           @db.Timestamp(6)
+  worker_signature_url  String?             @db.Text
+  worker_signed_at      DateTime?           @db.Timestamp(6)
+  attachment_urls       String[]            @default([])
+  custom_terms_and_conditions String?       @db.Text
   created_at            DateTime?           @default(now()) @db.Timestamp(6)
   updated_at            DateTime?           @default(now()) @db.Timestamp(6)
   

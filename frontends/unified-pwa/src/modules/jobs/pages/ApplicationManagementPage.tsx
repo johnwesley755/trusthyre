@@ -627,7 +627,7 @@ export default function ApplicationManagementPage() {
                     {tab.pulse && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />}
                     <span>{tab.label}</span>
                     <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                      statusFilter === tab.id ? 'bg-white/20 text-white' : 'bg-[#f4f4f4] text-[#717784]'
+                      statusFilter === tab.id ? 'bg-white/20 text-white' : 'bg-[#f4f4f4] dark:bg-zinc-800 text-[#717784] dark:text-zinc-400'
                     }`}>
                       {tab.count}
                     </span>
@@ -649,7 +649,7 @@ export default function ApplicationManagementPage() {
                   <ArrowUpDown className="w-3.5 h-3.5" />
                   <span>{sortBy === 'MATCH' ? 'Sorted by Match Score' : 'Sorted by Date'}</span>
                 </button>
-                <span className="text-xs font-semibold text-[#717784] px-2 hidden sm:inline">
+                <span className="text-xs font-semibold text-[#717784] dark:text-zinc-400 px-2 hidden sm:inline">
                   Showing {selectedJobApplications.length} candidate{selectedJobApplications.length === 1 ? '' : 's'}
                 </span>
               </div>
@@ -657,12 +657,12 @@ export default function ApplicationManagementPage() {
 
             {/* Applicants List */}
             {selectedJobApplications.length === 0 ? (
-              <div className="bg-[#f4f4f4] rounded-[1.75rem] p-10 border border-[#e6e8ec] text-center space-y-3">
+              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-[1.75rem] p-10 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-3">
                 <div className="w-12 h-12 bg-white dark:bg-[#121215] rounded-full flex items-center justify-center mx-auto text-[#717784] dark:text-zinc-400 border border-[#e6e8ec] dark:border-zinc-800">
                   <Briefcase className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-bold text-[#0a0a0a]">No Applicants in this Stage</h3>
-                <p className="text-xs text-[#717784] max-w-sm mx-auto">
+                <h3 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">No Applicants in this Stage</h3>
+                <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-sm mx-auto">
                   Candidates applying to this position will be displayed here with verified biometric credentials.
                 </p>
               </div>
@@ -764,6 +764,51 @@ export default function ApplicationManagementPage() {
                                   +{matchingSkills.length + missingSkills.length - 5} more
                                 </span>
                               )}
+                            </div>
+                          )}
+
+                          {/* Scheduled Interview Details Badge / Alert */}
+                          {app.interview && (
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 rounded-xl text-xs max-w-xl">
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                                  app.interview.interviewType === 'PHONE'
+                                    ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                                    : app.interview.interviewType === 'WHATSAPP_VIDEO'
+                                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                    : 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800'
+                                }`}>
+                                  {app.interview.interviewType === 'PHONE' && '📞 Phone Call'}
+                                  {app.interview.interviewType === 'WHATSAPP_VIDEO' && '📹 Video Call'}
+                                  {app.interview.interviewType === 'IN_PERSON' && '🏢 Direct Walk-In / In-Person'}
+                                  {!['PHONE', 'WHATSAPP_VIDEO', 'IN_PERSON'].includes(app.interview.interviewType) && (app.interview.interviewType || 'Interview')}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-sky-900 dark:text-sky-200">
+                                <span className="font-semibold">
+                                  {new Date(app.interview.scheduledAt).toLocaleString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                                {app.interview.locationAddress && (
+                                  <>
+                                    <span className="text-sky-400 dark:text-sky-600">•</span>
+                                    <span className="truncate max-w-[200px]" title={app.interview.locationAddress}>
+                                      📍 {app.interview.locationAddress}
+                                    </span>
+                                  </>
+                                )}
+                                {app.interview.contactPerson && (
+                                  <>
+                                    <span className="text-sky-400 dark:text-sky-600">•</span>
+                                    <span>👤 Contact: {app.interview.contactPerson}</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           )}
 
@@ -921,18 +966,16 @@ export default function ApplicationManagementPage() {
                             </span>
                             <button
                               type="button"
-                              onClick={() => setWorkOrderCandidate({
-                                candidate: {
-                                  userId: app.workerId,
-                                  fullName: candidateName,
-                                  skills: worker?.skills,
-                                  city: worker?.city
-                                },
-                                job: selectedJob,
-                                applicationId: app.id
-                              })}
+                              onClick={() => {
+                                const params = new URLSearchParams({
+                                  applicationId: app.id,
+                                  workerId: app.workerId,
+                                  ...(selectedJob?.id ? { jobId: selectedJob.id } : {})
+                                });
+                                navigate(`/work-orders/new?${params.toString()}`);
+                              }}
                               className="px-3.5 py-1.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-2xs"
-                              title="Issue Digital Work Order"
+                              title="Issue Digital Work Order on Dedicated Page"
                             >
                               <FileText className="w-3.5 h-3.5" />
                               <span>Issue Work Order</span>
@@ -1011,8 +1054,20 @@ export default function ApplicationManagementPage() {
           jobTitle={schedulingApp.jobTitle}
           defaultLocation={schedulingApp.defaultLocation}
           onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
-            queryClient.invalidateQueries({ queryKey: ['jobs', 'allEmployerApplications'] });
+            // Update the application status locally in the TanStack cache immediately
+            queryClient.setQueriesData<JobApplication[]>(
+              { queryKey: ['jobs', 'allEmployerApplications'] },
+              (old = []) => (old || []).map(app => 
+                app.id === schedulingApp.applicationId 
+                  ? { ...app, status: 'INTERVIEW_SCHEDULED' } 
+                  : app
+              )
+            );
+            // Targeted invalidation of the exact applications query only, avoiding refetching employer jobs
+            queryClient.invalidateQueries({ 
+              queryKey: queryKeys.jobs.allEmployerApplications(jobIds),
+              exact: true 
+            });
           }}
         />
       )}

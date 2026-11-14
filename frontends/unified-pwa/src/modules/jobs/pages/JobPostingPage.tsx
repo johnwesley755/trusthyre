@@ -1208,7 +1208,7 @@ export const JobPostingPage = () => {
                   ) : (
                     <Send className="w-3.5 h-3.5" />
                   )}
-                  <span>{isEditMode ? 'Save & Update Opening' : 'Publish Role & Deploy Shift'}</span>
+                  <span>{isEditMode ? 'Save & Update Opening' : 'Post Job'}</span>
                 </button>
               </div>
 

@@ -16,10 +16,14 @@ import {
   Truck,
   MessageSquare,
   ArrowRight,
-  Send
+  Send,
+  Paperclip,
+  Download,
+  PenTool
 } from 'lucide-react';
 import { BaseModal } from '../../../components/common/BaseModal';
 import { workOrderService, type WorkOrder } from '../../../services/workOrder.service';
+import { SignatureCanvas } from '../../../components/common/SignatureCanvas';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -42,6 +46,8 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clarificationNotes, setClarificationNotes] = useState('');
   const [isClarifyOpen, setIsClarifyOpen] = useState(false);
+  const [isSignOpen, setIsSignOpen] = useState(false);
+  const [workerSignature, setWorkerSignature] = useState<string | null>(null);
 
   const handleWorkerAction = async (action: 'ACCEPT' | 'DECLINE' | 'CLARIFY') => {
     try {
@@ -49,7 +55,8 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
       await workOrderService.respondToWorkOrder(
         workOrder.id,
         action,
-        action === 'CLARIFY' ? clarificationNotes : undefined
+        action === 'CLARIFY' ? clarificationNotes : undefined,
+        action === 'ACCEPT' ? (workerSignature || undefined) : undefined
       );
 
       toast.success(
@@ -109,44 +116,54 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
       maxWidth="2xl"
       bodyClassName="p-5 sm:p-6 space-y-6 max-h-[75vh] overflow-y-auto font-['Onest',system-ui,sans-serif]"
       footer={
-        <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-full border border-[#e6e8ec] dark:border-zinc-700 text-xs font-semibold text-[#717784] hover:text-[#0a0a0a] dark:hover:text-zinc-200 transition-colors cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-[#e6e8ec] dark:border-zinc-700 text-xs font-semibold text-[#717784] hover:text-[#0a0a0a] dark:hover:text-zinc-200 transition-colors cursor-pointer text-center"
           >
             Close
           </button>
 
           {/* Role Action Controls */}
           {!isEmployer && workOrder.status === 'SENT' && (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => setIsClarifyOpen(!isClarifyOpen)}
-                className="px-3.5 py-2.5 rounded-full border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 text-xs font-bold transition-all cursor-pointer"
-              >
-                Request Clarification
-              </button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => setIsClarifyOpen(!isClarifyOpen)}
+                  className="px-3.5 py-2.5 rounded-full border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 text-xs font-bold transition-all cursor-pointer text-center whitespace-nowrap"
+                >
+                  Request Clarification
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => handleWorkerAction('DECLINE')}
+                  className="px-3.5 py-2.5 rounded-full border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400 hover:bg-rose-50 text-xs font-bold transition-all cursor-pointer text-center whitespace-nowrap"
+                >
+                  Decline
+                </button>
+              </div>
 
               <button
                 type="button"
                 disabled={isSubmitting}
-                onClick={() => handleWorkerAction('DECLINE')}
-                className="px-3.5 py-2.5 rounded-full border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400 hover:bg-rose-50 text-xs font-bold transition-all cursor-pointer"
+                onClick={() => {
+                  const nextState = !isSignOpen;
+                  setIsSignOpen(nextState);
+                  if (nextState) {
+                    setTimeout(() => {
+                      document.getElementById('worker-signature-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                  }
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer whitespace-nowrap"
               >
-                Decline
-              </button>
-
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => handleWorkerAction('ACCEPT')}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
-              >
-                <Check className="w-3.5 h-3.5" />
-                <span>Accept Work Order Terms</span>
+                <PenTool className="w-3.5 h-3.5" />
+                <span>{isSignOpen ? 'Hide Signature' : 'Sign & Accept Terms'}</span>
               </button>
             </div>
           )}
@@ -156,7 +173,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
               type="button"
               disabled={isSubmitting}
               onClick={handleSendDraft}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer whitespace-nowrap"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Send to Candidate</span>
@@ -185,6 +202,24 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
           </p>
         </div>
       </div>
+
+      {/* Candidate Clarification Request Banner (Prominently visible to Employer & Worker) */}
+      {workOrder.worker_response_notes && (
+        <div className="p-4 rounded-2xl border border-amber-300 dark:border-amber-700/60 bg-amber-50/80 dark:bg-amber-950/30 space-y-2">
+          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 text-xs font-bold uppercase tracking-wider">
+            <MessageSquare className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <span>Candidate Requested Clarification</span>
+          </div>
+          <p className="text-xs text-amber-950 dark:text-amber-200 font-medium leading-relaxed bg-white/60 dark:bg-black/40 p-3 rounded-xl border border-amber-200 dark:border-amber-900/40">
+            "{workOrder.worker_response_notes}"
+          </p>
+          {isEmployer && (
+            <p className="text-[11px] text-amber-800 dark:text-amber-400 italic">
+              💡 The candidate submitted this note before accepting. You can review their points, update the order terms, and re-send.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Clarification Input Box (If toggled by Worker) */}
       {isClarifyOpen && (
@@ -285,6 +320,146 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
           </div>
         )}
       </div>
+
+      {/* Custom Terms & Conditions */}
+      {workOrder.custom_terms_and_conditions && (
+        <div className="space-y-2 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
+          <h4 className="text-xs font-black uppercase text-[#717784] dark:text-zinc-400 tracking-wider">
+            Contractual Clauses & Milestones
+          </h4>
+          <div className="p-3.5 bg-white dark:bg-[#0c0c0e] rounded-xl border border-[#e6e8ec] dark:border-zinc-800 text-xs text-slate-800 dark:text-zinc-200 whitespace-pre-wrap font-mono leading-relaxed">
+            {workOrder.custom_terms_and_conditions}
+          </div>
+        </div>
+      )}
+
+      {/* Document Attachments */}
+      {workOrder.attachment_urls && workOrder.attachment_urls.length > 0 && (
+        <div className="space-y-2 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
+          <h4 className="text-xs font-black uppercase text-[#717784] dark:text-zinc-400 tracking-wider flex items-center gap-1.5">
+            <Paperclip className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
+            <span>Attached Annexures & Documents</span>
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {workOrder.attachment_urls.map((url, idx) => {
+              const fileName = url.split('/').pop()?.split('?')[0] || `Annexure-${idx + 1}.pdf`;
+              return (
+                <a
+                  key={idx}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#0c0c0e] hover:border-[#0f2f63] dark:hover:border-sky-500 transition-colors flex items-center justify-between gap-2 text-xs font-bold text-[#0f2f63] dark:text-sky-400"
+                >
+                  <span className="truncate">{fileName}</span>
+                  <Download className="w-3.5 h-3.5 shrink-0" />
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Digital Signatures Box */}
+      <div className="space-y-3 pt-2 border-t border-[#e6e8ec] dark:border-zinc-800">
+        <h4 className="text-xs font-black uppercase text-[#717784] dark:text-zinc-400 tracking-wider">
+          Digital Signatures & Legal Verification
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-3.5 rounded-xl border border-dashed border-[#e6e8ec] dark:border-zinc-800 bg-slate-50/50 dark:bg-[#121215]">
+            <span className="text-[11px] font-bold text-slate-700 dark:text-zinc-300 block mb-1">
+              Employer Authorized Seal
+            </span>
+            {workOrder.employer_signature_url ? (
+              <div className="p-2 bg-white rounded-lg border border-slate-200 dark:border-zinc-700 max-w-[220px]">
+                <img src={workOrder.employer_signature_url} alt="Employer Signature" className="h-12 w-full object-contain" />
+              </div>
+            ) : (
+              <span className="text-xs text-slate-400 italic">Signature on corporate file</span>
+            )}
+            {workOrder.employer_signed_at && (
+              <span className="text-[10px] text-slate-400 block mt-1">
+                Signed on {new Date(workOrder.employer_signed_at).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+
+          <div className="p-3.5 rounded-xl border border-dashed border-[#e6e8ec] dark:border-zinc-800 bg-slate-50/50 dark:bg-[#121215]">
+            <span className="text-[11px] font-bold text-slate-700 dark:text-zinc-300 block mb-1">
+              Candidate Counter-Signature
+            </span>
+            {workOrder.worker_signature_url ? (
+              <div className="p-2 bg-white rounded-lg border border-slate-200 dark:border-zinc-700 max-w-[220px]">
+                <img src={workOrder.worker_signature_url} alt="Candidate Signature" className="h-12 w-full object-contain" />
+              </div>
+            ) : workOrder.status === 'ACCEPTED' ? (
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                ✓ Digitally Confirmed
+              </span>
+            ) : !isEmployer ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignOpen(true);
+                  setTimeout(() => {
+                    document.getElementById('worker-signature-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 100);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-100 transition cursor-pointer"
+              >
+                <PenTool className="w-3 h-3" />
+                <span>Tap to Sign & Accept</span>
+              </button>
+            ) : (
+              <span className="text-xs text-slate-400 italic">Pending signature upon acceptance</span>
+            )}
+            {workOrder.worker_signed_at && (
+              <span className="text-[10px] text-slate-400 block mt-1">
+                Signed on {new Date(workOrder.worker_signed_at).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Candidate In-Modal Signature Drawer */}
+      {isSignOpen && !isEmployer && workOrder.status === 'SENT' && (
+        <div id="worker-signature-section" className="p-4 sm:p-5 rounded-2xl border-2 border-emerald-300 dark:border-emerald-600 bg-emerald-50/70 dark:bg-emerald-950/40 space-y-3 shadow-md scroll-mt-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h5 className="text-xs font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wide">
+                Candidate Digital Acceptance
+              </h5>
+              <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-0.5">
+                Sign inside the box to accept the terms of this work order and finalize your shift agreement.
+              </p>
+            </div>
+          </div>
+          <SignatureCanvas
+            label="Draw Your Counter-Signature"
+            required
+            height={160}
+            onSignatureChange={(sig) => setWorkerSignature(sig)}
+          />
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsSignOpen(false)}
+              className="px-4 py-2 rounded-full text-xs font-semibold text-[#717784] hover:text-[#0a0a0a] dark:hover:text-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isSubmitting || !workerSignature}
+              onClick={() => handleWorkerAction('ACCEPT')}
+              className="px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+            >
+              Confirm & Accept Work Order
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 3. Event History & Audit Trail */}
       {workOrder.events && workOrder.events.length > 0 && (

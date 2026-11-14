@@ -68,7 +68,7 @@ export const LevelDetailsPage = () => {
 
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100">
-      <main className="max-w-6xl mx-auto space-y-6 pb-20">
+      <main className="max-w-7xl mx-auto space-y-6 pb-20">
         
         {/* Navigation Bar */}
         <div className="pt-2">
