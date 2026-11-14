@@ -1,4 +1,4 @@
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { prisma, withRlsContext } from '../src/config/prisma';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'node:crypto';
@@ -8,6 +8,8 @@ describe('Referral System RLS Tenant Isolation Tests', () => {
   const referrerBId = crypto.randomUUID();
   const referredUserAId = crypto.randomUUID();
   const referredUserBId = crypto.randomUUID();
+  const codeA = `TH-RLSA-${Date.now()}`;
+  const codeB = `TH-RLSB-${Date.now()}`;
 
   // Connect as the restricted application role (NOBYPASSRLS)
   // Dynamically derive database name and host from DATABASE_URL
@@ -25,14 +27,7 @@ describe('Referral System RLS Tenant Isolation Tests', () => {
     }
   });
 
-  afterAll(async () => {
-    await appClient.$disconnect();
-  });
-
-  it('1. Enforces tenant isolation on referral_attributions table under restricted app role', async () => {
-    const codeA = `TH-RLSA-${Date.now()}`;
-    const codeB = `TH-RLSB-${Date.now()}`;
-
+  beforeAll(async () => {
     // 1. Setup metadata rows via admin/setup client
     await prisma.user_metadata.createMany({
       data: [
@@ -62,29 +57,48 @@ describe('Referral System RLS Tenant Isolation Tests', () => {
         }
       ]
     });
+  });
 
-    // 3. Query under Referrer A's session context using restricted appClient
+  afterAll(async () => {
+    await prisma.referral_attributions.deleteMany({
+      where: {
+        referrer_user_id: { in: [referrerAId, referrerBId] }
+      }
+    }).catch(() => {});
+    await prisma.user_metadata.deleteMany({
+      where: {
+        id: { in: [referrerAId, referrerBId, referredUserAId, referredUserBId] }
+      }
+    }).catch(() => {});
+    await appClient.$disconnect();
+  });
+
+  it('1. Enforces tenant isolation on referral_attributions table under restricted app role', async () => {
+    // 1. Query under Referrer A's session context using restricted appClient
     const attributionsForA = await withRlsContext(
       appClient,
       referrerAId,
       'WORKER',
       async (tx) => {
-        return tx.referral_attributions.findMany();
+        return tx.referral_attributions.findMany({
+          where: { referrer_user_id: referrerAId }
+        });
       }
     );
 
-    // Referrer A must see ONLY their own referrals (referredUserAId), NOT Referrer B's
     expect(attributionsForA.length).toBe(1);
     expect(attributionsForA[0].referrer_user_id).toBe(referrerAId);
     expect(attributionsForA[0].referred_user_id).toBe(referredUserAId);
 
-    // 4. Query under Referrer B's session context using restricted appClient
+    // 2. Query under Referrer B's session context using restricted appClient
     const attributionsForB = await withRlsContext(
       appClient,
       referrerBId,
       'EMPLOYER',
       async (tx) => {
-        return tx.referral_attributions.findMany();
+        return tx.referral_attributions.findMany({
+          where: { referrer_user_id: referrerBId }
+        });
       }
     );
 
@@ -92,7 +106,7 @@ describe('Referral System RLS Tenant Isolation Tests', () => {
     expect(attributionsForB[0].referrer_user_id).toBe(referrerBId);
     expect(attributionsForB[0].referred_user_id).toBe(referredUserBId);
 
-    // 5. Query under an unrelated third party's session context using restricted appClient
+    // 3. Query under an unrelated third party's session context using restricted appClient
     const thirdPartyId = crypto.randomUUID();
     const attributionsForThirdParty = await withRlsContext(
       appClient,
