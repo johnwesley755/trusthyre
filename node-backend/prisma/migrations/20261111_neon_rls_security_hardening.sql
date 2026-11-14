@@ -1168,5 +1168,69 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_rec_interactions_invite_app_dedup
 ON public.recommendation_interactions((metadata->>'applicationId'))
 WHERE interaction_type = 'INVITE' AND metadata->>'applicationId' IS NOT NULL;
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_job_applications_job_worker
+ON public.job_applications(job_id, worker_id);
+
+-- SECURITY DEFINER Procedures for Attendance Challenges under Non-bypass Application Role
+CREATE OR REPLACE FUNCTION public.consume_attendance_challenge(
+    p_nonce text,
+    p_shift_id uuid,
+    p_action text,
+    p_issuer_id text,
+    p_hashed_sig text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_rows_affected integer;
+BEGIN
+    UPDATE public.attendance_challenges
+    SET consumed_at = clock_timestamp()
+    WHERE nonce = p_nonce
+      AND shift_id = p_shift_id
+      AND intended_action = p_action
+      AND issuer_user_id = p_issuer_id
+      AND hashed_secret = p_hashed_sig
+      AND challenge_type = 'QR_CODE'
+      AND consumed_at IS NULL
+      AND expires_at > clock_timestamp();
+
+    GET DIAGNOSTICS v_rows_affected = ROW_COUNT;
+    RETURN v_rows_affected > 0;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.record_challenge_failed_attempt(
+    p_shift_id uuid,
+    p_action text
+)
+RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_new_attempts integer;
+BEGIN
+    UPDATE public.attendance_challenges
+    SET attempt_count = attempt_count + 1
+    WHERE shift_id = p_shift_id
+      AND intended_action = p_action
+      AND challenge_type = 'ONE_TIME_PIN'
+      AND consumed_at IS NULL
+      AND expires_at > clock_timestamp()
+      AND attempt_count < max_attempts
+    RETURNING attempt_count INTO v_new_attempts;
+
+    RETURN COALESCE(v_new_attempts, -1);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.consume_attendance_challenge TO PUBLIC;
+GRANT EXECUTE ON FUNCTION public.record_challenge_failed_attempt TO PUBLIC;
+
 COMMIT;
 

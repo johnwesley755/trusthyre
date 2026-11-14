@@ -204,17 +204,25 @@ export const applyForJob = async (c: Context) => {
 
     const effectiveVoiceNote = voiceNoteUrl || voice_note_url || null;
 
-    const application = await prisma.job_applications.create({
-      data: {
-        id: uuidv4(),
-        job_id: jobId,
-        worker_id: workerId,
-        status: 'PENDING',
-        cover_letter: coverLetter ? (transitModePreferred ? `${coverLetter} [Transit: ${transitModePreferred}]` : coverLetter) : (transitModePreferred ? `[Transit: ${transitModePreferred}]` : null),
-        voice_note_url: effectiveVoiceNote,
-        applied_at: new Date()
-      } as any
-    });
+    let application: any;
+    try {
+      application = await prisma.job_applications.create({
+        data: {
+          id: uuidv4(),
+          job_id: jobId,
+          worker_id: workerId,
+          status: 'PENDING',
+          cover_letter: coverLetter ? (transitModePreferred ? `${coverLetter} [Transit: ${transitModePreferred}]` : coverLetter) : (transitModePreferred ? `[Transit: ${transitModePreferred}]` : null),
+          voice_note_url: effectiveVoiceNote,
+          applied_at: new Date()
+        } as any
+      });
+    } catch (createErr: any) {
+      if (createErr.code === 'P2002' || (createErr.message && createErr.message.includes('uq_job_applications_job_worker'))) {
+        return c.json(ApiResponse.error("You have already applied for this job"), 400 as any);
+      }
+      throw createErr;
+    }
 
     // Dispatch Synchronized Notification for Employer (In-App + FCM Push)
     await NotificationDispatcher.dispatch({
@@ -359,16 +367,24 @@ export const dispatchOffer = async (c: Context) => {
       return c.json(ApiResponse.error(`An application already exists with status: ${existing.status}`), 400 as any);
     }
 
-    const application = await prisma.job_applications.create({
-      data: {
-        id: uuidv4(),
-        job_id: jobId,
-        worker_id: canonicalWorkerId,
-        status: 'OFFER_SENT',
-        cover_letter: coverLetter || "Offer Dispatched",
-        applied_at: new Date()
+    let application: any;
+    try {
+      application = await prisma.job_applications.create({
+        data: {
+          id: uuidv4(),
+          job_id: jobId,
+          worker_id: canonicalWorkerId,
+          status: 'OFFER_SENT',
+          cover_letter: coverLetter || "Offer Dispatched",
+          applied_at: new Date()
+        }
+      });
+    } catch (createErr: any) {
+      if (createErr.code === 'P2002' || (createErr.message && createErr.message.includes('uq_job_applications_job_worker'))) {
+        return c.json(ApiResponse.error("Offer or application already exists for this candidate on this job."), 400 as any);
       }
-    });
+      throw createErr;
+    }
 
     // Dispatch Synchronized Notification for Worker (Job Offer)
     await NotificationDispatcher.dispatch({

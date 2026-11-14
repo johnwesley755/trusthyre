@@ -67,6 +67,7 @@ model job_applications {
   interviews             interviews[]
   work_orders            work_orders[]
 
+  @@unique([job_id, worker_id], map: "uq_job_applications_job_worker")
   @@index([job_id], map: "idx_job_applications_job_id")
   @@index([worker_id], map: "idx_job_applications_worker_id")
 }

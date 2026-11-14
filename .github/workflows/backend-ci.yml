@@ -1,0 +1,51 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, dev-branch, 'fix/**', 'feat/**' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-and-test:
+    name: Backend Validation, Types & Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: node-backend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: node-backend/package-lock.json
+
+      - name: Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Validate Prisma Schema
+        run: npx prisma validate
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: TypeScript Compilation Check
+        run: npx tsc --noEmit
+
+      - name: Run Backend Regression Test Suite
+        run: bun test
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test-super-secret-jwt-key-for-unit-tests-1234567890
+          QR_SIGNING_SECRET: test-qr-hmac-sha256-signing-secret-key-32bytes-long
