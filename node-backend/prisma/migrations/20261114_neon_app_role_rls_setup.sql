@@ -70,14 +70,20 @@ AS $$
 DECLARE
     v_new_attempts integer;
 BEGIN
+    WITH target AS (
+        SELECT id FROM public.attendance_challenges
+        WHERE shift_id = p_shift_id
+          AND intended_action = p_action
+          AND challenge_type = 'ONE_TIME_PIN'
+          AND consumed_at IS NULL
+          AND expires_at > clock_timestamp()
+          AND attempt_count < max_attempts
+        ORDER BY created_at DESC
+        LIMIT 1
+    )
     UPDATE public.attendance_challenges
     SET attempt_count = attempt_count + 1
-    WHERE shift_id = p_shift_id
-      AND intended_action = p_action
-      AND challenge_type = 'ONE_TIME_PIN'
-      AND consumed_at IS NULL
-      AND expires_at > clock_timestamp()
-      AND attempt_count < max_attempts
+    WHERE id IN (SELECT id FROM target)
     RETURNING attempt_count INTO v_new_attempts;
 
     RETURN COALESCE(v_new_attempts, -1);
