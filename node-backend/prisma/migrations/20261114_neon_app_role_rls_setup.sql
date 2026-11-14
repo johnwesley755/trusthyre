@@ -9,7 +9,7 @@
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'trusthire_app') THEN
-    CREATE ROLE trusthire_app WITH LOGIN NOBYPASSRLS;
+    CREATE ROLE trusthire_app WITH LOGIN NOBYPASSRLS PASSWORD 'trusthire_app_secure_pass';
   ELSE
     ALTER ROLE trusthire_app WITH NOBYPASSRLS;
   END IF;

@@ -69,7 +69,16 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y postgresql-client
           PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261111_neon_rls_security_hardening.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261112_recommendation_system.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261113_digital_work_orders.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261113_shifts_and_attendance.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261113_audit_hardening_phases_1_to_4.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261113_audit_hardening_part2.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261113_audit_hardening_part3.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261114_audit_hardening_part4.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261114_audit_hardening_part5.sql
           PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -f prisma/migrations/20261114_neon_app_role_rls_setup.sql
+          PGPASSWORD=postgrespassword psql -h localhost -U postgres -d trusthire_test_db -c "ALTER ROLE trusthire_app WITH PASSWORD 'apptestpassword';"
 
       - name: TypeScript Compilation Check
         run: npx tsc --noEmit

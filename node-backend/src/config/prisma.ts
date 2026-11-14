@@ -40,7 +40,16 @@ const attachRetryExtension = (client: PrismaClient): PrismaClient => {
               client,
               store.currentUserId,
               store.currentUserRole || 'WORKER',
-              async () => query(args)
+              async (tx: any) => {
+                // Route through the specific transactional client connection that received RLS session variables
+                if (model && tx[model] && typeof tx[model][operation] === 'function') {
+                  return await tx[model][operation](args);
+                }
+                if (typeof tx[operation] === 'function') {
+                  return await tx[operation](args);
+                }
+                return query(args);
+              }
             );
           } finally {
             store._insideRlsWrapper = false;
