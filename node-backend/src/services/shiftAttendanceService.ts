@@ -359,6 +359,11 @@ export const ShiftAttendanceService = {
     // Hash secret payload for database challenge storage
     const hashedSecret = crypto.createHash('sha256').update(signature).digest('hex');
 
+    // Calculate expiration timestamp with local timezone offset compensation so PostgreSQL timestamptz comparisons align
+    const rawExpiresAt = new Date(expiresAt * 1000);
+    const tzOffsetMs = rawExpiresAt.getTimezoneOffset() * 60000;
+    const dbExpiresAt = new Date(rawExpiresAt.getTime() - tzOffsetMs);
+
     await prisma.attendance_challenges.create({
       data: {
         shift_id: shift.id,
@@ -367,7 +372,7 @@ export const ShiftAttendanceService = {
         hashed_secret: hashedSecret,
         nonce: nonce,
         issuer_user_id: issuerUserId,
-        expires_at: new Date(expiresAt * 1000)
+        expires_at: dbExpiresAt
       }
     });
 
@@ -444,18 +449,22 @@ export const ShiftAttendanceService = {
           ) AS consumed;
         `;
         if (queryRes && queryRes.length > 0 && queryRes[0].consumed !== undefined) {
-          return Boolean(queryRes[0].consumed);
+          if (Boolean(queryRes[0].consumed)) return true;
         }
       } catch (procErr: any) {
         // Fallback to updateMany if function is not defined (e.g. initial dev test without raw migrations)
       }
 
       // Atomic single-step conditional updateMany fallback
+      const rawNow = new Date();
+      const tzOffsetMs = rawNow.getTimezoneOffset() * 60000;
+      const dbNow = new Date(rawNow.getTime() - tzOffsetMs);
+
       const updateResult = await db.attendance_challenges.updateMany({
         where: {
           nonce: nonce,
           consumed_at: null,
-          expires_at: { gt: new Date() },
+          expires_at: { gt: dbNow },
           shift_id: expectedShiftId,
           intended_action: action,
           challenge_type: 'QR_CODE',
@@ -463,7 +472,7 @@ export const ShiftAttendanceService = {
           hashed_secret: hashedSignature
         },
         data: {
-          consumed_at: new Date()
+          consumed_at: dbNow
         }
       });
 
@@ -481,7 +490,9 @@ export const ShiftAttendanceService = {
 
     // Cryptographically secure 6-digit PIN
     const otp = crypto.randomInt(100000, 1000000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes TTL
+    const rawExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes TTL
+    const tzOffsetMs = rawExpiresAt.getTimezoneOffset() * 60000;
+    const dbExpiresAt = new Date(rawExpiresAt.getTime() - tzOffsetMs);
     const nonce = crypto.randomBytes(16).toString('hex');
 
     // SHA-256 hash of OTP
@@ -495,12 +506,12 @@ export const ShiftAttendanceService = {
         hashed_secret: hashedSecret,
         nonce: nonce,
         issuer_user_id: issuerUserId,
-        expires_at: expiresAt,
+        expires_at: dbExpiresAt,
         max_attempts: 3
       }
     });
 
-    return { otp, expiresAt: expiresAt.getTime() };
+    return { otp, expiresAt: rawExpiresAt.getTime() };
   },
 
   /**
@@ -512,7 +523,9 @@ export const ShiftAttendanceService = {
   verifyAndConsumeOtpPin: async (shiftId: string, enteredOtp: string, action: 'CHECK_IN' | 'CHECK_OUT', txClient?: any): Promise<boolean> => {
     const db = txClient || prisma;
     const hashedInput = crypto.createHash('sha256').update(enteredOtp.trim()).digest('hex');
-    const now = new Date();
+    const rawNow = new Date();
+    const tzOffsetMs = rawNow.getTimezoneOffset() * 60000;
+    const dbNow = new Date(rawNow.getTime() - tzOffsetMs);
 
     // 1. Atomically consume if hash matches and attempt_count < max_attempts
     try {
@@ -534,12 +547,12 @@ export const ShiftAttendanceService = {
           challenge_type: 'ONE_TIME_PIN',
           intended_action: action,
           consumed_at: null,
-          expires_at: { gt: now },
+          expires_at: { gt: dbNow },
           attempt_count: { lt: 3 },
           hashed_secret: hashedInput
         },
         data: {
-          consumed_at: now
+          consumed_at: dbNow
         }
       });
 
@@ -569,7 +582,7 @@ export const ShiftAttendanceService = {
           challenge_type: 'ONE_TIME_PIN',
           intended_action: action,
           consumed_at: null,
-          expires_at: { gt: now }
+          expires_at: { gt: dbNow }
         },
         data: {
           attempt_count: { increment: 1 }
