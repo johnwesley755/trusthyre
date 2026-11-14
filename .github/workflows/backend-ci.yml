@@ -13,6 +13,8 @@ jobs:
   validate-and-test:
     name: Backend Validation, Types & Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     services:
       postgres:

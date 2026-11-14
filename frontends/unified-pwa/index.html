@@ -25,7 +25,29 @@
         anonymize_ip: true
       });
     </script>
-    <!-- Dynamic Canonical managed per-page by SeoHead (SSR prerender injects page-specific canonical) -->
+    <!-- Immediate Synchronous Canonical & URL Hydration -->
+    <link rel="canonical" id="trusthyre-canonical" href="https://trusthyre.com/" />
+    <script>
+      (function() {
+        try {
+          var origin = 'https://trusthyre.com';
+          var cleanPath = window.location.pathname.replace(/\/+$/, '') || '/';
+          var fullCanonical = origin + cleanPath;
+          var link = document.getElementById('trusthyre-canonical') || document.querySelector('link[rel="canonical"]');
+          if (link) {
+            link.setAttribute('href', fullCanonical);
+          }
+          var ogUrl = document.querySelector('meta[property="og:url"]');
+          if (ogUrl) {
+            ogUrl.setAttribute('content', fullCanonical);
+          }
+          var twUrl = document.querySelector('meta[name="twitter:url"]');
+          if (twUrl) {
+            twUrl.setAttribute('content', fullCanonical);
+          }
+        } catch (_) {}
+      })();
+    </script>
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
     <!-- Open Graph / Facebook / WhatsApp Preview -->

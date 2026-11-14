@@ -88,7 +88,7 @@ export default function CreateWorkOrderPage() {
   // Load Candidate profile if provided
   const { data: worker } = useQuery({
     queryKey: ['worker', workerId],
-    queryFn: () => workerService.getProfileById(workerId),
+    queryFn: () => workerService.getWorkerById(workerId!),
     enabled: Boolean(workerId),
   });
 

@@ -20,10 +20,9 @@ export class ReferralService {
    */
   static generateRandomCode(): string {
     const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-    const bytes = crypto.randomBytes(6);
     let code = 'TH-';
     for (let i = 0; i < 6; i++) {
-      code += chars[bytes[i] % chars.length];
+      code += chars[crypto.randomInt(chars.length)];
     }
     return code;
   }
