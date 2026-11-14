@@ -4,7 +4,7 @@
 -- STAGE: Phase 1 to 4 Second-Pass Hardening
 -- ============================================================================
 
--- 0. HARDEN is_app_admin TO HANDLE NULL SETTINGS AND SUPERUSER/DB OWNER CONTEXT
+-- 0. HARDEN is_app_admin TO HANDLE NULL SETTINGS
 CREATE OR REPLACE FUNCTION public.is_app_admin() 
 RETURNS boolean 
 LANGUAGE sql 
@@ -12,8 +12,7 @@ STABLE
 PARALLEL SAFE 
 AS $$
   SELECT COALESCE(current_setting('app.current_user_role', true) IN ('ADMIN', 'SUPER_ADMIN'), false)
-      OR COALESCE(current_setting('app.bypass_rls', true) = 'true', false)
-      OR session_user IN ('postgres', 'neondb_owner');
+      OR COALESCE(current_setting('app.bypass_rls', true) = 'true', false);
 $$;
 
 -- 1. EXPLICIT IMMUTABILITY FOR AUDIT TABLES

@@ -884,6 +884,14 @@ export const ShiftAttendanceService = {
       throw new Error("Shift not found");
     }
 
+    // Cancellation check on shift and associated work order
+    if (shift.status === 'CANCELLED') {
+      throw new Error("Cannot record attendance for a cancelled shift.");
+    }
+    if (shift.work_orders?.status === 'CANCELLED') {
+      throw new Error("Cannot record attendance for a cancelled work order.");
+    }
+
     const isEmployer = shift.employer_id === supervisorUserId;
     const isSupervisor = shift.supervisor_id === supervisorUserId;
     if (!isEmployer && !isSupervisor) {
@@ -895,6 +903,15 @@ export const ShiftAttendanceService = {
     }
 
     return prisma.$transaction(async (tx) => {
+      // Recheck active status within transaction to eliminate concurrent cancellation race
+      const activeShift = await tx.shifts.findUnique({
+        where: { id: shift.id },
+        include: { work_orders: true }
+      });
+      if (!activeShift || activeShift.status === 'CANCELLED' || activeShift.work_orders?.status === 'CANCELLED') {
+        throw new Error("Conflict: Shift or associated work order was cancelled.");
+      }
+
       let attendance = await tx.shift_attendances.findUnique({
         where: {
           shift_id_worker_id: {

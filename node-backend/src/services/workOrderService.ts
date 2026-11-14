@@ -515,12 +515,13 @@ export class WorkOrderService {
     const nextVersion = order.terms_version + 1;
 
     return prisma.$transaction(async (tx) => {
-      // Optimistic CAS update: condition on exact terms_version and non-terminal status
+      // Optimistic CAS update: condition on exact terms_version and exact expected status
+      // Prevents concurrent status transitions (e.g. DRAFT -> SENT) from being unintentionally reverted
       const updateResult = await tx.work_orders.updateMany({
         where: {
           id: orderId,
           terms_version: order.terms_version,
-          status: { notIn: ['COMPLETED', 'CANCELLED', 'DECLINED'] }
+          status: order.status
         },
         data: {
           job_title: input.jobTitle?.trim(),
@@ -559,7 +560,7 @@ export class WorkOrderService {
       });
 
       if (updateResult.count === 0) {
-        throw new Error("Conflict: Work order terms were modified by another concurrent request.");
+        throw new Error("Conflict: Work order terms or status were concurrently modified. Please refresh and retry.");
       }
 
       const updated = await tx.work_orders.findUniqueOrThrow({ where: { id: orderId } });

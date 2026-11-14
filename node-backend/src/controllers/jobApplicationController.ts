@@ -304,9 +304,21 @@ export const dispatchOffer = async (c: Context) => {
 
     if (existing) {
       if (existing.status === 'PENDING') {
-        const updated = await prisma.job_applications.update({
-          where: { id: existing.id },
+        // Atomic CAS update: only update if status is still PENDING
+        const updateResult = await prisma.job_applications.updateMany({
+          where: {
+            id: existing.id,
+            status: 'PENDING'
+          },
           data: { status: 'OFFER_SENT' }
+        });
+
+        if (updateResult.count === 0) {
+          return c.json(ApiResponse.error("Offer has already been dispatched or application status was modified concurrently."), 409 as any);
+        }
+
+        const updated = await prisma.job_applications.findUniqueOrThrow({
+          where: { id: existing.id }
         });
 
         // Dispatch Synchronized Notification for Worker (Job Offer)

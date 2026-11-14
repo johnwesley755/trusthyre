@@ -1116,11 +1116,11 @@ export const recommendationEngineService = {
       throw new Error(`Forbidden: Direct client submission of ${data.interactionType} conversion telemetry is disallowed. Events are recorded server-side upon workflow execution.`);
     }
 
-    // 2. Replay Prevention & Deduplication for APPLY Telemetry
-    if (data.interactionType === 'APPLY' && data.metadata?.applicationId) {
+    // 2. Replay Prevention & Deduplication for Conversion Telemetry (APPLY & INVITE)
+    if ((data.interactionType === 'APPLY' || data.interactionType === 'INVITE') && data.metadata?.applicationId) {
       const existing = await prisma.recommendation_interactions.findFirst({
         where: {
-          interaction_type: 'APPLY',
+          interaction_type: data.interactionType,
           metadata: {
             path: ['applicationId'],
             equals: data.metadata.applicationId

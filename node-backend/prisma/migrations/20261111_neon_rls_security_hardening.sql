@@ -40,8 +40,8 @@ LANGUAGE sql
 STABLE 
 PARALLEL SAFE 
 AS $$
-  SELECT current_setting('app.current_user_role', true) IN ('ADMIN', 'SUPER_ADMIN')
-      OR current_setting('app.bypass_rls', true) = 'true';
+  SELECT COALESCE(current_setting('app.current_user_role', true) IN ('ADMIN', 'SUPER_ADMIN'), false)
+      OR COALESCE(current_setting('app.bypass_rls', true) = 'true', false);
 $$;
 
 GRANT EXECUTE ON FUNCTION public.current_app_user_id() TO PUBLIC;
@@ -1126,6 +1126,17 @@ BEGIN
       NEW.max_attempts IS DISTINCT FROM OLD.max_attempts) THEN
     RAISE EXCEPTION 'attendance_challenges secrets, nonces, limits, expiry, and challenge metadata are immutable';
   END IF;
+
+  -- Monotonic state transitions: cannot unconsume a consumed challenge
+  IF (OLD.consumed_at IS NOT NULL AND NEW.consumed_at IS DISTINCT FROM OLD.consumed_at) THEN
+    RAISE EXCEPTION 'attendance_challenges: once consumed, consumed_at cannot be altered or reset';
+  END IF;
+
+  -- Monotonic attempt count: cannot decrease failed attempt count
+  IF (NEW.attempt_count < OLD.attempt_count) THEN
+    RAISE EXCEPTION 'attendance_challenges: attempt_count cannot decrease';
+  END IF;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -1140,21 +1151,9 @@ DROP POLICY IF EXISTS attendance_challenges_update_policy ON public.attendance_c
 CREATE POLICY attendance_challenges_update_policy ON public.attendance_challenges
 FOR UPDATE USING (
     (SELECT is_app_admin())
-    OR shift_id IN (
-        SELECT s.id FROM public.shifts s
-        WHERE s.employer_id = (SELECT current_app_user_id())
-           OR s.supervisor_id = (SELECT current_app_user_id())
-           OR s.worker_id = (SELECT current_app_user_id())
-    )
 )
 WITH CHECK (
     (SELECT is_app_admin())
-    OR shift_id IN (
-        SELECT s.id FROM public.shifts s
-        WHERE s.employer_id = (SELECT current_app_user_id())
-           OR s.supervisor_id = (SELECT current_app_user_id())
-           OR s.worker_id = (SELECT current_app_user_id())
-    )
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_work_orders_active_application 
@@ -1164,6 +1163,10 @@ WHERE application_id IS NOT NULL AND status NOT IN ('CANCELLED', 'DECLINED');
 CREATE UNIQUE INDEX IF NOT EXISTS uq_rec_interactions_app_dedup
 ON public.recommendation_interactions((metadata->>'applicationId'))
 WHERE interaction_type = 'APPLY' AND metadata->>'applicationId' IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_rec_interactions_invite_app_dedup
+ON public.recommendation_interactions((metadata->>'applicationId'))
+WHERE interaction_type = 'INVITE' AND metadata->>'applicationId' IS NOT NULL;
 
 COMMIT;
 
