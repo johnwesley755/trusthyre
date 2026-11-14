@@ -11,6 +11,13 @@ jobs:
     name: Backend Validation, Types & Tests
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/trusthire_test_db?schema=public"
+      DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/trusthire_test_db?schema=public"
+      JWT_SECRET: "test-super-secret-jwt-key-for-unit-tests-1234567890"
+      QR_SIGNING_SECRET: "test-qr-hmac-sha256-signing-secret-key-32bytes-long"
+      NODE_ENV: test
+
     defaults:
       run:
         working-directory: node-backend
