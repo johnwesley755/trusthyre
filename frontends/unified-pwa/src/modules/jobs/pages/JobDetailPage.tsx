@@ -149,7 +149,7 @@ const formatExactExperience = (jobData: any, mode: 'header' | 'stat' | 'detail' 
 };
 
 export default function JobDetailPage() {
-  const { id: rawSlugOrId } = useParams<{ id: string }>();
+  const { city: urlCity, title: urlTitle, id: rawSlugOrId } = useParams<{ city?: string; title?: string; id: string }>();
   const id = extractJobIdFromSlug(rawSlugOrId);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -478,8 +478,22 @@ export default function JobDetailPage() {
   };
 
   if (isLoading) {
+    // Instant preliminary canonical URL based on URL parameters to prevent any SEO / crawler delay
+    const initialCanonicalPath = urlCity && urlTitle && id
+      ? `/${urlCity}/${urlTitle}/job/${id}`
+      : (window.location.pathname.replace(/\/+$/, '') || `/job/${id}`);
+
+    const fallbackJobTitle = urlTitle
+      ? urlTitle.replace(/-in-.*$/, '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+      : 'Verified Job Opening';
+
     return (
       <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] flex items-center justify-center transition-colors duration-200">
+        <SeoHead
+          title={`${fallbackJobTitle} | TrustHyre`}
+          description="View verified job details, salary, employer background, and direct interview application on TrustHyre."
+          canonicalPath={initialCanonicalPath}
+        />
         <AppLoader variant="page" message="Loading verified job details..." />
       </div>
     );
