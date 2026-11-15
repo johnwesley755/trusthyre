@@ -10,6 +10,7 @@
     "dev:cloudflare": "wrangler dev",
     "deploy": "wrangler deploy",
     "seed:admin": "ts-node prisma/seed-admin.ts",
+    "seed:email-templates": "ts-node prisma/seed-email-templates.ts",
     "test": "bun test",
     "postinstall": "prisma generate"
   },
@@ -34,6 +35,7 @@
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^10.0.0",
     "prisma": "^5.22.0",
+    "sanitize-html": "^2.18.2",
     "uuid": "^14.0.2",
     "ws": "^8.21.3"
   },
@@ -43,6 +45,7 @@
     "@types/node": "^26.6.5",
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.23.1",
+    "@types/sanitize-html": "^2.16.2",
     "@types/uuid": "^10.0.0",
     "express-validator": "^7.3.2",
     "ts-node": "^10.9.2",

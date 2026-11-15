@@ -46,6 +46,8 @@ import { AdminLeadDetailPage } from '../modules/admin/pages/AdminLeadDetailPage'
 import { AdminBlogPage } from '../modules/admin/pages/AdminBlogPage';
 import { AdminBlogEditorPage } from '../modules/admin/pages/AdminBlogEditorPage';
 import { AdminAnalyticsPage } from '../modules/admin/pages/AdminAnalyticsPage';
+import { AdminEmailTemplatesPage } from '../modules/admin/pages/AdminEmailTemplatesPage';
+import { EmailTemplateEditorPage } from '../modules/admin/pages/EmailTemplateEditorPage';
 import { BlogListingPage } from '../modules/blog/pages/BlogListingPage';
 import { BlogPostPage } from '../modules/blog/pages/BlogPostPage';
 
@@ -379,6 +381,18 @@ export const router = createBrowserRouter([
               {
                 path: 'blog/:id/edit',
                 element: <AdminBlogEditorPage />,
+              },
+              {
+                path: 'email-templates',
+                element: <AdminEmailTemplatesPage />,
+              },
+              {
+                path: 'email-templates/new',
+                element: <EmailTemplateEditorPage />,
+              },
+              {
+                path: 'email-templates/:id/edit',
+                element: <EmailTemplateEditorPage />,
               },
             ],
           },

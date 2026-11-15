@@ -31,7 +31,8 @@ import {
   ShieldCheck,
   Building2,
   BarChart3,
-  Clock
+  Clock,
+  Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../providers/TranslationContext';
@@ -303,6 +304,16 @@ export const AppTopNavbar = () => {
                             >
                               <BookOpen className="w-4 h-4 text-[#717784]" />
                               <span>Blog & SEO Manager</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                navigate('/admin/email-templates');
+                              }}
+                              className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors cursor-pointer text-left"
+                            >
+                              <Mail className="w-4 h-4 text-[#717784]" />
+                              <span>Email Templates</span>
                             </button>
                             <button
                               onClick={() => {

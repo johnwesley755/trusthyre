@@ -72,7 +72,7 @@ export const getOtpTemplate = (otp: string, email?: string) => {
                                                     <tr>
                                                         <td style="vertical-align: middle;">
                                                             <!-- Official High-Resolution Hosted Logo Asset -->
-                                                            <img src="https://trusthyre.com/logo.png" onerror="this.onerror=null;this.src='https://trust-hire-one.vercel.app/logo.png';" alt="TrustHyre" height="36" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
+                                                            <img src="https://trusthyre.com/logo.png" alt="TrustHyre" width="150" height="36" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -239,7 +239,7 @@ export const getResetPasswordTemplate = (token: string, email?: string) => {
                                                     <tr>
                                                         <td style="vertical-align: middle;">
                                                             <!-- Official High-Resolution Hosted Logo Asset -->
-                                                            <img src="https://trusthyre.com/logo.png" onerror="this.onerror=null;this.src='https://trust-hire-one.vercel.app/logo.png';" alt="TrustHyre" height="36" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
+                                                            <img src="https://trusthyre.com/logo.png" alt="TrustHyre" width="150" height="36" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
                                                         </td>
                                                     </tr>
                                                 </table>
