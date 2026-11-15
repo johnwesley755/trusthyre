@@ -15,7 +15,8 @@ import {
   HelpCircle,
   RotateCcw,
   Image,
-  Copy
+  Copy,
+  ShieldAlert
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminEmailTemplateService } from '../../../services/adminEmailTemplate.service';
@@ -47,6 +48,228 @@ export const TRUSTHYRE_BRAND_HEADER_SNIPPET = `<!-- Brand Header: Authority Navy
 export const TRUSTHYRE_LOGO_SNIPPET = `<a href="https://trusthyre.com" target="_blank" style="text-decoration: none; display: inline-block;">
   <img src="https://trusthyre.com/logo.png" alt="TrustHyre" width="150" height="36" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
 </a>`;
+
+export const CODE_TEMPLATE_DEFAULTS: Record<string, {
+  name: string;
+  category: string;
+  subject: string;
+  preheader: string;
+  variables: Record<string, any>;
+  html: string;
+}> = {
+  AUTH_PASSWORD_RESET: {
+    name: 'Password Recovery Notification',
+    category: 'AUTHENTICATION',
+    subject: '{{params.token}} is your TrustHyre password reset code',
+    preheader: '{{params.token}} is your TrustHyre password reset code. Valid for 15 minutes.',
+    variables: {
+      token: '639201',
+      recipientEmail: 'user@example.com',
+      resetUrl: 'https://trusthyre.com/reset-password?token=639201',
+      logoUrl: 'https://trusthyre.com/logo.png',
+      expiresInMinutes: 15
+    },
+    html: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{params.token}} is your TrustHyre password reset code</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 24px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 47, 99, 0.05);">
+          <tr>
+            <td style="padding: 20px 32px; background-color: #0f2f63; border-bottom: 1px solid #1e3a8a;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="left" style="vertical-align: middle;">
+                    <a href="https://trusthyre.com" target="_blank" style="text-decoration: none; display: inline-block;">
+                      <img src="https://trusthyre.com/logo.png" alt="TrustHyre" width="150" height="36" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
+                    </a>
+                  </td>
+                  <td align="right" style="vertical-align: middle;">
+                    <span style="display: inline-block; background-color: rgba(255, 255, 255, 0.12); color: #ffffff; font-size: 10px; font-weight: 700; padding: 5px 12px; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, 0.22); letter-spacing: 1px; text-transform: uppercase;">
+                      Identity Auth
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px; color: #1e293b; font-size: 15px; line-height: 1.6;">
+              <h2 style="margin: 0 0 16px 0; color: #0f2f63; font-size: 18px; font-weight: 700;">Password Reset Request</h2>
+              <p style="margin: 0 0 16px 0; color: #475569;">
+                We received a request to reset your TrustHyre password. Use the verification code below or click the reset button to set a new password:
+              </p>
+              <div style="margin: 24px 0; padding: 18px; background-color: #f1f5f9; border-radius: 10px; text-align: center; border: 1px solid #cbd5e1;">
+                <span style="font-size: 28px; font-weight: 800; letter-spacing: 6px; color: #0f2f63; font-family: monospace;">{{params.token}}</span>
+                <p style="margin: 6px 0 0 0; font-size: 11px; color: #64748b;">Code expires in {{params.expiresInMinutes}} minutes.</p>
+              </div>
+              <div style="margin: 24px 0; text-align: center;">
+                <a href="{{params.resetUrl}}" style="display: inline-block; background-color: #0f2f63; color: #ffffff; padding: 12px 28px; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+                  Reset My Password
+                </a>
+              </div>
+              <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                If you did not request a password reset, you can safely ignore this email. Your account remains secure.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px 32px; background-color: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px;">
+              © 2026 TrustHyre Technologies. Safe, verified workforce recruitment.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+  },
+  AUTH_EMAIL_OTP: {
+    name: 'Authentication OTP Code',
+    category: 'AUTHENTICATION',
+    subject: '{{params.otp}} is your TrustHyre verification code',
+    preheader: '{{params.otp}} is your TrustHyre verification code. Valid for 15 minutes.',
+    variables: {
+      otp: '481920',
+      recipientEmail: 'user@example.com',
+      logoUrl: 'https://trusthyre.com/logo.png',
+      expiresInMinutes: 15
+    },
+    html: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{params.otp}} is your TrustHyre verification code</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 24px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 47, 99, 0.05);">
+          <tr>
+            <td style="padding: 20px 32px; background-color: #0f2f63; border-bottom: 1px solid #1e3a8a;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="left" style="vertical-align: middle;">
+                    <a href="https://trusthyre.com" target="_blank" style="text-decoration: none; display: inline-block;">
+                      <img src="https://trusthyre.com/logo.png" alt="TrustHyre" width="150" height="36" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
+                    </a>
+                  </td>
+                  <td align="right" style="vertical-align: middle;">
+                    <span style="display: inline-block; background-color: rgba(255, 255, 255, 0.12); color: #ffffff; font-size: 10px; font-weight: 700; padding: 5px 12px; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, 0.22); letter-spacing: 1px; text-transform: uppercase;">
+                      Security Code
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px; color: #1e293b; font-size: 15px; line-height: 1.6;">
+              <h2 style="margin: 0 0 16px 0; color: #0f2f63; font-size: 18px; font-weight: 700;">Verification Code</h2>
+              <p style="margin: 0 0 16px 0; color: #475569;">
+                Use the one-time passcode below to complete your authentication on TrustHyre:
+              </p>
+              <div style="margin: 24px 0; padding: 18px; background-color: #eff6ff; border-radius: 10px; text-align: center; border: 1px solid #bfdbfe;">
+                <span style="font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #0f2f63; font-family: monospace;">{{params.otp}}</span>
+                <p style="margin: 6px 0 0 0; font-size: 11px; color: #1e40af;">Valid for {{params.expiresInMinutes}} minutes. Do not share this code.</p>
+              </div>
+              <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                If you did not attempt to sign in, please update your account credentials immediately.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px 32px; background-color: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px;">
+              © 2026 TrustHyre Technologies. Safe, verified workforce recruitment.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+  },
+  ADMIN_INVITATION: {
+    name: 'Admin Console Invitation',
+    category: 'INVITATION',
+    subject: '🛡️ Invitation to join TrustHyre as an Administrator',
+    preheader: 'You have been invited to join the TrustHyre Administrative Portal.',
+    variables: {
+      inviterName: 'Super Admin',
+      recipientEmail: 'new.admin@trusthyre.com',
+      acceptUrl: 'https://trusthyre.com/admin/accept-invite?token=sample_token',
+      logoUrl: 'https://trusthyre.com/logo.png',
+      expiresInHours: 48
+    },
+    html: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitation to join TrustHyre as an Administrator</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 24px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 47, 99, 0.05);">
+          <tr>
+            <td style="padding: 20px 32px; background-color: #0f2f63; border-bottom: 1px solid #1e3a8a;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="left" style="vertical-align: middle;">
+                    <a href="https://trusthyre.com" target="_blank" style="text-decoration: none; display: inline-block;">
+                      <img src="https://trusthyre.com/logo.png" alt="TrustHyre" width="150" height="36" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
+                    </a>
+                  </td>
+                  <td align="right" style="vertical-align: middle;">
+                    <span style="display: inline-block; background-color: rgba(255, 255, 255, 0.12); color: #ffffff; font-size: 10px; font-weight: 700; padding: 5px 12px; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, 0.22); letter-spacing: 1px; text-transform: uppercase;">
+                      Admin Portal
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px; color: #1e293b; font-size: 15px; line-height: 1.6;">
+              <h2 style="margin: 0 0 16px 0; color: #0f2f63; font-size: 18px; font-weight: 700;">Administrator Invitation</h2>
+              <p style="margin: 0 0 16px 0; color: #475569;">
+                You have been invited by <strong>{{params.inviterName}}</strong> to join the TrustHyre management operations team.
+              </p>
+              <div style="margin: 28px 0; text-align: center;">
+                <a href="{{params.acceptUrl}}" style="display: inline-block; background-color: #0f2f63; color: #ffffff; padding: 12px 28px; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+                  Accept Invitation &amp; Set Password
+                </a>
+              </div>
+              <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                This invitation link will expire in {{params.expiresInHours}} hours.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px 32px; background-color: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px;">
+              © 2026 TrustHyre Technologies. Safe, verified workforce recruitment.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+  }
+};
 
 const STARTER_TEMPLATE = `<!DOCTYPE html>
 <html>
@@ -139,6 +362,12 @@ export const EmailTemplateEditorPage: React.FC = () => {
     enabled: !isNew,
   });
 
+  const { data: inventory } = useQuery({
+    queryKey: ['adminEmailTemplates'],
+    queryFn: adminEmailTemplateService.getInventory,
+    enabled: isNew,
+  });
+
   useEffect(() => {
     if (existingTemplate) {
       setName(existingTemplate.name);
@@ -154,13 +383,31 @@ export const EmailTemplateEditorPage: React.FC = () => {
       const paramName = searchParams.get('name');
       const paramCat = searchParams.get('category');
       if (codeKey) {
-        setTemplateKey(codeKey);
-        setName(paramName || codeKey.replace(/_/g, ' '));
-        if (paramCat) setCategory(paramCat);
-        setSubject(`Update: {{params.jobTitle || 'TrustHyre Notification'}}`);
+        // If this template is already managed in the database, redirect directly to edit it!
+        const matchedDb = inventory?.localTemplates?.find((t) => t.template_key === codeKey);
+        if (matchedDb) {
+          navigate(`/admin/email-templates/${matchedDb.id}/edit`, { replace: true });
+          return;
+        }
+
+        const defaults = CODE_TEMPLATE_DEFAULTS[codeKey];
+        if (defaults) {
+          setName(defaults.name);
+          setTemplateKey(`${codeKey}_CUSTOM`);
+          setCategory(defaults.category);
+          setSubject(defaults.subject);
+          setPreheader(defaults.preheader);
+          setHtmlContent(defaults.html);
+          setVariablesJson(JSON.stringify(defaults.variables, null, 2));
+        } else {
+          setTemplateKey(`${codeKey}_CUSTOM`);
+          setName(paramName || codeKey.replace(/_/g, ' '));
+          if (paramCat) setCategory(paramCat);
+          setSubject(`TrustHyre Notification`);
+        }
       }
     }
-  }, [existingTemplate, isNew, searchParams]);
+  }, [existingTemplate, isNew, searchParams, inventory, navigate]);
 
   // Save Draft Mutation
   const saveMutation = useMutation({
@@ -209,9 +456,21 @@ export const EmailTemplateEditorPage: React.FC = () => {
 
   // Test Send Mutation
   const testSendMutation = useMutation({
-    mutationFn: (email: string) => adminEmailTemplateService.sendTestEmail(id!, email),
-    onSuccess: () => {
-      toast.success(`Test email dispatched to ${testEmailRecipient}`);
+    mutationFn: (email: string) => {
+      let parsedVariables: Record<string, any> = {};
+      try {
+        parsedVariables = JSON.parse(variablesJson);
+      } catch {
+        // fallback
+      }
+      return adminEmailTemplateService.sendTestEmail(id || 'new', email, {
+        html_content: htmlContent,
+        subject,
+        params: parsedVariables,
+      });
+    },
+    onSuccess: (data: any) => {
+      toast.success(data?.message || `Test email dispatched to ${testEmailRecipient}`);
       setIsTestModalOpen(false);
     },
     onError: (err: any) => {
@@ -584,11 +843,19 @@ export const EmailTemplateEditorPage: React.FC = () => {
           <div className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 max-w-md w-full p-5 space-y-4 shadow-xl">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Send className="w-4 h-4 text-blue-600" />
-              Send Test Email
+              Send Live Test Email
             </h3>
-            <p className="text-xs text-slate-500">
-              Dispatches a rendered test email via Brevo to an explicit recipient. Brevo enforces a 50 tests/day quota.
-            </p>
+            
+            {/* Rate Limiting Notice */}
+            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+              <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="font-semibold">Rate Limiter Active:</strong> Maximum 10 test emails per 5 minutes per administrator.
+                <p className="mt-0.5 text-[10px] text-amber-700 dark:text-amber-400">
+                  Merges your current editor changes with sample parameters and dispatches live through Brevo transactional delivery.
+                </p>
+              </div>
+            </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
@@ -599,7 +866,7 @@ export const EmailTemplateEditorPage: React.FC = () => {
                 placeholder="your.email@example.com"
                 value={testEmailRecipient}
                 onChange={(e) => setTestEmailRecipient(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
@@ -607,7 +874,7 @@ export const EmailTemplateEditorPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsTestModalOpen(false)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300"
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 cursor-pointer"
               >
                 Cancel
               </button>
@@ -615,7 +882,7 @@ export const EmailTemplateEditorPage: React.FC = () => {
                 type="button"
                 onClick={() => testSendMutation.mutate(testEmailRecipient)}
                 disabled={testSendMutation.isPending || !testEmailRecipient.includes('@')}
-                className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-[#0f2f63] hover:bg-[#1a4487] text-white disabled:opacity-50"
+                className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-[#0f2f63] hover:bg-[#1a4487] text-white disabled:opacity-50 transition cursor-pointer flex items-center gap-1.5"
               >
                 {testSendMutation.isPending ? 'Sending...' : 'Dispatch Test Email'}
               </button>

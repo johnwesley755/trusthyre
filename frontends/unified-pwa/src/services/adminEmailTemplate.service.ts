@@ -112,8 +112,17 @@ export const adminEmailTemplateService = {
     return res.data?.data || res.data;
   },
 
-  sendTestEmail: async (id: string, email: string): Promise<{ success: boolean; message: string }> => {
-    const res = await apiClient.post(`/api/admin/email-templates/${id}/test`, { email });
+  sendTestEmail: async (
+    id: string,
+    email: string,
+    options?: {
+      html_content?: string;
+      subject?: string;
+      params?: Record<string, any>;
+    }
+  ): Promise<{ success: boolean; message: string; data?: any }> => {
+    const endpoint = !id || id === 'new' ? '/api/admin/email-templates/test' : `/api/admin/email-templates/${id}/test`;
+    const res = await apiClient.post(endpoint, { email, ...options });
     return res.data;
   },
 

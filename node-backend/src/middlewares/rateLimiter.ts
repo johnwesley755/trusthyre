@@ -187,3 +187,18 @@ export const invitationLimiter = createRateLimiter({
   message: 'Too many invitation attempts. Please wait 15 minutes before trying again.',
   keyGenerator: (c) => `invitation:ip:${getClientIp(c)}`
 });
+
+/**
+ * Admin Email Template Test Dispatch Limiter: 10 test emails per 5 minutes
+ * Protects Brevo transactional API delivery quotas and prevents inbox flooding.
+ */
+export const adminEmailTestLimiter = createRateLimiter({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 10,
+  message: 'Test email dispatch rate limit reached (maximum 10 test emails every 5 minutes). Please wait before dispatching more tests.',
+  keyGenerator: (c) => {
+    const authUser = c.get('user');
+    const adminId = authUser?.id || authUser?.sub || authUser?.user_id || getClientIp(c);
+    return `email-test:${adminId}`;
+  }
+});

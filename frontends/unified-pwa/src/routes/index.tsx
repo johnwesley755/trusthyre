@@ -391,6 +391,10 @@ export const router = createBrowserRouter([
                 element: <EmailTemplateEditorPage />,
               },
               {
+                path: 'email-templates/:id',
+                element: <EmailTemplateEditorPage />,
+              },
+              {
                 path: 'email-templates/:id/edit',
                 element: <EmailTemplateEditorPage />,
               },

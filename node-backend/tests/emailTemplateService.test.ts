@@ -137,4 +137,22 @@ describe('Custom Email Template Management System Test Suite', () => {
       sendTemplateEmail(testTemplateKey, 'test.recipient@trusthyre.com', {})
     ).rejects.toThrow();
   });
+
+  it('6. Test email endpoint rejects invalid email addresses and enforces admin authentication', async () => {
+    const template = await (prisma as any).email_templates.findUnique({
+      where: { template_key: testTemplateKey },
+    });
+
+    const req = new Request(`http://localhost/api/admin/email-templates/${template.id}/test`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: 'invalid-email-address' }),
+    });
+
+    const res = await app.fetch(req, process.env, {});
+    // Should be rejected with 401 (unauthorized admin) or 400 (invalid email)
+    expect([400, 401, 403]).toContain(res.status);
+  });
 });

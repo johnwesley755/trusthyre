@@ -2,6 +2,7 @@ import { Context } from 'hono';
 import { EmailTemplateManagerService } from '../services/emailTemplateManagerService';
 import { BrevoTemplateService } from '../services/brevoTemplateService';
 import { EmailTemplateAuditService } from '../services/emailTemplateAuditService';
+import { sendEmail } from '../services/mailer';
 
 export async function getTemplateInventory(c: Context) {
   try {
@@ -152,43 +153,82 @@ export async function renderLocalPreview(c: Context) {
 export async function sendTestEmail(c: Context) {
   try {
     const id = c.req.param('id');
-    if (!id) {
-      return c.json({ success: false, message: 'Template ID is required.' }, 400);
-    }
-    const body = await c.req.json();
+    const body = await c.req.json().catch(() => ({}));
     const user = c.get('user');
-    const actorUserId = user?.id || user?.user_id || 'ADMIN';
+    const actorUserId = user?.id || user?.user_id || user?.sub || 'ADMIN';
 
-    if (!body.email || !body.email.includes('@')) {
-      return c.json({ success: false, message: 'A valid test email address is required.' }, 400);
+    const recipientEmail = (body.email || body.recipientEmail || '').trim();
+    if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+      return c.json({ success: false, message: 'A valid recipient email address is required (e.g. name@domain.com).' }, 400);
     }
 
-    const template = await EmailTemplateManagerService.getTemplateById(id);
-
-    // If template has Brevo ID, execute through Brevo test endpoint
-    if (template.brevo_template_id) {
-      await BrevoTemplateService.sendTestEmail(template.brevo_template_id, body.email.trim());
-    } else {
-      // Create temporary inactive template in Brevo to execute sendTest
-      const temp = await BrevoTemplateService.createTemplate({
-        templateName: `[TEST] ${template.name}`,
-        subject: template.subject,
-        htmlContent: template.html_content,
-        isActive: false,
-      });
-      await BrevoTemplateService.sendTestEmail(temp.id, body.email.trim());
+    let template: any = null;
+    if (id && id !== 'new') {
+      try {
+        template = await EmailTemplateManagerService.getTemplateById(id);
+      } catch {
+        // template not yet persisted, proceed with body content
+      }
     }
 
-    await EmailTemplateAuditService.record({
-      templateId: id,
-      actorUserId,
-      action: 'TEST_EMAIL_SENT',
-      metadata: { recipientEmail: body.email.trim() },
+    let rawHtml = body.html_content || template?.html_content || '';
+    let rawSubject = body.subject || template?.subject || 'TrustHyre Notification';
+
+    if (!rawHtml) {
+      return c.json({ success: false, message: 'HTML content is required for test email dispatch.' }, 400);
+    }
+
+    // Merge sample preview parameters with canonical defaults
+    const mergedParams: Record<string, any> = {
+      logoUrl: 'https://trusthyre.com/logo.png',
+      currentYear: new Date().getFullYear(),
+      supportEmail: 'support@trusthyre.com',
+      portalUrl: 'https://trusthyre.com',
+      ...(template?.variables || {}),
+      ...(body.params || {}),
+    };
+
+    let renderedHtml = rawHtml;
+    let renderedSubject = rawSubject;
+
+    Object.keys(mergedParams).forEach((key) => {
+      const reg = new RegExp(`{{\\s*params\\.${key}\\s*}}`, 'g');
+      renderedHtml = renderedHtml.replace(reg, String(mergedParams[key]));
+      renderedSubject = renderedSubject.replace(reg, String(mergedParams[key]));
     });
 
-    return c.json({ success: true, message: `Test email dispatched to ${body.email.trim()}` });
+    const testSubject = renderedSubject.startsWith('[TEST]')
+      ? renderedSubject
+      : `[TEST] ${renderedSubject}`;
+
+    // Dispatch directly via Brevo transactional mailer
+    await sendEmail(recipientEmail, testSubject, renderedHtml, {
+      category: 'transactional',
+    });
+
+    if (template?.id) {
+      await EmailTemplateAuditService.record({
+        templateId: template.id,
+        actorUserId,
+        action: 'TEST_EMAIL_SENT',
+        metadata: {
+          recipientEmail,
+          subject: testSubject,
+        },
+      });
+    }
+
+    return c.json({
+      success: true,
+      message: `Test email successfully dispatched to ${recipientEmail}`,
+      data: {
+        recipient: recipientEmail,
+        subject: testSubject,
+      },
+    });
   } catch (err: any) {
-    return c.json({ success: false, message: err.message }, 500);
+    console.error('[adminEmailTemplateController] sendTestEmail error:', err);
+    return c.json({ success: false, message: err.message || 'Failed to dispatch test email.' }, 500);
   }
 }
 
