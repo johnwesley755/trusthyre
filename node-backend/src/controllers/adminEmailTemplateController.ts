@@ -64,8 +64,8 @@ export async function updateDraft(c: Context) {
     }
     const body = await c.req.json();
     const user = c.get('user');
-    const actorUserId = user?.id || user?.user_id || 'ADMIN';
-    const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';
+    const actorUserId = user?.id || user?.user_id || user?.sub || 'ADMIN';
+    const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
     const updated = await EmailTemplateManagerService.updateDraft(id, {
       ...body,

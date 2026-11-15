@@ -1279,46 +1279,5 @@ GRANT EXECUTE ON FUNCTION public.consume_attendance_challenge TO PUBLIC;
 GRANT EXECUTE ON FUNCTION public.consume_otp_challenge TO PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_challenge_failed_attempt TO PUBLIC;
 
--- ============================================================================
--- 30. EMAIL TEMPLATE MANAGEMENT SYSTEM RLS POLICIES
--- ============================================================================
-
-ALTER TABLE public.email_templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.email_templates FORCE ROW LEVEL SECURITY;
-
-ALTER TABLE public.email_template_versions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.email_template_versions FORCE ROW LEVEL SECURITY;
-
-ALTER TABLE public.email_template_audit_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.email_template_audit_logs FORCE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "email_templates_admin_all" ON public.email_templates;
-CREATE POLICY "email_templates_admin_all" ON public.email_templates
-FOR ALL USING (
-  is_app_admin()
-) WITH CHECK (
-  is_app_admin()
-);
-
-DROP POLICY IF EXISTS "email_template_versions_admin_all" ON public.email_template_versions;
-CREATE POLICY "email_template_versions_admin_all" ON public.email_template_versions
-FOR ALL USING (
-  is_app_admin()
-) WITH CHECK (
-  is_app_admin()
-);
-
-DROP POLICY IF EXISTS "email_template_audit_admin_select" ON public.email_template_audit_logs;
-CREATE POLICY "email_template_audit_admin_select" ON public.email_template_audit_logs
-FOR SELECT USING (
-  is_app_admin()
-);
-
-DROP POLICY IF EXISTS "email_template_audit_admin_insert" ON public.email_template_audit_logs;
-CREATE POLICY "email_template_audit_admin_insert" ON public.email_template_audit_logs
-FOR INSERT WITH CHECK (
-  is_app_admin()
-);
-
 COMMIT;
 

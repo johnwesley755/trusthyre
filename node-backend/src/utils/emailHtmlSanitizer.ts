@@ -48,8 +48,10 @@ export function validateAndSanitizeEmailHtml(html: string): SanitizeResult {
     };
   }
 
-  // Pre-scan for banned executable components
-  if (/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi.test(html)) {
+  const normalized = html.toLowerCase();
+
+  // Check for forbidden script elements (using robust substring matching without vulnerable regex)
+  if (normalized.includes('<script')) {
     violations.push('Execution of <script> tags is forbidden in email templates.');
   }
 
@@ -57,7 +59,7 @@ export function validateAndSanitizeEmailHtml(html: string): SanitizeResult {
     violations.push('Inline JavaScript event handlers (onclick, onerror, onload, etc.) are forbidden.');
   }
 
-  if (/javascript\s*:/i.test(html)) {
+  if (normalized.replace(/\s+/g, '').includes('javascript:')) {
     violations.push('Executable javascript: URIs are forbidden.');
   }
 

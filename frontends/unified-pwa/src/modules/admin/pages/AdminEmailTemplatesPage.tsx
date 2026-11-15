@@ -31,7 +31,7 @@ import { useAuth } from '../../../providers/AuthContext';
 export const AdminEmailTemplatesPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const [activeTab, setActiveTab] = useState<'ALL' | 'APPLICATION' | 'BREVO' | 'DRAFTS' | 'PUBLISHED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');

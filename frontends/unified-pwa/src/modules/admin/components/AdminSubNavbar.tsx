@@ -18,7 +18,7 @@ import { adminService } from '../../../services/admin.service';
 
 export const AdminSubNavbar: React.FC = () => {
   const { user } = useAuth();
-  const isSuperAdmin = (user?.role as string) === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';
+  const isSuperAdmin = (user?.role as string) === 'SUPER_ADMIN';
 
   // Fetch pending verifications count for real-time badge
   const { data: pendingVerifications = [] } = useQuery({

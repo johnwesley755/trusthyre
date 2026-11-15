@@ -340,7 +340,7 @@ export const EmailTemplateEditorPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const [name, setName] = useState('');
   const [templateKey, setTemplateKey] = useState('');
