@@ -110,7 +110,7 @@ export function renderEmailShell(options: EmailShellOptions): string {
                 <tr>
                   <td align="left" style="vertical-align: middle;">
                     <a href="${frontendUrl}" target="_blank" style="text-decoration: none; display: inline-block;">
-                      <img src="${LOGO_URL}" onerror="this.onerror=null;this.src='${FALLBACK_LOGO_URL}';" alt="TrustHyre" height="36" class="logo-img" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
+                      <img src="${LOGO_URL}" alt="TrustHyre" width="150" height="36" class="logo-img" style="height: 36px; width: auto; max-width: 160px; display: block; border: 0; outline: none; object-fit: contain;" />
                     </a>
                   </td>
                   <td align="right" style="vertical-align: middle;">

@@ -950,6 +950,74 @@ model attendance_events {
   @@index([attendance_id, created_at], map: "idx_attendance_events_attendance_id")
 }
 
+model email_templates {
+  id                   String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  template_key         String                     @unique @db.VarChar(100)
+  name                 String                     @db.VarChar(255)
+  description          String?
+  category             String                     @default("GENERAL_TRANSACTIONAL") @db.VarChar(50)
+  subject              String                     @db.VarChar(500)
+  preheader            String?                    @db.VarChar(500)
+  html_content         String
+  text_content         String?
+  variables            Json                       @default("{}")
+  status               String                     @default("DRAFT") @db.VarChar(20)
+  source_type          String                     @default("APPLICATION") @db.VarChar(30)
+  brevo_template_id    String?                    @db.VarChar(50)
+  published_version_id String?                    @db.Uuid
+  is_system            Boolean                    @default(false)
+  is_locked            Boolean                    @default(false)
+  created_by           String?                    @db.VarChar(255)
+  updated_by           String?                    @db.VarChar(255)
+  published_by         String?                    @db.VarChar(255)
+  created_at           DateTime?                  @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime?                  @default(now()) @db.Timestamptz(6)
+  published_at         DateTime?                  @db.Timestamptz(6)
+
+  versions             email_template_versions[]
+  audit_logs           email_template_audit_logs[]
+
+  @@index([category], map: "idx_email_templates_category")
+  @@index([status], map: "idx_email_templates_status")
+  @@index([brevo_template_id], map: "idx_email_templates_brevo_id")
+}
+
+model email_template_versions {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  template_id       String          @db.Uuid
+  version_number    Int
+  subject           String          @db.VarChar(500)
+  preheader         String?         @db.VarChar(500)
+  html_content      String
+  text_content      String?
+  variables         Json            @default("{}")
+  brevo_template_id String?         @db.VarChar(50)
+  change_summary    String?
+  created_by        String?         @db.VarChar(255)
+  published_at      DateTime?       @default(now()) @db.Timestamptz(6)
+  created_at        DateTime?       @default(now()) @db.Timestamptz(6)
+
+  template          email_templates @relation(fields: [template_id], references: [id], onDelete: Cascade)
+
+  @@unique([template_id, version_number], map: "uq_email_template_version")
+  @@index([template_id, version_number], map: "idx_email_template_versions_tpl_v")
+}
+
+model email_template_audit_logs {
+  id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  template_id   String?          @db.Uuid
+  actor_user_id String           @db.VarChar(255)
+  action        String           @db.VarChar(50)
+  metadata      Json             @default("{}")
+  created_at    DateTime?        @default(now()) @db.Timestamptz(6)
+
+  template      email_templates? @relation(fields: [template_id], references: [id], onDelete: SetNull)
+
+  @@index([template_id, created_at], map: "idx_email_template_audit_tpl")
+  @@index([actor_user_id, created_at], map: "idx_email_template_audit_actor")
+}
+
+
 
 
 

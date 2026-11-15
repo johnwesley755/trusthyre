@@ -64,19 +64,12 @@ export const sendEmail = async (
       ...(options?.headers || {})
     };
 
-    // Extract OTP if present in subject for console visibility
-    const otpMatch = subject.match(/\b\d{6}\b/);
-    const extractedOtp = otpMatch ? otpMatch[0] : 'N/A';
-
     console.log(`\n======================================================================`);
     console.log(`📧 [BREVO:EMAIL-DISPATCH] Dispatching Email via Brevo API`);
     console.log(`----------------------------------------------------------------------`);
     console.log(`From:    ${senderName} <${senderEmail}>`);
     console.log(`To:      ${to}`);
     console.log(`Subject: ${subject}`);
-    if (extractedOtp !== 'N/A') {
-      console.log(`🔑 Verification Code: ${extractedOtp}`);
-    }
     console.log(`======================================================================`);
 
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -132,7 +125,7 @@ export const sendEmail = async (
       // In local dev, allow the flow to proceed while showing the error so developer isn't stuck
       const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
       if (isLocalDev) {
-        console.warn(`[DEV NOTE] In local environment, verification code ${extractedOtp} is preserved in DB for testing.\n`);
+        console.warn(`[DEV NOTE] In local environment, test dispatch is noted for testing.\n`);
         return true;
       }
 
@@ -147,6 +140,112 @@ export const sendEmail = async (
     const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
     if (isLocalDev) {
       console.warn(`[DEV FALLBACK] Allowing flow to proceed in local dev.\n`);
+      return true;
+    }
+    throw error;
+  }
+};
+
+/**
+ * Sends a transactional email using an application-managed, Brevo-synchronized template.
+ * @param templateKey Stable logical template key (e.g., 'ONBOARDING_EARLY_ACCESS', 'JOB_MATCH_NOTIFICATION')
+ * @param to Target recipient email address
+ * @param params Dynamic variable parameters (e.g., { firstName: 'Ravi', jobTitle: 'Electrician' })
+ * @param options Additional delivery options (replyTo, headers, category)
+ */
+export const sendTemplateEmail = async (
+  templateKey: string,
+  to: string,
+  params: Record<string, any> = {},
+  options?: SendEmailOptions
+): Promise<boolean> => {
+  const prisma = (await import('../config/prisma')).default;
+
+  try {
+    const apiKey = (process.env.BREVO_API_KEY || '').trim();
+    if (!apiKey) {
+      throw new Error('Email delivery is not configured: BREVO_API_KEY is missing.');
+    }
+
+    // 1. Resolve published template by logical key
+    const template = await (prisma as any).email_templates.findUnique({
+      where: { template_key: templateKey.toUpperCase() },
+    });
+
+    if (!template) {
+      throw new Error(`Email template with key "${templateKey}" was not found.`);
+    }
+
+    if (template.status !== 'PUBLISHED' || !template.brevo_template_id) {
+      throw new Error(`Email template "${templateKey}" is not published or lacks an active Brevo template ID.`);
+    }
+
+    // 2. Validate declared variables schema
+    const declaredVariables = (template.variables as Record<string, any>) || {};
+    const missingRequired: string[] = [];
+    for (const [varName, varDef] of Object.entries(declaredVariables)) {
+      if ((varDef as any)?.required && (params[varName] === undefined || params[varName] === null)) {
+        missingRequired.push(varName);
+      }
+    }
+
+    if (missingRequired.length > 0) {
+      throw new Error(`Missing required template parameters for "${templateKey}": ${missingRequired.join(', ')}`);
+    }
+
+    const senderEmail = (process.env.BREVO_SENDER_EMAIL || 'noreply@trusthyre.com').trim();
+    const senderName = (process.env.BREVO_SENDER_NAME || 'TrustHyre').trim();
+
+    console.log(`\n======================================================================`);
+    console.log(`📧 [BREVO:TEMPLATE-DISPATCH] Dispatching Template #${template.brevo_template_id} (${templateKey})`);
+    console.log(`----------------------------------------------------------------------`);
+    console.log(`To:          ${to}`);
+    console.log(`Template ID: ${template.brevo_template_id}`);
+    console.log(`======================================================================`);
+
+    const brevoTemplateIdNum = Number(template.brevo_template_id);
+    const payload: any = {
+      templateId: isNaN(brevoTemplateIdNum) ? template.brevo_template_id : brevoTemplateIdNum,
+      to: [{ email: to.trim() }],
+      params: params,
+      headers: options?.headers || {},
+    };
+
+    if (options?.replyTo) {
+      payload.replyTo = options.replyTo;
+    }
+
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`\n❌ [BREVO:TEMPLATE-REJECTED] HTTP ${response.status}: ${errorText}`);
+
+      const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+      if (isLocalDev) {
+        console.warn(`[DEV NOTE] In local environment, template send failure is bypassed for testing.\n`);
+        return true;
+      }
+
+      throw new Error(`Brevo Template API Error: ${errorText}`);
+    }
+
+    const responseData = await response.json().catch(() => ({}));
+    console.log(`✅ [BREVO:TEMPLATE-SENT] Delivered to ${to} (MessageId: ${responseData.messageId || 'OK'})\n`);
+    return true;
+  } catch (error: any) {
+    console.error('\n❌ [BREVO:TEMPLATE-ERROR] Failed to send template email:', error.message);
+    const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+    if (isLocalDev) {
+      console.warn(`[DEV FALLBACK] Allowing template send flow to proceed in local dev.\n`);
       return true;
     }
     throw error;

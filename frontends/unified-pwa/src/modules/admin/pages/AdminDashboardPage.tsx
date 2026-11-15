@@ -14,7 +14,8 @@ import {
   UserCheck,
   ArrowRight,
   BarChart3,
-  BookOpen
+  BookOpen,
+  Mail
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -355,6 +356,13 @@ export const AdminDashboardPage: React.FC = () => {
               >
                 <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform shrink-0" />
                 <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 truncate w-full">Moderation</span>
+              </Link>
+              <Link
+                to="/admin/email-templates"
+                className="p-2.5 bg-[#f8fafc] dark:bg-[#121215] hover:bg-indigo-50/60 dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 hover:border-indigo-200 dark:hover:border-zinc-700 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left gap-1 transition-all group min-w-0"
+              >
+                <Mail className="w-4 h-4 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-[11px] sm:text-xs font-semibold text-[#0a0a0a] dark:text-zinc-200 truncate w-full">Templates</span>
               </Link>
               <Link
                 to="/admin/verifications"

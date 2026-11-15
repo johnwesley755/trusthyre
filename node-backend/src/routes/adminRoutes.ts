@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import * as adminController from '../controllers/adminController';
 import * as diagnosticController from '../controllers/diagnosticController';
+import adminEmailTemplateRoutes from './adminEmailTemplateRoutes';
 import { authenticateJWT, requireAdmin, requireSuperAdmin } from '../middlewares/auth';
 import { invitationLimiter } from '../middlewares/rateLimiter';
 
@@ -57,6 +58,12 @@ router.get('/jobs/sources', adminController.getScraperSources);
 router.patch('/jobs/:id/moderate', adminController.moderateJobByAdmin);
 router.post('/jobs/freshness-cycle', adminController.runJobFreshnessCycle);
 router.delete('/jobs/:id', adminController.deleteJobByAdmin);
+
+/**
+ * Custom Email Template Management Sub-Router
+ * Mounted at /api/admin/email-templates
+ */
+router.route('/email-templates', adminEmailTemplateRoutes);
 
 /**
  * Dedicated Admin Analytics Sub-Router (mounted directly at /api/admin/analytics)
