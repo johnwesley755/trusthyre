@@ -12,9 +12,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const BASE_URL = 'https://trusthyre.com';
-const API_URL = process.env.VITE_API_URL && !process.env.VITE_API_URL.includes('localhost') 
-  ? process.env.VITE_API_URL 
-  : 'https://api.trusthyre.com';
+
+function resolveApiUrl() {
+  const envUrl = process.env.VITE_API_URL;
+  if (!envUrl) return 'https://api.trusthyre.com';
+  try {
+    const parsed = new URL(envUrl);
+    if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+      return 'https://api.trusthyre.com';
+    }
+    return envUrl;
+  } catch {
+    return 'https://api.trusthyre.com';
+  }
+}
+
+const API_URL = resolveApiUrl();
 const today = new Date().toISOString().split('T')[0];
 
 const CORE_ROUTES = [
@@ -26,6 +39,25 @@ const CORE_ROUTES = [
 
 const FEATURED_CITIES = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
 const FEATURED_TRADES = ['electrician', 'driver', 'cook', 'plumber', 'welder', 'security', 'warehouse'];
+
+function isValidTrusthyreSitemap(xml) {
+  if (!xml || typeof xml !== 'string') return false;
+  if (!xml.includes('<urlset') || !xml.includes('</urlset>')) return false;
+
+  const locMatches = xml.match(/<loc>(.*?)<\/loc>/g);
+  if (!locMatches || locMatches.length === 0) return false;
+
+  // Validate the URLs using WHATWG URL parser to ensure strict hostname matching
+  const sampleUrls = locMatches.slice(0, 5).map(m => m.replace(/<\/?loc>/g, '').trim());
+  return sampleUrls.every(u => {
+    try {
+      const parsed = new URL(u);
+      return parsed.hostname === 'trusthyre.com' || parsed.hostname === 'www.trusthyre.com';
+    } catch {
+      return false;
+    }
+  });
+}
 
 async function generateSitemap() {
   const publicDir = path.resolve(__dirname, '../public');
@@ -43,7 +75,7 @@ async function generateSitemap() {
 
     if (res.ok) {
       const xml = await res.text();
-      if (xml && xml.includes('<urlset') && xml.includes('https://trusthyre.com')) {
+      if (isValidTrusthyreSitemap(xml)) {
         fs.writeFileSync(sitemapPath, xml.trim(), 'utf8');
         console.log(`[generate-sitemap] Successfully mirrored dynamic sitemap from ${API_URL}/sitemap.xml (${xml.length} bytes) to ${sitemapPath}`);
         return;
