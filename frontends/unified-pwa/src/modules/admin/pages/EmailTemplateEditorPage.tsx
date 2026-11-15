@@ -362,11 +362,15 @@ export const EmailTemplateEditorPage: React.FC = () => {
     enabled: !isNew,
   });
 
-  const { data: inventory } = useQuery({
+  const { data: inventory, isLoading: isLoadingInventory } = useQuery({
     queryKey: ['adminEmailTemplates'],
     queryFn: adminEmailTemplateService.getInventory,
     enabled: isNew,
   });
+
+  const duplicateKeyTemplate = isNew && templateKey
+    ? inventory?.localTemplates?.find((t) => t.template_key.toUpperCase() === templateKey.trim().toUpperCase())
+    : null;
 
   useEffect(() => {
     if (existingTemplate) {
@@ -492,7 +496,7 @@ export const EmailTemplateEditorPage: React.FC = () => {
     },
   });
 
-  if (!isNew && isLoading) {
+  if ((!isNew && isLoading) || (isNew && searchParams.get('codeKey') && isLoadingInventory)) {
     return <AppLoader variant="page" message="Loading template workspace..." />;
   }
 
@@ -603,22 +607,6 @@ export const EmailTemplateEditorPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
-                  Template Key (Uppercase Unique) *
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. WELCOME_EARLY_ACCESS"
-                  value={templateKey}
-                  disabled={!isNew}
-                  onChange={(e) => setTemplateKey(e.target.value.toUpperCase().replace(/\s+/g, '_'))}
-                  className="w-full px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white disabled:opacity-60"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
                   Category *
                 </label>
                 <select
@@ -634,32 +622,85 @@ export const EmailTemplateEditorPage: React.FC = () => {
                   <option value="AUTHENTICATION">Authentication (Protected)</option>
                 </select>
               </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
-                  Preheader / Preview Text
-                </label>
-                <input
-                  type="text"
-                  placeholder="Brief preview text shown in inbox list..."
-                  value={preheader}
-                  onChange={(e) => setPreheader(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white"
-                />
-              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
-                Subject Line * (Supports {`{{params.var}}`})
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                  Template Key (Uppercase Unique Identifier) *
+                </label>
+                <span className="text-[11px] text-slate-400">Used by backend mailers for dynamic lookup</span>
+              </div>
               <input
                 type="text"
-                placeholder="e.g. Welcome to TrustHyre, {{params.firstName}}!"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white"
+                placeholder="e.g. WELCOME_EARLY_ACCESS"
+                value={templateKey}
+                disabled={!isNew}
+                onChange={(e) => setTemplateKey(e.target.value.toUpperCase().replace(/\s+/g, '_'))}
+                className="w-full px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white disabled:opacity-60"
               />
+              {duplicateKeyTemplate && (
+                <div className="mt-2 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
+                  <div className="flex items-center gap-1.5 font-medium">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>A template with key <strong>"{templateKey}"</strong> already exists in the registry.</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/admin/email-templates/${duplicateKeyTemplate.id}/edit`)}
+                    className="px-2.5 py-1 rounded font-semibold bg-amber-600 hover:bg-amber-700 text-white text-[11px] transition shrink-0 ml-2 cursor-pointer shadow-xs"
+                  >
+                    Open Existing Template
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Subject and Preheader Group */}
+            <div className="pt-2 border-t border-slate-100 dark:border-zinc-800/80 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+                    Subject Line * (Supports {`{{params.var}}`})
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Welcome to TrustHyre, {{params.firstName}}!"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+                    Preheader / Preview Text
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Brief teaser text shown next to subject in inboxes..."
+                    value={preheader}
+                    onChange={(e) => setPreheader(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Realistic Inbox Teaser Simulation */}
+              <div className="p-2 rounded-lg bg-slate-50 dark:bg-zinc-800/40 border border-slate-200/80 dark:border-zinc-800 flex items-center gap-2 text-xs overflow-hidden">
+                <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 shrink-0">
+                  Inbox Preview
+                </span>
+                <span className="font-semibold text-slate-800 dark:text-zinc-200 shrink-0">TrustHyre</span>
+                <span className="text-slate-400 shrink-0">•</span>
+                <span className="font-medium text-slate-700 dark:text-zinc-300 truncate max-w-[260px]">
+                  {subject || 'Subject line...'}
+                </span>
+                <span className="text-slate-400 shrink-0">—</span>
+                <span className="text-slate-500 dark:text-zinc-400 truncate">
+                  {preheader || 'Preheader teaser snippet...'}
+                </span>
+              </div>
             </div>
           </div>
 

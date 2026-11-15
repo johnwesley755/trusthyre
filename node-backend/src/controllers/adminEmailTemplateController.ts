@@ -3,6 +3,7 @@ import { EmailTemplateManagerService } from '../services/emailTemplateManagerSer
 import { BrevoTemplateService } from '../services/brevoTemplateService';
 import { EmailTemplateAuditService } from '../services/emailTemplateAuditService';
 import { sendEmail } from '../services/mailer';
+import { validateAndSanitizeEmailHtml } from '../utils/emailHtmlSanitizer';
 
 export async function getTemplateInventory(c: Context) {
   try {
@@ -178,6 +179,16 @@ export async function sendTestEmail(c: Context) {
       return c.json({ success: false, message: 'HTML content is required for test email dispatch.' }, 400);
     }
 
+    // Validate and sanitize HTML content to prevent malicious or disallowed elements in test emails
+    const sanitizeResult = validateAndSanitizeEmailHtml(rawHtml);
+    if (!sanitizeResult.isValid) {
+      return c.json({
+        success: false,
+        message: `Template HTML validation failed: ${sanitizeResult.violations.join(' ')}`,
+        violations: sanitizeResult.violations,
+      }, 400);
+    }
+
     // Merge sample preview parameters with canonical defaults
     const mergedParams: Record<string, any> = {
       logoUrl: 'https://trusthyre.com/logo.png',
@@ -188,7 +199,7 @@ export async function sendTestEmail(c: Context) {
       ...(body.params || {}),
     };
 
-    let renderedHtml = rawHtml;
+    let renderedHtml = sanitizeResult.sanitizedHtml;
     let renderedSubject = rawSubject;
 
     Object.keys(mergedParams).forEach((key) => {

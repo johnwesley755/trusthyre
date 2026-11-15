@@ -14,7 +14,7 @@ const EMAIL_SAFE_ALLOWED_TAGS = [
   'a', 'b', 'blockquote', 'body', 'br', 'center', 'div', 'em', 'font',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'hr', 'html', 'i', 'img',
   'li', 'ol', 'p', 'pre', 's', 'small', 'span', 'strike', 'strong',
-  'style', 'sub', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead',
+  'sub', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead',
   'title', 'tr', 'u', 'ul', 'meta'
 ];
 
@@ -73,7 +73,6 @@ export function validateAndSanitizeEmailHtml(html: string): SanitizeResult {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     allowProtocolRelative: false,
     disallowedTagsMode: 'discard',
-    allowVulnerableTags: true,
   });
 
   return {

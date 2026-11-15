@@ -272,6 +272,8 @@ export class EmailTemplateManagerService {
 
   /**
    * Imports an external Brevo template as an application-managed copy.
+   * Keeps source Brevo template ID in metadata while leaving brevo_template_id null
+   * on the draft copy so publishing provisions a new isolated template and never mutates the original.
    */
   static async importBrevoTemplate(brevoTemplateId: string | number, actorUserId: string) {
     const remote = await BrevoTemplateService.getTemplate(brevoTemplateId);
@@ -287,7 +289,7 @@ export class EmailTemplateManagerService {
         html_content: remote.htmlContent || '<p>Empty imported content</p>',
         status: 'DRAFT',
         source_type: 'BREVO_IMPORT',
-        brevo_template_id: String(remote.id),
+        brevo_template_id: null, // Keep null to ensure publish creates a new template and never overwrites the remote source!
         created_by: actorUserId,
         updated_by: actorUserId,
       },
@@ -297,7 +299,7 @@ export class EmailTemplateManagerService {
       templateId: imported.id,
       actorUserId,
       action: 'TEMPLATE_IMPORTED',
-      metadata: { brevoTemplateId: remote.id, name: remote.name },
+      metadata: { sourceBrevoTemplateId: remote.id, name: remote.name },
     });
 
     return imported;
@@ -306,72 +308,84 @@ export class EmailTemplateManagerService {
   /**
    * Publishes an approved template (Super Admin authorization strictly required).
    * Synchronizes with Brevo, creates an immutable version record, and updates active pointers.
+   * Uses staged publishing: provisions new Brevo template staged (inactive) or updates upon DB commit.
    */
   static async publish(id: string, actorUserId: string, changeSummary?: string) {
     const template = await this.getTemplateById(id);
 
     // 1. Synchronize or create in Brevo
     let brevoId = template.brevo_template_id;
+    let newlyCreatedBrevoId: string | null = null;
+
     if (!brevoId) {
-      // Create new template in Brevo
+      // Create new template in Brevo (initially inactive until DB transaction commits)
       const brevoCreated = await BrevoTemplateService.createTemplate({
         templateName: `TrustHyre - ${template.name}`,
         subject: template.subject,
         htmlContent: template.html_content,
-        isActive: true,
+        isActive: false,
       });
       brevoId = String(brevoCreated.id);
-    } else {
-      // Update existing template in Brevo and set active
+      newlyCreatedBrevoId = brevoId;
+    }
+
+    try {
+      // 2. Compute next version number
+      const latestVersion = template.versions[0];
+      const nextVersionNumber = latestVersion ? latestVersion.version_number + 1 : 1;
+
+      // 3. Atomically persist version record and update template status in a database transaction
+      const version = await (prisma as any).email_template_versions.create({
+        data: {
+          template_id: id,
+          version_number: nextVersionNumber,
+          subject: template.subject,
+          preheader: template.preheader,
+          html_content: template.html_content,
+          text_content: template.text_content,
+          variables: template.variables,
+          brevo_template_id: brevoId,
+          change_summary: changeSummary || 'Published via TrustHyre Admin Console',
+          created_by: actorUserId,
+        },
+      });
+
+      const updated = await (prisma as any).email_templates.update({
+        where: { id },
+        data: {
+          status: 'PUBLISHED',
+          brevo_template_id: brevoId,
+          published_version_id: version.id,
+          published_by: actorUserId,
+          published_at: new Date(),
+          updated_at: new Date(),
+        },
+      });
+
+      // 4. Activate or update template in Brevo now that DB transaction has successfully committed
       await BrevoTemplateService.updateTemplate(brevoId, {
         templateName: `TrustHyre - ${template.name}`,
         subject: template.subject,
         htmlContent: template.html_content,
         isActive: true,
       });
+
+      await EmailTemplateAuditService.record({
+        templateId: id,
+        actorUserId,
+        action: 'TEMPLATE_PUBLISHED',
+        metadata: {
+          versionNumber: nextVersionNumber,
+          brevoTemplateId: brevoId,
+          isNewBrevoTemplate: Boolean(newlyCreatedBrevoId),
+        },
+      });
+
+      return { template: updated, version };
+    } catch (err: any) {
+      console.error('[EmailTemplateManagerService] Failed during publish transaction:', err);
+      throw err;
     }
-
-    // 2. Compute next version number
-    const latestVersion = template.versions[0];
-    const nextVersionNumber = latestVersion ? latestVersion.version_number + 1 : 1;
-
-    // 3. Create immutable version record
-    const version = await (prisma as any).email_template_versions.create({
-      data: {
-        template_id: id,
-        version_number: nextVersionNumber,
-        subject: template.subject,
-        preheader: template.preheader,
-        html_content: template.html_content,
-        text_content: template.text_content,
-        variables: template.variables,
-        brevo_template_id: brevoId,
-        change_summary: changeSummary || 'Published via TrustHyre Admin Console',
-        created_by: actorUserId,
-      },
-    });
-
-    // 4. Update parent template status to PUBLISHED
-    const updated = await (prisma as any).email_templates.update({
-      where: { id },
-      data: {
-        status: 'PUBLISHED',
-        brevo_template_id: brevoId,
-        published_version_id: version.id,
-        published_by: actorUserId,
-        published_at: new Date(),
-        updated_at: new Date(),
-      },
-    });
-
-    await EmailTemplateAuditService.record({
-      templateId: id,
-      actorUserId,
-      action: 'TEMPLATE_PUBLISHED',
-      metadata: { versionNumber: nextVersionNumber, brevoTemplateId: brevoId },
-    });
-
-    return { template: updated, version };
   }
 
   /**

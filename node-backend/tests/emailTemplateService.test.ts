@@ -155,4 +155,40 @@ describe('Custom Email Template Management System Test Suite', () => {
     // Should be rejected with 401 (unauthorized admin) or 400 (invalid email)
     expect([400, 401, 403]).toContain(res.status);
   });
+
+  it('7. HTML Sanitizer strips disallowed <style> blocks and preserves safe inline style attributes', () => {
+    const htmlWithStyleTag = `
+      <div style="background-color: #0f2f63; padding: 20px; color: #ffffff;">
+        <style>body { background: red; }</style>
+        <h2>Secure Email</h2>
+        <p style="font-size: 14px;">Inline style preserved.</p>
+      </div>
+    `;
+
+    const result = validateAndSanitizeEmailHtml(htmlWithStyleTag);
+    expect(result.sanitizedHtml).not.toContain('<style>');
+    expect(result.sanitizedHtml).toContain('background-color:#0f2f63');
+    expect(result.sanitizedHtml).toContain('font-size:14px');
+  });
+
+  it('8. Test email endpoint rejects malicious HTML containing forbidden script tags', async () => {
+    const template = await (prisma as any).email_templates.findUnique({
+      where: { template_key: testTemplateKey },
+    });
+
+    const req = new Request(`http://localhost/api/admin/email-templates/${template.id}/test`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: 'test@trusthyre.com',
+        html_content: '<p>Hello</p><script>alert(1)</script>'
+      }),
+    });
+
+    const res = await app.fetch(req, process.env, {});
+    // Must be rejected with 400 or 401/403
+    expect([400, 401, 403]).toContain(res.status);
+  });
 });

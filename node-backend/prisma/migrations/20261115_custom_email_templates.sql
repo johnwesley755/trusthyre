@@ -83,11 +83,17 @@ FOR ALL USING (
   is_app_admin()
 );
 
+-- Version immutability: Admins can SELECT and INSERT versions, but CANNOT UPDATE or DELETE historical versions
 DROP POLICY IF EXISTS "email_template_versions_admin_all" ON public.email_template_versions;
-CREATE POLICY "email_template_versions_admin_all" ON public.email_template_versions
-FOR ALL USING (
+DROP POLICY IF EXISTS "email_template_versions_admin_select" ON public.email_template_versions;
+CREATE POLICY "email_template_versions_admin_select" ON public.email_template_versions
+FOR SELECT USING (
   is_app_admin()
-) WITH CHECK (
+);
+
+DROP POLICY IF EXISTS "email_template_versions_admin_insert" ON public.email_template_versions;
+CREATE POLICY "email_template_versions_admin_insert" ON public.email_template_versions
+FOR INSERT WITH CHECK (
   is_app_admin()
 );
 
