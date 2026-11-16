@@ -93,6 +93,16 @@ export interface CreateShiftPayload {
   recurrenceRule?: 'DAILY' | 'WEEKDAYS' | 'WEEKLY';
 }
 
+export interface UpdateShiftPayload {
+  startTime?: string;
+  endTime?: string;
+  breakDurationMinutes?: number;
+  worksiteName?: string;
+  worksiteAddress?: string;
+  city?: string;
+  notes?: string;
+}
+
 export interface CheckInPayload {
   shiftId: string;
   method: 'QR_CODE' | 'ONE_TIME_PIN';
@@ -132,6 +142,17 @@ export const shiftAttendanceService = {
     return res.data?.data || res.data || [];
   },
 
+  // Employer: Update existing shift timings or details (One-time changeable)
+  updateShift: async (shiftId: string, payload: UpdateShiftPayload): Promise<Shift> => {
+    const res = await apiClient.patch(`/api/shifts/${shiftId}`, payload);
+    return res.data?.data || res.data;
+  },
+
+  // Employer: Cancel an unstarted shift
+  cancelShift: async (shiftId: string): Promise<void> => {
+    await apiClient.delete(`/api/shifts/${shiftId}`);
+  },
+
   // Employer: Get scheduled shifts
   getEmployerShifts: async (params?: { date?: string; month?: string; status?: string; workOrderId?: string }): Promise<Shift[]> => {
     const res = await apiClient.get('/api/shifts/employer', { params });
@@ -139,7 +160,7 @@ export const shiftAttendanceService = {
   },
 
   // Worker: Get my shifts
-  getWorkerShifts: async (params?: { date?: string; month?: string; status?: string }): Promise<Shift[]> => {
+  getWorkerShifts: async (params?: { date?: string; month?: string; status?: string; upcoming?: boolean }): Promise<Shift[]> => {
     const res = await apiClient.get('/api/shifts/worker', { params });
     return res.data?.data || res.data || [];
   },

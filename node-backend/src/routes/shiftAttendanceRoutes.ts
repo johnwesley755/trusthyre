@@ -13,6 +13,8 @@ attendanceRoutes.use('*', requireAuth);
 // Shift Endpoints (/api/shifts)
 // ----------------------------------------------------------------------------
 shiftRoutes.post('/', requireEmployer, shiftAttendanceController.createShifts);
+shiftRoutes.patch('/:id', requireEmployer, shiftAttendanceController.updateShift);
+shiftRoutes.delete('/:id', requireEmployer, shiftAttendanceController.cancelShift);
 shiftRoutes.get('/employer', requireShiftSupervisorOrEmployer, shiftAttendanceController.getEmployerShifts);
 shiftRoutes.get('/worker', shiftAttendanceController.getWorkerShifts);
 shiftRoutes.get('/:id', shiftAttendanceController.getShiftById);

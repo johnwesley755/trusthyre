@@ -11,14 +11,17 @@ import {
   Filter,
   Check,
   X,
-  AlertCircle
+  FileText,
+  Search,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { shiftAttendanceService, type ShiftRegisterItem } from '../../../services/shiftAttendance.service';
 import { workOrderService, type WorkOrder } from '../../../services/workOrder.service';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { ShowQrOtpModal } from '../components/ShowQrOtpModal';
 import { CreateShiftModal } from '../components/CreateShiftModal';
+import { EditShiftModal } from '../components/EditShiftModal';
 import { toast } from 'sonner';
 
 function getTodayIST(): string {
@@ -40,12 +43,15 @@ function getCurrentMonth(): string {
 
 export default function EmployerShiftRegisterPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'MONTH' | 'DAY'>('MONTH');
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonth());
   const [selectedDate, setSelectedDate] = useState<string>(getTodayIST());
   const [activeShiftForQr, setActiveShiftForQr] = useState<ShiftRegisterItem | null>(null);
+  const [editingShift, setEditingShift] = useState<ShiftRegisterItem | null>(null);
   const [selectedWorkOrderForShift, setSelectedWorkOrderForShift] = useState<WorkOrder | null>(null);
   const [isWorkOrderPickerOpen, setIsWorkOrderPickerOpen] = useState(false);
+  const [workOrderSearch, setWorkOrderSearch] = useState('');
   const [resolvingCorrectionItem, setResolvingCorrectionItem] = useState<ShiftRegisterItem | null>(null);
   const [resolutionNotes, setResolutionNotes] = useState('');
 
@@ -57,12 +63,28 @@ export default function EmployerShiftRegisterPage() {
     )
   });
 
-  // 2. Fetch Accepted Work Orders for scheduling new shifts
-  const { data: workOrdersData } = useQuery({
-    queryKey: ['employerAcceptedOrders'],
-    queryFn: () => workOrderService.getEmployerWorkOrders({ status: 'ACCEPTED', limit: 50 })
+  // 2. Fetch ALL Work Orders for scheduling shifts (no rigid status filter)
+  const { data: workOrdersData, isLoading: isLoadingWorkOrders } = useQuery({
+    queryKey: ['employerAllWorkOrders'],
+    queryFn: () => workOrderService.getEmployerWorkOrders({ limit: 50 })
   });
-  const acceptedOrders = workOrdersData?.workOrders || [];
+
+  // Filter out cancelled or declined orders
+  const allOrders = workOrdersData?.workOrders || [];
+  const availableOrders = allOrders.filter(
+    (wo: WorkOrder) => !['CANCELLED', 'DECLINED'].includes(wo.status)
+  );
+
+  const filteredOrders = availableOrders.filter((wo: WorkOrder) => {
+    if (!workOrderSearch.trim()) return true;
+    const q = workOrderSearch.toLowerCase();
+    return (
+      wo.order_number?.toLowerCase().includes(q) ||
+      wo.job_title?.toLowerCase().includes(q) ||
+      wo.worker?.full_name?.toLowerCase().includes(q) ||
+      wo.worksite_name?.toLowerCase().includes(q)
+    );
+  });
 
   // Approve Attendance
   const handleApprove = async (attendanceId: string, workerName: string) => {
@@ -112,7 +134,7 @@ export default function EmployerShiftRegisterPage() {
             <button
               type="button"
               onClick={() => setViewMode('MONTH')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 viewMode === 'MONTH'
                   ? 'bg-white dark:bg-[#121215] text-[#0f2f63] dark:text-sky-400 shadow-xs font-bold'
                   : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
@@ -123,7 +145,7 @@ export default function EmployerShiftRegisterPage() {
             <button
               type="button"
               onClick={() => setViewMode('DAY')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 viewMode === 'DAY'
                   ? 'bg-white dark:bg-[#121215] text-[#0f2f63] dark:text-sky-400 shadow-xs font-bold'
                   : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100'
@@ -153,7 +175,7 @@ export default function EmployerShiftRegisterPage() {
           <button
             type="button"
             onClick={() => setIsWorkOrderPickerOpen(true)}
-            className="px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-xl text-xs font-bold uppercase flex items-center gap-1.5 shadow-xs cursor-pointer"
+            className="px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-xl text-xs font-bold uppercase flex items-center gap-1.5 shadow-xs cursor-pointer transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>Schedule Shift</span>
@@ -165,7 +187,7 @@ export default function EmployerShiftRegisterPage() {
       {isLoading ? (
         <AppLoader variant="skeleton" message="Loading attendance register..." />
       ) : registerItems.length === 0 ? (
-        <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-10 text-center space-y-3">
+        <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-10 text-center space-y-4">
           <Users className="w-10 h-10 text-[#717784] mx-auto" />
           <h3 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">
             {viewMode === 'MONTH'
@@ -173,8 +195,18 @@ export default function EmployerShiftRegisterPage() {
               : `No Shifts Scheduled for ${new Date(selectedDate).toLocaleDateString('en-IN', { dateStyle: 'medium' })}`}
           </h3>
           <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-md mx-auto">
-            Schedule shifts for candidates who have accepted your digital work orders.
+            Schedule working shifts for candidates under your active work orders. Once scheduled, workers can scan rolling QR codes or enter 6-digit PINs at check-in.
           </p>
+          <div>
+            <button
+              type="button"
+              onClick={() => setIsWorkOrderPickerOpen(true)}
+              className="px-4 py-2.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-xl text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 shadow-xs cursor-pointer transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Schedule Shift Now</span>
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -197,12 +229,12 @@ export default function EmployerShiftRegisterPage() {
                         </span>
                       </div>
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                        status === 'CHECKED_IN' ? 'bg-emerald-100 text-emerald-800' :
-                        status === 'ON_BREAK' ? 'bg-amber-100 text-amber-800' :
-                        status === 'APPROVED' ? 'bg-blue-100 text-blue-800' :
-                        status === 'PENDING_APPROVAL' ? 'bg-indigo-100 text-indigo-800' :
-                        status === 'CORRECTION_REQUESTED' ? 'bg-rose-100 text-rose-800' :
-                        'bg-slate-100 text-slate-700'
+                        status === 'CHECKED_IN' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' :
+                        status === 'ON_BREAK' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' :
+                        status === 'APPROVED' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300' :
+                        status === 'PENDING_APPROVAL' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300' :
+                        status === 'CORRECTION_REQUESTED' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300' :
+                        'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300'
                       }`}>
                         {status.replace('_', ' ')}
                       </span>
@@ -217,8 +249,8 @@ export default function EmployerShiftRegisterPage() {
 
                     <div className="text-xs text-slate-600 dark:text-zinc-400 bg-slate-50 dark:bg-[#121215] p-2.5 rounded-xl space-y-1">
                       <div className="flex items-center justify-between">
-                        <span>Planned:</span>
-                        <span className="font-semibold">{item.startTime} - {item.endTime}</span>
+                        <span>Planned Hours:</span>
+                        <span className="font-semibold text-slate-900 dark:text-zinc-100">{item.startTime} - {item.endTime}</span>
                       </div>
                       {item.attendance?.checkInTime && (
                         <div className="flex items-center justify-between">
@@ -231,7 +263,7 @@ export default function EmployerShiftRegisterPage() {
                       {item.attendance?.totalWorkMinutes !== undefined && item.attendance.totalWorkMinutes > 0 && (
                         <div className="flex items-center justify-between">
                           <span>Total Work:</span>
-                          <span className="font-bold">{item.attendance.totalWorkMinutes} mins</span>
+                          <span className="font-bold text-slate-900 dark:text-zinc-100">{item.attendance.totalWorkMinutes} mins</span>
                         </div>
                       )}
                       {item.attendance?.correctionReason && (
@@ -242,16 +274,30 @@ export default function EmployerShiftRegisterPage() {
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="pt-2 border-t border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setActiveShiftForQr(item)}
-                      className="px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 text-slate-800 dark:text-zinc-200 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer"
-                    >
-                      <QrCode className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
-                      <span>QR / PIN</span>
-                    </button>
+                  {/* Actions: QR/PIN, Edit Timing, Approve/Review */}
+                  <div className="pt-2 border-t border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between gap-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setActiveShiftForQr(item)}
+                        className="px-2.5 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Show check-in QR Code and OTP PIN"
+                      >
+                        <QrCode className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
+                        <span>QR / PIN</span>
+                      </button>
+
+                      {/* One-time Changeable Shift Timing Button */}
+                      <button
+                        type="button"
+                        onClick={() => setEditingShift(item)}
+                        className="px-2.5 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Change shift timing or reschedule"
+                      >
+                        <Clock className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
+                        <span>Change Timing</span>
+                      </button>
+                    </div>
 
                     {item.attendance && (item.attendance.status === 'PENDING_APPROVAL' || item.attendance.status === 'CHECKED_OUT') && (
                       <button
@@ -283,41 +329,112 @@ export default function EmployerShiftRegisterPage() {
 
       {/* Work Order Selector Modal for Scheduling */}
       {isWorkOrderPickerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-          <div className="w-full max-w-lg bg-white dark:bg-[#1C1C21] rounded-3xl p-6 space-y-4 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-lg bg-white dark:bg-[#1C1C21] rounded-3xl p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-zinc-800">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Select Accepted Work Order</h3>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Select Work Order to Schedule</h3>
+                <p className="text-xs text-slate-500 dark:text-zinc-400">Choose a worker and agreement to schedule shifts for:</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsWorkOrderPickerOpen(false)}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer p-1 rounded-lg"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-xs text-slate-500">Choose which worker and agreement to schedule shifts for:</p>
+
+            {/* Quick Search */}
+            {availableOrders.length > 3 && (
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search by worker, job title, or order #..."
+                  value={workOrderSearch}
+                  onChange={(e) => setWorkOrderSearch(e.target.value)}
+                  className="w-full pl-8.5 pr-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/60 text-xs text-slate-900 dark:text-zinc-100 focus:outline-hidden"
+                />
+              </div>
+            )}
             
-            {acceptedOrders.length === 0 ? (
-              <p className="text-xs text-amber-600 py-4 text-center">No accepted work orders found. Issue a work order and wait for candidate acceptance first.</p>
-            ) : (
-              <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
-                {acceptedOrders.map((wo: WorkOrder) => (
-                  <div
-                    key={wo.id}
+            {isLoadingWorkOrders ? (
+              <div className="py-8 text-center text-xs text-slate-500">
+                Loading available work orders...
+              </div>
+            ) : availableOrders.length === 0 ? (
+              <div className="text-center py-6 px-4 bg-slate-50 dark:bg-zinc-900/50 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800 space-y-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-950/60 text-[#0f2f63] dark:text-sky-400 flex items-center justify-center mx-auto">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100">No Active Work Orders Found</h4>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-sm mx-auto mt-1">
+                    To schedule shifts, issue a work order to your candidate first.
+                  </p>
+                </div>
+                <div>
+                  <button
+                    type="button"
                     onClick={() => {
-                      setSelectedWorkOrderForShift(wo);
                       setIsWorkOrderPickerOpen(false);
+                      navigate('/employer/work-orders');
                     }}
-                    className="p-3 rounded-2xl border border-slate-200 dark:border-zinc-800 hover:border-[#0f2f63] dark:hover:border-sky-500 hover:bg-slate-50 dark:hover:bg-zinc-800/40 cursor-pointer transition-all flex items-center justify-between"
+                    className="px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-xl text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
                   >
-                    <div>
-                      <span className="text-[10px] font-bold text-[#0f2f63] dark:text-sky-400 block">{wo.order_number}</span>
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">{wo.job_title}</span>
-                      <span className="text-[11px] text-slate-500 block">{wo.worksite_name} • ₹{Number(wo.wage_amount).toLocaleString('en-IN')}/{wo.wage_frequency?.toLowerCase()}</span>
+                    <Plus className="w-4 h-4" />
+                    <span>Manage / Issue Work Orders</span>
+                  </button>
+                </div>
+              </div>
+            ) : filteredOrders.length === 0 ? (
+              <div className="py-6 text-center text-xs text-slate-500">
+                No work orders matched "{workOrderSearch}".
+              </div>
+            ) : (
+              <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                {filteredOrders.map((wo: WorkOrder) => {
+                  const statusColor = 
+                    wo.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' :
+                    wo.status === 'SENT' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' :
+                    wo.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300' :
+                    'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300';
+
+                  return (
+                    <div
+                      key={wo.id}
+                      onClick={() => {
+                        setSelectedWorkOrderForShift(wo);
+                        setIsWorkOrderPickerOpen(false);
+                      }}
+                      className="p-3.5 rounded-2xl border border-slate-200 dark:border-zinc-800 hover:border-[#0f2f63] dark:hover:border-sky-500 hover:bg-slate-50 dark:hover:bg-zinc-800/40 cursor-pointer transition-all flex items-center justify-between group"
+                    >
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-[#0f2f63] dark:text-sky-400">
+                            {wo.order_number}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${statusColor}`}>
+                            {wo.status}
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                          {wo.job_title}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+                          Worker: <strong className="text-slate-700 dark:text-zinc-300">{wo.worker?.full_name || 'Assigned Candidate'}</strong> • {wo.worksite_name}
+                        </p>
+                        <p className="text-[10px] font-semibold text-slate-600 dark:text-zinc-400">
+                          ₹{Number(wo.wage_amount).toLocaleString('en-IN')}/{wo.wage_frequency?.toLowerCase()}
+                        </p>
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 group-hover:bg-[#0f2f63] group-hover:text-white flex items-center justify-center transition-colors">
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-white" />
+                      </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -326,8 +443,8 @@ export default function EmployerShiftRegisterPage() {
 
       {/* Review & Resolve Correction Modal */}
       {resolvingCorrectionItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-          <div className="w-full max-w-md bg-white dark:bg-[#1C1C21] rounded-3xl p-6 space-y-4 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white dark:bg-[#1C1C21] rounded-3xl p-6 space-y-4 shadow-xl border border-slate-200 dark:border-zinc-800">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Review Attendance Correction</h3>
             <div className="text-xs space-y-1 text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/50 p-3 rounded-xl">
               <div><strong>Worker:</strong> {resolvingCorrectionItem.worker.name}</div>
@@ -378,6 +495,19 @@ export default function EmployerShiftRegisterPage() {
           shiftId={activeShiftForQr.shiftId}
           workerName={activeShiftForQr.worker.name}
           jobTitle={activeShiftForQr.jobTitle}
+        />
+      )}
+
+      {/* Edit Shift Timing Modal (One-time Changeable) */}
+      {editingShift && (
+        <EditShiftModal
+          isOpen={Boolean(editingShift)}
+          onClose={() => setEditingShift(null)}
+          shiftItem={editingShift}
+          onShiftUpdated={() => {
+            refetch();
+            queryClient.invalidateQueries({ queryKey: ['attendanceRegister'] });
+          }}
         />
       )}
 

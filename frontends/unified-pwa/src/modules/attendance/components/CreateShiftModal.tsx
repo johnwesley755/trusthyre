@@ -8,7 +8,8 @@ import {
   Loader2, 
   Plus, 
   Coffee, 
-  AlertCircle 
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
 import { BaseModal } from '../../../components/common/BaseModal';
 import { shiftAttendanceService, type CreateShiftPayload } from '../../../services/shiftAttendance.service';
@@ -22,12 +23,19 @@ interface CreateShiftModalProps {
   onShiftCreated?: () => void;
 }
 
+const SHIFT_PRESETS = [
+  { label: 'General Shift', start: '09:00', end: '18:00', icon: '☀️' },
+  { label: 'Early Shift', start: '07:00', end: '15:00', icon: '🌅' },
+  { label: 'Night Shift', start: '21:00', end: '06:00', icon: '🌙' },
+];
+
 export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
   isOpen,
   onClose,
   workOrder,
   onShiftCreated
 }) => {
+  const today = new Date().toISOString().slice(0, 10);
   const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
 
   const [formData, setFormData] = useState<Partial<CreateShiftPayload>>({
@@ -45,6 +53,14 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const applyPreset = (start: string, end: string) => {
+    setFormData(prev => ({ ...prev, startTime: start, endTime: end }));
+  };
+
+  const setDatePreset = (dateVal: string, days: number = 1) => {
+    setFormData(prev => ({ ...prev, shiftDate: dateVal, recurringDays: days }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,52 +96,125 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Schedule Shift"
-      subtitle={`Create working shifts for order ${workOrder.order_number}`}
+      subtitle={`Schedule working shifts for order ${workOrder.order_number}`}
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Work Order Overview */}
         <div className="p-3.5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-2xl flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-blue-900 dark:text-blue-300 block">{workOrder.job_title}</span>
-            <span className="text-[10px] text-blue-700/80 dark:text-blue-400">Assigned Worker: {workOrder.worker?.full_name || 'Verified Candidate'}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-[#0f2f63] dark:text-sky-400 uppercase">
+                {workOrder.order_number}
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
+                {workOrder.status}
+              </span>
+            </div>
+            <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 block">{workOrder.job_title}</span>
+            <span className="text-[10px] text-slate-500 dark:text-zinc-400">Worker: {workOrder.worker?.full_name || 'Assigned Candidate'}</span>
           </div>
           <span className="text-xs font-bold text-blue-950 dark:text-blue-200">
             ₹{Number(workOrder.wage_amount).toLocaleString('en-IN')} / {workOrder.wage_frequency?.toLowerCase()}
           </span>
         </div>
 
-        {/* Date & Recurrence */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 block mb-1">
-              Start Shift Date *
-            </label>
-            <input
-              type="date"
-              required
-              value={formData.shiftDate}
-              onChange={(e) => setFormData(prev => ({ ...prev, shiftDate: e.target.value }))}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-medium text-slate-900 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 block mb-1">
-              Number of Shifts (Days)
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="30"
-              value={formData.recurringDays}
-              onChange={(e) => setFormData(prev => ({ ...prev, recurringDays: parseInt(e.target.value) || 1 }))}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-medium text-slate-900 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]"
-            />
+        {/* 1-Click Timing Presets */}
+        <div>
+          <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 block mb-1.5">
+            Shift Timing Presets
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {SHIFT_PRESETS.map((preset) => {
+              const isSelected = formData.startTime === preset.start && formData.endTime === preset.end;
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => applyPreset(preset.start, preset.end)}
+                  className={`p-2.5 rounded-xl border text-left text-xs transition-all cursor-pointer ${
+                    isSelected
+                      ? 'border-[#0f2f63] dark:border-sky-400 bg-blue-50/70 dark:bg-sky-950/40 font-bold text-[#0f2f63] dark:text-sky-300'
+                      : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 text-slate-700 dark:text-zinc-300'
+                  }`}
+                >
+                  <span className="mr-1">{preset.icon}</span>
+                  <span className="block text-xs font-semibold">{preset.label}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-zinc-400">{preset.start} - {preset.end}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Shift Timings */}
+        {/* Start Date & Quick Date Buttons */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+              Start Date & Duration *
+            </label>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setDatePreset(today, 1)}
+                className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 text-slate-700 dark:text-zinc-300 cursor-pointer"
+              >
+                Today
+              </button>
+              <button
+                type="button"
+                onClick={() => setDatePreset(tomorrow, 1)}
+                className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 text-slate-700 dark:text-zinc-300 cursor-pointer"
+              >
+                Tomorrow
+              </button>
+              <button
+                type="button"
+                onClick={() => setDatePreset(tomorrow, 7)}
+                className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 text-slate-700 dark:text-zinc-300 cursor-pointer"
+              >
+                7 Days
+              </button>
+              <button
+                type="button"
+                onClick={() => setDatePreset(tomorrow, 30)}
+                className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 text-slate-700 dark:text-zinc-300 cursor-pointer"
+              >
+                1 Month
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <input
+                type="date"
+                required
+                value={formData.shiftDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, shiftDate: e.target.value }))}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-medium text-slate-900 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={formData.recurringDays}
+                  onChange={(e) => setFormData(prev => ({ ...prev, recurringDays: parseInt(e.target.value) || 1 }))}
+                  className="w-24 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-medium text-slate-900 dark:text-zinc-100 text-center"
+                />
+                <span className="text-xs text-slate-500 dark:text-zinc-400">
+                  Total Shift Days ({formData.recurrenceRule?.toLowerCase()})
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Custom Start & End Times */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 block mb-1">
@@ -172,7 +261,7 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
 
           <div>
             <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 block mb-1">
-              Recurrence Type
+              Days Schedule
             </label>
             <select
               value={formData.recurrenceRule}
@@ -186,30 +275,16 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
           </div>
         </div>
 
-        {/* Worksite Override */}
+        {/* Worksite Name & Notes */}
         <div>
           <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 block mb-1">
-            Worksite Name & Location
+            Worksite Location
           </label>
           <input
             type="text"
             value={formData.worksiteName}
             onChange={(e) => setFormData(prev => ({ ...prev, worksiteName: e.target.value }))}
             placeholder="e.g. Metro Phase II Site, Guindy"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-medium text-slate-900 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]"
-          />
-        </div>
-
-        {/* Shift Notes */}
-        <div>
-          <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 block mb-1">
-            Instructions / Required PPE
-          </label>
-          <textarea
-            rows={2}
-            value={formData.notes}
-            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-            placeholder="e.g. Report to Supervisor Rajesh at Gate 2. Hard hat required."
             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#121215] text-xs font-medium text-slate-900 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-[#0f2f63]"
           />
         </div>
@@ -226,7 +301,7 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2.5 rounded-xl bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-semibold uppercase flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
@@ -236,7 +311,7 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
             ) : (
               <>
                 <Check className="w-3.5 h-3.5" />
-                <span>Confirm Shifts</span>
+                <span>Confirm & Schedule</span>
               </>
             )}
           </button>

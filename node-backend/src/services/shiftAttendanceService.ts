@@ -26,6 +26,16 @@ export interface CreateShiftInput {
   recurrenceRule?: 'DAILY' | 'WEEKDAYS' | 'WEEKLY';
 }
 
+export interface UpdateShiftInput {
+  startTime?: string;
+  endTime?: string;
+  breakDurationMinutes?: number;
+  worksiteName?: string;
+  worksiteAddress?: string;
+  city?: string;
+  notes?: string;
+}
+
 export interface AttendanceCheckInInput {
   shiftId: string;
   method: 'QR_CODE' | 'ONE_TIME_PIN';
@@ -99,8 +109,20 @@ export const ShiftAttendanceService = {
       throw new Error("Forbidden: You do not own this work order");
     }
 
-    if (!['ACCEPTED', 'IN_PROGRESS'].includes(workOrder.status)) {
-      throw new Error(`Cannot schedule shifts for work order with status: ${workOrder.status}. Must be ACCEPTED or IN_PROGRESS.`);
+    if (!['ACCEPTED', 'IN_PROGRESS', 'SENT', 'ACTIVE'].includes(workOrder.status)) {
+      throw new Error(`Cannot schedule shifts for work order with status: ${workOrder.status}. Must be ACCEPTED, IN_PROGRESS, or SENT.`);
+    }
+
+    // If work order is currently in SENT status, automatically activate it upon scheduling shifts
+    if (workOrder.status === 'SENT') {
+      await prisma.work_orders.update({
+        where: { id: workOrder.id },
+        data: {
+          status: 'ACCEPTED',
+          accepted_at: new Date(),
+          updated_at: new Date()
+        }
+      });
     }
 
     const workerId = workOrder.worker_id;
@@ -209,8 +231,110 @@ export const ShiftAttendanceService = {
     return createdShifts;
   },
 
-  getEmployerShifts: async (employerUserId: string, filters: { date?: string; month?: string; status?: string }) => {
+  updateShift: async (employerUserId: string, shiftId: string, input: UpdateShiftInput) => {
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (input.startTime && !timeRegex.test(input.startTime)) {
+      throw new Error("Invalid time format for startTime. Must be HH:mm (24-hour format).");
+    }
+    if (input.endTime && !timeRegex.test(input.endTime)) {
+      throw new Error("Invalid time format for endTime. Must be HH:mm (24-hour format).");
+    }
+    if (input.breakDurationMinutes !== undefined && input.breakDurationMinutes < 0) {
+      throw new Error("breakDurationMinutes cannot be negative.");
+    }
+
+    const shift = await prisma.shifts.findUnique({
+      where: { id: shiftId },
+      include: { attendances: true }
+    });
+
+    if (!shift) {
+      throw new Error("Shift not found");
+    }
+
+    if (shift.employer_id !== employerUserId) {
+      throw new Error("Forbidden: You do not own this shift");
+    }
+
+    if (shift.status === 'CANCELLED') {
+      throw new Error("Cannot update a cancelled shift");
+    }
+
+    const updated = await prisma.shifts.update({
+      where: { id: shiftId },
+      data: {
+        start_time: input.startTime || shift.start_time,
+        end_time: input.endTime || shift.end_time,
+        break_duration_minutes: input.breakDurationMinutes !== undefined ? input.breakDurationMinutes : shift.break_duration_minutes,
+        worksite_name: input.worksiteName || shift.worksite_name,
+        worksite_address: input.worksiteAddress || shift.worksite_address,
+        city: input.city || shift.city,
+        notes: input.notes !== undefined ? input.notes : shift.notes,
+        updated_at: new Date()
+      },
+      include: {
+        work_orders: {
+          select: {
+            order_number: true,
+            job_title: true,
+            wage_amount: true,
+            wage_frequency: true
+          }
+        },
+        attendances: true
+      }
+    });
+
+    return updated;
+  },
+
+  cancelShift: async (employerUserId: string, shiftId: string) => {
+    const shift = await prisma.shifts.findUnique({
+      where: { id: shiftId },
+      include: { attendances: true }
+    });
+
+    if (!shift) {
+      throw new Error("Shift not found");
+    }
+
+    if (shift.employer_id !== employerUserId) {
+      throw new Error("Forbidden: You do not own this shift");
+    }
+
+    const hasActiveAttendance = shift.attendances.some(a => 
+      ['CHECKED_IN', 'ON_BREAK', 'CHECKED_OUT', 'APPROVED'].includes(a.status)
+    );
+    if (hasActiveAttendance) {
+      throw new Error("Cannot cancel a shift with active or completed worker attendance records.");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.shifts.update({
+        where: { id: shiftId },
+        data: {
+          status: 'CANCELLED',
+          updated_at: new Date()
+        }
+      });
+
+      await tx.shift_attendances.deleteMany({
+        where: {
+          shift_id: shiftId,
+          status: 'NOT_STARTED'
+        }
+      });
+    });
+
+    return { message: "Shift cancelled successfully", shiftId };
+  },
+
+  getEmployerShifts: async (employerUserId: string, filters: { date?: string; month?: string; status?: string; workOrderId?: string }) => {
     const where: any = { employer_id: employerUserId };
+
+    if (filters.workOrderId) {
+      where.work_order_id = filters.workOrderId;
+    }
 
     if (filters.month && filters.month.match(/^\d{4}-\d{2}$/)) {
       const [year, month] = filters.month.split('-').map(Number);
@@ -244,19 +368,26 @@ export const ShiftAttendanceService = {
     });
   },
 
-  getWorkerShifts: async (workerUserId: string, filters: { date?: string; month?: string; status?: string }) => {
+  getWorkerShifts: async (workerUserId: string, filters: { date?: string; month?: string; status?: string; upcoming?: boolean }) => {
     const where: any = { worker_id: workerUserId };
+    let orderBy: any = [{ shift_date: 'desc' }, { start_time: 'asc' }];
 
     if (filters.month && filters.month.match(/^\d{4}-\d{2}$/)) {
       const [year, month] = filters.month.split('-').map(Number);
       const startOfMonth = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
       const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
       where.shift_date = { gte: startOfMonth, lte: endOfMonth };
+      orderBy = [{ shift_date: 'asc' }, { start_time: 'asc' }];
     } else if (filters.date) {
       const parsedDate = new Date(filters.date);
       const startOfDay = new Date(Date.UTC(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth(), parsedDate.getUTCDate(), 0, 0, 0, 0));
       const endOfDay = new Date(Date.UTC(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth(), parsedDate.getUTCDate(), 23, 59, 59, 999));
       where.shift_date = { gte: startOfDay, lte: endOfDay };
+    } else if (filters.upcoming) {
+      const today = new Date();
+      const startOfToday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 0, 0, 0, 0));
+      where.shift_date = { gte: startOfToday };
+      orderBy = [{ shift_date: 'asc' }, { start_time: 'asc' }];
     }
 
     if (filters.status && filters.status !== 'ALL') {
@@ -279,7 +410,7 @@ export const ShiftAttendanceService = {
         },
         attendances: true
       },
-      orderBy: [{ shift_date: 'desc' }, { start_time: 'asc' }]
+      orderBy
     });
   },
 

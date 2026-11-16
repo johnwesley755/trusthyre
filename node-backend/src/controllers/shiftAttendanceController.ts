@@ -25,6 +25,57 @@ export const shiftAttendanceController = {
   },
 
   /**
+   * PATCH /api/shifts/:id
+   * Update shift timing and details (Employer)
+   */
+  updateShift: async (c: Context) => {
+    try {
+      const authUser = c.get('user');
+      if (!authUser || !authUser.sub) {
+        return c.json(ApiResponse.error("Unauthorized: Employer login required"), 401 as any);
+      }
+
+      const shiftId = c.req.param('id');
+      if (!shiftId) {
+        return c.json(ApiResponse.error("Shift ID is required"), 400 as any);
+      }
+
+      const body = await c.req.json();
+      const updated = await ShiftAttendanceService.updateShift(authUser.sub, shiftId, body);
+      return c.json(ApiResponse.ok("Shift updated successfully", updated));
+    } catch (err: any) {
+      console.error("Error updating shift:", err);
+      const isForbidden = err.message?.includes('Forbidden');
+      return c.json(ApiResponse.error(err.message || "Failed to update shift"), isForbidden ? 403 as any : 400 as any);
+    }
+  },
+
+  /**
+   * DELETE /api/shifts/:id
+   * Cancel an unstarted shift (Employer)
+   */
+  cancelShift: async (c: Context) => {
+    try {
+      const authUser = c.get('user');
+      if (!authUser || !authUser.sub) {
+        return c.json(ApiResponse.error("Unauthorized: Employer login required"), 401 as any);
+      }
+
+      const shiftId = c.req.param('id');
+      if (!shiftId) {
+        return c.json(ApiResponse.error("Shift ID is required"), 400 as any);
+      }
+
+      const result = await ShiftAttendanceService.cancelShift(authUser.sub, shiftId);
+      return c.json(ApiResponse.ok("Shift cancelled successfully", result));
+    } catch (err: any) {
+      console.error("Error cancelling shift:", err);
+      const isForbidden = err.message?.includes('Forbidden');
+      return c.json(ApiResponse.error(err.message || "Failed to cancel shift"), isForbidden ? 403 as any : 400 as any);
+    }
+  },
+
+  /**
    * GET /api/shifts/employer
    * List employer shifts
    */
@@ -38,8 +89,9 @@ export const shiftAttendanceController = {
       const date = c.req.query('date');
       const month = c.req.query('month');
       const status = c.req.query('status');
+      const workOrderId = c.req.query('workOrderId');
 
-      const shifts = await ShiftAttendanceService.getEmployerShifts(authUser.sub, { date, month, status });
+      const shifts = await ShiftAttendanceService.getEmployerShifts(authUser.sub, { date, month, status, workOrderId });
       return c.json(ApiResponse.ok(shifts));
     } catch (err: any) {
       console.error("Error getting employer shifts:", err);
@@ -61,8 +113,9 @@ export const shiftAttendanceController = {
       const date = c.req.query('date');
       const month = c.req.query('month');
       const status = c.req.query('status');
+      const upcoming = c.req.query('upcoming') === 'true';
 
-      const shifts = await ShiftAttendanceService.getWorkerShifts(authUser.sub, { date, month, status });
+      const shifts = await ShiftAttendanceService.getWorkerShifts(authUser.sub, { date, month, status, upcoming });
       return c.json(ApiResponse.ok(shifts));
     } catch (err: any) {
       console.error("Error getting worker shifts:", err);

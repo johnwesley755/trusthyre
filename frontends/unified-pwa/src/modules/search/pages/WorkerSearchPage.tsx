@@ -15,7 +15,8 @@ import {
   Check,
   Bookmark,
   ArrowRight,
-  Bell
+  Bell,
+  Briefcase
 } from 'lucide-react';
 import { UserAvatar } from '../../../components/common/UserAvatar';
 import { WorkerSearchHero } from '../components/WorkerSearchHero';
@@ -33,7 +34,9 @@ import { TalentAlertModal } from '../components/TalentAlertModal';
 import { normalizeSkills } from '../../../utils/skills';
 import { SeoHead, buildKeywordsList } from '../../../components/common/SeoHead';
 import { CandidateOutreachModal, type CandidateOutreachCandidate } from '../../../components/common/CandidateOutreachModal';
+import { CreateWorkOrderModal } from '../../work-orders/components/CreateWorkOrderModal';
 import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
+import { toast } from 'sonner';
 import { jobService } from '../../../services/job.service';
 import { calculateMatchScore, getMatchScoreVisuals } from '../../../utils/matchScorer';
 import { Phone, MessageSquare, Sparkles as SparklesIcon, Zap } from 'lucide-react';
@@ -86,6 +89,12 @@ export const WorkerSearchPage = () => {
   const [outreachCandidate, setOutreachCandidate] = useState<CandidateOutreachCandidate | null>(null);
   const [isOutreachModalOpen, setIsOutreachModalOpen] = useState(false);
   const [isChowkModalOpen, setIsChowkModalOpen] = useState(false);
+  const [hiringCandidate, setHiringCandidate] = useState<{
+    userId: string;
+    fullName: string;
+    skills?: string[];
+    city?: string;
+  } | null>(null);
 
   // Fetch employer's active candidate alerts to reflect live subscription state
   const { data: userAlerts = [] } = useQuery<SearchAlert[]>({
@@ -659,6 +668,29 @@ export const WorkerSearchPage = () => {
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {/* 🤝 Employer: Direct Hire / Issue Work Order */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!user) {
+                                  navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+                                  return;
+                                }
+                                setHiringCandidate({
+                                  userId: worker.userId,
+                                  fullName: worker.name,
+                                  skills: worker.skills,
+                                  city: worker.city
+                                });
+                              }}
+                              className="rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-bold uppercase px-3.5 py-2 transition-all flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer shrink-0"
+                              title="Hire candidate and issue digital work order"
+                            >
+                              <Briefcase className="w-3.5 h-3.5 text-white" />
+                              <span className="hidden sm:inline">Hire</span>
+                            </button>
+
                             {/* 💬 Instant WhatsApp Interview Invite & Call */}
                             <button
                               type="button"
@@ -943,6 +975,19 @@ export const WorkerSearchPage = () => {
         initialMode="employer"
         currentTaluk={city || 'Guindy'}
       />
+
+      {/* 🤝 Employer: Create & Issue Work Order Modal */}
+      {hiringCandidate && (
+        <CreateWorkOrderModal
+          isOpen={Boolean(hiringCandidate)}
+          onClose={() => setHiringCandidate(null)}
+          candidate={hiringCandidate}
+          onSuccess={() => {
+            toast.success(`Work order issued to ${hiringCandidate.fullName}! You can now schedule shifts.`);
+            setHiringCandidate(null);
+          }}
+        />
+      )}
     </div>
   );
 };
