@@ -1362,7 +1362,7 @@ export default function LandingPage() {
 
               <Link
                 to="/blog"
-                className="text-xs font-semibold text-[#0f2f63] hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-[#0f2f63] dark:text-[#38BDF8] hover:underline flex items-center gap-1"
               >
                 <span>View all articles</span>
                 <ChevronRight className="w-3.5 h-3.5" />
