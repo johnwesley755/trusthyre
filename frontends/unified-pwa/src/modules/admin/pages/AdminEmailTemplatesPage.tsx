@@ -17,7 +17,9 @@ import {
   X,
   ShieldCheck,
   ShieldAlert,
-  Send
+  Send,
+  Archive,
+  AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -33,12 +35,23 @@ export const AdminEmailTemplatesPage: React.FC = () => {
   const { user } = useAuth();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
-  const [activeTab, setActiveTab] = useState<'ALL' | 'APPLICATION' | 'BREVO' | 'DRAFTS' | 'PUBLISHED'>('ALL');
+  const [activeTab, setActiveTab] = useState<'ALL' | 'APPLICATION' | 'BREVO' | 'DRAFTS' | 'PUBLISHED' | 'ARCHIVED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [selectedHistoryTemplate, setSelectedHistoryTemplate] = useState<EmailTemplate | null>(null);
   const [quickTestTemplate, setQuickTestTemplate] = useState<EmailTemplate | null>(null);
   const [quickTestEmail, setQuickTestEmail] = useState('');
+
+  const archiveMutation = useMutation({
+    mutationFn: (id: string) => adminEmailTemplateService.archiveTemplate(id),
+    onSuccess: () => {
+      toast.success('Template safely archived');
+      queryClient.invalidateQueries({ queryKey: ['adminEmailTemplates'] });
+    },
+    onError: (err: any) => {
+      toast.error(`Archive Failed: ${err.message}`);
+    },
+  });
 
   const quickTestMutation = useMutation({
     mutationFn: ({ id, email }: { id: string; email: string }) =>
@@ -132,6 +145,15 @@ export const AdminEmailTemplatesPage: React.FC = () => {
       t.template_key.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.subject.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'ALL' || t.category === categoryFilter;
+
+    if (activeTab === 'ARCHIVED') {
+      return matchesSearch && matchesCategory && t.status === 'ARCHIVED';
+    }
+
+    if (t.status === 'ARCHIVED') {
+      return false;
+    }
+
     const matchesTab =
       activeTab === 'ALL' ||
       activeTab === 'APPLICATION' ||
@@ -197,6 +219,20 @@ export const AdminEmailTemplatesPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Brevo Connection Notice (when Brevo offline / unconfigured) */}
+      {inventory?.brevoError && (
+        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-semibold">Brevo Remote Notice: </span>
+            <span>{inventory.brevoError}</span>
+            <p className="mt-0.5 text-[11px] text-amber-700 dark:text-amber-400">
+              Local database templates, test email sends, and standard SMTP mailer dispatch remain fully operational.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Search and Filter Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
         <div className="relative w-full sm:w-72">
@@ -218,6 +254,7 @@ export const AdminEmailTemplatesPage: React.FC = () => {
             { id: 'BREVO', label: 'Brevo Remote' },
             { id: 'DRAFTS', label: 'Drafts' },
             { id: 'PUBLISHED', label: 'Published' },
+            { id: 'ARCHIVED', label: 'Archived' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -236,7 +273,7 @@ export const AdminEmailTemplatesPage: React.FC = () => {
       </div>
 
       {/* Section 1: TrustHyre Managed Templates */}
-      {(activeTab === 'ALL' || activeTab === 'APPLICATION' || activeTab === 'DRAFTS' || activeTab === 'PUBLISHED') && (
+      {(activeTab === 'ALL' || activeTab === 'APPLICATION' || activeTab === 'DRAFTS' || activeTab === 'PUBLISHED' || activeTab === 'ARCHIVED') && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
@@ -322,6 +359,20 @@ export const AdminEmailTemplatesPage: React.FC = () => {
                             >
                               <Copy className="w-3.5 h-3.5" />
                             </button>
+                            {!tpl.is_system && tpl.status !== 'ARCHIVED' && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (window.confirm(`Archive template "${tpl.name}"? It will no longer be dispatched by mailers.`)) {
+                                    archiveMutation.mutate(tpl.id);
+                                  }
+                                }}
+                                title="Archive Template (Soft Delete)"
+                                className="p-1 rounded text-slate-400 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
+                              >
+                                <Archive className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                             <Link
                               to={`/admin/email-templates/${tpl.id}/edit`}
                               className="px-2.5 py-1 text-xs font-semibold rounded bg-[#0f2f63]/10 text-[#0f2f63] hover:bg-[#0f2f63] hover:text-white dark:bg-blue-900/30 dark:text-blue-300 transition"

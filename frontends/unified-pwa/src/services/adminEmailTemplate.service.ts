@@ -136,6 +136,11 @@ export const adminEmailTemplateService = {
     return res.data?.data || res.data;
   },
 
+  archiveTemplate: async (id: string): Promise<EmailTemplate> => {
+    const res = await apiClient.post(`/api/admin/email-templates/${id}/archive`);
+    return res.data?.data || res.data;
+  },
+
   syncBrevo: async (): Promise<{ count: number; templates: BrevoRemoteTemplate[] }> => {
     const res = await apiClient.post('/api/admin/email-templates/sync');
     return res.data?.data || res.data;

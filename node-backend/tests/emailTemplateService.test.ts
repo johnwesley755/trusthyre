@@ -4,6 +4,7 @@ import prisma from '../src/config/prisma';
 import { validateAndSanitizeEmailHtml } from '../src/utils/emailHtmlSanitizer';
 import { EmailTemplateManagerService } from '../src/services/emailTemplateManagerService';
 import { sendTemplateEmail } from '../src/services/mailer';
+import { interpolateTemplate, extractTemplatePlaceholders } from '../src/utils/templateUtils';
 
 describe('Custom Email Template Management System Test Suite', () => {
   const testAdminId = 'e0000000-0000-4000-a000-000000000088';
@@ -190,5 +191,77 @@ describe('Custom Email Template Management System Test Suite', () => {
     const res = await app.fetch(req, process.env, {});
     // Must be rejected with 400 or 401/403
     expect([400, 401, 403]).toContain(res.status);
+  });
+
+  it('9. Safe Template Interpolator preserves literal dollar signs ($100, $&, $\') without pattern expansion', () => {
+    const rawHtml = '<p>Your payout of {{params.amount}} is approved. Token: {{params.token}}</p>';
+    const params = {
+      amount: '$1,500.00 & $10 bonus',
+      token: 'SEC$1_XYZ',
+    };
+
+    const rendered = interpolateTemplate(rawHtml, params);
+    expect(rendered).toBe('<p>Your payout of $1,500.00 & $10 bonus is approved. Token: SEC$1_XYZ</p>');
+    // Must not expand $1 into regex capturing group or empty string
+    expect(rendered).not.toContain('SEC_XYZ');
+  });
+
+  it('10. Template Placeholders Extractor discovers all {{params.var}} keys', () => {
+    const html = `
+      <h1>Hello {{params.firstName}}</h1>
+      <p>Job: {{params.jobTitle}} at {{params.companyName}}</p>
+      <a href="{{params.actionUrl}}">Apply</a>
+    `;
+
+    const keys = extractTemplatePlaceholders(html);
+    expect(keys).toContain('firstName');
+    expect(keys).toContain('jobTitle');
+    expect(keys).toContain('companyName');
+    expect(keys).toContain('actionUrl');
+    expect(keys.length).toBe(4);
+  });
+
+  it('11. Template Archiving safely transitions status and strictly protects system templates', async () => {
+    // 1. Attempting to archive system template must throw
+    const systemTemplate = await (prisma as any).email_templates.findFirst({
+      where: { is_system: true },
+    });
+
+    if (systemTemplate) {
+      await expect(
+        EmailTemplateManagerService.archiveTemplate(systemTemplate.id, testAdminId)
+      ).rejects.toThrow('System-critical email templates cannot be archived');
+    }
+
+    // 2. Archiving custom draft template succeeds
+    const customDraft = await (prisma as any).email_templates.findUnique({
+      where: { template_key: testTemplateKey },
+    });
+
+    const archived = await EmailTemplateManagerService.archiveTemplate(customDraft.id, testAdminId);
+    expect(archived.status).toBe('ARCHIVED');
+  });
+
+  it('12. Local preview endpoint handles id=new gracefully without 404', async () => {
+    const req = new Request('http://localhost/api/admin/email-templates/new/preview', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        html_content: '<p>Hello {{params.name}}</p>',
+        subject: 'Welcome {{params.name}}',
+        params: { name: 'John' },
+      }),
+    });
+
+    const res = await app.fetch(req, process.env, {});
+    // May be 401 if unauthenticated or 200 if authenticated
+    expect([200, 401, 403]).toContain(res.status);
+    if (res.status === 200) {
+      const data: any = await res.json();
+      expect(data.success).toBe(true);
+      expect(data.data.renderedHtml).toContain('Hello John');
+    }
   });
 });

@@ -108,6 +108,13 @@ export class EmailTemplateManagerService {
         source: 'dailyDigestService.ts',
         description: 'Aggregates daily hiring leads and attendance alerts for employers.',
       },
+      {
+        key: 'SYSTEM_NOTIFICATION',
+        name: 'Platform Notification & Status Update',
+        category: 'NOTIFICATION',
+        source: 'notificationDispatcher.ts',
+        description: 'Sends real-time platform system updates, security notices, and trade alerts.',
+      },
     ];
 
     return {
@@ -335,40 +342,48 @@ export class EmailTemplateManagerService {
       const nextVersionNumber = latestVersion ? latestVersion.version_number + 1 : 1;
 
       // 3. Atomically persist version record and update template status in a database transaction
-      const version = await (prisma as any).email_template_versions.create({
-        data: {
-          template_id: id,
-          version_number: nextVersionNumber,
-          subject: template.subject,
-          preheader: template.preheader,
-          html_content: template.html_content,
-          text_content: template.text_content,
-          variables: template.variables,
-          brevo_template_id: brevoId,
-          change_summary: changeSummary || 'Published via TrustHyre Admin Console',
-          created_by: actorUserId,
-        },
-      });
+      const versionId = crypto.randomUUID();
 
-      const updated = await (prisma as any).email_templates.update({
-        where: { id },
-        data: {
-          status: 'PUBLISHED',
-          brevo_template_id: brevoId,
-          published_version_id: version.id,
-          published_by: actorUserId,
-          published_at: new Date(),
-          updated_at: new Date(),
-        },
-      });
+      const [version, updated] = await prisma.$transaction([
+        (prisma as any).email_template_versions.create({
+          data: {
+            id: versionId,
+            template_id: id,
+            version_number: nextVersionNumber,
+            subject: template.subject,
+            preheader: template.preheader,
+            html_content: template.html_content,
+            text_content: template.text_content,
+            variables: template.variables,
+            brevo_template_id: brevoId,
+            change_summary: changeSummary || 'Published via TrustHyre Admin Console',
+            created_by: actorUserId,
+          },
+        }),
+        (prisma as any).email_templates.update({
+          where: { id },
+          data: {
+            status: 'PUBLISHED',
+            brevo_template_id: brevoId,
+            published_version_id: versionId,
+            published_by: actorUserId,
+            published_at: new Date(),
+            updated_at: new Date(),
+          },
+        }),
+      ]);
 
       // 4. Activate or update template in Brevo now that DB transaction has successfully committed
-      await BrevoTemplateService.updateTemplate(brevoId, {
-        templateName: `TrustHyre - ${template.name}`,
-        subject: template.subject,
-        htmlContent: template.html_content,
-        isActive: true,
-      });
+      try {
+        await BrevoTemplateService.updateTemplate(brevoId, {
+          templateName: `TrustHyre - ${template.name}`,
+          subject: template.subject,
+          htmlContent: template.html_content,
+          isActive: true,
+        });
+      } catch (brevoErr: any) {
+        console.warn(`[EmailTemplateManagerService] Template #${id} published in DB, but Brevo activation failed:`, brevoErr.message);
+      }
 
       await EmailTemplateAuditService.record({
         templateId: id,
@@ -390,6 +405,7 @@ export class EmailTemplateManagerService {
 
   /**
    * Rolls back a template to a previous immutable version.
+   * Handles remote Brevo status gracefully if the remote ID no longer exists.
    */
   static async rollback(id: string, versionId: string, actorUserId: string) {
     const version = await (prisma as any).email_template_versions.findUnique({
@@ -402,11 +418,15 @@ export class EmailTemplateManagerService {
 
     // Sync HTML with Brevo if ID is available
     if (version.brevo_template_id) {
-      await BrevoTemplateService.updateTemplate(version.brevo_template_id, {
-        subject: version.subject,
-        htmlContent: version.html_content,
-        isActive: true,
-      });
+      try {
+        await BrevoTemplateService.updateTemplate(version.brevo_template_id, {
+          subject: version.subject,
+          htmlContent: version.html_content,
+          isActive: true,
+        });
+      } catch (brevoErr: any) {
+        console.warn(`[EmailTemplateManagerService] Brevo rollback warning for #${version.brevo_template_id}:`, brevoErr.message);
+      }
     }
 
     const updated = await (prisma as any).email_templates.update({
@@ -430,6 +450,45 @@ export class EmailTemplateManagerService {
       actorUserId,
       action: 'TEMPLATE_ROLLBACK',
       metadata: { targetVersionId: versionId, versionNumber: version.version_number },
+    });
+
+    return updated;
+  }
+
+  /**
+   * Safely archives a template.
+   * System-critical templates cannot be archived.
+   */
+  static async archiveTemplate(id: string, actorUserId: string) {
+    const template = await this.getTemplateById(id);
+    if (template.is_system) {
+      throw new Error('System-critical email templates cannot be archived.');
+    }
+
+    if (template.brevo_template_id) {
+      try {
+        await BrevoTemplateService.updateTemplate(template.brevo_template_id, {
+          isActive: false,
+        });
+      } catch (err: any) {
+        console.warn(`[EmailTemplateManagerService] Could not deactivate Brevo template #${template.brevo_template_id}:`, err.message);
+      }
+    }
+
+    const updated = await (prisma as any).email_templates.update({
+      where: { id },
+      data: {
+        status: 'ARCHIVED',
+        updated_by: actorUserId,
+        updated_at: new Date(),
+      },
+    });
+
+    await EmailTemplateAuditService.record({
+      templateId: id,
+      actorUserId,
+      action: 'TEMPLATE_ARCHIVED',
+      metadata: { previousStatus: template.status },
     });
 
     return updated;

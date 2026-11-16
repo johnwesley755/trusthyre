@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
-import { sendEmail } from '../services/mailer';
+import { sendEmail, sendTemplateEmail } from '../services/mailer';
 import { getOtpTemplate, getResetPasswordTemplate } from '../utils/emailTemplates';
 import { validatePasswordStrength } from '../utils/validators';
 import { SearchAlertService } from '../services/searchAlertService';
@@ -262,10 +262,21 @@ export const sendOtp = async (c: Context) => {
       });
     }
 
-    await sendEmail(email, `${otp} is your TrustHyre verification code`, getOtpTemplate(otp, email), {
-      category: 'auth',
-      text: `Your TrustHyre verification code is ${otp}. Valid for 15 minutes.`
-    });
+    await sendTemplateEmail(
+      'AUTH_EMAIL_OTP',
+      email,
+      { otp, email, recipientEmail: email, expiresInMinutes: 15 },
+      {
+        category: 'auth',
+        text: `Your TrustHyre verification code is ${otp}. Valid for 15 minutes.`,
+        fallbackFn: async () => {
+          return await sendEmail(email, `${otp} is your TrustHyre verification code`, getOtpTemplate(otp, email), {
+            category: 'auth',
+            text: `Your TrustHyre verification code is ${otp}. Valid for 15 minutes.`
+          });
+        }
+      }
+    );
     return c.json(ApiResponse.ok(`OTP sent to ${email}`, "sent"));
   } catch (err: any) {
     console.error("sendOtp error:", err);
@@ -342,10 +353,27 @@ export const forgotPassword = async (c: Context) => {
         where: { email },
         data: { reset_token: `RESET:${token}`, reset_token_expiry: new Date(Date.now() + 15 * 60 * 1000) }
       });
-      await sendEmail(email, `${token} is your TrustHyre password reset code`, getResetPasswordTemplate(token, email), {
-        category: 'auth',
-        text: `Your TrustHyre password reset code is ${token}. Valid for 1 hour.`
-      });
+      await sendTemplateEmail(
+        'AUTH_PASSWORD_RESET',
+        email,
+        {
+          token,
+          email,
+          recipientEmail: email,
+          resetUrl: `https://trusthyre.com/reset-password?token=${token}`,
+          expiresInMinutes: 15,
+        },
+        {
+          category: 'auth',
+          text: `Your TrustHyre password reset code is ${token}. Valid for 15 minutes.`,
+          fallbackFn: async () => {
+            return await sendEmail(email, `${token} is your TrustHyre password reset code`, getResetPasswordTemplate(token, email), {
+              category: 'auth',
+              text: `Your TrustHyre password reset code is ${token}. Valid for 15 minutes.`
+            });
+          }
+        }
+      );
     }
     return c.json(ApiResponse.ok("Reset email sent successfully", "sent"));
   } catch (err: any) {

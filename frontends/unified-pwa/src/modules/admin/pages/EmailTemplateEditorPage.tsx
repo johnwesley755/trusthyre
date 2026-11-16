@@ -16,7 +16,9 @@ import {
   RotateCcw,
   Image,
   Copy,
-  ShieldAlert
+  ShieldAlert,
+  Sparkles,
+  Archive
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { adminEmailTemplateService } from '../../../services/adminEmailTemplate.service';
@@ -355,6 +357,53 @@ export const EmailTemplateEditorPage: React.FC = () => {
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [changeSummary, setChangeSummary] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  const handleAutoDetectVariables = () => {
+    const matches = htmlContent.matchAll(/{{\s*params\.([a-zA-Z0-9_]+)\s*}}/g);
+    let parsed: Record<string, any> = {};
+    try {
+      parsed = JSON.parse(variablesJson);
+    } catch {
+      parsed = {};
+    }
+
+    let addedCount = 0;
+    for (const m of matches) {
+      const varName = m[1];
+      if (varName && parsed[varName] === undefined) {
+        if (varName === 'recipientEmail' || varName === 'email') {
+          parsed[varName] = 'candidate@trusthyre.com';
+        } else if (varName.includes('Url') || varName.includes('Link')) {
+          parsed[varName] = 'https://trusthyre.com';
+        } else if (varName.includes('otp') || varName.includes('token') || varName.includes('code')) {
+          parsed[varName] = '639201';
+        } else {
+          parsed[varName] = `Sample ${varName}`;
+        }
+        addedCount++;
+      }
+    }
+
+    setVariablesJson(JSON.stringify(parsed, null, 2));
+    setIsDirty(true);
+    if (addedCount > 0) {
+      toast.success(`Discovered and added ${addedCount} parameter placeholder(s) to sample JSON`);
+    } else {
+      toast.info('All HTML placeholders are already present in sample JSON');
+    }
+  };
 
   const { data: existingTemplate, isLoading } = useQuery({
     queryKey: ['emailTemplate', id],
@@ -382,6 +431,7 @@ export const EmailTemplateEditorPage: React.FC = () => {
       setHtmlContent(existingTemplate.html_content);
       setTextContent(existingTemplate.text_content || '');
       setVariablesJson(JSON.stringify(existingTemplate.variables || {}, null, 2));
+      setIsDirty(false);
     } else if (isNew) {
       const codeKey = searchParams.get('codeKey');
       const paramName = searchParams.get('name');
@@ -409,6 +459,7 @@ export const EmailTemplateEditorPage: React.FC = () => {
           if (paramCat) setCategory(paramCat);
           setSubject(`TrustHyre Notification`);
         }
+        setIsDirty(false);
       }
     }
   }, [existingTemplate, isNew, searchParams, inventory, navigate]);
@@ -416,6 +467,20 @@ export const EmailTemplateEditorPage: React.FC = () => {
   // Save Draft Mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const trimmedKey = templateKey.trim().toUpperCase();
+      if (isNew && !/^[A-Z0-9_]{3,100}$/.test(trimmedKey)) {
+        throw new Error('Template key must be 3-100 characters containing only uppercase letters, numbers, and underscores.');
+      }
+      if (!name.trim()) {
+        throw new Error('Template name is required.');
+      }
+      if (!subject.trim()) {
+        throw new Error('Subject line is required.');
+      }
+      if (!htmlContent.trim()) {
+        throw new Error('HTML content is required.');
+      }
+
       let parsedVariables = {};
       try {
         parsedVariables = JSON.parse(variablesJson);
@@ -425,21 +490,21 @@ export const EmailTemplateEditorPage: React.FC = () => {
 
       if (isNew) {
         return adminEmailTemplateService.createTemplate({
-          template_key: templateKey,
-          name,
+          template_key: trimmedKey,
+          name: name.trim(),
           category,
-          subject,
-          preheader,
+          subject: subject.trim(),
+          preheader: preheader.trim(),
           html_content: htmlContent,
           text_content: textContent,
           variables: parsedVariables,
         });
       } else {
         return adminEmailTemplateService.updateDraft(id!, {
-          name,
+          name: name.trim(),
           category,
-          subject,
-          preheader,
+          subject: subject.trim(),
+          preheader: preheader.trim(),
           html_content: htmlContent,
           text_content: textContent,
           variables: parsedVariables,
@@ -447,6 +512,7 @@ export const EmailTemplateEditorPage: React.FC = () => {
       }
     },
     onSuccess: (saved) => {
+      setIsDirty(false);
       toast.success('Template draft saved successfully');
       queryClient.invalidateQueries({ queryKey: ['adminEmailTemplates'] });
       if (isNew) {
@@ -508,8 +574,11 @@ export const EmailTemplateEditorPage: React.FC = () => {
 
   let previewHtml = htmlContent;
   Object.keys(sampleParams).forEach((k) => {
-    const reg = new RegExp(`{{\\s*params\\.${k}\\s*}}`, 'g');
-    previewHtml = previewHtml.replace(reg, String(sampleParams[k]));
+    if (!k) return;
+    const escapedKey = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const reg = new RegExp(`{{\\s*params\\.${escapedKey}\\s*}}`, 'g');
+    const safeVal = sampleParams[k] !== undefined && sampleParams[k] !== null ? String(sampleParams[k]) : '';
+    previewHtml = previewHtml.replace(reg, () => safeVal);
   });
 
   return (
@@ -811,15 +880,29 @@ export const EmailTemplateEditorPage: React.FC = () => {
           {/* Dynamic Variables JSON Schema */}
           <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 space-y-2 shadow-xs">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                Sample Preview Parameters (JSON)
-              </label>
-              <span className="text-[11px] text-slate-400">Merged into live preview iframe</span>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                  Sample Preview Parameters (JSON)
+                </label>
+                <p className="text-[11px] text-slate-400">Merged into live preview iframe</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleAutoDetectVariables}
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition cursor-pointer shadow-xs"
+                title="Automatically scan HTML for {{params.varName}} and add missing keys to JSON"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                Scan HTML Placeholders
+              </button>
             </div>
             <textarea
               rows={5}
               value={variablesJson}
-              onChange={(e) => setVariablesJson(e.target.value)}
+              onChange={(e) => {
+                setVariablesJson(e.target.value);
+                setIsDirty(true);
+              }}
               className="w-full p-2.5 font-mono text-xs rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-white"
             />
           </div>

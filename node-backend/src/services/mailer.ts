@@ -1,9 +1,12 @@
+import { interpolateTemplate } from '../utils/templateUtils';
+
 export interface SendEmailOptions {
   text?: string;
   replyTo?: { email: string; name?: string };
   headers?: Record<string, string>;
   category?: 'transactional' | 'alert' | 'auth';
   unsubscribeUrl?: string;
+  fallbackFn?: () => Promise<boolean>;
 }
 
 const ENTITY_MAP: Record<string, string> = {
@@ -153,6 +156,19 @@ export const sendEmail = async (
  * @param params Dynamic variable parameters (e.g., { firstName: 'Ravi', jobTitle: 'Electrician' })
  * @param options Additional delivery options (replyTo, headers, category)
  */
+/**
+ * Sends a transactional email using an application-managed, Brevo-synchronized template.
+ * Multi-Tier Resilient Dispatch:
+ * 1. Resolves published template from database.
+ * 2. If brevo_template_id is active, dispatches via Brevo Template API.
+ * 3. If brevo_template_id is null or remote call fails, dynamically renders DB html_content locally and sends via standard SMTP.
+ * 4. If database is unreachable or template not published, seamlessly executes fallbackFn (hardcoded code template).
+ *
+ * @param templateKey Stable logical template key (e.g., 'AUTH_EMAIL_OTP', 'AUTH_PASSWORD_RESET')
+ * @param to Target recipient email address
+ * @param params Dynamic variable parameters (e.g., { otp: '123456', recipientEmail: 'user@example.com' })
+ * @param options Additional delivery options (replyTo, headers, category, fallbackFn)
+ */
 export const sendTemplateEmail = async (
   templateKey: string,
   to: string,
@@ -160,94 +176,102 @@ export const sendTemplateEmail = async (
   options?: SendEmailOptions
 ): Promise<boolean> => {
   const prisma = (await import('../config/prisma')).default;
+  const apiKey = (process.env.BREVO_API_KEY || '').trim();
 
+  // Tier 1 & 2: Database Template Resolution & Safe Dispatch
   try {
-    const apiKey = (process.env.BREVO_API_KEY || '').trim();
-    if (!apiKey) {
-      throw new Error('Email delivery is not configured: BREVO_API_KEY is missing.');
-    }
-
-    // 1. Resolve published template by logical key
     const template = await (prisma as any).email_templates.findUnique({
       where: { template_key: templateKey.toUpperCase() },
     });
 
-    if (!template) {
-      throw new Error(`Email template with key "${templateKey}" was not found.`);
-    }
-
-    if (template.status !== 'PUBLISHED' || !template.brevo_template_id) {
-      throw new Error(`Email template "${templateKey}" is not published or lacks an active Brevo template ID.`);
-    }
-
-    // 2. Validate declared variables schema
-    const declaredVariables = (template.variables as Record<string, any>) || {};
-    const missingRequired: string[] = [];
-    for (const [varName, varDef] of Object.entries(declaredVariables)) {
-      if ((varDef as any)?.required && (params[varName] === undefined || params[varName] === null)) {
-        missingRequired.push(varName);
-      }
-    }
-
-    if (missingRequired.length > 0) {
-      throw new Error(`Missing required template parameters for "${templateKey}": ${missingRequired.join(', ')}`);
-    }
-
-    const senderEmail = (process.env.BREVO_SENDER_EMAIL || 'noreply@trusthyre.com').trim();
-    const senderName = (process.env.BREVO_SENDER_NAME || 'TrustHyre').trim();
-
-    console.log(`\n======================================================================`);
-    console.log(`📧 [BREVO:TEMPLATE-DISPATCH] Dispatching Template #${template.brevo_template_id} (${templateKey})`);
-    console.log(`----------------------------------------------------------------------`);
-    console.log(`To:          ${to}`);
-    console.log(`Template ID: ${template.brevo_template_id}`);
-    console.log(`======================================================================`);
-
-    const brevoTemplateIdNum = Number(template.brevo_template_id);
-    const payload: any = {
-      templateId: isNaN(brevoTemplateIdNum) ? template.brevo_template_id : brevoTemplateIdNum,
-      to: [{ email: to.trim() }],
-      params: params,
-      headers: options?.headers || {},
-    };
-
-    if (options?.replyTo) {
-      payload.replyTo = options.replyTo;
-    }
-
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'api-key': apiKey,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`\n❌ [BREVO:TEMPLATE-REJECTED] HTTP ${response.status}: ${errorText}`);
-
-      const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
-      if (isLocalDev) {
-        console.warn(`[DEV NOTE] In local environment, template send failure is bypassed for testing.\n`);
-        return true;
+    if (template && template.status === 'PUBLISHED') {
+      // Validate declared required variables schema if defined
+      const declaredVariables = (template.variables as Record<string, any>) || {};
+      const missingRequired: string[] = [];
+      for (const [varName, varDef] of Object.entries(declaredVariables)) {
+        if ((varDef as any)?.required && (params[varName] === undefined || params[varName] === null)) {
+          missingRequired.push(varName);
+        }
       }
 
-      throw new Error(`Brevo Template API Error: ${errorText}`);
-    }
+      if (missingRequired.length > 0) {
+        throw new Error(`Missing required template parameters for "${templateKey}": ${missingRequired.join(', ')}`);
+      }
 
-    const responseData = await response.json().catch(() => ({}));
-    console.log(`✅ [BREVO:TEMPLATE-SENT] Delivered to ${to} (MessageId: ${responseData.messageId || 'OK'})\n`);
-    return true;
+      // 1. Try Brevo remote template engine if template ID is linked and API key is present
+      if (template.brevo_template_id && apiKey) {
+        try {
+          const brevoTemplateIdNum = Number(template.brevo_template_id);
+          const payload: any = {
+            templateId: isNaN(brevoTemplateIdNum) ? template.brevo_template_id : brevoTemplateIdNum,
+            to: [{ email: to.trim() }],
+            params: params,
+            headers: options?.headers || {},
+          };
+
+          if (options?.replyTo) {
+            payload.replyTo = options.replyTo;
+          }
+
+          const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+              accept: 'application/json',
+              'api-key': apiKey,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+          });
+
+          if (response.ok) {
+            const responseData = await response.json().catch(() => ({}));
+            console.log(`✅ [BREVO:TEMPLATE-SENT] Template #${template.brevo_template_id} (${templateKey}) delivered to ${to} (MessageId: ${responseData.messageId || 'OK'})\n`);
+            return true;
+          } else {
+            const errorText = await response.text();
+            console.warn(`⚠️ [BREVO:TEMPLATE-REMOTE-FAIL] Remote template #${template.brevo_template_id} rejected (HTTP ${response.status}: ${errorText}). Falling back to local HTML rendering.`);
+          }
+        } catch (remoteErr: any) {
+          console.warn(`⚠️ [BREVO:TEMPLATE-REMOTE-ERROR] Failed to dispatch via Brevo template engine: ${remoteErr.message}. Falling back to local HTML rendering.`);
+        }
+      }
+
+      // 2. Local HTML Rendering Fallback (renders DB html_content with safe parameter interpolation)
+      if (template.html_content) {
+        const mergedParams: Record<string, any> = {
+          logoUrl: 'https://trusthyre.com/logo.png',
+          currentYear: new Date().getFullYear(),
+          supportEmail: 'support@trusthyre.com',
+          portalUrl: 'https://trusthyre.com',
+          ...params,
+        };
+
+        const renderedSubject = interpolateTemplate(template.subject, mergedParams);
+        const renderedHtml = interpolateTemplate(template.html_content, mergedParams);
+        const renderedText = template.text_content ? interpolateTemplate(template.text_content, mergedParams) : undefined;
+
+        console.log(`📧 [BREVO:LOCAL-HTML-DISPATCH] Dispatching published custom template "${templateKey}" to ${to}`);
+        return await sendEmail(to, renderedSubject, renderedHtml, {
+          ...options,
+          text: renderedText || options?.text,
+        });
+      }
+    }
   } catch (error: any) {
-    console.error('\n❌ [BREVO:TEMPLATE-ERROR] Failed to send template email:', error.message);
-    const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
-    if (isLocalDev) {
-      console.warn(`[DEV FALLBACK] Allowing template send flow to proceed in local dev.\n`);
-      return true;
-    }
-    throw error;
+    console.error(`\n❌ [BREVO:TEMPLATE-ERROR] Error resolving DB template "${templateKey}":`, error.message);
   }
+
+  // Tier 3: Resilient Code Fallback (invokes caller-provided code generator if DB template is missing or errored)
+  if (options?.fallbackFn) {
+    console.log(`🛡️ [BREVO:CODE-FALLBACK] Executing verified hardcoded code mailer for "${templateKey}"`);
+    return await options.fallbackFn();
+  }
+
+  const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+  if (isLocalDev) {
+    console.warn(`[DEV FALLBACK] Allowing template send flow to proceed in local dev for "${templateKey}".\n`);
+    return true;
+  }
+
+  throw new Error(`Email template "${templateKey}" is not published or active.`);
 };

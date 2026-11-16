@@ -4,6 +4,7 @@ import { BrevoTemplateService } from '../services/brevoTemplateService';
 import { EmailTemplateAuditService } from '../services/emailTemplateAuditService';
 import { sendEmail } from '../services/mailer';
 import { validateAndSanitizeEmailHtml } from '../utils/emailHtmlSanitizer';
+import { interpolateTemplate } from '../utils/templateUtils';
 
 export async function getTemplateInventory(c: Context) {
   try {
@@ -34,16 +35,40 @@ export async function createTemplate(c: Context) {
     const user = c.get('user');
     const actorUserId = user?.id || user?.user_id || 'ADMIN';
 
-    if (!body.template_key || !body.name || !body.subject || !body.html_content) {
-      return c.json({ success: false, message: 'template_key, name, subject, and html_content are required.' }, 400);
+    const sanitizedKey = (body.template_key || '').trim().toUpperCase();
+    if (!/^[A-Z0-9_]{3,100}$/.test(sanitizedKey)) {
+      return c.json({
+        success: false,
+        message: 'template_key must be 3-100 characters containing only uppercase letters, numbers, and underscores.',
+      }, 400);
+    }
+
+    const name = (body.name || '').trim();
+    if (!name || name.length > 255) {
+      return c.json({
+        success: false,
+        message: 'Template name is required and cannot exceed 255 characters.',
+      }, 400);
+    }
+
+    const subject = (body.subject || '').trim();
+    if (!subject || subject.length > 500) {
+      return c.json({
+        success: false,
+        message: 'Template subject is required and cannot exceed 500 characters.',
+      }, 400);
+    }
+
+    if (!body.html_content?.trim()) {
+      return c.json({ success: false, message: 'html_content is required.' }, 400);
     }
 
     const template = await EmailTemplateManagerService.createDraft({
-      template_key: body.template_key,
-      name: body.name,
+      template_key: sanitizedKey,
+      name,
       description: body.description,
       category: body.category,
-      subject: body.subject,
+      subject,
       preheader: body.preheader,
       html_content: body.html_content,
       text_content: body.text_content,
@@ -115,13 +140,18 @@ export async function importBrevoTemplate(c: Context) {
 export async function renderLocalPreview(c: Context) {
   try {
     const id = c.req.param('id');
-    if (!id) {
-      return c.json({ success: false, message: 'Template ID is required.' }, 400);
-    }
     const body = await c.req.json().catch(() => ({}));
-    const template = await EmailTemplateManagerService.getTemplateById(id);
 
-    let html = body.html_content || template.html_content;
+    let template: any = null;
+    if (id && id !== 'new') {
+      try {
+        template = await EmailTemplateManagerService.getTemplateById(id);
+      } catch {
+        // template not found, fall back to body
+      }
+    }
+
+    let html = body.html_content || template?.html_content || '';
     const sampleParams = body.params || {};
 
     const defaultParams: Record<string, any> = {
@@ -129,21 +159,20 @@ export async function renderLocalPreview(c: Context) {
       currentYear: new Date().getFullYear(),
       supportEmail: 'support@trusthyre.com',
       portalUrl: 'https://trusthyre.com',
+      ...(template?.variables || {}),
       ...sampleParams,
     };
 
-    // Simple placeholder substitution for local preview: {{params.variable}}
-    Object.keys(defaultParams).forEach((key) => {
-      const reg = new RegExp(`{{\\s*params\\.${key}\\s*}}`, 'g');
-      html = html.replace(reg, String(defaultParams[key]));
-    });
+    const renderedHtml = interpolateTemplate(html, defaultParams);
+    const renderedSubject = interpolateTemplate(body.subject || template?.subject || 'TrustHyre Notification', defaultParams);
+    const renderedPreheader = interpolateTemplate(body.preheader || template?.preheader || '', defaultParams);
 
     return c.json({
       success: true,
       data: {
-        renderedHtml: html,
-        subject: template.subject,
-        preheader: template.preheader,
+        renderedHtml,
+        subject: renderedSubject,
+        preheader: renderedPreheader,
       },
     });
   } catch (err: any) {
@@ -199,14 +228,9 @@ export async function sendTestEmail(c: Context) {
       ...(body.params || {}),
     };
 
-    let renderedHtml = sanitizeResult.sanitizedHtml;
-    let renderedSubject = rawSubject;
-
-    Object.keys(mergedParams).forEach((key) => {
-      const reg = new RegExp(`{{\\s*params\\.${key}\\s*}}`, 'g');
-      renderedHtml = renderedHtml.replace(reg, String(mergedParams[key]));
-      renderedSubject = renderedSubject.replace(reg, String(mergedParams[key]));
-    });
+    // Safe literal interpolation (immune to $1, $&, $' pattern expansion)
+    const renderedHtml = interpolateTemplate(sanitizeResult.sanitizedHtml, mergedParams);
+    const renderedSubject = interpolateTemplate(rawSubject, mergedParams);
 
     const testSubject = renderedSubject.startsWith('[TEST]')
       ? renderedSubject
@@ -240,6 +264,22 @@ export async function sendTestEmail(c: Context) {
   } catch (err: any) {
     console.error('[adminEmailTemplateController] sendTestEmail error:', err);
     return c.json({ success: false, message: err.message || 'Failed to dispatch test email.' }, 500);
+  }
+}
+
+export async function archiveTemplate(c: Context) {
+  try {
+    const id = c.req.param('id');
+    if (!id) {
+      return c.json({ success: false, message: 'Template ID is required.' }, 400);
+    }
+    const user = c.get('user');
+    const actorUserId = user?.id || user?.user_id || 'ADMIN';
+
+    const archived = await EmailTemplateManagerService.archiveTemplate(id, actorUserId);
+    return c.json({ success: true, data: archived });
+  } catch (err: any) {
+    return c.json({ success: false, message: err.message }, 400);
   }
 }
 

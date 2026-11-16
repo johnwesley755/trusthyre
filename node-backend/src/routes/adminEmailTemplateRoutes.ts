@@ -19,6 +19,7 @@ router.post('/test', adminEmailTestLimiter, controller.sendTestEmail);
 router.post('/:id/test', adminEmailTestLimiter, controller.sendTestEmail);
 
 router.post('/import/:brevoTemplateId', controller.importBrevoTemplate);
+router.post('/:id/archive', controller.archiveTemplate);
 
 // Super-Admin only gated operations (Production Publishing & Rollback)
 router.post('/:id/publish', requireSuperAdmin, controller.publishTemplate);
