@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { searchService } from '../../../services/search.service';
-import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
+import { SeoHead, buildBreadcrumbJsonLd, buildKeywordsList } from '../../../components/common/SeoHead';
 import { 
   Building2, 
   MapPin, 
@@ -300,11 +300,29 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
     ];
   }, [pageTitle, metaDesc, workers, tradeMeta, cityMeta, canonicalPath]);
 
+  const hireKeywords = buildKeywordsList(
+    [
+      'hire skilled workers India',
+      'verified blue collar talent',
+      'hire manpower India',
+      'TrustHyre',
+    ],
+    [
+      `hire ${tradeMeta.title} in ${cityMeta.name}`,
+      `verified ${tradeMeta.title} in ${cityMeta.name}`,
+      `${tradeMeta.title} staffing ${cityMeta.state}`,
+      tradeMeta?.category,
+      ...(tradeMeta.keywords || []),
+      ...(cityMeta.popularLocalities || []).map((loc) => `hire ${tradeMeta.title} in ${loc}`),
+    ]
+  );
+
   return (
     <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <SeoHead
         title={pageTitle}
         description={metaDesc}
+        keywords={hireKeywords}
         canonicalPath={canonicalPath}
         jsonLd={structuredData}
       />

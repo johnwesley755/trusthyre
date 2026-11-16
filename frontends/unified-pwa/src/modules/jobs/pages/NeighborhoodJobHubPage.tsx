@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { searchService } from '../../../services/search.service';
 import { JobSearchResultCard } from '../components/JobSearchResultCard';
-import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
+import { SeoHead, buildBreadcrumbJsonLd, buildKeywordsList } from '../../../components/common/SeoHead';
 import { generateHierarchicalJobUrl, slugifyNeighborhood } from '../../../utils/seoSlug.utils';
 import { getTaluksForCity } from '../../../constants/regionalTaluks';
 import { AppLoader } from '../../../components/common/AppLoader';
@@ -162,11 +162,29 @@ export default function NeighborhoodJobHubPage({
     }))
   };
 
+  const neighborhoodKeywords = buildKeywordsList(
+    [
+      'blue collar jobs India',
+      'verified jobs India',
+      'direct hiring',
+      'zero broker fee',
+      'TrustHyre local jobs',
+    ],
+    [
+      rawTrade ? `${rawTrade} jobs in ${areaName}` : `jobs in ${areaName}`,
+      `${areaName} ${cityName} job openings`,
+      rawTrade ? `${rawTrade} vacancies in ${cityName}` : undefined,
+      `${areaName} local jobs`,
+      `verified employers in ${areaName}`,
+    ]
+  );
+
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-[#000000] text-slate-900 dark:text-zinc-100 pb-16 transition-colors duration-200">
       <SeoHead
         title={pageTitle}
         description={pageDescription}
+        keywords={neighborhoodKeywords}
         canonicalPath={canonicalPath}
         jsonLd={[buildBreadcrumbJsonLd(breadcrumbs), itemListJsonLd, faqJsonLd]}
       />

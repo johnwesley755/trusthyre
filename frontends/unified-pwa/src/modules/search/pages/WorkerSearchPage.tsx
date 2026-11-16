@@ -31,7 +31,7 @@ import { searchAlertService, type SearchAlert } from '../../../services/searchAl
 import { ManageAlertsModal } from '../../dashboard/features/alerts/ManageAlertsModal';
 import { TalentAlertModal } from '../components/TalentAlertModal';
 import { normalizeSkills } from '../../../utils/skills';
-import { SeoHead } from '../../../components/common/SeoHead';
+import { SeoHead, buildKeywordsList } from '../../../components/common/SeoHead';
 import { CandidateOutreachModal, type CandidateOutreachCandidate } from '../../../components/common/CandidateOutreachModal';
 import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
 import { jobService } from '../../../services/job.service';
@@ -188,12 +188,85 @@ export const WorkerSearchPage = () => {
   const activeFilterCount = (experience !== 'all' ? 1 : 0) + (selectedTrade !== 'All' ? 1 : 0) + (city ? 1 : 0);
   const hasActiveFilters = Boolean(searchQuery || city || experience !== 'all' || selectedTrade !== 'All');
 
+  // Dynamic Search-Driven SEO for Worker / Specialist Hiring Directory
+  const dynamicSeo = useMemo(() => {
+    const hasQuery = Boolean(searchQuery && searchQuery.trim());
+    const hasCity = Boolean(city && city.trim());
+    const hasTrade = Boolean(selectedTrade && selectedTrade !== 'All');
+
+    let dynamicTitle = 'Find Verified Skilled Workers in India';
+    if (hasQuery && hasCity) {
+      dynamicTitle = `Hire Verified ${searchQuery} in ${city} | Skilled Talent Directory`;
+    } else if (hasQuery) {
+      dynamicTitle = `Hire Verified ${searchQuery} | Direct Blue-Collar Staffing`;
+    } else if (hasTrade && hasCity) {
+      dynamicTitle = `Hire Verified ${selectedTrade} Specialists in ${city}`;
+    } else if (hasCity) {
+      dynamicTitle = `Hire Verified Skilled Workers in ${city} | Blue-Collar Talent`;
+    } else if (hasTrade) {
+      dynamicTitle = `Hire Verified ${selectedTrade} in India | TrustHyre`;
+    }
+
+    const dynamicDesc = `Browse and hire verified ${hasQuery ? searchQuery : (hasTrade ? selectedTrade : 'electricians, plumbers, drivers, logistics workers, and tradespeople')} in ${hasCity ? city : 'India'} on TrustHyre. ${results.length} verified candidates with biometric attendance, photo check-in, and skill credentials.`;
+
+    const terms: string[] = [
+      'hire skilled workers India',
+      'verified blue collar talent',
+      'hire trade workers',
+      'pre-screened manpower India',
+      'TrustHyre worker directory',
+    ];
+    if (hasQuery) {
+      terms.unshift(`hire ${searchQuery}`, `${searchQuery} for hire`, `verified ${searchQuery}`);
+    }
+    if (hasTrade) {
+      terms.unshift(`hire ${selectedTrade}`, `${selectedTrade} candidates`, `verified ${selectedTrade}`);
+    }
+    if (hasCity) {
+      terms.unshift(`hire workers in ${city}`, `${hasQuery ? searchQuery : (hasTrade ? selectedTrade : 'specialists')} in ${city}`);
+    }
+
+    const dynamicKeywords = buildKeywordsList(terms);
+
+    // Schema.org ItemList for Rich Search Results (Candidate Directory)
+    const itemListJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: dynamicTitle,
+      description: dynamicDesc,
+      numberOfItems: results.length,
+      itemListElement: results.slice(0, 15).map((worker: any, idx: number) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        item: {
+          '@type': 'Person',
+          name: worker.name || 'Verified Specialist',
+          jobTitle: worker.primaryTrade || worker.skills?.[0] || 'Skilled Worker',
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: worker.city || city || 'India',
+            addressCountry: 'IN',
+          },
+        },
+      })),
+    };
+
+    return {
+      title: dynamicTitle,
+      description: dynamicDesc,
+      keywords: dynamicKeywords,
+      jsonLd: itemListJsonLd,
+    };
+  }, [searchQuery, city, selectedTrade, results]);
+
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0A1931] dark:text-zinc-100 transition-colors duration-200">
       <SeoHead
-        title="Find Verified Skilled Workers"
-        description="Search and hire verified electricians, plumbers, drivers, logistics workers, and tradespeople across India on TrustHyre."
+        title={dynamicSeo.title}
+        description={dynamicSeo.description}
+        keywords={dynamicSeo.keywords}
         canonicalPath="/find-workers"
+        jsonLd={dynamicSeo.jsonLd}
       />
       <div className="max-w-7xl mx-auto space-y-6">
         

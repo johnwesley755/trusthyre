@@ -100,8 +100,11 @@ export const LandingJobSearchBar: React.FC<LandingJobSearchBarProps> = ({ onSear
       });
     }
 
+    const lower = trimmed.toLowerCase();
+    const isHire = /\b(hire|hiring|recruit|recruitment|worker|workers|maid|candidate)\b/.test(lower);
+    const targetBase = isHire ? '/find-workers' : '/search';
     const qs = params.toString();
-    navigate(qs ? `/search?${qs}` : '/search');
+    navigate(qs ? `${targetBase}?${qs}` : targetBase);
   };
 
   return (

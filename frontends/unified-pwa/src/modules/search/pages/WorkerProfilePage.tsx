@@ -37,7 +37,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { jobService } from '../../../services/job.service';
 import { UserAvatar } from '../../../components/common/UserAvatar';
 import { AppLoader } from '../../../components/common/AppLoader';
-import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
+import { SeoHead, buildBreadcrumbJsonLd, buildKeywordsList } from '../../../components/common/SeoHead';
 import { CandidateResumeModal } from '../../profile/components/resume/CandidateResumeModal';
 import { useUser } from '../../../providers/AuthContext';
 import { employerService } from '../../../services/employer.service';
@@ -283,11 +283,29 @@ export const WorkerProfilePage = () => {
     }
   };
 
+  const workerKeywords = buildKeywordsList(
+    [
+      'hire skilled workers India',
+      'verified blue collar talent',
+      'hire trade workers',
+      'pre-screened candidates India',
+      'TrustHyre worker profile',
+    ],
+    [
+      `hire ${currentTrade}`,
+      candidateCity ? `${currentTrade} in ${candidateCity}` : undefined,
+      `verified ${currentTrade}`,
+      candidateName ? `${candidateName} resume` : undefined,
+      Array.isArray(worker?.skills) ? worker.skills.join(', ') : undefined,
+    ]
+  );
+
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <SeoHead
         title={pageTitle}
         description={metaDesc}
+        keywords={workerKeywords}
         canonicalPath={canonicalPath}
         jsonLd={[
           profileJsonLd,

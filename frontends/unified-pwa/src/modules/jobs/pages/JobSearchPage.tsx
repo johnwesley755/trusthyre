@@ -32,7 +32,7 @@ import { searchAlertService, type SearchAlert } from '../../../services/searchAl
 import { JobAlertModal } from '../components/JobAlertModal';
 import { ManageAlertsModal } from '../../dashboard/features/alerts/ManageAlertsModal';
 import { WhatsAppBulletinModal } from '../../../components/common/WhatsAppBulletinModal';
-import { SeoHead } from '../../../components/common/SeoHead';
+import { SeoHead, buildKeywordsList } from '../../../components/common/SeoHead';
 import { getTaluksForCity } from '../../../constants/regionalTaluks';
 import { WageBenchmarkModal } from '../../../components/common/WageBenchmarkModal';
 import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
@@ -409,12 +409,93 @@ export default function JobSearchPage() {
     return displayJobs.slice(startIndex, startIndex + pageSize);
   }, [displayJobs, safeCurrentPage, pageSize]);
 
+  // Dynamic Search-Driven SEO computation
+  const dynamicSeo = useMemo(() => {
+    const hasQuery = Boolean(searchQuery && searchQuery.trim());
+    const hasCity = Boolean(city && city.trim());
+    const hasTrade = Boolean(trade && trade !== 'All');
+
+    let dynamicTitle = 'Verified Job Vacancies in India 2026';
+    if (hasQuery && hasCity) {
+      dynamicTitle = `${searchQuery} Jobs in ${city} | Verified Openings`;
+    } else if (hasQuery) {
+      dynamicTitle = `${searchQuery} Jobs | Direct Employer Openings`;
+    } else if (hasTrade && hasCity) {
+      dynamicTitle = `${trade} Jobs in ${city} | Direct Hiring`;
+    } else if (hasCity) {
+      dynamicTitle = `Verified Jobs in ${city} | Direct Employer Matching`;
+    } else if (hasTrade) {
+      dynamicTitle = `${trade} Jobs in India | Verified Vacancies`;
+    }
+
+    const dynamicDesc = `Apply for verified ${hasQuery ? searchQuery : (hasTrade ? trade : 'blue-collar and skilled trade')} jobs in ${hasCity ? city : 'India'} on TrustHyre. ${displayJobs.length} active vacancies with direct employer contact, photo verification, and zero brokerage fees.`;
+
+    const terms: string[] = [
+      'blue collar jobs India',
+      'verified job vacancies',
+      'apply jobs direct employer',
+      'zero broker fee jobs',
+      'TrustHyre job search',
+    ];
+    if (hasQuery) {
+      terms.unshift(searchQuery, `${searchQuery} jobs`, `${searchQuery} vacancies`);
+    }
+    if (hasTrade) {
+      terms.unshift(`${trade} jobs`, `${trade} vacancies`, `${trade} hiring`);
+    }
+    if (hasCity) {
+      terms.unshift(`jobs in ${city}`, `${hasQuery ? searchQuery : (hasTrade ? trade : 'trade')} jobs in ${city}`);
+    }
+
+    const dynamicKeywords = buildKeywordsList(terms);
+
+    // Schema.org ItemList for Rich Google Carousel & AI Retrieval
+    const itemListJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: dynamicTitle,
+      description: dynamicDesc,
+      numberOfItems: paginatedJobs.length,
+      itemListElement: paginatedJobs.map((job: any, idx: number) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        item: {
+          '@type': 'JobPosting',
+          title: job.title,
+          description: job.description || job.title,
+          hiringOrganization: {
+            '@type': 'Organization',
+            name: job.companyName || job.employerName || 'TrustHyre Verified Employer',
+          },
+          jobLocation: {
+            '@type': 'Place',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: job.city || job.location || city || 'India',
+              addressCountry: 'IN',
+            },
+          },
+          datePosted: job.createdAt || job.created_at || new Date().toISOString(),
+        },
+      })),
+    };
+
+    return {
+      title: dynamicTitle,
+      description: dynamicDesc,
+      keywords: dynamicKeywords,
+      jsonLd: itemListJsonLd,
+    };
+  }, [searchQuery, city, trade, displayJobs.length, paginatedJobs]);
+
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <SeoHead
-        title="Search Verified Job Vacancies in India 2026"
-        description="Apply for verified trade and blue-collar jobs in India on TrustHyre. Filter by preferred salary, daily wage, trade, experience, and location. Call employers directly with zero consultant commission."
+        title={dynamicSeo.title}
+        description={dynamicSeo.description}
+        keywords={dynamicSeo.keywords}
         canonicalPath="/search"
+        jsonLd={dynamicSeo.jsonLd}
       />
       <div className="max-w-7xl mx-auto space-y-6">
         

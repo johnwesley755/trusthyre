@@ -77,8 +77,25 @@ export const NavbarSearchInput: React.FC<NavbarSearchInputProps> = ({
         setSearchParams(newParams, { replace: true });
       }
     } else {
-      // Navigate cleanly without adding 'q' to query params
-      const targetPath = user?.role === 'WORKER' ? '/search' : '/find-workers';
+      // Intelligent Intent Detection based on query keywords
+      const lower = trimmed.toLowerCase();
+      const isJobIntent = /\b(job|jobs|vacancy|vacancies|opening|openings|apply|work|salary|earn|shift)\b/.test(lower);
+      const isHireIntent = /\b(hire|hiring|recruit|recruitment|worker|workers|maid|cook|electrician|plumber|driver|talent|staff|candidate|resume)\b/.test(lower);
+
+      let targetPath = '/search';
+      if (user?.role === 'WORKER') {
+        targetPath = '/search';
+      } else if (user?.role === 'EMPLOYER') {
+        targetPath = '/find-workers';
+      } else if (isHireIntent && !isJobIntent) {
+        targetPath = '/find-workers';
+      } else if (isJobIntent) {
+        targetPath = '/search';
+      } else {
+        // Default to job search for general discovery
+        targetPath = '/search';
+      }
+
       const params = new URLSearchParams();
       if (city) params.set('city', city);
       const qs = params.toString();

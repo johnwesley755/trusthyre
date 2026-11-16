@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MapPin, LocateFixed, Loader2, AlertCircle, X } from 'lucide-react';
 import { detectCurrentCity } from '../../../utils/geolocation';
 import { useUser } from '../../../providers/AuthContext';
@@ -77,6 +78,11 @@ export const WorkerSearchHero: React.FC<WorkerSearchHeroProps> = ({
 
   const isDetecting = internalLocating || isLocating;
 
+  const jobTransferParams = new URLSearchParams();
+  if (initialCity) jobTransferParams.set('city', initialCity);
+  if (selectedTrade && selectedTrade !== 'All') jobTransferParams.set('trade', selectedTrade);
+  const jobHref = `/search${jobTransferParams.toString() ? `?${jobTransferParams.toString()}` : ''}`;
+
   return (
     <div className="bg-white dark:bg-[#121215] rounded-[1.75rem] border border-slate-200/80 dark:border-zinc-800 p-5 sm:p-6 mb-6 shadow-xs font-['Onest',system-ui,sans-serif] space-y-4">
       
@@ -85,7 +91,25 @@ export const WorkerSearchHero: React.FC<WorkerSearchHeroProps> = ({
         
         {/* Title & Counter */}
         <div className="space-y-1">
-        
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Search Intent Switcher */}
+            <div className="inline-flex items-center p-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs shadow-2xs">
+              <Link
+                to={jobHref}
+                className="px-3 py-1 rounded-full font-semibold text-slate-600 dark:text-zinc-300 hover:text-[#0f2f63] dark:hover:text-white transition flex items-center gap-1.5"
+                title="Switch to finding open job vacancies matching this location and trade"
+              >
+                💼 Find Jobs
+              </Link>
+              <span className="px-3 py-1 rounded-full font-bold bg-[#0f2f63] text-white shadow-xs flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                👷 Hire Workers
+              </span>
+            </div>
+            <span className="text-[10px] font-medium uppercase text-emerald-600 dark:text-emerald-400 hidden sm:inline">
+              • Verified Specialist Directory
+            </span>
+          </div>
 
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold leading-tight text-[#0A1931] dark:text-white">
             {resolvedTitle}

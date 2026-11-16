@@ -11,6 +11,7 @@ export interface ArticleMeta {
 export interface SeoHeadProps {
   title?: string;
   description?: string;
+  keywords?: string | string[];
   canonicalPath?: string;
   ogType?: 'website' | 'article' | 'profile';
   ogImage?: string;
@@ -21,7 +22,20 @@ export interface SeoHeadProps {
 
 const DEFAULT_TITLE = 'TrustHyre | Hire Verified Skilled Workers & Blue-Collar Talent in India';
 const DEFAULT_DESCRIPTION = "India's premier verified skilled workforce platform. Hire certified electricians, commercial chefs, warehouse logistics crew, plumbers, and technicians with photo check-in verification and direct employer matching.";
+export const DEFAULT_KEYWORDS = "blue collar jobs India, verified jobs India, apply jobs direct employer, hire skilled workers, electrician jobs, cook chef jobs, warehouse logistics openings, driver jobs, plumber technician vacancies, direct employer call, zero broker fee jobs, TrustHyre";
 const BASE_DOMAIN = 'https://trusthyre.com';
+
+/**
+ * Normalizes and deduplicates an array of keyword terms into a clean comma-separated string
+ */
+export function buildKeywordsList(baseKeywords: string[] = [], dynamicTerms: (string | undefined | null)[] = []): string {
+  const combined = [
+    ...dynamicTerms.filter((t): t is string => Boolean(t && t.trim())),
+    ...baseKeywords.filter((t): t is string => Boolean(t && t.trim())),
+  ];
+  const unique = Array.from(new Set(combined.map((s) => s.trim()))).filter(Boolean);
+  return unique.join(', ');
+}
 
 /**
  * Helper to construct standard Google-compliant BlogPosting Schema.org JSON-LD
@@ -193,6 +207,7 @@ export function buildJobPostingJsonLd(job: {
 export const SeoHead: React.FC<SeoHeadProps> = ({
   title,
   description = DEFAULT_DESCRIPTION,
+  keywords,
   canonicalPath = '',
   ogType = 'website',
   ogImage = `${BASE_DOMAIN}/logo.png`,
@@ -233,6 +248,15 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     setMetaTag('meta[name="description"]', 'name', 'description', description);
     setCanonicalLink(fullUrl);
 
+    // Resolve & set meta keywords
+    let resolvedKeywords = DEFAULT_KEYWORDS;
+    if (keywords) {
+      resolvedKeywords = Array.isArray(keywords)
+        ? keywords.filter(Boolean).join(', ')
+        : keywords;
+    }
+    setMetaTag('meta[name="keywords"]', 'name', 'keywords', resolvedKeywords);
+
     // Robots index / noindex directive handling
     if (noIndex) {
       setMetaTag('meta[name="robots"]', 'name', 'robots', 'noindex, nofollow');
@@ -246,6 +270,8 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     setMetaTag('meta[property="og:url"]', 'property', 'og:url', fullUrl);
     setMetaTag('meta[property="og:type"]', 'property', 'og:type', ogType);
     setMetaTag('meta[property="og:image"]', 'property', 'og:image', ogImage);
+    setMetaTag('meta[property="og:locale"]', 'property', 'og:locale', 'en_IN');
+    setMetaTag('meta[property="og:site_name"]', 'property', 'og:site_name', 'TrustHyre');
 
     // Article Specific Open Graph tags
     if (ogType === 'article' && articleMeta) {
@@ -269,6 +295,8 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', description);
     setMetaTag('meta[name="twitter:url"]', 'name', 'twitter:url', fullUrl);
     setMetaTag('meta[name="twitter:image"]', 'name', 'twitter:image', ogImage);
+    setMetaTag('meta[name="twitter:site"]', 'name', 'twitter:site', '@TrustHyre');
+    setMetaTag('meta[name="twitter:creator"]', 'name', 'twitter:creator', '@TrustHyre');
 
     // 4. Inject Dynamic Schema.org JSON-LD if provided
     let scriptTag: HTMLScriptElement | null = null;
@@ -285,7 +313,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
         scriptTag.parentNode.removeChild(scriptTag);
       }
     };
-  }, [title, description, canonicalPath, ogType, ogImage, noIndex, articleMeta, jsonLd]);
+  }, [title, description, keywords, canonicalPath, ogType, ogImage, noIndex, articleMeta, jsonLd]);
 
   return null;
 };

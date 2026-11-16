@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { searchService } from '../../../services/search.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { JobSearchResultCard } from '../components/JobSearchResultCard';
-import { SeoHead, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
+import { SeoHead, buildBreadcrumbJsonLd, buildKeywordsList } from '../../../components/common/SeoHead';
 import { generateJobSeoSlug, generateHierarchicalJobUrl } from '../../../utils/seoSlug.utils';
 import { AppLoader } from '../../../components/common/AppLoader';
 import { 
@@ -266,11 +266,30 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
     };
   }, [jobs, pageTitle, metaDesc, cityMeta]);
 
+  const hubKeywords = buildKeywordsList(
+    [
+      'blue collar jobs India',
+      'verified jobs India',
+      'direct hiring',
+      'zero broker fee',
+      'TrustHyre',
+    ],
+    [
+      tradeMeta ? `${tradeMeta.title} jobs in ${cityMeta.name}` : `jobs in ${cityMeta.name}`,
+      `${cityMeta.name} job vacancies`,
+      `${cityMeta.name} skilled trade jobs`,
+      tradeMeta ? `${tradeMeta.title} vacancies ${cityMeta.state}` : undefined,
+      tradeMeta?.category,
+      ...(cityMeta.popularLocalities || []).map((loc) => `${tradeMeta ? tradeMeta.title : 'jobs'} in ${loc}`),
+    ]
+  );
+
   return (
     <div className="min-h-screen bg-[#fcfcfc] dark:bg-[#000000] pb-20 text-[#0a0a0a] dark:text-white">
       <SeoHead
         title={pageTitle}
         description={metaDesc}
+        keywords={hubKeywords}
         canonicalPath={canonicalPath}
         jsonLd={[
           itemListJsonLd,

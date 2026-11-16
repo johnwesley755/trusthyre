@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { MapPin, LocateFixed, Loader2, AlertCircle, X } from 'lucide-react';
 import { detectCurrentCity } from '../../../utils/geolocation';
 import { useUser } from '../../../providers/AuthContext';
@@ -75,6 +76,11 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
 
   const isDetecting = internalLocating || isLocating;
 
+  const workerTransferParams = new URLSearchParams();
+  if (initialCity) workerTransferParams.set('city', initialCity);
+  if (selectedTrade && selectedTrade !== 'All') workerTransferParams.set('trade', selectedTrade);
+  const workerHref = `/find-workers${workerTransferParams.toString() ? `?${workerTransferParams.toString()}` : ''}`;
+
   return (
     <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-[1.75rem] border border-[#e6e8ec] dark:border-zinc-800 p-5 sm:p-6 mb-6 shadow-xs font-['Onest',system-ui,sans-serif] space-y-4">
       
@@ -83,10 +89,23 @@ export const JobSearchHero: React.FC<JobSearchHeroProps> = ({
         
         {/* Title & Subtitle */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0f2f63] dark:bg-sky-400 animate-pulse" />
-            <span className="text-[10px] font-medium uppercase text-[#0f2f63] dark:text-sky-400">
-              Verified Job Directory
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Search Intent Switcher */}
+            <div className="inline-flex items-center p-0.5 rounded-full bg-slate-200 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-xs shadow-2xs">
+              <span className="px-3 py-1 rounded-full font-bold bg-[#0f2f63] text-white shadow-xs flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                💼 Find Jobs
+              </span>
+              <Link
+                to={workerHref}
+                className="px-3 py-1 rounded-full font-semibold text-slate-600 dark:text-zinc-300 hover:text-[#0f2f63] dark:hover:text-white transition flex items-center gap-1.5"
+                title="Switch to finding and hiring verified workers matching this location and trade"
+              >
+                👷 Hire Workers
+              </Link>
+            </div>
+            <span className="text-[10px] font-medium uppercase text-[#0f2f63] dark:text-sky-400 hidden sm:inline">
+              • Verified Job Directory
             </span>
           </div>
 

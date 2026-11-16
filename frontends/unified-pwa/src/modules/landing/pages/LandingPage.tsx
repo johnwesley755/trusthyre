@@ -466,6 +466,7 @@ export default function LandingPage() {
       <SeoHead
         title="Verified Job Vacancies & Walk-In Openings in India 2026"
         description="Explore active verified job openings in India for November 2026. Direct hiring for Electricians, Chefs, Drivers, Warehouse Logistics & Technicians with verified pay and zero consultant fees."
+        keywords="blue collar jobs India, hire skilled workers India, verified jobs India, electrician jobs, driver jobs, chef jobs, warehouse logistics hiring, technician vacancies, direct employer hiring, zero broker fee, TrustHyre"
         canonicalPath="/"
       />
       

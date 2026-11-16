@@ -8,7 +8,7 @@ import { profileService } from '../../../services/profile.service';
 import { queryKeys } from '../../../lib/queryKeys';
 import { useState, useEffect, useMemo } from 'react';
 import { calculateMatchScore, getMatchScoreVisuals } from '../../../utils/matchScorer';
-import { SeoHead, buildJobPostingJsonLd, buildBreadcrumbJsonLd } from '../../../components/common/SeoHead';
+import { SeoHead, buildJobPostingJsonLd, buildBreadcrumbJsonLd, buildKeywordsList } from '../../../components/common/SeoHead';
 import { getEffectiveCoverUrl, resolveTradeCover, resolveJobCategoryLabel } from '../../../utils/coverImage.utils';
 import { formatMissingProfileFields, getMissingProfileFields } from '../../../utils/profileCompletion';
 import { useUser } from '../../../providers/AuthContext';
@@ -564,11 +564,31 @@ export default function JobDetailPage() {
     : payoutFrequency === 'ONE_TIME' ? 'Total Project'
     : 'Per Month';
 
+  const jobIndustry = job.industry || (job as any)?.category;
+  const jobKeywords = buildKeywordsList(
+    [
+      'blue collar jobs India',
+      'verified jobs India',
+      'apply direct employer',
+      'zero broker fee jobs',
+      'TrustHyre job openings',
+    ],
+    [
+      job.title,
+      cleanJobCity ? `${job.title} in ${cleanJobCity}` : undefined,
+      jobIndustry ? `${jobIndustry} jobs in ${cleanJobCity}` : undefined,
+      `${job.title} vacancy`,
+      `${employerName} hiring`,
+      job.location ? `${job.title} in ${job.location}` : undefined,
+    ]
+  );
+
   return (
     <div className="w-full min-h-screen p-2 sm:p-3 bg-white dark:bg-[#000000] font-['Onest',system-ui,sans-serif] text-[#0a0a0a] dark:text-zinc-100 transition-colors duration-200">
       <SeoHead
         title={`${job.title} at ${employerName}`}
         description={`Apply for verified opening: ${job.title} in ${job.location || job.city || 'India'}. Verified Employer: ${employerName}. Agreed Salary: ${job.budget ? '₹' + Number(job.budget).toLocaleString('en-IN') + payFreqSuffix : 'Best in Industry'}.`}
+        keywords={jobKeywords}
         canonicalPath={generateHierarchicalJobUrl(job ? { id: (job as any).id, title: (job as any).title, city: (job as any).city, location: (job as any).location, created_at: (job as any).createdAt } : { id })}
         ogType="website"
         ogImage={effectiveCoverUrl || employer?.profileImageUrl || (job as any).logoUrl || undefined}
