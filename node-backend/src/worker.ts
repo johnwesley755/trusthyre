@@ -14,5 +14,22 @@ export default {
       }
     });
   },
+
+  async scheduled(event: any, env: any, ctx: any): Promise<void> {
+    const store: RequestScope = { env, ctx };
+    await requestContextStorage.run(store, async () => {
+      try {
+        console.log(`⏰ [Cloudflare Cron] Scheduled event triggered: ${event.cron || 'daily'}`);
+        const { DailyDigestService } = await import('./services/dailyDigestService');
+        await DailyDigestService.sendDailyDigests();
+      } catch (err: any) {
+        console.error('❌ [Cloudflare Cron] Scheduled execution failure:', err.message);
+      } finally {
+        if (store.pool) {
+          ctx?.waitUntil?.(store.pool.end());
+        }
+      }
+    });
+  },
 };
 

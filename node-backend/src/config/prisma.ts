@@ -17,6 +17,7 @@ export interface RequestScope {
   currentUserId?: string;
   currentUserRole?: string;
   _insideRlsWrapper?: boolean;
+  isSystemContext?: boolean;
 }
 
 export const requestContextStorage = new AsyncLocalStorage<RequestScope>();
@@ -31,9 +32,9 @@ const attachRetryExtension = (client: PrismaClient): PrismaClient => {
   return (client as any).$extends({
     query: {
       async $allOperations({ operation, model, args, query }: any) {
-        // Automatically wire request-bound RLS user ID & role if active
+        // Automatically wire request-bound RLS user ID & role if active and not in system context
         const store = requestContextStorage.getStore();
-        if (store?.currentUserId && !store._insideRlsWrapper) {
+        if (store?.currentUserId && !store._insideRlsWrapper && !store.isSystemContext) {
           store._insideRlsWrapper = true;
           try {
             return await withRlsContext(
@@ -230,6 +231,33 @@ export const withRlsContext = async <T>(
     }
     return fn(tx);
   });
+};
+
+/**
+ * Runs a database operation within a privileged system context (bypassing RLS safely).
+ * Used exclusively for internal server-side operations such as cross-user notification delivery.
+ */
+export const withSystemContext = async <T>(
+  client: PrismaClient,
+  fn: (tx: any) => Promise<T>
+): Promise<T> => {
+  const store = requestContextStorage.getStore();
+  const prevSystemFlag = store?.isSystemContext;
+  if (store) {
+    store.isSystemContext = true;
+  }
+
+  try {
+    return await (client as any).$transaction(async (tx: any) => {
+      await tx.$executeRawUnsafe(`SELECT set_config('app.current_user_role', 'SUPER_ADMIN', true);`);
+      await tx.$executeRawUnsafe(`SELECT set_config('app.bypass_rls', 'true', true);`);
+      return fn(tx);
+    });
+  } finally {
+    if (store) {
+      store.isSystemContext = prevSystemFlag;
+    }
+  }
 };
 
 export default prisma;

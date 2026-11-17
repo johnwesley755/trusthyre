@@ -13,6 +13,11 @@
       "service": "trusthire-python-scraper"
     }
   ],
+  "triggers": {
+    "crons": [
+      "30 3 * * *"
+    ]
+  },
   "observability": {
     "logs": {
       "enabled": true,

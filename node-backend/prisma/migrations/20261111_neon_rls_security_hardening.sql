@@ -1279,5 +1279,43 @@ GRANT EXECUTE ON FUNCTION public.consume_attendance_challenge TO PUBLIC;
 GRANT EXECUTE ON FUNCTION public.consume_otp_challenge TO PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_challenge_failed_attempt TO PUBLIC;
 
+-- ============================================================================
+-- NOTIFICATION DELIVERY PRIVILEGED SYSTEM FUNCTION
+-- ============================================================================
+CREATE OR REPLACE FUNCTION public.get_notification_recipient_delivery_info(p_user_id text)
+RETURNS TABLE (
+    recipient_email text,
+    recipient_first_name text,
+    is_email_allowed boolean,
+    is_push_allowed boolean,
+    fcm_tokens text[]
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        m.email::text AS recipient_email,
+        m.first_name::text AS recipient_first_name,
+        COALESCE(s.email_notifications, true) AS is_email_allowed,
+        COALESCE(s.push_notifications, true) AS is_push_allowed,
+        COALESCE(
+            (
+                SELECT array_agg(DISTINCT t.token)::text[] 
+                FROM public.user_fcm_tokens t 
+                WHERE t.user_id::text = p_user_id
+            ), 
+            ARRAY[]::text[]
+        ) AS fcm_tokens
+    FROM public.user_metadata m
+    LEFT JOIN public.user_settings s ON s.user_id::text = p_user_id
+    WHERE m.id::text = p_user_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_notification_recipient_delivery_info(text) TO PUBLIC;
+
 COMMIT;
 

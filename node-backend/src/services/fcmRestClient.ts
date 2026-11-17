@@ -110,8 +110,11 @@ export async function sendFcmMessagesV1(
   const endpoint = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
   const unregisteredTokens: string[] = [];
 
-  const targetUrl = payload.url || '/notifications';
+  const rawTargetUrl = payload.url || '/notifications';
   const frontendUrl = (process.env.FRONTEND_URL || 'https://trusthyre.com').replace(/\/$/, '');
+  const absoluteLink = rawTargetUrl.startsWith('http://') || rawTargetUrl.startsWith('https://')
+    ? rawTargetUrl
+    : `${frontendUrl}${rawTargetUrl.startsWith('/') ? '' : '/'}${rawTargetUrl}`;
   const iconUrl = `${frontendUrl}/logo.png`;
 
   const results = await Promise.allSettled(
@@ -126,9 +129,9 @@ export async function sendFcmMessagesV1(
           data: {
             title: payload.title,
             message: payload.body,
-            url: targetUrl,
-            link: targetUrl,
-            click_action: targetUrl,
+            url: absoluteLink,
+            link: absoluteLink,
+            click_action: absoluteLink,
             createdAt: new Date().toISOString(),
             ...(payload.data || {})
           },
@@ -144,7 +147,7 @@ export async function sendFcmMessagesV1(
               requireInteraction: true
             },
             fcm_options: {
-              link: targetUrl
+              link: absoluteLink
             }
           }
         }
@@ -160,11 +163,13 @@ export async function sendFcmMessagesV1(
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
+        const errorText = await res.text().catch(() => '');
+        let errorData: any = null;
+        try { errorData = JSON.parse(errorText); } catch {}
         const errorCode = errorData?.error?.details?.[0]?.errorCode || errorData?.error?.status || '';
-        const errorMessage = errorData?.error?.message || '';
+        const errorMessage = errorData?.error?.message || errorText;
 
-        console.error(`[FcmRestClient] Push error for token ${token.slice(0, 10)}...:`, errorCode, errorMessage);
+        console.error(`❌ [FcmRestClient] Push error (${res.status}) for token ${token.slice(0, 10)}...: [${errorCode}] ${errorMessage}`);
 
         if (
           errorCode === 'UNREGISTERED' ||
