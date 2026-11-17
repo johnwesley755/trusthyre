@@ -48,8 +48,29 @@ export function validateAndSanitizeEmailHtml(html: string): SanitizeResult {
     };
   }
 
-  // Sanitize via AST-based parser (avoids CodeQL js/bad-tag-filter regex security alerts)
-  // Automatically strips all script, frame, form tags, javascript: schemes, and inline on* handlers.
+  const normalized = html.toLowerCase();
+
+  // 1. Check for forbidden script elements (using robust substring matching to avoid CodeQL bad-tag-filter regex alert)
+  if (normalized.includes('<script')) {
+    violations.push('Execution of <script> tags is forbidden in email templates.');
+  }
+
+  // 2. Check for inline JavaScript event handlers on HTML elements (e.g. onclick, onload, onerror)
+  if (/(?:<[^>]+\s+on[a-z]+\s*=|(?:\bon(?:click|load|error|change|submit|focus|blur|mouse|key|touch|pointer)\w*\s*=))/i.test(html)) {
+    violations.push('Inline JavaScript event handlers (onclick, onerror, onload, etc.) are forbidden.');
+  }
+
+  // 3. Check for executable javascript: pseudo-protocols
+  if (normalized.replace(/\s+/g, '').includes('javascript:')) {
+    violations.push('Executable javascript: URIs are forbidden.');
+  }
+
+  // 4. Check for interactive form/embed elements
+  if (/<iframe|<object|<embed|<form|<input|<button/i.test(html)) {
+    violations.push('Interactive form/embed tags (<iframe, <object, <embed, <form, <button) are not permitted in transactional email.');
+  }
+
+  // 5. AST-based HTML sanitization with strict email-safe tag & attribute allowlists
   const sanitized = sanitizeHtml(html, {
     allowedTags: EMAIL_SAFE_ALLOWED_TAGS,
     allowedAttributes: EMAIL_SAFE_ALLOWED_ATTRIBUTES,
