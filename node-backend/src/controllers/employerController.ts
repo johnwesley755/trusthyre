@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import prisma from '../config/prisma';
+import prisma, { withSystemContext } from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
 import { isAppAdmin } from '../utils/roles';
@@ -216,7 +216,8 @@ export const unlockCandidateContact = async (c: Context) => {
     const authUser = c.get('user');
     if (!authUser?.sub) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
 
-    if (authUser.role !== 'EMPLOYER' && authUser.role !== 'ADMIN') {
+    const isAdmin = isAppAdmin(authUser.role);
+    if (authUser.role !== 'EMPLOYER' && !isAdmin) {
       return c.json(ApiResponse.error("Forbidden: Only employer accounts can unlock candidate contact details."), 403 as any);
     }
 
@@ -226,17 +227,91 @@ export const unlockCandidateContact = async (c: Context) => {
       return c.json(ApiResponse.error("Worker ID is required"), 400 as any);
     }
 
-    // Find the worker
-    const workerUser = await prisma.user_metadata.findUnique({
-      where: { id: workerId }
-    });
-
-    const workerProfile = await prisma.worker_profiles.findFirst({
-      where: { user_id: workerId }
+    // 1. Fetch Candidate Details safely under withSystemContext (bypassing RLS cross-user block)
+    const { workerUser, workerProfile } = await withSystemContext(prisma, async (tx) => {
+      const u = await tx.user_metadata.findUnique({
+        where: { id: workerId },
+        select: { id: true, first_name: true, last_name: true, phone_number: true, email: true }
+      });
+      const p = await tx.worker_profiles.findFirst({
+        where: { OR: [{ user_id: workerId }, { id: workerId }] }
+      });
+      return { workerUser: u, workerProfile: p };
     });
 
     if (!workerUser && !workerProfile) {
       return c.json(ApiResponse.error("Candidate not found"), 404 as any);
+    }
+
+    const targetUserId = workerProfile?.user_id || workerUser?.id || workerId;
+
+    // 2. Determine if candidate is already unlocked or has an active application/offer
+    let alreadyUnlocked = false;
+    let creditsRemaining = 5;
+
+    if (!isAdmin) {
+      const employerProfile = await prisma.employer_profiles.findFirst({
+        where: { user_id: authUser.sub }
+      });
+
+      if (!employerProfile) {
+        return c.json(ApiResponse.error("Employer profile not found. Please complete profile setup first."), 404 as any);
+      }
+
+      creditsRemaining = employerProfile.contact_credits ?? 0;
+
+      // Check if already unlocked in saved_workers
+      const existingUnlock = await prisma.saved_workers.findFirst({
+        where: {
+          employer_id: authUser.sub,
+          worker_id: targetUserId
+        }
+      });
+
+      if (existingUnlock) {
+        alreadyUnlocked = true;
+      } else {
+        // Check if candidate applied to any of this employer's jobs
+        const hasApplication = await prisma.job_applications.findFirst({
+          where: {
+            worker_id: targetUserId,
+            jobs: { employer_id: employerProfile.id || authUser.sub }
+          }
+        });
+
+        if (hasApplication) {
+          alreadyUnlocked = true;
+        }
+      }
+
+      // If not already unlocked, enforce and debit 1 credit
+      if (!alreadyUnlocked) {
+        if (creditsRemaining <= 0) {
+          return c.json({
+            success: false,
+            message: "Insufficient contact credits (0 remaining). Please top up your contact credit pack to connect directly with this candidate.",
+            creditsRemaining: 0,
+            requiresTopup: true
+          }, 402 as any);
+        }
+
+        // Atomically debit 1 credit and record unlock
+        await prisma.$transaction(async (tx) => {
+          await tx.employer_profiles.update({
+            where: { id: employerProfile.id },
+            data: { contact_credits: { decrement: 1 } }
+          });
+
+          await tx.saved_workers.create({
+            data: {
+              employer_id: authUser.sub,
+              worker_id: targetUserId
+            }
+          }).catch(() => {}); // ignore duplicate race
+        });
+
+        creditsRemaining = Math.max(0, creditsRemaining - 1);
+      }
     }
 
     const phoneNumber = workerProfile?.phone_number || workerUser?.phone_number || 'Not Provided';
@@ -244,11 +319,12 @@ export const unlockCandidateContact = async (c: Context) => {
     const workerName = workerProfile?.full_name || `${workerUser?.first_name || ''} ${workerUser?.last_name || ''}`.trim() || 'Candidate';
 
     return c.json(ApiResponse.ok("Candidate contact retrieved successfully", {
-      workerId,
+      workerId: targetUserId,
       workerName,
       phoneNumber,
       whatsappPhone,
-      unlimitedAccess: true
+      creditsRemaining,
+      alreadyUnlocked
     }));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);

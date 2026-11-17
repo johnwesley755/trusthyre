@@ -228,7 +228,7 @@ export const SignInPage = () => {
                             {/* Email Field */}
                             <div className="space-y-1.5">
                                 <label className="block text-xs font-medium uppercase text-[#0a0a0a] dark:text-zinc-200">
-                                    {isCandidate ? 'Email address or mobile' : 'Official business email'}
+                                    {isCandidate ? 'Registered email address' : 'Official business email'}
                                 </label>
                                 <input
                                     type="email"

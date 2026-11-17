@@ -48,25 +48,8 @@ export function validateAndSanitizeEmailHtml(html: string): SanitizeResult {
     };
   }
 
-  const normalized = html.toLowerCase();
-
-  // Check for forbidden script elements (using robust substring matching without vulnerable regex)
-  if (normalized.includes('<script')) {
-    violations.push('Execution of <script> tags is forbidden in email templates.');
-  }
-
-  if (/\bon\w+\s*=/i.test(html)) {
-    violations.push('Inline JavaScript event handlers (onclick, onerror, onload, etc.) are forbidden.');
-  }
-
-  if (normalized.replace(/\s+/g, '').includes('javascript:')) {
-    violations.push('Executable javascript: URIs are forbidden.');
-  }
-
-  if (/<iframe|<object|<embed|<form|<input|<button/i.test(html)) {
-    violations.push('Interactive form/embed tags (<iframe, <object, <embed, <form, <button) are not permitted in transactional email.');
-  }
-
+  // Sanitize via AST-based parser (avoids CodeQL js/bad-tag-filter regex security alerts)
+  // Automatically strips all script, frame, form tags, javascript: schemes, and inline on* handlers.
   const sanitized = sanitizeHtml(html, {
     allowedTags: EMAIL_SAFE_ALLOWED_TAGS,
     allowedAttributes: EMAIL_SAFE_ALLOWED_ATTRIBUTES,
@@ -74,6 +57,10 @@ export function validateAndSanitizeEmailHtml(html: string): SanitizeResult {
     allowProtocolRelative: false,
     disallowedTagsMode: 'discard',
   });
+
+  if (!sanitized || sanitized.trim().length === 0) {
+    violations.push('Template HTML does not contain any valid email-safe markup.');
+  }
 
   return {
     isValid: violations.length === 0,

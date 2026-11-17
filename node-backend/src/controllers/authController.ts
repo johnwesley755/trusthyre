@@ -13,6 +13,7 @@ import { isHoneypotTriggered, isFormSubmittedTooFast } from '../middlewares/botD
 import { TurnstileService } from '../services/turnstileService';
 import { getClientIp } from '../middlewares/rateLimiter';
 import { ReferralService } from '../services/referralService';
+import { sanitizeUserDto } from '../utils/userDto';
 
 export const register = async (c: Context) => {
   try {
@@ -170,7 +171,7 @@ export const register = async (c: Context) => {
 
     const token = jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '30d' });
 
-    return c.json(ApiResponse.ok("Registration successful", { token, user }));
+    return c.json(ApiResponse.ok("Registration successful", { token, user: sanitizeUserDto(user) }));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
@@ -195,7 +196,7 @@ export const login = async (c: Context) => {
     }
 
     const token = jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '30d' });
-    return c.json(ApiResponse.ok("Login successful", { token, user }));
+    return c.json(ApiResponse.ok("Login successful", { token, user: sanitizeUserDto(user) }));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }
@@ -457,7 +458,7 @@ export const getCurrentUser = async (c: Context) => {
     if (!c.get('user')) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
     const user = await prisma.user_metadata.findUnique({ where: { id: c.get('user').sub } });
     if (!user) return c.json(ApiResponse.error("User not found"), 404 as any);
-    return c.json(ApiResponse.ok(user));
+    return c.json(ApiResponse.ok(sanitizeUserDto(user)));
   } catch (err: any) {
     console.error("getCurrentUser error:", err);
     return c.json(ApiResponse.error(err.message), 500 as any);
@@ -549,7 +550,7 @@ export const syncUser = async (c: Context) => {
       }
     }
 
-    return c.json(ApiResponse.ok("User synced", updated));
+    return c.json(ApiResponse.ok("User synced", sanitizeUserDto(updated)));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }

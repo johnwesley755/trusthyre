@@ -22,6 +22,16 @@ import {
 } from 'lucide-react';
 import { SeoHead } from '../../../components/common/SeoHead';
 import { getStoredReferral, clearStoredReferral } from '../../../utils/referralStorage';
+import { TurnstileWidget } from '../../../components/common/TurnstileWidget';
+
+const validatePassword = (pass: string): string | null => {
+    if (!pass || pass.length < 8) return 'Password must be at least 8 characters long.';
+    if (!/[A-Z]/.test(pass)) return 'Password must contain at least one uppercase letter (A-Z).';
+    if (!/[a-z]/.test(pass)) return 'Password must contain at least one lowercase letter (a-z).';
+    if (!/[0-9]/.test(pass)) return 'Password must contain at least one number (0-9).';
+    if (!/[^A-Za-z0-9\s]/.test(pass)) return 'Password must contain at least one special character (!@#$%^&* etc).';
+    return null;
+};
 
 type SignUpStage = 'FORM' | 'OTP';
 
@@ -54,6 +64,7 @@ export const SignUpPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isResending, setIsResending] = useState(false);
     const [error, setError] = useState('');
+    const [turnstileToken, setTurnstileToken] = useState<string>('');
     
     const { user, isSignedIn, login, signInWithGoogle, authError, clearAuthError } = useAuth();
     const navigate = useNavigate();
@@ -146,19 +157,21 @@ export const SignUpPage = () => {
             return;
         }
 
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters long.');
+        const passwordError = validatePassword(password);
+        if (passwordError) {
+            setError(passwordError);
             return;
         }
 
         setIsLoading(true);
 
         try {
-            // Request Email OTP from backend mailer
+            // Request Email OTP from backend mailer with Turnstile token
             await apiClient.post('/api/auth/send-otp', {
                 email: cleanEmail,
                 role: activeRole,
-                phoneNumber: cleanPhone
+                phoneNumber: cleanPhone,
+                turnstileToken: turnstileToken || undefined
             });
 
             setStage('OTP');
@@ -182,7 +195,8 @@ export const SignUpPage = () => {
         try {
             await apiClient.post('/api/auth/send-otp', {
                 email: email.trim().toLowerCase(),
-                role: activeRole
+                role: activeRole,
+                turnstileToken: turnstileToken || undefined
             });
             setResendCooldown(30);
             setResendSuccess(true);
@@ -217,6 +231,7 @@ export const SignUpPage = () => {
                 password,
                 phoneNumber: `+91${cleanPhone}`,
                 otp: cleanOtp,
+                turnstileToken: turnstileToken || undefined,
                 referralCode: storedReferral?.referralCode || searchParams.get('ref') || null,
                 referralSource: storedReferral?.referralSource || searchParams.get('src') || 'direct_invite'
             };
@@ -536,15 +551,20 @@ export const SignUpPage = () => {
 
                                         {/* Password Field */}
                                         <div className="space-y-1.5">
-                                            <label className="block text-xs font-medium uppercase text-[#0a0a0a] dark:text-zinc-200">
-                                                Password
-                                            </label>
+                                            <div className="flex items-center justify-between">
+                                                <label className="block text-xs font-medium uppercase text-[#0a0a0a] dark:text-zinc-200">
+                                                    Password
+                                                </label>
+                                                <span className="text-[11px] text-[#717784] dark:text-zinc-400">
+                                                    Min 8 chars, 1 upper, 1 number, 1 symbol
+                                                </span>
+                                            </div>
                                             <div className="relative">
                                                 <input
                                                     type={showPassword ? 'text' : 'password'}
                                                     value={password}
                                                     onChange={(e) => setPassword(e.target.value)}
-                                                    placeholder="Minimum 6 characters"
+                                                    placeholder="e.g. Trv$tHyr3#2026"
                                                     required
                                                     className="w-full bg-[#f4f4f4]/60 dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-[#18181f] focus:bg-white dark:focus:bg-[#18181f] border border-[#e6e8ec] dark:border-zinc-800 focus:border-[#0f2f63] dark:focus:border-[#38BDF8] rounded-xl px-4 py-3 pr-10 text-base sm:text-sm text-[#0a0a0a] dark:text-white placeholder:text-[#9ea3ae] dark:placeholder:text-zinc-500 font-normal transition-all outline-hidden focus:ring-2 focus:ring-[#0f2f63]/10 dark:focus:ring-[#38BDF8]/20"
                                                 />
@@ -557,6 +577,12 @@ export const SignUpPage = () => {
                                                 </button>
                                             </div>
                                         </div>
+
+                                        {/* Cloudflare Turnstile Bot Defense */}
+                                        <TurnstileWidget
+                                            onVerify={(token) => setTurnstileToken(token)}
+                                            onExpire={() => setTurnstileToken('')}
+                                        />
 
                                         {/* Submit Button */}
                                         <button

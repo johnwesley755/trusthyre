@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import prisma from '../config/prisma';
+import prisma, { withSystemContext } from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
 import { SearchAlertService } from '../services/searchAlertService';
@@ -405,25 +405,38 @@ export const getProfilesByUserIds = async (c: Context) => {
       ...profiles.map(p => p.user_id).filter(Boolean)
     ])).filter(id => !adminIdSet.has(id));
 
-    const [userMetaList, verifications] = await Promise.all([
-      prisma.user_metadata.findMany({
-        where: { 
-          id: { in: targetUserIds },
-          role: { notIn: ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'] }
-        }
-      }),
-      prisma.verification_records.findMany({
-        where: { user_id: { in: targetUserIds } }
-      })
-    ]);
+    // Fetch candidate metadata and verification records within privileged system context so RLS does not blank candidate cards
+    const [userMetaList, verifications] = await withSystemContext(prisma, async (tx) => {
+      return Promise.all([
+        tx.user_metadata.findMany({
+          where: { 
+            id: { in: targetUserIds },
+            role: { notIn: ['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'] }
+          },
+          select: {
+            id: true,
+            email: true,
+            first_name: true,
+            last_name: true,
+            phone_number: true,
+            profile_image_url: true,
+            email_verified: true,
+            role: true
+          }
+        }),
+        tx.verification_records.findMany({
+          where: { user_id: { in: targetUserIds } }
+        })
+      ]);
+    });
 
-    const userMetaById = new Map();
-    userMetaList.forEach(u => {
+    const userMetaById = new Map<string, any>();
+    userMetaList.forEach((u: any) => {
       userMetaById.set(u.id, u);
     });
 
-    const verificationByUser = new Map();
-    verifications.forEach(v => {
+    const verificationByUser = new Map<string, any>();
+    verifications.forEach((v: any) => {
       verificationByUser.set(v.user_id, v);
     });
 
@@ -450,23 +463,26 @@ export const getProfilesByUserIds = async (c: Context) => {
     }
 
     const formatted = profiles
-      .filter(p => userMetaById.has(p.user_id) || userMetaById.has(p.id))
       .map((p) => {
         const meta = userMetaById.get(p.user_id) || userMetaById.get(p.id);
-      const vRecord = verificationByUser.get(p.user_id) || verificationByUser.get(p.id);
-      const isVerified = vRecord?.status === 'VERIFIED' || vRecord?.status === 'APPROVED' || Boolean(meta?.email_verified);
-      const isOfferSent = employerOffers.has(p.user_id) || employerOffers.has(p.id);
-      const isSelf = employerId && (employerId === p.user_id || employerId === p.id);
-      
-      // Privacy Gate: Mask contact info unless admin, owner, or employer with active application/offer
-      const shouldMask = !isSelf && !isAdmin && !isOfferSent;
-      
-      const f = formatWorkerProfile(p, meta, isVerified, shouldMask);
-      if (f) {
-        f.isOfferSent = isOfferSent;
-      }
-      return f;
-    });
+        const vRecord = verificationByUser.get(p.user_id) || verificationByUser.get(p.id);
+        const isIdentityVerified = vRecord?.status === 'VERIFIED' || vRecord?.status === 'APPROVED';
+        const isEmailVerified = Boolean(meta?.email_verified);
+        const isOfferSent = employerOffers.has(p.user_id) || employerOffers.has(p.id);
+        const isSelf = employerId && (employerId === p.user_id || employerId === p.id);
+        
+        // Privacy Gate: Mask contact info unless admin, owner, or employer with active application/offer
+        const shouldMask = !isSelf && !isAdmin && !isOfferSent;
+        
+        const f = formatWorkerProfile(p, meta, isIdentityVerified, shouldMask);
+        if (f) {
+          f.isOfferSent = isOfferSent;
+          f.emailVerified = isEmailVerified;
+          f.isIdentityVerified = isIdentityVerified;
+        }
+        return f;
+      })
+      .filter(Boolean);
 
     return c.json(ApiResponse.ok(formatted));
   } catch (err: any) {
@@ -589,16 +605,12 @@ export const getTrustScore = async (c: Context) => {
 
     const targetUserId = profile?.user_id || userId;
 
-    // Check verification status
+    // Check genuine document verification status (never substitute simple email OTP)
     const verification = await prisma.verification_records.findFirst({
       where: { user_id: targetUserId, status: { in: ['APPROVED', 'VERIFIED'] } }
     });
 
-    const userMeta = await prisma.user_metadata.findUnique({
-      where: { id: targetUserId }
-    });
-
-    const isIdVerified = !!verification || Boolean(userMeta?.email_verified);
+    const isIdVerified = !!verification;
 
     // Count passed tests
     const passedTestsCount = await prisma.skill_test_results.count({
@@ -612,11 +624,11 @@ export const getTrustScore = async (c: Context) => {
       _count: { score: true }
     });
 
-    // Completed jobs count
+    // Completed jobs count (strictly COMPLETED status)
     const completedJobsCount = await prisma.job_applications.count({
       where: {
         worker_id: targetUserId,
-        status: { in: ['COMPLETED', 'ACCEPTED'] }
+        status: 'COMPLETED'
       }
     });
 
@@ -632,8 +644,8 @@ export const getTrustScore = async (c: Context) => {
     }
     computedScore = Math.min(100, Math.max(20, computedScore));
 
-    const avgRating = ratings._avg.score ? Number(ratings._avg.score.toFixed(1)) : 4.8;
-    const reliabilityRate = completedJobsCount > 0 ? 0.98 : 0.92;
+    const avgRating = ratings._count.score > 0 && ratings._avg.score ? Number(ratings._avg.score.toFixed(1)) : null;
+    const reliabilityRate = completedJobsCount > 0 ? 0.98 : null;
 
     return c.json(ApiResponse.ok({
       score: profile?.trust_score && profile.trust_score > 0 ? profile.trust_score : computedScore,
@@ -878,19 +890,24 @@ export const getWorkerWorkHistory = async (c: Context) => {
       take: 20
     }).catch(() => []);
 
-    const internalHistory = internalApplications.map((app) => ({
-      id: `trusthyre-${app.id}`,
-      companyName: app.jobs?.employer_name || 'Verified Employer',
-      roleTitle: app.jobs?.title || 'Frontline Specialist',
-      startDate: app.applied_at?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-      endDate: app.status === 'COMPLETED' ? app.applied_at?.toISOString().split('T')[0] : null,
-      isCurrent: app.status !== 'COMPLETED',
-      city: app.jobs?.city || 'Local Area',
-      jobType: app.jobs?.industry || 'Full Time',
-      verificationStatus: 'TRUSTHYRE_COMPLETED',
-      isTrustHyreVerified: true,
-      description: 'Shift verified and completed via TrustHyre digital dispatch.'
-    }));
+    const internalHistory = internalApplications.map((app) => {
+      const isCompleted = app.status === 'COMPLETED';
+      return {
+        id: `trusthyre-${app.id}`,
+        companyName: app.jobs?.employer_name || 'Verified Employer',
+        roleTitle: app.jobs?.title || 'Frontline Specialist',
+        startDate: app.applied_at?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+        endDate: isCompleted ? (app.applied_at?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0]) : null,
+        isCurrent: !isCompleted,
+        city: app.jobs?.city || 'Local Area',
+        jobType: app.jobs?.industry || 'Full Time',
+        verificationStatus: isCompleted ? 'TRUSTHYRE_COMPLETED' : 'IN_PROGRESS',
+        isTrustHyreVerified: isCompleted,
+        description: isCompleted
+          ? 'Work contract verified and completed via TrustHyre digital dispatch.'
+          : 'Active work engagement on TrustHyre platform.'
+      };
+    });
 
     // 2. Fetch logged records from worker_work_history table
     let externalRows: any[] = [];

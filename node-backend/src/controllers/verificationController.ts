@@ -179,29 +179,22 @@ export const captureLive = async (c: Context) => {
       where: { id: record.id },
       data: {
         live_image_url: liveUrl,
-        status: 'VERIFIED',
-        confidence_score: '95',
+        status: 'PENDING', // Awaits administrative / KYC validation
         updated_at: new Date()
       }
     });
 
-    // Mark user / worker as verified
-    await prisma.user_metadata.updateMany({
-      where: { id: userId },
-      data: { email_verified: true }
-    });
-
-    // Dispatch Synchronized In-App & Push Notification
+    // Dispatch Synchronized Notification for submission
     await NotificationDispatcher.dispatch({
       userId,
-      title: "Biometric Verification Completed! ✅",
-      message: "Your live face verification has been verified. Your Trust Score has been elevated.",
-      type: "KYC_VERIFIED",
+      title: "Verification Submitted For Review ⏳",
+      message: "Your document and live selfie have been securely received. Our compliance team will review your credentials within 24 hours.",
+      type: "KYC_PENDING",
       link: "/profile",
       data: { verificationId: String(record.id) }
     }).catch(() => {});
 
-    return c.json(ApiResponse.ok("Live capture verified", record));
+    return c.json(ApiResponse.ok("Live capture submitted for verification review", record));
   } catch (err: any) {
     console.error("captureLive error:", err);
     return c.json(ApiResponse.error(err.message), 500 as any);
