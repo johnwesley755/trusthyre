@@ -1,4 +1,4 @@
-import prisma from '../config/prisma';
+import prisma, { withSystemContext } from '../config/prisma';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationDispatcher } from './notificationDispatcher';
 
@@ -222,16 +222,18 @@ export class SearchAlertService {
       const matchedAlertIds: string[] = [];
       const notificationsByUser = new Map<string, { userId: string; alertTitle: string }>();
 
-      // 1. Retrieve all active JOB_ALERT subscriptions
+      // 1. Retrieve all active JOB_ALERT subscriptions (using withSystemContext to cross RLS boundary)
       try {
-        const candidateAlerts = await prisma.$queryRaw<any[]>`
-          SELECT id, user_id, title, query, city, category, min_salary, max_salary, experience
-          FROM user_search_alerts
-          WHERE is_active = true
-            AND alert_type = 'JOB_ALERT'
-            AND user_id != ${job.employer_id}
-            AND (last_notified_at IS NULL OR last_notified_at < NOW() - INTERVAL '6 hours')
-        `;
+        const candidateAlerts = await withSystemContext(prisma, async (db) => {
+          return await db.$queryRaw<any[]>`
+            SELECT id, user_id, title, query, city, category, min_salary, max_salary, experience
+            FROM user_search_alerts
+            WHERE is_active = true
+              AND alert_type = 'JOB_ALERT'
+              AND user_id != ${job.employer_id}
+              AND (last_notified_at IS NULL OR last_notified_at < NOW() - INTERVAL '6 hours')
+          `;
+        });
 
         console.log(`[SearchAlertService:MATCH] Found ${candidateAlerts?.length || 0} candidate job alert subscription(s) in database.`);
 
@@ -374,33 +376,35 @@ export class SearchAlertService {
       const workerRoles = (worker.preferred_roles || '').toLowerCase();
       const workerName = worker.full_name || 'Verified Specialist';
 
-      // Retrieve candidate alert subscriptions based on filters/simulation mode
+      // Retrieve candidate alert subscriptions based on filters/simulation mode (using withSystemContext to cross RLS boundary)
       let employerAlerts: any[] = [];
-      if (options?.targetUserId) {
-        employerAlerts = await prisma.$queryRaw<any[]>`
-          SELECT id, user_id, title, query, city, category, experience
-          FROM user_search_alerts
-          WHERE is_active = true
-            AND alert_type = 'CANDIDATE_ALERT'
-            AND user_id = ${options.targetUserId}
-        `;
-      } else if (options?.allowSameUser) {
-        employerAlerts = await prisma.$queryRaw<any[]>`
-          SELECT id, user_id, title, query, city, category, experience
-          FROM user_search_alerts
-          WHERE is_active = true
-            AND alert_type = 'CANDIDATE_ALERT'
-        `;
-      } else {
-        employerAlerts = await prisma.$queryRaw<any[]>`
-          SELECT id, user_id, title, query, city, category, experience
-          FROM user_search_alerts
-          WHERE is_active = true
-            AND alert_type = 'CANDIDATE_ALERT'
-            AND user_id != ${worker.user_id}
-            AND (last_notified_at IS NULL OR last_notified_at < NOW() - INTERVAL '6 hours')
-        `;
-      }
+      await withSystemContext(prisma, async (db) => {
+        if (options?.targetUserId) {
+          employerAlerts = await db.$queryRaw<any[]>`
+            SELECT id, user_id, title, query, city, category, experience
+            FROM user_search_alerts
+            WHERE is_active = true
+              AND alert_type = 'CANDIDATE_ALERT'
+              AND user_id = ${options.targetUserId}
+          `;
+        } else if (options?.allowSameUser) {
+          employerAlerts = await db.$queryRaw<any[]>`
+            SELECT id, user_id, title, query, city, category, experience
+            FROM user_search_alerts
+            WHERE is_active = true
+              AND alert_type = 'CANDIDATE_ALERT'
+          `;
+        } else {
+          employerAlerts = await db.$queryRaw<any[]>`
+            SELECT id, user_id, title, query, city, category, experience
+            FROM user_search_alerts
+            WHERE is_active = true
+              AND alert_type = 'CANDIDATE_ALERT'
+              AND user_id != ${worker.user_id}
+              AND (last_notified_at IS NULL OR last_notified_at < NOW() - INTERVAL '6 hours')
+          `;
+        }
+      });
 
       if (!employerAlerts || employerAlerts.length === 0) {
         return;

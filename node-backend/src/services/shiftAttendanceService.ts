@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import prisma from '../config/prisma';
 import { NotificationDispatcher } from './notificationDispatcher';
+import { calculateDistanceMeters } from '../utils/geoDistance';
 
 // Enforce that QR_SIGNING_SECRET is strictly provided in production
 function getQrSigningSecret(): string {
@@ -109,20 +110,8 @@ export const ShiftAttendanceService = {
       throw new Error("Forbidden: You do not own this work order");
     }
 
-    if (!['ACCEPTED', 'IN_PROGRESS', 'SENT', 'ACTIVE'].includes(workOrder.status)) {
-      throw new Error(`Cannot schedule shifts for work order with status: ${workOrder.status}. Must be ACCEPTED, IN_PROGRESS, or SENT.`);
-    }
-
-    // If work order is currently in SENT status, automatically activate it upon scheduling shifts
-    if (workOrder.status === 'SENT') {
-      await prisma.work_orders.update({
-        where: { id: workOrder.id },
-        data: {
-          status: 'ACCEPTED',
-          accepted_at: new Date(),
-          updated_at: new Date()
-        }
-      });
+    if (!['ACCEPTED', 'IN_PROGRESS', 'ACTIVE'].includes(workOrder.status)) {
+      throw new Error(`Cannot schedule shifts for work order with status: ${workOrder.status}. Must be ACCEPTED or IN_PROGRESS by candidate.`);
     }
 
     const workerId = workOrder.worker_id;
@@ -695,6 +684,7 @@ export const ShiftAttendanceService = {
     // 2. If no matching challenge was consumed, atomically increment attempt_count on active PINs
     // Must execute on ROOT prisma client so that when caller throws and rolls back txClient,
     // the recorded failed attempt count still persists in PostgreSQL!
+    let incremented = false;
     try {
       const incRes: any = await prisma.$queryRaw`
         SELECT public.record_challenge_failed_attempt(
@@ -702,23 +692,30 @@ export const ShiftAttendanceService = {
           ${action}
         ) AS new_attempts;
       `;
-      if (incRes && incRes.length > 0 && incRes[0].new_attempts !== undefined) {
-        return false;
+      if (incRes && incRes.length > 0 && typeof incRes[0].new_attempts === 'number' && incRes[0].new_attempts > 0) {
+        incremented = true;
       }
     } catch {
-      // Fallback to updateMany
-      await prisma.attendance_challenges.updateMany({
+      // Fallback below
+    }
+
+    if (!incremented) {
+      // Fallback to updating the latest unconsumed active PIN directly
+      const latest = await prisma.attendance_challenges.findFirst({
         where: {
           shift_id: shiftId,
           challenge_type: 'ONE_TIME_PIN',
           intended_action: action,
-          consumed_at: null,
-          expires_at: { gt: dbNow }
+          consumed_at: null
         },
-        data: {
-          attempt_count: { increment: 1 }
-        }
+        orderBy: { created_at: 'desc' }
       });
+      if (latest && latest.attempt_count < latest.max_attempts) {
+        await prisma.attendance_challenges.update({
+          where: { id: latest.id },
+          data: { attempt_count: { increment: 1 } }
+        });
+      }
     }
 
     return false;
@@ -769,12 +766,32 @@ export const ShiftAttendanceService = {
       }
 
       const now = new Date();
+      let geofenceVerified = false;
+      let distanceMeters: number | null = null;
+      if (
+        typeof shift.work_orders?.latitude === 'number' &&
+        typeof shift.work_orders?.longitude === 'number' &&
+        typeof input.latitude === 'number' &&
+        typeof input.longitude === 'number'
+      ) {
+        distanceMeters = calculateDistanceMeters(
+          shift.work_orders.latitude,
+          shift.work_orders.longitude,
+          input.latitude,
+          input.longitude
+        );
+        geofenceVerified = distanceMeters <= 1000;
+      }
+
       const eventAudit = {
         event: 'CHECKED_IN',
         method: input.method,
         timestamp: now.toISOString(),
         lat: input.latitude || null,
         lng: input.longitude || null,
+        geofence_verified: geofenceVerified,
+        geofence_status: geofenceVerified ? 'VERIFIED' : distanceMeters !== null ? 'OUT_OF_BOUNDS' : 'UNAVAILABLE',
+        distance_meters: distanceMeters,
         notes: input.notes || null
       };
 

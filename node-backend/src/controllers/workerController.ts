@@ -64,8 +64,12 @@ const formatWorkerProfile = (profile: any, userMeta?: any, isVerified?: boolean,
     experienceYears: profile.experience_years != null ? Number(profile.experience_years) : (profile.experienceYears != null ? Number(profile.experienceYears) : 0),
     experience_years: profile.experience_years != null ? Number(profile.experience_years) : (profile.experienceYears != null ? Number(profile.experienceYears) : 0),
     bio: profile.bio || '',
-    is_verified: isVerified ?? (Boolean(userMeta?.email_verified) || Boolean(profile.is_verified)),
-    isVerified: isVerified ?? (Boolean(userMeta?.email_verified) || Boolean(profile.is_verified)),
+    email_verified: Boolean(userMeta?.email_verified),
+    emailVerified: Boolean(userMeta?.email_verified),
+    identity_verified: isVerified ?? Boolean(profile.is_verified),
+    identityVerified: isVerified ?? Boolean(profile.is_verified),
+    is_verified: isVerified ?? Boolean(profile.is_verified),
+    isVerified: isVerified ?? Boolean(profile.is_verified),
     
     // Onboarding & Resume Builder fields
     dob: profile.dob || null,
@@ -745,6 +749,18 @@ export const getStandbyPoolWorkers = async (c: Context) => {
     const metaMap = new Map(userMetas.map(m => [m.id, m]));
     const verifiedUserSet = new Set(verifications.map(v => v.user_id));
 
+    const callerUser = c.get('user');
+    const callerId = callerUser?.sub || callerUser?.id;
+    const isCallerAdmin = callerUser?.role === 'ADMIN' || callerUser?.role === 'SUPER_ADMIN';
+    let unlockedUserIds = new Set<string>();
+    if (callerId && !isCallerAdmin && callerUser?.role === 'EMPLOYER') {
+      const unlocked = await prisma.saved_workers.findMany({
+        where: { employer_id: callerId },
+        select: { worker_id: true }
+      }).catch(() => []);
+      unlockedUserIds = new Set(unlocked.map(u => u.worker_id));
+    }
+
     const standbyWorkers = poolRows.map((row: any) => {
       const profile = profileMap.get(row.user_id);
       const meta = metaMap.get(row.user_id);
@@ -752,6 +768,7 @@ export const getStandbyPoolWorkers = async (c: Context) => {
 
       const rawPhone = meta?.phone_number || profile?.phone_number || '';
       const maskedPhone = rawPhone.length > 5 ? rawPhone.slice(0, 4) + ' ****' + rawPhone.slice(-2) : 'Contact Available';
+      const isUnlocked = isCallerAdmin || unlockedUserIds.has(row.user_id) || (callerId === row.user_id);
 
       return {
         id: row.id,
@@ -765,7 +782,7 @@ export const getStandbyPoolWorkers = async (c: Context) => {
         shiftPreference: row.shift_preference || 'DAY_SHIFT',
         experienceYears: profile?.experience_years || 2,
         trustScore: profile?.trust_score || 85,
-        phone: rawPhone,
+        phone: isUnlocked ? rawPhone : null,
         maskedPhone,
         isBiometricVerified: isVerified,
         createdAt: row.created_at

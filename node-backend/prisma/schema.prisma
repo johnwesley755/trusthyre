@@ -66,6 +66,7 @@ model job_applications {
   jobs                   jobs      @relation(fields: [job_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   interviews             interviews[]
   work_orders            work_orders[]
+  conversations          conversations[]
 
   @@unique([job_id, worker_id], map: "uq_job_applications_job_worker")
   @@index([job_id], map: "idx_job_applications_job_id")
@@ -145,6 +146,7 @@ model jobs {
   saved_jobs                saved_jobs[]
   interviews                interviews[]
   work_orders               work_orders[]
+  conversations             conversations[]
 
   @@index([employer_id], map: "idx_jobs_employer_id")
   @@index([status], map: "idx_jobs_status")
@@ -175,6 +177,7 @@ model interviews {
 
   job_applications job_applications @relation(fields: [application_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   jobs             jobs             @relation(fields: [job_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  conversation_messages conversation_messages[]
 
   @@index([application_id], map: "idx_interviews_app_id")
   @@index([employer_id], map: "idx_interviews_emp_id")
@@ -796,6 +799,8 @@ model work_orders {
   terms_versions        work_order_terms_versions[]
   shifts                shifts[]
   shift_attendances     shift_attendances[]
+  conversations         conversations[]
+  conversation_messages conversation_messages[]
 
   @@index([employer_id], map: "idx_work_orders_employer_id")
   @@index([worker_id], map: "idx_work_orders_worker_id")
@@ -1015,6 +1020,90 @@ model email_template_audit_logs {
 
   @@index([template_id, created_at], map: "idx_email_template_audit_tpl")
   @@index([actor_user_id, created_at], map: "idx_email_template_audit_actor")
+}
+
+model conversations {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  application_id    String?   @db.Uuid
+  work_order_id     String?   @db.Uuid
+  job_id            String    @db.Uuid
+  employer_user_id  String    @db.VarChar(255)
+  worker_user_id    String    @db.VarChar(255)
+  status            String    @default("OPEN") @db.VarChar(50)
+  last_message_at   DateTime? @db.Timestamptz(6)
+  created_at        DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  closed_at         DateTime? @db.Timestamptz(6)
+
+  job_applications  job_applications?           @relation(fields: [application_id], references: [id], onDelete: SetNull)
+  work_orders       work_orders?                @relation(fields: [work_order_id], references: [id], onDelete: SetNull)
+  jobs              jobs                        @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  participants      conversation_participants[]
+  messages          conversation_messages[]
+  reports           conversation_reports[]
+
+  @@unique([job_id, employer_user_id, worker_user_id], map: "uq_conversations_job_employer_worker")
+  @@index([employer_user_id, last_message_at(sort: Desc)], map: "idx_conversations_employer_last_msg")
+  @@index([worker_user_id, last_message_at(sort: Desc)], map: "idx_conversations_worker_last_msg")
+  @@index([job_id], map: "idx_conversations_job_id")
+  @@index([application_id], map: "idx_conversations_application_id")
+  @@index([work_order_id], map: "idx_conversations_work_order_id")
+}
+
+model conversation_participants {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversation_id      String    @db.Uuid
+  user_id              String    @db.VarChar(255)
+  role                 String    @db.VarChar(50)
+  last_read_at         DateTime? @db.Timestamptz(6)
+  last_read_message_id String?   @db.Uuid
+  muted_at             DateTime? @db.Timestamptz(6)
+  blocked_at           DateTime? @db.Timestamptz(6)
+  created_at           DateTime  @default(now()) @db.Timestamptz(6)
+
+  conversations        conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@unique([conversation_id, user_id], map: "uq_conversation_participant")
+  @@index([user_id], map: "idx_conversation_participants_user")
+}
+
+model conversation_messages {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversation_id    String    @db.Uuid
+  sender_user_id     String    @db.VarChar(255)
+  message_type       String    @default("TEXT") @db.VarChar(20)
+  body               String    @db.Text
+  client_message_id  String?   @db.VarChar(128)
+  work_order_id      String?   @db.Uuid
+  interview_id       String?   @db.Uuid
+  metadata           Json?     @db.JsonB
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  edited_at          DateTime? @db.Timestamptz(6)
+  deleted_at         DateTime? @db.Timestamptz(6)
+
+  conversations      conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  work_orders        work_orders?  @relation(fields: [work_order_id], references: [id], onDelete: SetNull)
+  interviews         interviews?   @relation(fields: [interview_id], references: [id], onDelete: SetNull)
+
+  @@unique([sender_user_id, client_message_id], map: "uq_sender_client_message_id")
+  @@index([conversation_id, created_at(sort: Desc)], map: "idx_conversation_messages_stream")
+  @@index([work_order_id], map: "idx_conversation_messages_work_order")
+  @@index([interview_id], map: "idx_conversation_messages_interview")
+}
+
+model conversation_reports {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversation_id   String    @db.Uuid
+  reporter_user_id  String    @db.VarChar(255)
+  reported_user_id  String    @db.VarChar(255)
+  reason            String    @db.VarChar(100)
+  notes             String?   @db.Text
+  status            String    @default("PENDING") @db.VarChar(50)
+  created_at        DateTime  @default(now()) @db.Timestamptz(6)
+
+  conversations     conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@index([conversation_id], map: "idx_conversation_reports_conv")
 }
 
 

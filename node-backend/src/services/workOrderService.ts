@@ -298,6 +298,13 @@ export class WorkOrderService {
           link: `/work-orders/${workOrder.id}`,
           data: { workOrderId: workOrder.id, orderNumber }
         }).catch(err => console.warn('[WorkOrderService] Notification error:', err.message));
+
+        WorkOrderService.postWorkOrderConversationEvent(
+          workOrder,
+          'SYSTEM',
+          `Work Order #${workOrder.order_number} (${workOrder.job_title}) was issued for ₹${workOrder.wage_amount}/${workOrder.wage_frequency.toLowerCase()}. Please review terms and digitally confirm.`,
+          'WORK_ORDER_SENT'
+        ).catch(() => {});
       }
 
       return workOrder;
@@ -368,6 +375,13 @@ export class WorkOrderService {
         link: `/work-orders/${order.id}`,
         data: { workOrderId: order.id, orderNumber: order.order_number }
       }).catch(err => console.warn('[WorkOrderService] Notification error:', err.message));
+
+      WorkOrderService.postWorkOrderConversationEvent(
+        updated,
+        'SYSTEM',
+        `Work Order #${updated.order_number} (${updated.job_title}) was issued for ₹${updated.wage_amount}/${updated.wage_frequency.toLowerCase()}. Please review terms and digitally confirm.`,
+        'WORK_ORDER_SENT'
+      ).catch(() => {});
 
       return updated;
     });
@@ -470,6 +484,22 @@ export class WorkOrderService {
         link: `/work-orders/${order.id}`,
         data: { workOrderId: order.id, orderNumber: order.order_number, action }
       }).catch(err => console.warn('[WorkOrderService] Notification error:', err.message));
+
+      // Post worker action to the conversation thread
+      let eventBody = `Work Order #${updated.order_number} terms accepted and digitally signed.`;
+      if (action === 'DECLINE') {
+        eventBody = `Work Order #${updated.order_number} was declined. Reason: ${notes || 'Terms not suitable'}`;
+      } else if (action === 'CLARIFY') {
+        eventBody = `Worker requested clarification on Work Order #${updated.order_number}: "${notes || 'Please review terms'}"`;
+      }
+
+      WorkOrderService.postWorkOrderConversationEvent(
+        updated,
+        workerUserId,
+        eventBody,
+        `WORK_ORDER_${eventType}`,
+        { notes: notes || undefined, action }
+      ).catch(() => {});
 
       return updated;
     });
@@ -990,5 +1020,73 @@ export class WorkOrderService {
       worker,
       employer
     };
+  }
+
+  /**
+   * Helper to post system events into the linked canonical conversation
+   */
+  public static async postWorkOrderConversationEvent(
+    order: {
+      id: string;
+      order_number: string;
+      job_id: string | null;
+      application_id: string | null;
+      employer_id: string;
+      worker_id: string;
+      job_title: string;
+      wage_amount: any;
+      wage_frequency: string;
+    },
+    senderUserId: string,
+    body: string,
+    event: string,
+    metadata?: Record<string, any>
+  ) {
+    try {
+      let conv = await prisma.conversations.findFirst({
+        where: {
+          OR: [
+            { work_order_id: order.id } as any,
+            ...(order.job_id ? [{
+              job_id: order.job_id,
+              employer_user_id: order.employer_id,
+              worker_user_id: order.worker_id
+            }] : []),
+            ...(order.application_id ? [{ application_id: order.application_id }] : [])
+          ]
+        } as any
+      });
+
+      if (conv) {
+        const convAny = conv as any;
+        if (!convAny.work_order_id) {
+          await prisma.conversations.update({
+            where: { id: conv.id },
+            data: { work_order_id: order.id } as any
+          });
+        }
+        await prisma.conversation_messages.create({
+          data: {
+            conversation_id: conv.id,
+            sender_user_id: senderUserId,
+            message_type: 'SYSTEM',
+            work_order_id: order.id,
+            body,
+            metadata: {
+              event,
+              workOrderId: order.id,
+              orderNumber: order.order_number,
+              ...metadata
+            }
+          } as any
+        });
+        await prisma.conversations.update({
+          where: { id: conv.id },
+          data: { last_message_at: new Date() }
+        });
+      }
+    } catch (err: any) {
+      console.warn('[WorkOrderService:postConversationEvent] Could not post event:', err?.message);
+    }
   }
 }

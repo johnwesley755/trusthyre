@@ -21,16 +21,33 @@ import { useUser } from '../../../providers/AuthContext';
 import { workOrderService, type WorkOrder } from '../../../services/workOrder.service';
 import { WorkOrderDetailModal } from '../components/WorkOrderDetailModal';
 import { AppLoader } from '../../../components/common/AppLoader';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { conversationService } from '../../../services/conversation.service';
 
 export default function WorkOrdersPage() {
   const { user } = useUser();
+  const navigate = useNavigate();
   const { id: routeOrderId } = useParams<{ id?: string }>();
   const isEmployer = user?.role === 'EMPLOYER';
 
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [selectedOrder, setSelectedOrder] = useState<WorkOrder | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [openingChatId, setOpeningChatId] = useState<string | null>(null);
+
+  const handleOpenChat = async (e: React.MouseEvent, orderId: string) => {
+    e.stopPropagation();
+    try {
+      setOpeningChatId(orderId);
+      const convo = await conversationService.getOrCreateByWorkOrder(orderId);
+      navigate(`/messages/${convo.id}`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to open conversation');
+    } finally {
+      setOpeningChatId(null);
+    }
+  };
 
   // Fetch Work Orders according to authenticated role
   const { data, isLoading, refetch } = useQuery({
@@ -203,9 +220,22 @@ export default function WorkOrdersPage() {
                     </span>
                   </div>
 
-                  <div className="inline-flex items-center gap-1 text-xs font-bold text-[#0f2f63] dark:text-sky-400 group-hover:underline">
-                    <span>View Agreement</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={openingChatId === order.id}
+                      onClick={(e) => handleOpenChat(e, order.id)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#e6e8ec] dark:border-zinc-700 bg-white dark:bg-[#121215] text-[#0f2f63] dark:text-sky-400 hover:bg-[#0f2f63]/5 text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                      title={isEmployer ? "Message Candidate" : "Message Employer"}
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>{openingChatId === order.id ? 'Opening...' : 'Message'}</span>
+                    </button>
+
+                    <div className="inline-flex items-center gap-1 text-xs font-bold text-[#0f2f63] dark:text-sky-400 group-hover:underline">
+                      <span>View</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
                   </div>
                 </div>
               </div>

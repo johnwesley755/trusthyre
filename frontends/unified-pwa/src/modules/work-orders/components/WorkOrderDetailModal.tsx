@@ -26,6 +26,8 @@ import { workOrderService, type WorkOrder } from '../../../services/workOrder.se
 import { SignatureCanvas } from '../../../components/common/SignatureCanvas';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { conversationService } from '../../../services/conversation.service';
 
 interface WorkOrderDetailModalProps {
   isOpen: boolean;
@@ -43,11 +45,26 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
   onStatusChange
 }) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOpeningChat, setIsOpeningChat] = useState(false);
   const [clarificationNotes, setClarificationNotes] = useState('');
   const [isClarifyOpen, setIsClarifyOpen] = useState(false);
   const [isSignOpen, setIsSignOpen] = useState(false);
   const [workerSignature, setWorkerSignature] = useState<string | null>(null);
+
+  const handleOpenChat = async () => {
+    try {
+      setIsOpeningChat(true);
+      const convo = await conversationService.getOrCreateByWorkOrder(workOrder.id);
+      onClose();
+      navigate(`/messages/${convo.id}`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Could not open conversation');
+    } finally {
+      setIsOpeningChat(false);
+    }
+  };
 
   const handleWorkerAction = async (action: 'ACCEPT' | 'DECLINE' | 'CLARIFY') => {
     try {
@@ -117,13 +134,24 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
       bodyClassName="p-5 sm:p-6 space-y-6 max-h-[75vh] overflow-y-auto font-['Onest',system-ui,sans-serif]"
       footer={
         <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-[#e6e8ec] dark:border-zinc-700 text-xs font-semibold text-[#717784] hover:text-[#0a0a0a] dark:hover:text-zinc-200 transition-colors cursor-pointer text-center"
-          >
-            Close
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-[#e6e8ec] dark:border-zinc-700 text-xs font-semibold text-[#717784] hover:text-[#0a0a0a] dark:hover:text-zinc-200 transition-colors cursor-pointer text-center"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              disabled={isOpeningChat}
+              onClick={handleOpenChat}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full border border-[#0f2f63]/30 dark:border-sky-500/30 text-[#0f2f63] dark:text-sky-400 hover:bg-[#0f2f63]/10 dark:hover:bg-sky-500/10 text-xs font-bold transition-all cursor-pointer whitespace-nowrap active:scale-95"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>{isOpeningChat ? 'Connecting...' : isEmployer ? 'Message Candidate' : 'Message Employer'}</span>
+            </button>
+          </div>
 
           {/* Role Action Controls */}
           {!isEmployer && workOrder.status === 'SENT' && (
