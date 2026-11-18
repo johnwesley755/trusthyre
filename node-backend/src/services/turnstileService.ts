@@ -24,8 +24,18 @@ export class TurnstileService {
   public static async verifyToken(token?: string, remoteIp?: string): Promise<{ success: boolean; message?: string }> {
     const secretKey = process.env.CF_TURNSTILE_SECRET_KEY || process.env.TURNSTILE_SECRET_KEY;
 
-    // Graceful fallback if Turnstile secret key is not configured in environment
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // In production, enforce secret configuration (fail-closed)
     if (!secretKey) {
+      if (isProduction) {
+        console.error('[TurnstileService] CRITICAL: Turnstile secret key is not configured in production environment.');
+        return {
+          success: false,
+          message: 'Security verification service is misconfigured. Request rejected.'
+        };
+      }
+      // Permit in local/test/CI environments
       return { success: true };
     }
 
@@ -54,7 +64,12 @@ export class TurnstileService {
 
       if (!response.ok) {
         console.error(`[TurnstileService] Verification endpoint returned HTTP ${response.status}`);
-        // Allow request on upstream Cloudflare outage to prevent service denial to users
+        if (isProduction) {
+          return {
+            success: false,
+            message: 'Upstream security verification service unavailable. Please retry.'
+          };
+        }
         return { success: true };
       }
 
@@ -71,7 +86,12 @@ export class TurnstileService {
       return { success: true };
     } catch (err) {
       console.error(`[TurnstileService] Error contacting Cloudflare verify API:`, err);
-      // Fail open on network errors to avoid locking out legitimate users if Cloudflare is unreachable
+      if (isProduction) {
+        return {
+          success: false,
+          message: 'Security verification network error. Please try again.'
+        };
+      }
       return { success: true };
     }
   }

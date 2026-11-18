@@ -25,6 +25,8 @@ import ResetPasswordPage from '../modules/auth/pages/ResetPasswordPage';
 import OnboardingPage from '../modules/profile/pages/OnboardingPage';
 import ProfilePage from '../modules/profile/pages/ProfilePage';
 import NotificationsPage from '../modules/dashboard/pages/NotificationsPage';
+import MessagesInboxPage from '../modules/messages/pages/MessagesInboxPage';
+import ConversationThreadPage from '../modules/messages/pages/ConversationThreadPage';
 import { SettingsPage } from '../modules/settings/pages/SettingsPage';
 import TermsPage from '../modules/landing/pages/TermsPage';
 import PrivacyPage from '../modules/landing/pages/PrivacyPage';
@@ -319,6 +321,14 @@ export const router = createBrowserRouter([
           {
             path: '/notifications',
             element: <NotificationsPage />,
+          },
+          {
+            path: '/messages',
+            element: <MessagesInboxPage />,
+          },
+          {
+            path: '/messages/:conversationId',
+            element: <ConversationThreadPage />,
           },
         ],
       },

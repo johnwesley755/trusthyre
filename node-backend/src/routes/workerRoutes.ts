@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import * as workerController from '../controllers/workerController';
-import { authenticateJWT, optionalAuth } from '../middlewares/auth';
+import { authenticateJWT, optionalAuth, requireWorker } from '../middlewares/auth';
 
 const router = new Hono();
 
@@ -16,8 +16,8 @@ router.get('/stats', workerController.getGlobalStats);
 
 // ⚡ Instant Spot Hire Standby Pool endpoints
 router.get('/standby-pool', optionalAuth, workerController.getStandbyPoolWorkers);
-router.post('/standby-pool', authenticateJWT, workerController.joinStandbyPool);
-router.delete('/standby-pool/me', authenticateJWT, workerController.leaveStandbyPool);
+router.post('/standby-pool', authenticateJWT, requireWorker, workerController.joinStandbyPool);
+router.delete('/standby-pool/me', authenticateJWT, requireWorker, workerController.leaveStandbyPool);
 
 // 📜 Digital Work History & Verified Shift Records
 router.get('/:id/work-history', optionalAuth, workerController.getWorkerWorkHistory);

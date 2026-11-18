@@ -36,6 +36,7 @@ import recommendationRoutes from './routes/recommendationRoutes';
 import workOrderRoutes from './routes/workOrderRoutes';
 import { shiftRoutes, attendanceRoutes } from './routes/shiftAttendanceRoutes';
 import referralRoutes from './routes/referralRoutes';
+import conversationRoutes from './routes/conversationRoutes';
 import { SitemapService } from './services/sitemapService';
 
 
@@ -206,6 +207,7 @@ app.route('/api/work-orders', workOrderRoutes);
 app.route('/api/shifts', shiftRoutes);
 app.route('/api/attendance', attendanceRoutes);
 app.route('/api/referrals', referralRoutes);
+app.route('/api/conversations', conversationRoutes);
 
 
 

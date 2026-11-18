@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { applicationService } from "../../../services/application.service";
 import { jobService } from "../../../services/job.service";
+import { conversationService } from "../../../services/conversation.service";
 import { queryKeys } from "../../../lib/queryKeys";
 import { useState, useMemo } from "react";
 import { useUser } from "../../../providers/AuthContext";
@@ -23,7 +24,8 @@ import {
   Building2,
   Sparkles,
   ExternalLink,
-  Star
+  Star,
+  MessageSquare
 } from "lucide-react";
 import { RatingModal } from "../../../components/common/RatingModal";
 import { DataTablePagination } from "../../../components/common/DataTablePagination";
@@ -490,6 +492,24 @@ export default function AppliedJobsPage() {
                     </span>
 
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            const convo = await conversationService.getOrCreateByApplication(app.id);
+                            navigate(`/messages/${convo.id}`);
+                          } catch (err: any) {
+                            toast.error(err?.response?.data?.message || 'Unable to open conversation');
+                          }
+                        }}
+                        className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-full text-xs font-semibold transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-2xs"
+                        title="Direct contextual chat with employer"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span>Message Employer</span>
+                      </button>
+
                       {isHired && ((job as any)?.employerId || (job as any)?.employer_id || (job as any)?.employerProfile?.userId) && (
                         <button
                           type="button"

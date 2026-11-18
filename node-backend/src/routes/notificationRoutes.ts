@@ -16,7 +16,26 @@ router.delete('/all', authenticateJWT, notificationController.deleteAllNotificat
 router.post('/fcm-token', authenticateJWT, fcmLimiter, notificationController.registerFcmToken);
 router.delete('/fcm-token', authenticateJWT, fcmLimiter, notificationController.unregisterFcmToken);
 router.post('/test-push', authenticateJWT, fcmLimiter, notificationController.testPushNotification);
-router.post('/trigger-digest', authenticateJWT, async (c) => {
+router.post('/trigger-digest', async (c) => {
+  const cronSecret = c.req.header('x-cron-secret');
+  const expectedSecret = process.env.INTERNAL_CRON_SECRET;
+  const isCronAuthorized = Boolean(expectedSecret && cronSecret && cronSecret === expectedSecret);
+
+  if (!isCronAuthorized) {
+    let isSuperAdmin = false;
+    try {
+      await authenticateJWT(c, async () => {});
+      const user = (c as any).get('user');
+      isSuperAdmin = user?.role === 'SUPER_ADMIN';
+    } catch {
+      isSuperAdmin = false;
+    }
+
+    if (!isSuperAdmin) {
+      return c.json({ success: false, message: 'Forbidden: Daily digest execution requires SUPER_ADMIN or authorized cron credentials.' }, 403);
+    }
+  }
+
   const { DailyDigestService } = await import('../services/dailyDigestService');
   const result = await DailyDigestService.sendDailyDigests();
   return c.json({ success: true, message: 'Daily digest evaluation complete', ...result });

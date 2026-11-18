@@ -32,12 +32,14 @@ import {
   Building2,
   BarChart3,
   Clock,
-  Mail
+  Mail,
+  MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation, SUPPORTED_LANGUAGES } from '../providers/TranslationContext';
 import { useTheme } from '../providers/ThemeContext';
 import { ThemeToggle } from '../components/common/ThemeToggle';
+import { useConversationUnreadCount } from '../services/conversation.service';
 
 export const AppTopNavbar = () => {
   const { user } = useUser();
@@ -49,6 +51,7 @@ export const AppTopNavbar = () => {
   const location = useLocation();
 
   const { unreadCount } = useAppNotifications();
+  const { data: conversationUnreadCount = 0 } = useConversationUnreadCount(Boolean(user));
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -172,6 +175,21 @@ export const AppTopNavbar = () => {
                   <span className="whitespace-nowrap">View Profile</span>
                 </Link>
               ) : null}
+
+              {/* Messages Center Button */}
+              <Link
+                to="/messages"
+                className="relative p-2 rounded-full text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-white bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 transition-colors cursor-pointer shrink-0"
+                aria-label="Messages"
+                title="Messages"
+              >
+                <MessageSquare className="w-4 h-4" />
+                {conversationUnreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white ring-2 ring-white dark:ring-black">
+                    {conversationUnreadCount > 99 ? '99+' : conversationUnreadCount}
+                  </span>
+                )}
+              </Link>
 
               {/* Notification Center */}
               <div className="relative shrink-0">
@@ -552,7 +570,25 @@ export const AppTopNavbar = () => {
                           </>
                         )}
 
-                        {/* COMMON LINKS: NOTIFICATIONS & SETTINGS */}
+                        {/* COMMON LINKS: MESSAGES, NOTIFICATIONS & SETTINGS */}
+                        <button
+                          onClick={() => {
+                            setIsProfileMenuOpen(false);
+                            navigate('/messages');
+                          }}
+                          className="w-full px-4 py-2.5 text-xs font-medium text-[#0a0a0a] dark:text-zinc-200 hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 flex items-center justify-between transition-colors cursor-pointer text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            <MessageSquare className="w-4 h-4 text-[#717784]" />
+                            <span>{t('Messages')}</span>
+                          </div>
+                          {conversationUnreadCount > 0 && (
+                            <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold rounded-full border border-emerald-200 dark:border-emerald-800">
+                              {conversationUnreadCount}
+                            </span>
+                          )}
+                        </button>
+
                         <button
                           onClick={() => {
                             setIsProfileMenuOpen(false);

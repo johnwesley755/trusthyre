@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { applicationService, type JobApplication } from '../../../services/application.service';
+import { conversationService } from '../../../services/conversation.service';
 import { jobService } from '../../../services/job.service';
 import { workerService } from '../../../services/worker.service';
 import { queryKeys } from '../../../lib/queryKeys';
@@ -835,6 +836,23 @@ export default function ApplicationManagementPage() {
 
                       {/* Action Buttons */}
                       <div className="flex flex-wrap items-center gap-2 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-[#e6e8ec] dark:border-zinc-800">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const convo = await conversationService.getOrCreateByApplication(app.id);
+                              navigate(`/messages/${convo.id}`);
+                            } catch (err: any) {
+                              alert(err?.response?.data?.message || 'Unable to open conversation');
+                            }
+                          }}
+                          className="px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 active:scale-95 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 rounded-full text-xs font-bold uppercase transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+                          title="Direct Contextual Chat with Candidate"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                          <span>Message</span>
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => {
