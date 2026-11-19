@@ -643,11 +643,11 @@ export default function LandingPage() {
             </nav>
 
             {/* Center Brand with Official White Logo on Dark Hero Background */}
-            <Link to="/" className="flex items-center justify-center gap-2 shrink-0 px-2 lg:px-6 group cursor-pointer py-1" aria-label="TrustHyre Home">
+            <Link to="/" className="flex items-center justify-center gap-2 shrink-0 px-1 sm:px-2 lg:px-6 group cursor-pointer py-1" aria-label="TrustHyre Home">
               <img 
                 src={trustHyreLightLogo} 
                 alt="TrustHyre" 
-                className="h-8 sm:h-9 md:h-12 lg:h-14 w-auto object-contain block select-none drop-shadow-lg group-hover:scale-105 transition-all duration-300" 
+                className="h-10 sm:h-11 md:h-12 lg:h-14 w-auto object-contain block select-none drop-shadow-lg group-hover:scale-105 transition-all duration-300" 
               />
             </Link>
 
@@ -688,8 +688,8 @@ export default function LandingPage() {
                 </Link>
               )}
 
-              {/* Language Switcher Pill (Desktop & Tablet) */}
-              <div className="hidden md:block relative shrink-0">
+              {/* Language Switcher Pill (Desktop Only - on Mobile/Tablet it is inside the Drawer Menu) */}
+              <div className="hidden lg:block relative shrink-0">
                 <Dropdown
                   variant="pill"
                   size="sm"
@@ -1312,28 +1312,28 @@ export default function LandingPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-semibold text-[#717784] dark:text-zinc-400 mr-1">Popular Topics:</span>
                 <Link
-                  to="/blog?category=hiring-guides"
+                  to="/blog/category/hiring-guides"
                   className="px-3 py-1 rounded-full text-xs font-medium bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                 >
                   Hiring Blue-Collar Crew
                 </Link>
                 <Link
-                  to="/blog?category=salary-benchmarks"
+                  to="/blog/category/salary-benchmarks"
                   className="px-3 py-1 rounded-full text-xs font-medium bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                 >
                   Wage & Salary Benchmarks
                 </Link>
                 <Link
-                  to="/blog?category=verification-standards"
+                  to="/blog/category/trade-jobs"
                   className="px-3 py-1 rounded-full text-xs font-medium bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                 >
-                  Government ID Verification
+                  Trade Career Guides
                 </Link>
                 <Link
-                  to="/blog?category=career-guides"
-                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-[#f4f4f4] text-[#0a0a0a] border border-[#e6e8ec] transition-colors"
+                  to="/blog/category/logistics-operations"
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-white dark:bg-[#121215] hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-[#e6e8ec] dark:border-zinc-800 transition-colors"
                 >
-                  Worker Career & Rights
+                  Logistics & Warehousing
                 </Link>
               </div>
 
@@ -1412,7 +1412,7 @@ export default function LandingPage() {
                 <ul className="space-y-3 text-sm text-white/80">
                   <li><Link to="/find-workers" className="hover:text-white transition-colors">{t("Browse Candidates", "Browse Candidates")}</Link></li>
                   <li><Link to="/post-job" className="hover:text-white transition-colors">{t("Post a Job", "Post a Job")}</Link></li>
-                  <li><Link to="/blog?category=hiring-guides" className="hover:text-white transition-colors">{t("Hiring Articles", "Hiring Articles")}</Link></li>
+                  <li><Link to="/blog/category/hiring-guides" className="hover:text-white transition-colors">{t("Hiring Articles", "Hiring Articles")}</Link></li>
                 </ul>
               </div>
 
@@ -1424,7 +1424,7 @@ export default function LandingPage() {
                 <ul className="space-y-3 text-sm text-white/80">
                   <li><Link to="/search" className="hover:text-white transition-colors">{t("Find Jobs", "Find Jobs")}</Link></li>
                   <li><Link to="/sign-up?role=worker" className="hover:text-white transition-colors">{t("Worker Registration", "Worker Registration")}</Link></li>
-                  <li><Link to="/blog?category=career-guides" className="hover:text-white transition-colors">{t("Career Guides", "Career Guides")}</Link></li>
+                  <li><Link to="/blog/category/trade-jobs" className="hover:text-white transition-colors">{t("Career Guides", "Career Guides")}</Link></li>
                 </ul>
               </div>
 
@@ -1435,7 +1435,7 @@ export default function LandingPage() {
                 </h4>
                 <ul className="space-y-3 text-sm text-white/80">
                   <li><Link to="/blog" className="hover:text-white transition-colors">{t("Blog & All Articles", "Blog & All Articles")}</Link></li>
-                  <li><Link to="/blog?category=salary-benchmarks" className="hover:text-white transition-colors">{t("Salary Benchmarks", "Salary Benchmarks")}</Link></li>
+                  <li><Link to="/blog/category/salary-benchmarks" className="hover:text-white transition-colors">{t("Salary Benchmarks", "Salary Benchmarks")}</Link></li>
                   <li><Link to="/terms" className="hover:text-white transition-colors">{t("Terms of Service", "Terms of Service")}</Link></li>
                   <li><Link to="/privacy" className="hover:text-white transition-colors">{t("Privacy Policy", "Privacy Policy")}</Link></li>
                 </ul>

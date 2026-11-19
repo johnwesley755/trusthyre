@@ -447,7 +447,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                 </div>
 
                 {/* Scrollable Drawer Body */}
-                <div className="flex-1 overflow-y-auto overscroll-contain py-1 text-[#0a0a0a] dark:text-zinc-100">
+                <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y py-1 text-[#0a0a0a] dark:text-zinc-100">
                   {/* Regional Language Quick-Switch Bar */}
                   {languageSelector}
 

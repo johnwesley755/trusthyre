@@ -104,14 +104,16 @@ export const BlogListingPage: React.FC = () => {
 
   const canonicalPath = categorySlug
     ? `/blog/category/${categorySlug}`
-    : `/blog${selectedCategory ? `?category=${selectedCategory}` : ''}`;
+    : (selectedCategory ? `/blog/category/${selectedCategory}` : '/blog');
+
+  const activeCategoryName = categorySlug || selectedCategory;
 
   const breadcrumbsJsonLd = buildBreadcrumbJsonLd([
     { name: 'Home', path: '/' },
     { name: 'Blog', path: '/blog' },
-    ...(categorySlug
-      ? [{ name: categorySlug, path: `/blog/category/${categorySlug}` }]
-      : (selectedCategory ? [{ name: selectedCategory, path: `/blog?category=${selectedCategory}` }] : [])
+    ...(activeCategoryName
+      ? [{ name: activeCategoryName, path: `/blog/category/${activeCategoryName}` }]
+      : []
     ),
   ]);
 

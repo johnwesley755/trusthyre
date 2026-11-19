@@ -137,6 +137,33 @@ seoRouter.get('/prerender', async (c) => {
       const imageUrl = post.cover_image_url || `${BASE_DOMAIN}/logo.png`;
       const pubDate = post.published_at ? new Date(post.published_at).toISOString() : new Date().toISOString();
       const modDate = post.updated_at ? new Date(post.updated_at).toISOString() : pubDate;
+      const wordCount = (post.content || '').split(/\s+/).filter(Boolean).length;
+
+      // Extract FAQs for Schema.org FAQPage structured data
+      const faqs = extractFaqsFromMarkdown(post.content || '');
+      const faqJsonLd = faqs.length > 0 ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map(f => ({
+          '@type': 'Question',
+          name: f.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: f.answer,
+          },
+        })),
+      } : null;
+
+      const breadcrumbJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_DOMAIN },
+          { '@type': 'ListItem', position: 2, name: 'Blog', item: `${BASE_DOMAIN}/blog` },
+          ...(post.category ? [{ '@type': 'ListItem', position: 3, name: post.category.name, item: `${BASE_DOMAIN}/blog/category/${post.category.slug}` }] : []),
+          { '@type': 'ListItem', position: post.category ? 4 : 3, name: post.title, item: canonical },
+        ],
+      };
 
       const articleJsonLd = {
         '@context': 'https://schema.org',
@@ -146,6 +173,8 @@ seoRouter.get('/prerender', async (c) => {
         image: [imageUrl],
         datePublished: pubDate,
         dateModified: modDate,
+        wordCount: wordCount,
+        inLanguage: 'en-IN',
         mainEntityOfPage: {
           '@type': 'WebPage',
           '@id': canonical,
@@ -153,6 +182,7 @@ seoRouter.get('/prerender', async (c) => {
         author: {
           '@type': 'Person',
           name: post.author_name || 'TrustHyre Editorial Team',
+          jobTitle: post.author_role || 'Industry Specialist',
         },
         publisher: {
           '@type': 'Organization',
@@ -164,6 +194,54 @@ seoRouter.get('/prerender', async (c) => {
           },
         },
       };
+
+      // Fetch related articles from the same category for silo linking
+      let relatedPosts: any[] = [];
+      try {
+        if (post.category_id) {
+          relatedPosts = await (prisma as any).blog_posts.findMany({
+            where: {
+              category_id: post.category_id,
+              id: { not: post.id },
+              status: 'PUBLISHED',
+              no_index: false,
+            },
+            select: {
+              slug: true,
+              title: true,
+              excerpt: true,
+              read_time_minutes: true,
+            },
+            take: 3,
+            orderBy: { published_at: 'desc' },
+          });
+        }
+      } catch (err) {
+        console.warn('[prerender /blog/:slug] Related posts query failed:', err);
+      }
+
+      const relatedPostsHtml = relatedPosts.length > 0 ? `
+        <section style="margin-top: 48px; border-top: 2px solid #e2e8f0; padding-top: 32px;">
+          <h3 style="font-size: 1.3rem; color: #0f2f63; margin-bottom: 20px; font-weight: 700;">
+            Related Guides &amp; Workforce Benchmarks
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+            ${relatedPosts.map(rp => `
+              <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; background: #f8fafc;">
+                <h4 style="font-size: 1rem; margin: 0 0 8px 0;">
+                  <a href="${BASE_DOMAIN}/blog/${rp.slug}" style="color: #0f2f63; text-decoration: underline; font-weight: 600;">
+                    ${escapeHtml(rp.title)}
+                  </a>
+                </h4>
+                <p style="font-size: 0.85rem; color: #64748b; margin: 0 0 8px 0; line-height: 1.4;">
+                  ${escapeHtml(rp.excerpt ? rp.excerpt.slice(0, 110) + '...' : '')}
+                </p>
+                <span style="font-size: 0.75rem; color: #0284c7; font-weight: 600;">⚡ ${rp.read_time_minutes || 5} min read</span>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      ` : '';
 
       const html = `<!DOCTYPE html>
 <html lang="en">
@@ -195,29 +273,52 @@ seoRouter.get('/prerender', async (c) => {
 
   <!-- Schema.org JSON-LD -->
   <script type="application/ld+json">
+${JSON.stringify(breadcrumbJsonLd, null, 2)}
+  </script>
+  <script type="application/ld+json">
 ${JSON.stringify(articleJsonLd, null, 2)}
   </script>
+  ${faqJsonLd ? `
+  <script type="application/ld+json">
+${JSON.stringify(faqJsonLd, null, 2)}
+  </script>
+  ` : ''}
 </head>
-<body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 24px; color: #111;">
-  <nav style="margin-bottom: 24px; border-bottom: 1px solid #eee; padding-bottom: 12px;">
+<body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 860px; margin: 0 auto; padding: 24px; color: #111; background: #ffffff;">
+  <nav style="margin-bottom: 24px; border-bottom: 1px solid #eee; padding-bottom: 12px; font-size: 0.9rem;">
     <a href="${BASE_DOMAIN}/" style="text-decoration: none; font-weight: bold; color: #0f2f63;">TrustHyre</a> &gt; 
     <a href="${BASE_DOMAIN}/blog" style="text-decoration: none; color: #555;">Blog</a>
     ${post.category ? `&gt; <a href="${BASE_DOMAIN}/blog/category/${post.category.slug}" style="text-decoration: none; color: #555;">${escapeHtml(post.category.name)}</a>` : ''}
+    &gt; <span style="color: #64748b;">${escapeHtml(post.title)}</span>
   </nav>
   <article>
     <header style="margin-bottom: 24px;">
-      <h1 style="font-size: 2rem; color: #0a0a0a; margin-bottom: 8px;">${escapeHtml(post.title)}</h1>
-      <p style="color: #666; font-size: 0.9rem;">
-        By <strong>${escapeHtml(post.author_name || 'TrustHyre Team')}</strong> • Published on ${new Date(pubDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+      <h1 style="font-size: 2.2rem; color: #0a0a0a; margin-bottom: 12px; line-height: 1.25; font-weight: 800;">${escapeHtml(post.title)}</h1>
+      <p style="color: #64748b; font-size: 0.95rem;">
+        By <strong>${escapeHtml(post.author_name || 'TrustHyre Team')}</strong> (${escapeHtml(post.author_role || 'Industry Specialist')}) • Published on ${new Date(pubDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })} • ⏱️ ${post.read_time_minutes || 6} min read (${wordCount} words)
       </p>
     </header>
-    ${post.cover_image_url ? `<img src="${post.cover_image_url}" alt="${escapeHtml(post.title)}" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 12px; margin-bottom: 24px;">` : ''}
-    <div style="font-size: 1.05rem; color: #222;">
+    ${post.cover_image_url ? `<img src="${post.cover_image_url}" alt="${escapeHtml(post.title)}" style="width: 100%; max-height: 420px; object-fit: cover; border-radius: 12px; margin-bottom: 28px;">` : ''}
+    <div style="font-size: 1.05rem; color: #334155; line-height: 1.7;">
       ${renderMarkdownPreview(post.content || post.excerpt)}
     </div>
   </article>
-  <footer style="margin-top: 48px; border-top: 1px solid #eee; padding-top: 24px;">
-    <p>Discover verified blue-collar opportunities and hire top skilled talent at <a href="${BASE_DOMAIN}/">TrustHyre.com</a>.</p>
+
+  <!-- Job Hub Discovery Banner -->
+  <div style="margin-top: 40px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+    <h3 style="margin: 0; color: #1e3a8a; font-size: 1.15rem; font-weight: 700;">Find Verified Trade &amp; Blue-Collar Opportunities</h3>
+    <p style="margin: 0; color: #1e40af; font-size: 0.95rem;">Looking for verified jobs or pre-screened specialists? TrustHyre connects contractors, facility managers, and enterprise employers with audited blue-collar specialists.</p>
+    <div style="margin-top: 8px;">
+      <a href="${BASE_DOMAIN}/search" style="display: inline-block; background: #0f2f63; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; margin-right: 12px;">Browse Jobs</a>
+      <a href="${BASE_DOMAIN}/find-workers" style="display: inline-block; background: #ffffff; color: #0f2f63; border: 1px solid #0f2f63; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Hire Workers</a>
+    </div>
+  </div>
+
+  ${relatedPostsHtml}
+
+  <footer style="margin-top: 48px; border-top: 1px solid #eee; padding-top: 24px; font-size: 0.9rem; color: #64748b;">
+    <p>Discover verified blue-collar opportunities and hire top skilled talent at <a href="${BASE_DOMAIN}/" style="color: #0f2f63; text-decoration: underline;">TrustHyre.com</a>.</p>
+    <p><a href="${BASE_DOMAIN}/blog">All Blog Articles</a> • <a href="${BASE_DOMAIN}/blog/category/salary-benchmarks">Wage Benchmarks</a> • <a href="${BASE_DOMAIN}/blog/category/hiring-guides">Hiring Playbooks</a> • <a href="${BASE_DOMAIN}/blog/category/trade-jobs">Trade Jobs</a></p>
   </footer>
 </body>
 </html>`;
@@ -983,27 +1084,36 @@ ${JSON.stringify(jobPostingJsonLd, null, 2)}
     }
 
     let catPosts: any[] = [];
+    let allCategories: any[] = [];
 
     try {
-      catPosts = await (prisma as any).blog_posts.findMany({
-        where: {
-          status: 'PUBLISHED',
-          no_index: false,
-          published_at: { not: null },
-          category_id: category.id,
-        },
-        select: {
-          slug: true,
-          title: true,
-          excerpt: true,
-          published_at: true,
-          cover_image_url: true,
-        },
-        orderBy: { published_at: 'desc' },
-        take: 20,
-      });
+      [catPosts, allCategories] = await Promise.all([
+        (prisma as any).blog_posts.findMany({
+          where: {
+            status: 'PUBLISHED',
+            no_index: false,
+            published_at: { not: null },
+            category_id: category.id,
+          },
+          select: {
+            slug: true,
+            title: true,
+            excerpt: true,
+            published_at: true,
+            read_time_minutes: true,
+            cover_image_url: true,
+            author_name: true,
+          },
+          orderBy: { published_at: 'desc' },
+          take: 30,
+        }),
+        (prisma as any).blog_categories.findMany({
+          select: { slug: true, name: true, color: true },
+          orderBy: { sort_order: 'asc' },
+        }),
+      ]);
     } catch (err) {
-      console.error('[prerender /blog/category] Posts query failed:', err);
+      console.error('[prerender /blog/category] Data query failed:', err);
       return c.text('Service temporarily unavailable', 503, {
         'Content-Type': 'text/plain; charset=utf-8',
         'Retry-After': '300',
@@ -1011,8 +1121,8 @@ ${JSON.stringify(jobPostingJsonLd, null, 2)}
     }
 
     const canonical = `${BASE_DOMAIN}/blog/category/${categorySlug}`;
-    const pageTitle = `${category.name} | Hiring Guides & Workforce Insights | TrustHyre`;
-    const pageDesc = `Browse ${category.name} articles and market hiring guides on TrustHyre. Verified wage benchmarks and trade recruitment strategies.`;
+    const pageTitle = `${category.name} | Hiring Guides & Workforce Benchmarks | TrustHyre`;
+    const pageDesc = category.description || `Browse ${category.name} articles and market hiring guides on TrustHyre. Verified wage benchmarks and trade recruitment strategies.`;
 
     const breadcrumbJsonLd = {
       '@context': 'https://schema.org',
@@ -1024,16 +1134,46 @@ ${JSON.stringify(jobPostingJsonLd, null, 2)}
       ],
     };
 
+    const collectionJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: pageTitle,
+      description: pageDesc,
+      url: canonical,
+      hasPart: catPosts.map((p: any) => ({
+        '@type': 'BlogPosting',
+        headline: p.title,
+        description: p.excerpt,
+        url: `${BASE_DOMAIN}/blog/${p.slug}`,
+      })),
+    };
+
+    const categoryNavPills = allCategories.map((c: any) => {
+      const isCurrent = c.slug === categorySlug;
+      return `<a href="${BASE_DOMAIN}/blog/category/${c.slug}" style="display: inline-block; padding: 6px 14px; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; text-decoration: none; margin: 4px; ${
+        isCurrent
+          ? 'background: #0f2f63; color: #ffffff;'
+          : 'background: #e2e8f0; color: #334155;'
+      }">${escapeHtml(c.name)}</a>`;
+    }).join('');
+
     const postListHtml = catPosts.map((p: any) => `
-      <article style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 16px; background: #fff;">
-        <h2 style="font-size: 1.15rem; margin: 0 0 6px 0;">
-          <a href="${BASE_DOMAIN}/blog/${p.slug}" style="color: #0f2f63; text-decoration: underline;">
+      <article style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h2 style="font-size: 1.25rem; margin: 0 0 8px 0; line-height: 1.35;">
+          <a href="${BASE_DOMAIN}/blog/${p.slug}" style="color: #0f2f63; text-decoration: underline; font-weight: 700;">
             ${escapeHtml(p.title)}
           </a>
         </h2>
-        <p style="color: #64748b; font-size: 0.9rem; margin: 0;">
+        <p style="color: #64748b; font-size: 0.95rem; margin: 0 0 12px 0; line-height: 1.5;">
           ${escapeHtml(p.excerpt || '')}
         </p>
+        <div style="font-size: 0.8rem; color: #94a3b8; display: flex; gap: 12px; align-items: center;">
+          <span>By ${escapeHtml(p.author_name || 'TrustHyre Team')}</span>
+          <span>•</span>
+          <span>${p.published_at ? new Date(p.published_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recently'}</span>
+          <span>•</span>
+          <span style="color: #0284c7; font-weight: 600;">⏱️ ${p.read_time_minutes || 5} min read</span>
+        </div>
       </article>
     `).join('\n');
 
@@ -1052,22 +1192,41 @@ ${JSON.stringify(jobPostingJsonLd, null, 2)}
   <script type="application/ld+json">
 ${JSON.stringify(breadcrumbJsonLd, null, 2)}
   </script>
+  <script type="application/ld+json">
+${JSON.stringify(collectionJsonLd, null, 2)}
+  </script>
 </head>
 <body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 24px; color: #0a0a0a; background: #f8fafc;">
   <nav style="margin-bottom: 24px; border-bottom: 1px solid #cbd5e1; padding-bottom: 12px; font-size: 0.9rem;">
-    <a href="${BASE_DOMAIN}/" style="color: #0f2f63; text-decoration: none;">TrustHyre</a> &gt; 
+    <a href="${BASE_DOMAIN}/" style="color: #0f2f63; text-decoration: none; font-weight: bold;">TrustHyre</a> &gt; 
     <a href="${BASE_DOMAIN}/blog" style="color: #0f2f63; text-decoration: none;">Blog</a> &gt; 
     <span style="color: #64748b;">${escapeHtml(category.name)}</span>
   </nav>
-  <header style="margin-bottom: 24px;">
-    <h1 style="color: #0f2f63; font-size: 1.75rem; margin: 0 0 8px 0;">${escapeHtml(category.name)}</h1>
-    <p style="color: #64748b; margin: 0;">${escapeHtml(pageDesc)}</p>
+
+  <header style="margin-bottom: 28px;">
+    <h1 style="color: #0f2f63; font-size: 2rem; margin: 0 0 10px 0; font-weight: 800;">${escapeHtml(category.name)}</h1>
+    <p style="color: #475569; margin: 0 0 20px 0; font-size: 1.05rem; line-height: 1.6;">${escapeHtml(pageDesc)}</p>
+    
+    <!-- Category Switcher Nav -->
+    <div style="margin-top: 16px; padding: 12px 0; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+      <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 8px;">Explore All Categories:</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+        <a href="${BASE_DOMAIN}/blog" style="display: inline-block; padding: 6px 14px; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; text-decoration: none; margin: 4px; background: #e2e8f0; color: #334155;">All Articles</a>
+        ${categoryNavPills}
+      </div>
+    </div>
   </header>
+
   <main>
+    <div style="margin-bottom: 16px; font-size: 0.9rem; color: #64748b; font-weight: 600;">
+      Showing ${catPosts.length} published guides &amp; reports:
+    </div>
     ${catPosts.length > 0 ? postListHtml : '<p style="color: #64748b;">No articles published yet in this category.</p>'}
   </main>
-  <footer style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #cbd5e1; color: #64748b; font-size: 0.85rem;">
-    <a href="${BASE_DOMAIN}/">Home</a> • <a href="${BASE_DOMAIN}/blog">Blog</a> • <a href="${BASE_DOMAIN}/search">Search Jobs</a>
+
+  <footer style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #cbd5e1; color: #64748b; font-size: 0.9rem;">
+    <p><a href="${BASE_DOMAIN}/" style="color: #0f2f63;">TrustHyre Home</a> • <a href="${BASE_DOMAIN}/blog" style="color: #0f2f63;">Blog &amp; Knowledge Base</a> • <a href="${BASE_DOMAIN}/search" style="color: #0f2f63;">Find Jobs</a> • <a href="${BASE_DOMAIN}/find-workers" style="color: #0f2f63;">Hire Workers</a></p>
+    <p>© ${new Date().getFullYear()} TrustHyre. Verified Blue-Collar &amp; Skilled Workforce Platform.</p>
   </footer>
 </body>
 </html>`;
@@ -1197,20 +1356,156 @@ function escapeHtml(unsafe: string): string {
     .replace(/'/g, '&#039;');
 }
 
-function renderMarkdownPreview(markdown: string): string {
-  return String(markdown || '')
-    .split('\n\n')
-    .map(p => {
-      const trimmed = p.trim();
-      if (trimmed.startsWith('# ')) return `<h1 style="font-size: 1.6rem; margin-top: 24px;">${escapeHtml(trimmed.slice(2))}</h1>`;
-      if (trimmed.startsWith('## ')) return `<h2 style="font-size: 1.3rem; margin-top: 20px;">${escapeHtml(trimmed.slice(3))}</h2>`;
-      if (trimmed.startsWith('### ')) return `<h3 style="font-size: 1.1rem; margin-top: 16px;">${escapeHtml(trimmed.slice(4))}</h3>`;
-      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-        const items = trimmed.split('\n').map(li => `<li>${escapeHtml(li.replace(/^[-*]\s*/, ''))}</li>`).join('');
-        return `<ul>${items}</ul>`;
-      }
-      return `<p>${escapeHtml(trimmed)}</p>`;
+function formatInlineMarkdown(text: string): string {
+  let out = escapeHtml(text);
+  // Inline code: `code`
+  out = out.replace(/`([^`]+)`/g, '<code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; font-family: monospace;">$1</code>');
+  // Bold: **text**
+  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  // Italics: *text*
+  out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  // Markdown links: [text](url)
+  out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label, href) => {
+    const cleanHref = href.replace(/&amp;/g, '&');
+    return `<a href="${cleanHref}" style="color: #0f2f63; text-decoration: underline; font-weight: 500;">${label}</a>`;
+  });
+  return out;
+}
+
+function renderMarkdownTable(tableBlock: string): string {
+  const rows = tableBlock.trim().split('\n').map(r => r.trim()).filter(Boolean);
+  if (rows.length < 2) return '';
+
+  const parseCells = (row: string) => {
+    const trimmed = row.replace(/^\|\s*/, '').replace(/\s*\|$/, '');
+    return trimmed.split('|').map(c => c.trim());
+  };
+
+  const headers = parseCells(rows[0]);
+  const dataRows = rows.slice(2).map(parseCells);
+
+  const theadHtml = `<thead><tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">${headers
+    .map(h => `<th style="padding: 12px 14px; text-align: left; font-weight: 700; color: #0f2f63; border: 1px solid #e2e8f0;">${formatInlineMarkdown(h)}</th>`)
+    .join('')}</tr></thead>`;
+
+  const tbodyHtml = `<tbody>${dataRows
+    .map((cells, idx) => {
+      const bg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+      return `<tr style="background: ${bg}; border-bottom: 1px solid #e2e8f0;">${cells
+        .map(c => `<td style="padding: 10px 14px; color: #334155; border: 1px solid #e2e8f0; vertical-align: top;">${formatInlineMarkdown(c)}</td>`)
+        .join('')}</tr>`;
     })
-    .join('');
+    .join('')}</tbody>`;
+
+  return `<div style="overflow-x: auto; margin: 24px 0;"><table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0; font-size: 0.95rem; line-height: 1.5;">${theadHtml}${tbodyHtml}</table></div>`;
+}
+
+function extractFaqsFromMarkdown(markdown: string): Array<{ question: string; answer: string }> {
+  const faqs: Array<{ question: string; answer: string }> = [];
+  const lines = markdown.split('\n');
+  let currentQ = '';
+  let currentA: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const qMatch = line.match(/^###\s*(?:Q\d*[:.]?|FAQ\s*\d*[:.]?)\s*(.+)$/i);
+    if (qMatch) {
+      if (currentQ && currentA.length > 0) {
+        faqs.push({ question: currentQ.trim(), answer: currentA.join(' ').trim() });
+      }
+      currentQ = qMatch[1].trim();
+      currentA = [];
+    } else if (currentQ) {
+      if (line.startsWith('## ') || line.startsWith('### ')) {
+        faqs.push({ question: currentQ.trim(), answer: currentA.join(' ').trim() });
+        currentQ = '';
+        currentA = [];
+      } else if (line.length > 0 && !line.startsWith('---')) {
+        currentA.push(line);
+      }
+    }
+  }
+
+  if (currentQ && currentA.length > 0) {
+    faqs.push({ question: currentQ.trim(), answer: currentA.join(' ').trim() });
+  }
+
+  return faqs;
+}
+
+function renderMarkdownPreview(markdown: string): string {
+  const blocks = String(markdown || '').split(/\n\s*\n/);
+  
+  return blocks
+    .map(block => {
+      const trimmed = block.trim();
+      if (!trimmed) return '';
+
+      // Markdown Table: starts with | and has at least one newline with |
+      if (trimmed.startsWith('|') && trimmed.includes('\n|')) {
+        return renderMarkdownTable(trimmed);
+      }
+
+      // Code block
+      if (trimmed.startsWith('```')) {
+        const codeContent = trimmed.replace(/^```[a-z]*\n?/, '').replace(/\n?```$/, '');
+        return `<pre style="background: #0f172a; color: #f8fafc; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.9rem; line-height: 1.4;"><code>${escapeHtml(codeContent)}</code></pre>`;
+      }
+
+      // Horizontal rule
+      if (trimmed === '---' || trimmed === '***') {
+        return '<hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0;" />';
+      }
+
+      // Headings
+      if (trimmed.startsWith('# ')) {
+        return `<h1 style="font-size: 1.75rem; color: #0a0a0a; margin: 32px 0 16px 0; font-weight: 800; line-height: 1.25;">${formatInlineMarkdown(trimmed.slice(2))}</h1>`;
+      }
+      if (trimmed.startsWith('## ')) {
+        return `<h2 style="font-size: 1.4rem; color: #0f2f63; margin: 28px 0 12px 0; font-weight: 700; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">${formatInlineMarkdown(trimmed.slice(3))}</h2>`;
+      }
+      if (trimmed.startsWith('### ')) {
+        return `<h3 style="font-size: 1.15rem; color: #1e293b; margin: 22px 0 8px 0; font-weight: 700;">${formatInlineMarkdown(trimmed.slice(4))}</h3>`;
+      }
+      if (trimmed.startsWith('#### ')) {
+        return `<h4 style="font-size: 1.02rem; color: #334155; margin: 18px 0 6px 0; font-weight: 600;">${formatInlineMarkdown(trimmed.slice(5))}</h4>`;
+      }
+
+      // Blockquote
+      if (trimmed.startsWith('> ')) {
+        const quoteText = trimmed.split('\n').map(l => l.replace(/^>\s*/, '')).join(' ');
+        return `<blockquote style="border-left: 4px solid #0f2f63; padding: 12px 18px; margin: 20px 0; background: #f8fafc; color: #475569; font-style: italic; border-radius: 0 8px 8px 0;">${formatInlineMarkdown(quoteText)}</blockquote>`;
+      }
+
+      // Checklist (- [ ] or 1. [ ])
+      if (/^[-*]\s*\[[ xX]\]/m.test(trimmed) || /^\d+\.\s*\[[ xX]\]/m.test(trimmed)) {
+        const items = trimmed.split('\n').map(line => {
+          const isChecked = /\[[xX]\]/.test(line);
+          const cleanText = line.replace(/^[-*]\s*\[[ xX]\]\s*/, '').replace(/^\d+\.\s*\[[ xX]\]\s*/, '');
+          const mark = isChecked ? '☑ ' : '☐ ';
+          return `<li style="margin: 6px 0; list-style-type: none; display: flex; align-items: flex-start; gap: 8px;">
+            <span style="color: ${isChecked ? '#10b981' : '#64748b'}; font-weight: bold;">${mark}</span>
+            <span>${formatInlineMarkdown(cleanText)}</span>
+          </li>`;
+        }).join('');
+        return `<ul style="padding-left: 0; margin: 16px 0;">${items}</ul>`;
+      }
+
+      // Unordered list
+      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        const items = trimmed.split('\n').map(li => `<li style="margin: 6px 0;">${formatInlineMarkdown(li.replace(/^[-*]\s*/, ''))}</li>`).join('');
+        return `<ul style="padding-left: 24px; margin: 16px 0; color: #334155;">${items}</ul>`;
+      }
+
+      // Ordered list
+      if (/^\d+\.\s/.test(trimmed)) {
+        const items = trimmed.split('\n').map(li => `<li style="margin: 6px 0;">${formatInlineMarkdown(li.replace(/^\d+\.\s*/, ''))}</li>`).join('');
+        return `<ol style="padding-left: 24px; margin: 16px 0; color: #334155;">${items}</ol>`;
+      }
+
+      // Regular paragraph
+      return `<p style="margin: 16px 0; color: #334155; line-height: 1.7;">${formatInlineMarkdown(trimmed)}</p>`;
+    })
+    .join('\n');
 }
 
