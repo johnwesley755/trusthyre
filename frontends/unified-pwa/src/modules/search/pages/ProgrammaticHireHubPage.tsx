@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { searchService } from '../../../services/search.service';
 import { SeoHead, buildBreadcrumbJsonLd, buildKeywordsList } from '../../../components/common/SeoHead';
+import { getWorkerRoleTitle } from '../../../utils/seoSlug.utils';
 import { 
   Building2, 
   MapPin, 
@@ -151,8 +152,106 @@ const TRADE_METADATA: Record<string, { title: string; category: string; descript
     avgSalary: '₹17,000 - ₹26,000 / month',
     keywords: ['warehouse', 'logistics', 'packer', 'inventory']
   },
+  warehouses: {
+    title: 'Warehouse & Logistics Staff',
+    category: 'Supply Chain & Fulfillment',
+    description: 'Trained warehouse helpers, inventory pick-and-pack operators, dispatch handlers, and forklift drivers for fast-paced logistics fulfillment centers.',
+    avgSalary: '₹17,000 - ₹26,000 / month',
+    keywords: ['warehouse', 'logistics', 'packer', 'inventory']
+  },
+  'warehouse-staff': {
+    title: 'Warehouse & Logistics Staff',
+    category: 'Supply Chain & Fulfillment',
+    description: 'Trained warehouse helpers, inventory pick-and-pack operators, dispatch handlers, and forklift drivers for fast-paced logistics fulfillment centers.',
+    avgSalary: '₹17,000 - ₹26,000 / month',
+    keywords: ['warehouse', 'logistics', 'packer', 'inventory']
+  },
+  'warehouse-workers': {
+    title: 'Warehouse Workers',
+    category: 'Supply Chain & Fulfillment',
+    description: 'Trained warehouse helpers, inventory pick-and-pack operators, dispatch handlers, and forklift drivers for fast-paced logistics fulfillment centers.',
+    avgSalary: '₹17,000 - ₹26,000 / month',
+    keywords: ['warehouse', 'logistics', 'packer', 'inventory']
+  },
+  security: {
+    title: 'Security Guards',
+    category: 'Facility & Security',
+    description: 'PSARA-compliant commercial security guards, residential gatekeepers, CCTV surveillance operators, and night patrolling guards.',
+    avgSalary: '₹16,000 - ₹24,000 / month',
+    keywords: ['security', 'guard', 'patrol', 'watchman']
+  },
+  'security-guards': {
+    title: 'Security Guards',
+    category: 'Facility & Security',
+    description: 'PSARA-compliant commercial security guards, residential gatekeepers, CCTV surveillance operators, and night patrolling guards.',
+    avgSalary: '₹16,000 - ₹24,000 / month',
+    keywords: ['security', 'guard', 'patrol', 'watchman']
+  },
+  housekeeping: {
+    title: 'Housekeeping & Cleaning Staff',
+    category: 'Facility Management',
+    description: 'Trained commercial housekeeping executives, corporate office cleaners, floor stewards, and sanitation workers.',
+    avgSalary: '₹15,000 - ₹22,000 / month',
+    keywords: ['housekeeping', 'cleaner', 'sanitation', 'janitor']
+  },
+  carpenter: {
+    title: 'Carpenters',
+    category: 'Woodwork & Interior',
+    description: 'Skilled wood craftsmen, modular furniture assemblers, interior woodwork specialists, and architectural fittings carpenters.',
+    avgSalary: '₹22,000 - ₹34,000 / month',
+    keywords: ['carpenter', 'woodwork', 'furniture', 'assembler']
+  },
+  carpenters: {
+    title: 'Carpenters',
+    category: 'Woodwork & Interior',
+    description: 'Skilled wood craftsmen, modular furniture assemblers, interior woodwork specialists, and architectural fittings carpenters.',
+    avgSalary: '₹22,000 - ₹34,000 / month',
+    keywords: ['carpenter', 'woodwork', 'furniture', 'assembler']
+  },
+  mason: {
+    title: 'Civil Masons',
+    category: 'Construction & Civil Works',
+    description: 'Experienced brick masons, plastering specialists, tile-layers, and concrete workers for residential and industrial construction.',
+    avgSalary: '₹20,000 - ₹32,000 / month',
+    keywords: ['mason', 'construction', 'civil', 'bricklayer']
+  },
+  masons: {
+    title: 'Civil Masons',
+    category: 'Construction & Civil Works',
+    description: 'Experienced brick masons, plastering specialists, tile-layers, and concrete workers for residential and industrial construction.',
+    avgSalary: '₹20,000 - ₹32,000 / month',
+    keywords: ['mason', 'construction', 'civil', 'bricklayer']
+  },
+  painter: {
+    title: 'Painters & Surface Coaters',
+    category: 'Finishing & Painting',
+    description: 'Commercial interior/exterior painters, airless spray specialists, waterproof coating applicators, and industrial painters.',
+    avgSalary: '₹19,000 - ₹30,000 / month',
+    keywords: ['painter', 'painting', 'coating', 'finishing']
+  },
+  painters: {
+    title: 'Painters & Surface Coaters',
+    category: 'Finishing & Painting',
+    description: 'Commercial interior/exterior painters, airless spray specialists, waterproof coating applicators, and industrial painters.',
+    avgSalary: '₹19,000 - ₹30,000 / month',
+    keywords: ['painter', 'painting', 'coating', 'finishing']
+  },
+  mechanic: {
+    title: 'Automobile Mechanics & Technicians',
+    category: 'Automotive & Mechanical',
+    description: 'Certified 2-wheeler, 4-wheeler, diesel engine, and heavy vehicle mechanics for maintenance, overhauling, and diagnostics.',
+    avgSalary: '₹22,000 - ₹36,000 / month',
+    keywords: ['mechanic', 'automobile', 'automotive', 'technician']
+  },
+  mechanics: {
+    title: 'Automobile Mechanics & Technicians',
+    category: 'Automotive & Mechanical',
+    description: 'Certified 2-wheeler, 4-wheeler, diesel engine, and heavy vehicle mechanics for maintenance, overhauling, and diagnostics.',
+    avgSalary: '₹22,000 - ₹36,000 / month',
+    keywords: ['mechanic', 'automobile', 'automotive', 'technician']
+  },
   workers: {
-    title: 'Skilled Trades & Blue Collar Workforce',
+    title: 'Skilled Trades & Blue-Collar Workers',
     category: 'Frontline Workforce',
     description: 'Pre-screened, verified blue-collar workers and skilled technicians across multiple trades for direct commercial and industrial employment.',
     avgSalary: '₹18,000 - ₹35,000 / month',
@@ -227,12 +326,13 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
     topTrades: ['Electricians', 'Drivers', 'Cooks', 'Plumbers']
   };
 
+  const resolvedRoleTitle = getWorkerRoleTitle(tradeSlug);
   const tradeMeta = TRADE_METADATA[tradeSlug] || {
-    title: tradeSlug.charAt(0).toUpperCase() + tradeSlug.slice(1),
+    title: resolvedRoleTitle,
     category: 'Skilled Trade',
-    description: `Verified ${tradeSlug} candidates ready for direct commercial and industrial hiring in ${cityMeta.name}.`,
+    description: `Verified ${resolvedRoleTitle.toLowerCase()} ready for direct commercial and industrial hiring in ${cityMeta.name}.`,
     avgSalary: '₹18,000 - ₹32,000 / month',
-    keywords: [tradeSlug]
+    keywords: [tradeSlug, resolvedRoleTitle.toLowerCase()]
   };
 
   // Query verified worker candidates for this city & trade
@@ -240,7 +340,7 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
     queryKey: ['programmaticHireHub', citySlug, tradeSlug],
     queryFn: () => searchService.searchWorkers({
       city: cityMeta.name,
-      query: tradeSlug === 'workers' ? undefined : tradeMeta.keywords[0]
+      query: tradeSlug === 'workers' ? undefined : (tradeMeta.keywords[0] || resolvedRoleTitle)
     }),
     staleTime: 1000 * 60 * 5
   });
@@ -251,9 +351,14 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
 
   const pageTitle = `Hire Verified ${tradeMeta.title} in ${cityMeta.name} | Direct & Zero Brokerage - TrustHyre`;
   const metaDesc = `Looking to hire verified ${tradeMeta.title.toLowerCase()} in ${cityMeta.name}, ${cityMeta.state}? Browse skill-tested candidate profiles with transparent wage benchmarks (${tradeMeta.avgSalary}) and direct employer connection.`;
-  const canonicalPath = tradeSlug === 'workers' 
+  
+  const canonicalTradeSlug = (tradeSlug === 'warehouses' || tradeSlug === 'warehouse-staff' || tradeSlug === 'warehouse-workers')
+    ? 'warehouse'
+    : tradeSlug;
+
+  const canonicalPath = canonicalTradeSlug === 'workers' 
     ? `/hire-workers-in-${citySlug}` 
-    : `/hire-${tradeSlug}-in-${citySlug}`;
+    : `/hire-${canonicalTradeSlug}-in-${citySlug}`;
 
   // Structured Data (Schema.org AggregateRating + ItemList)
   const structuredData = useMemo(() => {

@@ -81,9 +81,126 @@ export function extractJobIdFromSlug(slugOrId: string | undefined | null): strin
 
 export const ALLOWED_CITIES = [
   'chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 
-  'bengaluru', 'hyderabad', 'mumbai', 'pune', 'delhi', 'kolkata'
+  'bengaluru', 'hyderabad', 'mumbai', 'pune', 'delhi', 'kolkata', 'sriperumbudur'
 ];
 export const ALLOWED_TRADES = ['electrician', 'driver', 'cook', 'plumber', 'welder', 'security', 'warehouse'];
+
+export const WORKER_ROLE_TITLES: Record<string, string> = {
+  electrician: 'Electricians',
+  electricians: 'Electricians',
+  driver: 'Commercial Drivers',
+  drivers: 'Commercial Drivers',
+  cook: 'Chefs & Commercial Cooks',
+  cooks: 'Chefs & Commercial Cooks',
+  chef: 'Chefs & Commercial Cooks',
+  chefs: 'Chefs & Commercial Cooks',
+  plumber: 'Plumbers',
+  plumbers: 'Plumbers',
+  welder: 'Industrial Welders',
+  welders: 'Industrial Welders',
+  security: 'Security Guards',
+  'security-guard': 'Security Guards',
+  'security-guards': 'Security Guards',
+  warehouse: 'Warehouse & Logistics Staff',
+  warehouses: 'Warehouse & Logistics Staff',
+  'warehouse-staff': 'Warehouse & Logistics Staff',
+  'warehouse-workers': 'Warehouse Workers',
+  logistics: 'Logistics & Warehouse Staff',
+  housekeeping: 'Housekeeping & Cleaning Staff',
+  housekeeper: 'Housekeeping & Cleaning Staff',
+  cleaner: 'Cleaning Staff',
+  cleaners: 'Cleaning Staff',
+  carpenter: 'Carpenters',
+  carpenters: 'Carpenters',
+  carpentry: 'Carpenters',
+  mason: 'Civil Masons',
+  masons: 'Civil Masons',
+  masonry: 'Civil Masons',
+  painter: 'Painters & Surface Coaters',
+  painters: 'Painters & Surface Coaters',
+  painting: 'Painters & Surface Coaters',
+  mechanic: 'Automobile Mechanics',
+  mechanics: 'Automobile Mechanics',
+  tailor: 'Tailors & Garment Stitchers',
+  tailors: 'Tailors & Garment Stitchers',
+  tailoring: 'Tailors & Garment Stitchers',
+  fitter: 'Industrial Fitters',
+  fitters: 'Industrial Fitters',
+  turner: 'Turners & Machinists',
+  machinist: 'CNC Operators & Machinists',
+  machinists: 'CNC Operators & Machinists',
+  worker: 'Skilled Workers',
+  workers: 'Skilled Workers',
+};
+
+/**
+ * Normalizes trade slugs and user queries to human worker role titles.
+ * Guarantees that staffing and recruitment titles refer to people / roles,
+ * never raw non-person nouns or facility locations like "Warehouses" or "Carpentry".
+ */
+export function getWorkerRoleTitle(slugOrQuery: string): string {
+  const clean = (slugOrQuery || '').toLowerCase().trim().replace(/[-_]+/g, ' ');
+  const rawKey = (slugOrQuery || '').toLowerCase().trim();
+  
+  if (WORKER_ROLE_TITLES[rawKey]) {
+    return WORKER_ROLE_TITLES[rawKey];
+  }
+
+  if (clean.includes('warehouse') || clean.includes('logistics') || clean.includes('godown')) {
+    return 'Warehouse & Logistics Staff';
+  }
+  if (clean.includes('security') || clean.includes('guard') || clean.includes('watchman')) {
+    return 'Security Guards';
+  }
+  if (clean.includes('housekeep') || clean.includes('cleaning') || clean.includes('janitor')) {
+    return 'Housekeeping & Cleaning Staff';
+  }
+  if (clean.includes('electrician') || clean.includes('electrical')) {
+    return 'Electricians';
+  }
+  if (clean.includes('driver') || clean.includes('chauffeur')) {
+    return 'Commercial Drivers';
+  }
+  if (clean.includes('cook') || clean.includes('chef') || clean.includes('kitchen')) {
+    return 'Chefs & Commercial Cooks';
+  }
+  if (clean.includes('plumb')) {
+    return 'Plumbers';
+  }
+  if (clean.includes('weld')) {
+    return 'Industrial Welders';
+  }
+  if (clean.includes('carpent')) {
+    return 'Carpenters';
+  }
+  if (clean.includes('mason')) {
+    return 'Civil Masons';
+  }
+  if (clean.includes('paint')) {
+    return 'Painters & Surface Coaters';
+  }
+  if (clean.includes('mechanic')) {
+    return 'Automobile Mechanics';
+  }
+  if (clean.includes('tailor') || clean.includes('stitcher')) {
+    return 'Tailors & Garment Stitchers';
+  }
+
+  const words = clean.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return 'Skilled Workers';
+
+  const capitalized = words
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+
+  if (capitalized.endsWith('s')) {
+    return capitalized;
+  }
+  if (capitalized.endsWith('er') || capitalized.endsWith('or') || capitalized.endsWith('ian') || capitalized.endsWith('ant') || capitalized.endsWith('ist')) {
+    return `${capitalized}s`;
+  }
+  return `${capitalized} Staff`;
+}
 
 export interface DistrictTalukData {
   district: string;

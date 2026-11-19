@@ -33,6 +33,7 @@ import { ManageAlertsModal } from '../../dashboard/features/alerts/ManageAlertsM
 import { TalentAlertModal } from '../components/TalentAlertModal';
 import { normalizeSkills } from '../../../utils/skills';
 import { SeoHead, buildKeywordsList } from '../../../components/common/SeoHead';
+import { getWorkerRoleTitle } from '../../../utils/seoSlug.utils';
 import { CandidateOutreachModal, type CandidateOutreachCandidate } from '../../../components/common/CandidateOutreachModal';
 import { CreateWorkOrderModal } from '../../work-orders/components/CreateWorkOrderModal';
 import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
@@ -207,20 +208,20 @@ export const WorkerSearchPage = () => {
     const hasCity = Boolean(city && city.trim());
     const hasTrade = Boolean(selectedTrade && selectedTrade !== 'All');
 
+    const roleTarget = hasQuery 
+      ? getWorkerRoleTitle(searchQuery) 
+      : (hasTrade ? getWorkerRoleTitle(selectedTrade) : '');
+
     let dynamicTitle = 'Find Verified Skilled Workers in India';
-    if (hasQuery && hasCity) {
-      dynamicTitle = `Hire Verified ${searchQuery} in ${city} | Skilled Talent Directory`;
-    } else if (hasQuery) {
-      dynamicTitle = `Hire Verified ${searchQuery} | Direct Blue-Collar Staffing`;
-    } else if (hasTrade && hasCity) {
-      dynamicTitle = `Hire Verified ${selectedTrade} Specialists in ${city}`;
+    if (roleTarget && hasCity) {
+      dynamicTitle = `Hire Verified ${roleTarget} in ${city} | Skilled Talent Directory`;
+    } else if (roleTarget) {
+      dynamicTitle = `Hire Verified ${roleTarget} | Direct Blue-Collar Staffing`;
     } else if (hasCity) {
       dynamicTitle = `Hire Verified Skilled Workers in ${city} | Blue-Collar Talent`;
-    } else if (hasTrade) {
-      dynamicTitle = `Hire Verified ${selectedTrade} in India | TrustHyre`;
     }
 
-    const dynamicDesc = `Browse and hire verified ${hasQuery ? searchQuery : (hasTrade ? selectedTrade : 'electricians, plumbers, drivers, logistics workers, and tradespeople')} in ${hasCity ? city : 'India'} on TrustHyre. ${results.length} verified candidates with biometric attendance, photo check-in, and skill credentials.`;
+    const dynamicDesc = `Browse and hire verified ${roleTarget ? roleTarget.toLowerCase() : 'electricians, plumbers, drivers, logistics workers, and tradespeople'} in ${hasCity ? city : 'India'} on TrustHyre. ${results.length} verified candidates with biometric attendance, photo check-in, and skill credentials.`;
 
     const terms: string[] = [
       'hire skilled workers India',
@@ -229,14 +230,11 @@ export const WorkerSearchPage = () => {
       'pre-screened manpower India',
       'TrustHyre worker directory',
     ];
-    if (hasQuery) {
-      terms.unshift(`hire ${searchQuery}`, `${searchQuery} for hire`, `verified ${searchQuery}`);
-    }
-    if (hasTrade) {
-      terms.unshift(`hire ${selectedTrade}`, `${selectedTrade} candidates`, `verified ${selectedTrade}`);
+    if (roleTarget) {
+      terms.unshift(`hire ${roleTarget.toLowerCase()}`, `${roleTarget.toLowerCase()} for hire`, `verified ${roleTarget.toLowerCase()}`);
     }
     if (hasCity) {
-      terms.unshift(`hire workers in ${city}`, `${hasQuery ? searchQuery : (hasTrade ? selectedTrade : 'specialists')} in ${city}`);
+      terms.unshift(`hire workers in ${city}`, `${roleTarget ? roleTarget.toLowerCase() : 'specialists'} in ${city}`);
     }
 
     const dynamicKeywords = buildKeywordsList(terms);

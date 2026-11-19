@@ -9,6 +9,7 @@ import {
   TRADE_KEYWORD_MAP,
   isValidNeighborhoodForCity,
   getTaluksForCity,
+  getWorkerRoleTitle,
 } from '../utils/seoSlug.util';
 
 const CITY_STATE_PIN_MAP: Record<string, { state: string; postalCode: string }> = {
@@ -505,19 +506,43 @@ ${JSON.stringify(itemListJsonLd, null, 2)}
     const tradeSlug = (hubParts[0] || 'workers').toLowerCase().trim();
     const citySlug = (hubParts[1] || 'chennai').toLowerCase().trim();
 
-    const ALLOWED_CITIES = ['chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 'bengaluru'];
-    const ALLOWED_TRADES = ['electricians', 'drivers', 'cooks', 'plumbers', 'welders', 'warehouse', 'workers'];
+    const ALLOWED_CITIES_LOCAL = [
+      'chennai', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem', 'tiruppur', 
+      'bengaluru', 'hyderabad', 'mumbai', 'pune', 'delhi', 'kolkata', 'sriperumbudur'
+    ];
+    const ALLOWED_TRADES_LOCAL = [
+      'electricians', 'electrician', 
+      'drivers', 'driver', 
+      'cooks', 'cook', 
+      'plumbers', 'plumber', 
+      'welders', 'welder', 
+      'warehouse', 'warehouses', 'warehouse-staff', 'warehouse-workers', 'logistics',
+      'security', 'security-guard', 'security-guards',
+      'housekeeping', 'cleaners', 'cleaner',
+      'carpenters', 'carpenter', 'carpentry',
+      'masons', 'mason', 'masonry',
+      'painters', 'painter',
+      'mechanics', 'mechanic',
+      'tailors', 'tailor',
+      'fitters', 'fitter',
+      'workers', 'worker'
+    ];
 
-    if (!ALLOWED_CITIES.includes(citySlug) || !ALLOWED_TRADES.includes(tradeSlug)) {
+    if (!ALLOWED_CITIES_LOCAL.includes(citySlug) || !ALLOWED_TRADES_LOCAL.includes(tradeSlug)) {
       return c.text('Not Found', 404, { 'Content-Type': 'text/plain; charset=utf-8' });
     }
 
-    const normCity = citySlug.charAt(0).toUpperCase() + citySlug.slice(1);
-    const normTrade = tradeSlug.charAt(0).toUpperCase() + tradeSlug.slice(1);
+    // 301 Permanent Redirect for nonsensical plural facility URLs like /hire-warehouses-in-:city to canonical /hire-warehouse-in-:city
+    if (tradeSlug === 'warehouses' || tradeSlug === 'warehouse-staff' || tradeSlug === 'warehouse-workers') {
+      return c.redirect(`/hire-warehouse-in-${citySlug}`, 301);
+    }
 
-    const pageTitle = `Hire Verified ${normTrade} in ${normCity} | Zero Brokerage - TrustHyre`;
+    const normCity = citySlug.charAt(0).toUpperCase() + citySlug.slice(1);
+    const normTrade = getWorkerRoleTitle(tradeSlug);
+
+    const pageTitle = `Hire Verified ${normTrade} in ${normCity} | Direct & Zero Brokerage - TrustHyre`;
     const pageDesc = `Looking to hire verified ${normTrade.toLowerCase()} in ${normCity}? Connect directly with skill-tested candidates and verified work records with zero agency commissions on TrustHyre.`;
-    const canonical = `${BASE_DOMAIN}${cleanPath}`;
+    const canonical = `${BASE_DOMAIN}/hire-${tradeSlug === 'warehouses' ? 'warehouse' : tradeSlug}-in-${citySlug}`;
 
     const serviceJsonLd = {
       '@context': 'https://schema.org',

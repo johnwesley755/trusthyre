@@ -125,6 +125,8 @@ export function LandingFooter() {
             <span>•</span>
             <Link to="/hire-drivers-in-madurai" className="hover:text-white hover:underline">Hire Heavy Drivers in Madurai</Link>
             <span>•</span>
+            <Link to="/hire-warehouse-in-chennai" className="hover:text-white hover:underline">Hire Warehouse Staff in Chennai</Link>
+            <span>•</span>
             <Link to="/hire-warehouse-in-bengaluru" className="hover:text-white hover:underline">Hire Logistics Crew in Bengaluru</Link>
             <span>•</span>
             <Link to="/hire-workers-in-chennai" className="hover:text-white hover:underline">Hire Workers in Chennai</Link>
