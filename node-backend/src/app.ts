@@ -207,6 +207,7 @@ app.route('/api/work-orders', workOrderRoutes);
 app.route('/api/shifts', shiftRoutes);
 app.route('/api/attendance', attendanceRoutes);
 app.route('/api/referrals', referralRoutes);
+app.route('/referrals', referralRoutes);
 app.route('/api/conversations', conversationRoutes);
 
 

@@ -116,7 +116,7 @@ export const BlogPostPage: React.FC = () => {
   const breadcrumbsJsonLd = post ? buildBreadcrumbJsonLd([
     { name: 'Home', path: '/' },
     { name: 'Blog', path: '/blog' },
-    ...(post.category ? [{ name: post.category.name, path: `/blog?category=${post.category.slug}` }] : []),
+    ...(post.category ? [{ name: post.category.name, path: `/blog/category/${post.category.slug}` }] : []),
     { name: post.title, path: `/blog/${post.slug}` },
   ]) : undefined;
 
@@ -210,7 +210,7 @@ export const BlogPostPage: React.FC = () => {
           {post.category && (
             <>
               <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-40" />
-              <Link to={`/blog?category=${post.category.slug}`} className="hover:text-[#0f2f63] dark:hover:text-[#38BDF8] transition-colors whitespace-nowrap">
+              <Link to={`/blog/category/${post.category.slug}`} className="hover:text-[#0f2f63] dark:hover:text-[#38BDF8] transition-colors whitespace-nowrap">
                 {post.category.name}
               </Link>
             </>

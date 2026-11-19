@@ -398,42 +398,45 @@ export default function EmployerProfileDetailsPage() {
         </div>
 
         {/* 3. TAB SWITCHER */}
-        <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-zinc-800 pb-3">
-          <div className="bg-slate-100/90 dark:bg-[#121215] p-1 rounded-full border border-slate-200/60 dark:border-zinc-800 inline-flex items-center gap-1">
+        <div className="w-full overflow-x-auto no-scrollbar pb-3 border-b border-slate-200/80 dark:border-zinc-800">
+          <div className="grid grid-cols-3 sm:inline-flex w-full sm:w-auto bg-slate-100/90 dark:bg-[#121215] p-1 rounded-xl sm:rounded-full border border-slate-200/60 dark:border-zinc-800 gap-1">
             <button
+              type="button"
               onClick={() => setActiveTab('openings')}
-              className={`py-2 px-5 sm:px-6 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`py-2 px-2.5 sm:px-6 rounded-lg sm:rounded-full text-[11px] sm:text-xs font-semibold sm:font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 text-center whitespace-nowrap min-w-0 ${
                 activeTab === 'openings'
                   ? 'bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100 shadow-xs'
                   : 'text-slate-500 dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-zinc-200'
               }`}
             >
-              <Briefcase className="w-3.5 h-3.5" />
-              <span>Job Openings ({jobs.length})</span>
+              <Briefcase className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate"><span className="hidden sm:inline">Job </span>Openings ({jobs.length})</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveTab('overview')}
-              className={`py-2 px-5 sm:px-6 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`py-2 px-2.5 sm:px-6 rounded-lg sm:rounded-full text-[11px] sm:text-xs font-semibold sm:font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 text-center whitespace-nowrap min-w-0 ${
                 activeTab === 'overview'
                   ? 'bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100 shadow-xs'
                   : 'text-slate-500 dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-zinc-200'
               }`}
             >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>Company Overview</span>
+              <Building2 className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate"><span className="hidden sm:inline">Company </span>Overview</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveTab('reviews')}
-              className={`py-2 px-5 sm:px-6 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`py-2 px-2.5 sm:px-6 rounded-lg sm:rounded-full text-[11px] sm:text-xs font-semibold sm:font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 text-center whitespace-nowrap min-w-0 ${
                 activeTab === 'reviews'
                   ? 'bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100 shadow-xs'
                   : 'text-slate-500 dark:text-zinc-400 hover:text-[#0A1931] dark:hover:text-zinc-200'
               }`}
             >
-              <Star className="w-3.5 h-3.5" />
-              <span>Verified Reviews ({employerReviews.length})</span>
+              <Star className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate"><span className="hidden sm:inline">Verified </span>Reviews ({employerReviews.length})</span>
             </button>
           </div>
         </div>
