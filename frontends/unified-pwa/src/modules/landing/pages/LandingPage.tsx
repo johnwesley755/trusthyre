@@ -647,12 +647,12 @@ export default function LandingPage() {
               <img 
                 src={trustHyreLightLogo} 
                 alt="TrustHyre" 
-                className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto object-contain block select-none drop-shadow-lg group-hover:scale-105 transition-all duration-300" 
+                className="h-8 sm:h-9 md:h-12 lg:h-14 w-auto object-contain block select-none drop-shadow-lg group-hover:scale-105 transition-all duration-300" 
               />
             </Link>
 
             {/* Right Header Controls */}
-            <div className="flex items-center justify-end gap-3 sm:gap-4 flex-1 min-w-0">
+            <div className="flex items-center justify-end gap-2 sm:gap-3 flex-1 min-w-0">
               {isSignedIn ? (
                 <div className="hidden sm:flex items-center gap-2 shrink-0">
                   {isAdmin ? (
@@ -688,8 +688,8 @@ export default function LandingPage() {
                 </Link>
               )}
 
-              {/* Language Switcher Pill (Light Theme) */}
-              <div className="relative shrink-0">
+              {/* Language Switcher Pill (Desktop & Tablet) */}
+              <div className="hidden md:block relative shrink-0">
                 <Dropdown
                   variant="pill"
                   size="sm"
@@ -710,11 +710,11 @@ export default function LandingPage() {
               {/* Theme Mode Toggle (Pill) */}
               <ThemeToggle variant="pill" className="shrink-0" />
 
-              {/* Hamburger Button */}
+              {/* Hamburger Button (Mobile & Tablet) */}
               <button
                 type="button"
                 onClick={() => setIsMenuOpen(true)}
-                className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-xs hover:bg-white/25 flex flex-col items-center justify-center gap-1.25 transition-colors cursor-pointer shrink-0 ml-0.5 sm:ml-1"
+                className="lg:hidden w-10 h-10 rounded-full bg-white/15 backdrop-blur-xs hover:bg-white/25 flex flex-col items-center justify-center gap-1.25 transition-colors cursor-pointer shrink-0 ml-0.5 sm:ml-1"
                 aria-label="Open menu"
               >
                 <span className="w-4 h-[1px] bg-white block" />

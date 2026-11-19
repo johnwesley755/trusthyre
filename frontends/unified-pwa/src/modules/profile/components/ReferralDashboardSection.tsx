@@ -46,7 +46,7 @@ export const ReferralDashboardSection: React.FC<ReferralDashboardSectionProps> =
   const { data, isLoading, error } = useQuery<ReferralDashboardData>({
     queryKey: ['referrals', 'me'],
     queryFn: async () => {
-      const res = await apiClient.get('/referrals/me');
+      const res = await apiClient.get('/api/referrals/me');
       return res.data;
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
