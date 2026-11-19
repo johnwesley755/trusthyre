@@ -23,11 +23,15 @@ import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fcmService } from '../../../../services/fcm.service';
+import { useBodyScrollLock } from '../../../../hooks/useBodyScrollLock';
 
 export const NotificationCenter = () => {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
     const containerRef = useRef<HTMLDivElement>(null);
+
+    // Prevent background scroll bleed when notification dropdown is open
+    useBodyScrollLock(isOpen);
 
     // Centralized notification hook with 5-min stale cache and direct cache patching
     const {
@@ -158,7 +162,7 @@ export const NotificationCenter = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 6, scale: 0.98 }}
                         transition={{ duration: 0.12 }}
-                        className="fixed inset-x-3 top-16 sm:inset-x-auto sm:absolute sm:right-0 sm:top-full sm:mt-2.5 w-auto sm:w-88 md:w-96 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#1C1C21] border border-slate-200/90 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden text-[#0A1931] dark:text-zinc-100"
+                        className="absolute right-0 mt-2.5 w-80 sm:w-88 md:w-96 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#0a0a0a] border border-[#e6e8ec] dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden text-[#0A1931] dark:text-zinc-100 overscroll-contain touch-pan-y"
                     >
                         {/* Header */}
                         <div className="px-4 py-3 border-b border-slate-100 dark:border-zinc-800 flex justify-between items-center bg-slate-50/80 dark:bg-[#121215]">

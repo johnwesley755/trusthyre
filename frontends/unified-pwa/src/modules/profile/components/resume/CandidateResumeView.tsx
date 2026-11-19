@@ -282,7 +282,7 @@ export const CandidateResumeView: React.FC<CandidateResumeViewProps> = ({
       {/* Main Executive Resume Sheet (Standard ATS Layout) */}
       <div 
         id="printable-candidate-cv" 
-        className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-lg p-6 sm:p-12 text-[#111827] relative print:border-none print:shadow-none print:p-0" style={{ backgroundColor: "#ffffff", color: "#111827" }}
+        className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-10 md:p-12 text-[#111827] relative print:border-none print:shadow-none print:p-0 overflow-x-auto sm:overflow-x-visible" style={{ backgroundColor: "#ffffff", color: "#111827" }}
       >
         {/* RESUME HEADER */}
         <header className="flex flex-col sm:flex-row items-start justify-between gap-5 pb-5 border-b-2 border-[#111827]">

@@ -21,6 +21,7 @@ import {
   Languages
 } from 'lucide-react';
 import { SeoHead } from '../../../components/common/SeoHead';
+import { Button } from '../../../components/ui/button';
 import { getStoredReferral, clearStoredReferral } from '../../../utils/referralStorage';
 import { TurnstileWidget } from '../../../components/common/TurnstileWidget';
 
@@ -585,10 +586,12 @@ export const SignUpPage = () => {
                                         />
 
                                         {/* Submit Button */}
-                                        <button
+                                        <Button
                                             type="submit"
+                                            variant="navy"
+                                            size="lg"
                                             disabled={isLoading || !email || !password || !phoneNumber}
-                                            className="w-full mt-2 bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-[#2563EB] dark:hover:bg-blue-600 active:scale-[0.99] disabled:opacity-50 text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                                            className="w-full mt-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider gap-2 shadow-sm hover:shadow-md"
                                         >
                                             {isLoading ? (
                                                 <>
@@ -601,7 +604,7 @@ export const SignUpPage = () => {
                                                     <ArrowRight className="w-4 h-4" />
                                                 </>
                                             )}
-                                        </button>
+                                        </Button>
                                     </form>
 
                                     {/* Sign In Redirect Link */}
@@ -730,10 +733,12 @@ export const SignUpPage = () => {
                                         </div>
 
                                         {/* Verify Submit Button */}
-                                        <button
+                                        <Button
                                             type="submit"
+                                            variant="navy"
+                                            size="lg"
                                             disabled={isLoading || otp.trim().length !== 6}
-                                            className="w-full mt-2 bg-[#0f2f63] dark:bg-[#2563EB] hover:bg-[#2563c9] dark:hover:bg-[#1D4ED8] active:scale-[0.99] disabled:opacity-50 text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                                            className="w-full mt-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider gap-2 shadow-sm hover:shadow-md"
                                         >
                                             {isLoading ? (
                                                 <>
@@ -746,7 +751,7 @@ export const SignUpPage = () => {
                                                     <span>Verify & Complete Registration</span>
                                                 </>
                                             )}
-                                        </button>
+                                        </Button>
 
                                         {/* Resend Code Section */}
                                         <div className="pt-3 text-center">

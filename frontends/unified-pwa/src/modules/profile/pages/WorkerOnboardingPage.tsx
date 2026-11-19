@@ -5,6 +5,8 @@ import { useNavigate, Link } from "react-router-dom";
 import apiClient from "../../../api/apiClient";
 import { queryKeys } from "../../../lib/queryKeys";
 import { Select } from "../../../components/ui/select";
+import { Button } from "../../../components/ui/button";
+import { BaseModal } from "../../../components/common/BaseModal";
 import { 
   MapPin, 
   Sparkles, 
@@ -738,7 +740,7 @@ export default function WorkerOnboardingPage() {
                   </button>
                 )}
                 <div>
-                  <h1 className="text-sm font-bold text-[#0A1931] dark:text-white dark:text-white leading-tight">
+                  <h1 className="text-sm font-bold text-[#0A1931] dark:text-white leading-tight">
                     {STEP_TITLES[currentStep]}
                   </h1>
                   <p className="text-[11px] text-[#717784] dark:text-zinc-400 font-medium hidden sm:block">
@@ -1875,35 +1877,41 @@ export default function WorkerOnboardingPage() {
 
           {/* ANCHORED BOTTOM ACTION BAR */}
           <div className="pt-4 border-t border-[#e6e8ec] dark:border-zinc-800 shrink-0 mt-4">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
               {currentStep > 1 ? (
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="default"
                   onClick={prevStep}
-                  className="px-4 py-3 bg-[#f4f4f4] dark:bg-zinc-800 hover:bg-slate-200/80 dark:hover:bg-zinc-700 text-[#0A1931] dark:text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                  className="rounded-xl flex items-center justify-center gap-1.5"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Previous</span>
-                </button>
+                </Button>
               ) : (
-                <div />
+                <div className="hidden sm:block" />
               )}
 
               {currentStep < 6 ? (
-                <button
+                <Button
                   type="button"
+                  variant="navy"
+                  size="default"
                   onClick={nextStep}
-                  className="bg-[#0f2f63] hover:bg-[#0c244c] dark:bg-sky-600 dark:hover:bg-sky-700 active:bg-[#081a38] text-white py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ml-auto"
+                  className="rounded-xl flex items-center justify-center gap-2 sm:ml-auto"
                 >
                   <span>Continue</span>
                   <ArrowRight className="w-4 h-4" />
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="button"
+                  variant="navy"
+                  size="default"
                   onClick={handleSubmitProfile}
                   disabled={isSubmitting || preferredRoles.length === 0}
-                  className="bg-[#0f2f63] hover:bg-[#0c244c] dark:bg-sky-600 dark:hover:bg-sky-700 active:bg-[#081a38] disabled:opacity-50 text-white py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ml-auto"
+                  className="rounded-xl flex items-center justify-center gap-2 sm:ml-auto"
                 >
                   {isSubmitting ? (
                     <>
@@ -1916,7 +1924,7 @@ export default function WorkerOnboardingPage() {
                       <ShieldCheck className="w-4 h-4" />
                     </>
                   )}
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -1925,64 +1933,57 @@ export default function WorkerOnboardingPage() {
 
       {/* City Search Modal */}
       {isCityModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs font-['Onest',system-ui,sans-serif]">
-          <div className="bg-white dark:bg-[#1C1C21] rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200 dark:border-zinc-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[#0A1931] dark:text-white">Select your city</h3>
-              <button
-                type="button"
-                onClick={() => setIsCityModalOpen(false)}
-                className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        <BaseModal
+          isOpen={isCityModalOpen}
+          onClose={() => setIsCityModalOpen(false)}
+          title="Select your city"
+          maxWidth="sm"
+          bodyClassName="p-5 sm:p-6 space-y-4"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              handleDetectGPS();
+              setIsCityModalOpen(false);
+            }}
+            className="w-full p-3 rounded-xl bg-[#0f2f63]/10 hover:bg-[#0f2f63]/15 text-[#0f2f63] dark:text-sky-400 text-xs font-bold flex items-center gap-2 border border-[#0f2f63]/20 dark:border-sky-500/20 cursor-pointer transition-colors"
+          >
+            <LocateFixed className="w-4 h-4 text-[#0f2f63] dark:text-sky-400" />
+            <span>Use my current GPS location</span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                handleDetectGPS();
-                setIsCityModalOpen(false);
-              }}
-              className="w-full p-3 rounded-xl bg-[#0f2f63]/10 hover:bg-[#0f2f63]/15 text-[#0f2f63] text-xs font-bold flex items-center gap-2 border border-[#0f2f63]/20 cursor-pointer transition-colors"
-            >
-              <LocateFixed className="w-4 h-4 text-[#0f2f63]" />
-              <span>Use my current GPS location</span>
-            </button>
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={citySearchQuery}
+              onChange={(e) => setCitySearchQuery(e.target.value)}
+              placeholder="Enter city or neighborhood..."
+              className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-[#0A1931] dark:text-white outline-none focus:border-[#0f2f63] dark:focus:border-sky-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600"
+            />
 
-            <div className="space-y-2">
-              <input
-                type="text"
-                value={citySearchQuery}
-                onChange={(e) => setCitySearchQuery(e.target.value)}
-                placeholder="Enter city or neighborhood..."
-                className="w-full bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-[#0A1931] dark:text-white outline-none focus:border-[#0f2f63] dark:focus:border-sky-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600"
-              />
-
-              <div className="space-y-1 max-h-48 overflow-y-auto">
-                {["Chennai, TN", "Royapuram, Chennai, TN", "Bengaluru, KA", "Koramangala, Bengaluru", "Hyderabad, TS", "Mumbai, MH", "Pune, MH", "Delhi NCR"].map((loc) => (
-                  <div
-                    key={loc}
-                    onClick={() => {
-                      const parts = loc.split(',');
-                      if (parts.length > 2) {
-                        setArea(parts[0].trim());
-                        setCity(parts[1].trim());
-                      } else {
-                        setCity(parts[0].trim());
-                      }
-                      setIsCityModalOpen(false);
-                    }}
-                    className="p-2.5 rounded-xl hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-xs font-semibold text-[#0A1931] dark:text-zinc-200 flex items-center gap-2 cursor-pointer transition-colors"
-                  >
-                    <MapPin className="w-3.5 h-3.5 text-[#0f2f63]" />
-                    <span>{loc}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {["Chennai, TN", "Royapuram, Chennai, TN", "Bengaluru, KA", "Koramangala, Bengaluru", "Hyderabad, TS", "Mumbai, MH", "Pune, MH", "Delhi NCR"].map((loc) => (
+                <div
+                  key={loc}
+                  onClick={() => {
+                    const parts = loc.split(',');
+                    if (parts.length > 2) {
+                      setArea(parts[0].trim());
+                      setCity(parts[1].trim());
+                    } else {
+                      setCity(parts[0].trim());
+                    }
+                    setIsCityModalOpen(false);
+                  }}
+                  className="p-2.5 rounded-xl hover:bg-[#f4f4f4] dark:hover:bg-zinc-800 text-xs font-semibold text-[#0A1931] dark:text-zinc-200 flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
+                  <span>{loc}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        </BaseModal>
       )}
 
       {/* Generated Resume Modal */}

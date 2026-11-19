@@ -17,6 +17,7 @@ import {
   Languages,
   CheckCircle2
 } from 'lucide-react';
+import { Button } from '../../../components/ui/button';
 import { SeoHead } from '../../../components/common/SeoHead';
 
 export const SignInPage = () => {
@@ -273,10 +274,12 @@ export const SignInPage = () => {
                             </div>
 
                             {/* Primary Sign In Button */}
-                            <button
+                            <Button
                                 type="submit"
+                                variant="navy"
+                                size="lg"
                                 disabled={isLoading || !email || !password}
-                                className="w-full mt-2 bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-[#2563EB] dark:hover:bg-blue-600 active:scale-[0.99] disabled:opacity-50 text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                                className="w-full mt-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider gap-2 shadow-sm hover:shadow-md"
                             >
                                 {isLoading ? (
                                     <>
@@ -289,7 +292,7 @@ export const SignInPage = () => {
                                         <ArrowRight className="w-4 h-4" />
                                     </>
                                 )}
-                            </button>
+                            </Button>
                         </form>
 
                         {/* Sign Up Redirect Link */}

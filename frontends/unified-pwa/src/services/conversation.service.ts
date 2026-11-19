@@ -213,13 +213,14 @@ export const conversationService = {
   }
 };
 
-// React Query Hooks
+// React Query Hooks (matching pattern in useAppNotifications: direct cache updates, zero repeated polling loops)
 export const useConversationInbox = () => {
   return useQuery({
     queryKey: ['conversations', 'inbox'],
     queryFn: conversationService.getInbox,
-    staleTime: 30000,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache - prevents background polling loops
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -228,8 +229,9 @@ export const useConversationUnreadCount = (enabled: boolean = true) => {
     queryKey: ['conversations', 'unreadCount'],
     queryFn: conversationService.getUnreadCount,
     enabled,
-    staleTime: 60000,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache - prevents background polling loops
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -238,8 +240,9 @@ export const useConversationMessages = (conversationId?: string) => {
     queryKey: ['conversations', conversationId, 'messages'],
     queryFn: () => conversationService.getMessages(conversationId!),
     enabled: Boolean(conversationId),
-    staleTime: 15000,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache - prevents background polling loops
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -259,10 +262,52 @@ export const useSendMessage = () => {
       workOrderId?: string;
       interviewId?: string;
     }) => conversationService.sendMessage(conversationId, body, clientMessageId, workOrderId, interviewId),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['conversations', variables.conversationId, 'messages'] });
-      queryClient.invalidateQueries({ queryKey: ['conversations', 'inbox'] });
-      queryClient.invalidateQueries({ queryKey: ['conversations', 'unreadCount'] });
+    onSuccess: (newMsg, variables) => {
+      // Direct cache patching - avoids triggering duplicate GET requests
+      queryClient.setQueryData<ConversationThreadResponse>(
+        ['conversations', variables.conversationId, 'messages'],
+        (old) => {
+          if (!old) return old;
+          const exists = old.messages.some((m) => m.id === newMsg.id);
+          return {
+            ...old,
+            messages: exists ? old.messages : [...old.messages, newMsg]
+          };
+        }
+      );
+
+      // Direct update of inbox snippet
+      queryClient.setQueryData<{ conversations: ConversationItem[]; total: number }>(
+        ['conversations', 'inbox'],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            conversations: old.conversations.map((c) =>
+              c.id === variables.conversationId
+                ? {
+                    ...c,
+                    lastMessage: {
+                      id: newMsg.id,
+                      body: newMsg.body,
+                      messageType: newMsg.message_type,
+                      createdAt: newMsg.created_at,
+                      senderId: newMsg.sender_user_id
+                    },
+                    lastMessageAt: newMsg.created_at,
+                    lastMessagePreview: {
+                      id: newMsg.id,
+                      body: newMsg.body,
+                      messageType: newMsg.message_type,
+                      createdAt: newMsg.created_at,
+                      senderUserId: newMsg.sender_user_id
+                    }
+                  }
+                : c
+            )
+          };
+        }
+      );
     }
   });
 };
@@ -272,8 +317,22 @@ export const useMarkConversationRead = () => {
   return useMutation({
     mutationFn: ({ conversationId, lastReadMessageId }: { conversationId: string; lastReadMessageId?: string }) =>
       conversationService.markAsRead(conversationId, lastReadMessageId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['conversations', 'unreadCount'], exact: true });
+    onSuccess: (_, variables) => {
+      // Direct update of inbox unread count - zero background GET queries
+      queryClient.setQueryData<{ conversations: ConversationItem[]; total: number }>(
+        ['conversations', 'inbox'],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            conversations: old.conversations.map((c) =>
+              c.id === variables.conversationId ? { ...c, unreadCount: 0 } : c
+            )
+          };
+        }
+      );
+
+      queryClient.setQueryData<number>(['conversations', 'unreadCount'], (prev = 0) => Math.max(0, prev - 1));
     }
   });
 };
@@ -283,6 +342,8 @@ export const useEmployerConversationContacts = (enabled: boolean = true) => {
     queryKey: ['conversations', 'contacts'],
     queryFn: conversationService.getEmployerContacts,
     enabled,
-    staleTime: 30000,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };

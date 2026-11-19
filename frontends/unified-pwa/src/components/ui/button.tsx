@@ -10,6 +10,10 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-[#0066FF] text-white shadow-xs hover:bg-blue-700 focus-visible:ring-blue-500",
+        navy:
+          "bg-[#0f2f63] hover:bg-[#2563c9] dark:bg-[#2563EB] dark:hover:bg-blue-600 text-white shadow-xs focus-visible:ring-blue-500",
+        whatsapp:
+          "bg-[#25D366] hover:bg-[#20ba59] text-white shadow-xs focus-visible:ring-emerald-500",
         destructive:
           "bg-rose-600 text-white shadow-xs hover:bg-rose-700 focus-visible:ring-rose-500",
         outline:
@@ -24,10 +28,12 @@ const buttonVariants = cva(
           "bg-emerald-600 text-white shadow-xs hover:bg-emerald-700 focus-visible:ring-emerald-500",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-7.5 px-3 text-xs rounded-lg",
-        lg: "h-11 px-6 text-sm rounded-xl",
-        icon: "h-8 w-8 rounded-lg",
+        default: "h-9 sm:h-10 px-3.5 sm:px-4 text-xs font-bold",
+        sm: "h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs rounded-lg",
+        lg: "h-10 sm:h-11 px-4 sm:px-6 text-xs sm:text-sm rounded-xl",
+        icon: "h-8 w-8 sm:h-9 sm:w-9 rounded-lg shrink-0",
+        pill: "h-9 sm:h-10 px-4 sm:px-5 text-xs font-bold rounded-full",
+        pillSm: "h-8 px-3 text-[11px] sm:text-xs rounded-full shrink-0",
       },
     },
     defaultVariants: {

@@ -251,7 +251,7 @@ export default function WorkerTodayShiftPage() {
               onClick={() => setActiveTab('MONTH')}
               className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                 activeTab === 'MONTH'
-                  ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-400 shadow-2xs'
+                  ? 'bg-white dark:bg-zinc-800 text-[#0f2f63] dark:text-sky-400 shadow-2xs'
                   : 'text-[#717784]'
               }`}
             >
@@ -262,7 +262,7 @@ export default function WorkerTodayShiftPage() {
               onClick={() => setActiveTab('HISTORY')}
               className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                 activeTab === 'HISTORY'
-                  ? 'bg-white dark:bg-[#1C1C21] text-[#0f2f63] dark:text-sky-400 shadow-2xs'
+                  ? 'bg-white dark:bg-zinc-800 text-[#0f2f63] dark:text-sky-400 shadow-2xs'
                   : 'text-[#717784]'
               }`}
             >

@@ -17,6 +17,7 @@ import {
     ShieldCheck,
     Mail 
 } from 'lucide-react';
+import { Button } from '../../../components/ui/button';
 
 type Stage = 'EMAIL' | 'CODE' | 'NEW_PASSWORD' | 'SUCCESS';
 
@@ -261,10 +262,12 @@ export default function ForgotPasswordPage() {
                                         </div>
                                     </div>
 
-                                    <button
+                                    <Button
                                         type="submit"
+                                        variant="navy"
+                                        size="lg"
                                         disabled={isLoading || !email}
-                                        className="w-full mt-2 bg-[#0f2f63] dark:bg-[#2563EB] hover:bg-[#2563c9] dark:hover:bg-[#1D4ED8] active:scale-[0.99] disabled:opacity-50 text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                                        className="w-full mt-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider gap-2 shadow-sm hover:shadow-md"
                                     >
                                         {isLoading ? (
                                             <>
@@ -277,7 +280,7 @@ export default function ForgotPasswordPage() {
                                                 <ArrowRight className="w-4 h-4" />
                                             </>
                                         )}
-                                    </button>
+                                    </Button>
                                 </form>
                             </motion.div>
                         )}
@@ -340,10 +343,12 @@ export default function ForgotPasswordPage() {
                                         </p>
                                     </div>
 
-                                    <button
+                                    <Button
                                         type="submit"
+                                        variant="navy"
+                                        size="lg"
                                         disabled={isLoading || code.length < 6}
-                                        className="w-full mt-2 bg-[#0f2f63] dark:bg-[#2563EB] hover:bg-[#2563c9] dark:hover:bg-[#1D4ED8] active:scale-[0.99] disabled:opacity-50 text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                                        className="w-full mt-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider gap-2 shadow-sm hover:shadow-md"
                                     >
                                         {isLoading ? (
                                             <>
@@ -356,7 +361,7 @@ export default function ForgotPasswordPage() {
                                                 <ArrowRight className="w-4 h-4" />
                                             </>
                                         )}
-                                    </button>
+                                    </Button>
 
                                     {/* Resend Code Row */}
                                     <div className="pt-2 flex items-center justify-center gap-2 text-xs text-[#717784] dark:text-zinc-400">
@@ -441,10 +446,12 @@ export default function ForgotPasswordPage() {
                                         />
                                     </div>
 
-                                    <button
+                                    <Button
                                         type="submit"
+                                        variant="navy"
+                                        size="lg"
                                         disabled={isLoading || !password || !confirmPassword}
-                                        className="w-full mt-2 bg-[#0f2f63] dark:bg-[#2563EB] hover:bg-[#2563c9] dark:hover:bg-[#1D4ED8] active:scale-[0.99] disabled:opacity-50 text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                                        className="w-full mt-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider gap-2 shadow-sm hover:shadow-md"
                                     >
                                         {isLoading ? (
                                             <>
@@ -457,7 +464,7 @@ export default function ForgotPasswordPage() {
                                                 <ArrowRight className="w-4 h-4" />
                                             </>
                                         )}
-                                    </button>
+                                    </Button>
                                 </form>
                             </motion.div>
                         )}
@@ -478,13 +485,15 @@ export default function ForgotPasswordPage() {
                                 <p className="text-xs sm:text-sm text-[#717784] dark:text-zinc-400 leading-relaxed">
                                     Your password has been successfully updated. Redirecting you to sign in...
                                 </p>
-                                <button
+                                <Button
+                                    variant="navy"
+                                    size="lg"
                                     onClick={() => navigate(`/sign-in?role=${activeRole.toLowerCase()}`)}
-                                    className="w-full mt-4 bg-[#0f2f63] dark:bg-[#2563EB] hover:bg-[#2563c9] dark:hover:bg-[#1D4ED8] text-white py-3.5 px-5 rounded-full font-medium text-xs sm:text-sm uppercase transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                                    className="w-full mt-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider gap-2 shadow-sm hover:shadow-md"
                                 >
                                     <span>Log In Now</span>
                                     <ArrowRight className="w-4 h-4" />
-                                </button>
+                                </Button>
                             </motion.div>
                         )}
 
