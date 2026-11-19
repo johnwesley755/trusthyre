@@ -100,7 +100,7 @@ export const WageBenchmarkModal: React.FC<WageBenchmarkModalProps> = ({
         </div>
 
         {/* 2. Official Market Range 3-Tier Grid */}
-        <div className="grid grid-cols-3 gap-2.5 text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-center">
           <div className="bg-[#F8FAFC] dark:bg-[#121215] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800 flex flex-col justify-center">
             <span className="text-[10px] uppercase font-bold text-[#717784] dark:text-zinc-400 block">Entry Level</span>
             <span className="text-xs sm:text-sm font-bold text-[#0A1931] dark:text-white mt-0.5 block">
@@ -171,7 +171,7 @@ export const WageBenchmarkModal: React.FC<WageBenchmarkModalProps> = ({
           </div>
 
           {/* Perks Toggles */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
             <button
               type="button"
               onClick={() => setIncludesFreeFood(!includesFreeFood)}

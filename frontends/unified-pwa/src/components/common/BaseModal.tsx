@@ -43,7 +43,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   children,
   footer,
   headerRight,
-  bodyClassName = 'p-5 sm:p-6 space-y-4 bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100',
+  bodyClassName = 'p-4 sm:p-6 space-y-4 bg-white dark:bg-[#0a0a0a] text-[#0A1931] dark:text-zinc-100',
   className = '',
   showCloseButton = true,
 }) => {
@@ -83,11 +83,11 @@ export const BaseModal: React.FC<BaseModalProps> = ({
           exit={{ opacity: 0, scale: 0.96, y: 8 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
           onClick={(e) => e.stopPropagation()}
-          className={`bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100 rounded-2xl sm:rounded-3xl border border-[#e6e8ec] dark:border-zinc-800 shadow-2xl w-full ${MAX_WIDTH_CLASSES[maxWidth]} max-h-[90vh] flex flex-col overflow-hidden my-auto ${className}`}
+          className={`bg-white dark:bg-[#0a0a0a] text-[#0A1931] dark:text-zinc-100 rounded-2xl sm:rounded-3xl border border-[#e6e8ec] dark:border-zinc-800 shadow-2xl w-[94vw] sm:w-full ${MAX_WIDTH_CLASSES[maxWidth]} max-h-[92vh] sm:max-h-[90vh] flex flex-col overflow-hidden my-auto ${className}`}
         >
           {/* Header */}
           {(title || icon || showCloseButton) && (
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#1C1C21] shrink-0">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-[#e6e8ec] dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 {icon && (
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBgColor}`}>
@@ -133,8 +133,10 @@ export const BaseModal: React.FC<BaseModalProps> = ({
 
           {/* Modal Footer */}
           {footer && (
-            <div className="px-5 py-3.5 bg-[#F8FAFC] dark:bg-[#16161A] border-t border-[#e6e8ec] dark:border-zinc-800 shrink-0">
-              {footer}
+            <div className="px-4 sm:px-5 py-3 sm:py-3.5 bg-[#F8FAFC] dark:bg-[#0a0a0a] border-t border-[#e6e8ec] dark:border-zinc-800 shrink-0">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-2.5 [&>button]:w-full [&>button]:sm:w-auto [&>a]:w-full [&>a]:sm:w-auto">
+                {footer}
+              </div>
             </div>
           )}
         </motion.div>

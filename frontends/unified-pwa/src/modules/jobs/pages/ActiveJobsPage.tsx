@@ -27,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { AppLoader } from '../../../components/common/AppLoader';
+import { Button } from '../../../components/ui/button';
 
 export function ActiveJobsPage() {
     const navigate = useNavigate();
@@ -157,12 +158,14 @@ export function ActiveJobsPage() {
                         </div>
                         <h3 className="text-2xl font-black text-[#0A1931] dark:text-white mb-3 tracking-tight">No Active Jobs</h3>
                         <p className="text-slate-500 dark:text-zinc-400 font-medium mb-8">You currently don't have any active job postings. Once you post a new job, it will appear here for you to manage applications and track performance.</p>
-                        <button 
+                        <Button 
+                            variant="navy"
+                            size="lg"
                             onClick={() => navigate('/post-job')}
-                            className="inline-flex items-center gap-2 px-8 py-4 bg-[#0066FF] hover:bg-blue-700 text-white font-bold rounded-full shadow-md hover:shadow-lg transition-all cursor-pointer"
+                            className="rounded-full inline-flex items-center gap-2"
                         >
-                            <PlusCircle className="w-5 h-5" /> Post Your First Job
-                        </button>
+                            <PlusCircle className="w-5 h-5" /> <span>Post Your First Job</span>
+                        </Button>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-4">
@@ -284,8 +287,8 @@ export function ActiveJobsPage() {
             </main>
 
             {/* Background Decorative Organic Blobs */}
-            <div className="fixed top-1/4 -right-40 w-[600px] h-[600px] bg-[#FACD15] opacity-[0.03] rounded-full blur-[120px] -z-10 pointer-events-none organic-blob"></div>
-            <div className="fixed -bottom-40 -left-20 w-[800px] h-[800px] bg-[#0A1931] opacity-[0.02] rounded-full blur-[150px] -z-10 pointer-events-none organic-blob-alt"></div>
+            <div className="fixed top-1/4 -right-40 w-[600px] max-w-[90vw] h-[600px] max-h-[90vw] bg-[#FACD15] opacity-[0.03] rounded-full blur-[120px] -z-10 pointer-events-none overflow-hidden organic-blob"></div>
+            <div className="fixed -bottom-40 -left-20 w-[800px] max-w-[90vw] h-[800px] max-h-[90vw] bg-[#0A1931] opacity-[0.02] rounded-full blur-[150px] -z-10 pointer-events-none overflow-hidden organic-blob-alt"></div>
 
             {/* ⚡ 1-Tap Job Boost & Broadcast Modal */}
             {boostTargetJob && (

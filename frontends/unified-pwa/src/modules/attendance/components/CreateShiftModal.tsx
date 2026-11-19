@@ -12,6 +12,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { BaseModal } from '../../../components/common/BaseModal';
+import { Button } from '../../../components/ui/button';
 import { shiftAttendanceService, type CreateShiftPayload } from '../../../services/shiftAttendance.service';
 import type { WorkOrder } from '../../../services/workOrder.service';
 import { toast } from 'sonner';
@@ -124,7 +125,7 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
           <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 block mb-1.5">
             Shift Timing Presets
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {SHIFT_PRESETS.map((preset) => {
               const isSelected = formData.startTime === preset.start && formData.endTime === preset.end;
               return (
@@ -215,7 +216,7 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
         </div>
 
         {/* Custom Start & End Times */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 block mb-1">
               Start Time *
@@ -290,18 +291,22 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-zinc-800">
-          <button
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-zinc-800">
+          <Button
             type="button"
+            variant="outline"
+            size="default"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 cursor-pointer"
+            className="rounded-xl"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
+            variant="navy"
+            size="default"
             disabled={isSubmitting}
-            className="px-5 py-2.5 rounded-xl bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            className="rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-wider"
           >
             {isSubmitting ? (
               <>
@@ -314,7 +319,7 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
                 <span>Confirm & Schedule</span>
               </>
             )}
-          </button>
+          </Button>
         </div>
       </form>
     </BaseModal>

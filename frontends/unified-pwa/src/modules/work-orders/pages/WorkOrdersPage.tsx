@@ -21,6 +21,7 @@ import { useUser } from '../../../providers/AuthContext';
 import { workOrderService, type WorkOrder } from '../../../services/workOrder.service';
 import { WorkOrderDetailModal } from '../components/WorkOrderDetailModal';
 import { AppLoader } from '../../../components/common/AppLoader';
+import { Button } from '../../../components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { conversationService } from '../../../services/conversation.service';
@@ -101,7 +102,7 @@ export default function WorkOrdersPage() {
       <div className="max-w-7xl mx-auto space-y-6 pb-20">
 
         {/* 1. Header Banner */}
-        <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#09090b] p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="rounded-[2rem] border border-[#e6e8ec] dark:border-zinc-800 bg-[#f4f4f4] dark:bg-[#0a0a0a] p-4 sm:p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0f2f63]/10 dark:bg-sky-500/10 text-[#0f2f63] dark:text-sky-400 text-xs font-semibold">
               <FileText className="w-3.5 h-3.5" />
@@ -116,13 +117,17 @@ export default function WorkOrdersPage() {
           </div>
 
           {isEmployer && (
-            <Link
-              to="/find-workers"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#0f2f63] hover:bg-[#2563c9] text-white text-xs sm:text-sm font-bold uppercase tracking-wider shadow-sm transition-all active:scale-95 shrink-0"
+            <Button
+              asChild
+              variant="navy"
+              size="default"
+              className="rounded-full inline-flex items-center gap-2 uppercase tracking-wider shrink-0"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>Issue New Work Order</span>
-            </Link>
+              <Link to="/find-workers">
+                <PlusCircle className="w-4 h-4" />
+                <span>Issue New Work Order</span>
+              </Link>
+            </Button>
           )}
         </div>
 

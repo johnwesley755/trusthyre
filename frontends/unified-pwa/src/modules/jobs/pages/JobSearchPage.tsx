@@ -33,6 +33,7 @@ import { JobAlertModal } from '../components/JobAlertModal';
 import { ManageAlertsModal } from '../../dashboard/features/alerts/ManageAlertsModal';
 import { WhatsAppBulletinModal } from '../../../components/common/WhatsAppBulletinModal';
 import { SeoHead, buildKeywordsList } from '../../../components/common/SeoHead';
+import { useBodyScrollLock } from '../../../hooks/useBodyScrollLock';
 import { getTaluksForCity } from '../../../constants/regionalTaluks';
 import { WageBenchmarkModal } from '../../../components/common/WageBenchmarkModal';
 import { DigitalLabourChowkModal } from '../../../components/common/DigitalLabourChowkModal';
@@ -70,6 +71,9 @@ export default function JobSearchPage() {
   const [isBulletinOpen, setIsBulletinOpen] = useState(false);
   const [isWageModalOpenMobile, setIsWageModalOpenMobile] = useState(false);
   const [isChowkModalOpen, setIsChowkModalOpen] = useState(false);
+
+  // Lock body scroll when mobile filter sheet is open
+  useBodyScrollLock(isMobileFilterOpen);
 
   const { user } = useAuth();
 
@@ -858,8 +862,8 @@ export default function JobSearchPage() {
 
       {/* 4. Mobile Filter Bottom-Sheet / Drawer Modal */}
       {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4">
-          <div className="bg-white dark:bg-[#1C1C21] w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] max-h-[88vh] flex flex-col shadow-2xl border border-[#e6e8ec] dark:border-zinc-800 overflow-hidden animate-in slide-in-from-bottom duration-200">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4 overscroll-contain touch-none">
+          <div className="bg-white dark:bg-[#0a0a0a] w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] max-h-[88vh] flex flex-col shadow-2xl border border-[#e6e8ec] dark:border-zinc-800 overflow-hidden animate-in slide-in-from-bottom duration-200 overscroll-contain touch-pan-y">
             
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between shrink-0 bg-[#fbfbfb] dark:bg-[#16161A]">

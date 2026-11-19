@@ -423,14 +423,21 @@ export default function LandingPage() {
     if (isMenuOpen) {
       if (lenisRef.current) lenisRef.current.stop();
       document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      document.documentElement.style.touchAction = "none";
     } else {
       if (lenisRef.current && ready) lenisRef.current.start();
       document.body.style.removeProperty("overflow");
       document.documentElement.style.removeProperty("overflow");
+      document.body.style.removeProperty("touch-action");
+      document.documentElement.style.removeProperty("touch-action");
     }
     return () => {
       document.body.style.removeProperty("overflow");
       document.documentElement.style.removeProperty("overflow");
+      document.body.style.removeProperty("touch-action");
+      document.documentElement.style.removeProperty("touch-action");
     };
   }, [isMenuOpen, ready]);
 
@@ -481,15 +488,15 @@ export default function LandingPage() {
       {/* FULLSCREEN MENU OVERLAY */}
       {/* ===================================================================== */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-[120] flex flex-col pointer-events-auto">
+        <div className="fixed inset-0 z-[120] flex flex-col pointer-events-auto overscroll-contain touch-none">
           {/* Navy Backdrop */}
           <div 
             onClick={() => setIsMenuOpen(false)} 
-            className="absolute inset-0 bg-[#0f2f63] opacity-98 transition-opacity duration-300"
+            className="absolute inset-0 bg-[#0f2f63] opacity-98 transition-opacity duration-300 touch-none overscroll-contain"
           />
 
           {/* Inner Content */}
-          <div className="relative z-10 flex flex-col justify-between h-full p-6 sm:p-10 text-white">
+          <div className="relative z-10 flex flex-col justify-between h-full p-6 sm:p-10 text-white overflow-y-auto overscroll-contain touch-pan-y">
             {/* Top Row: Brand & Close Button */}
             <div className="flex items-center justify-between">
               <Link 
@@ -618,97 +625,67 @@ export default function LandingPage() {
           </div>
 
           {/* SITE HEADER (Transparent inside Hero) */}
-          <header className="w-full px-6 py-6 sm:px-10 sm:py-8 flex items-center justify-between text-xs z-20">
+          <header className="w-full px-4 py-4 sm:px-8 sm:py-6 lg:px-10 flex items-center justify-between text-xs z-20">
             {/* Left Navigation (Desktop) */}
-            <nav className="hidden lg:flex items-center gap-8 flex-1">
-              <a href="#categories" className="text-white/85 hover:text-white transition-colors tracking-wide text-sm">
+            <nav className="hidden lg:flex items-center gap-5 xl:gap-8 flex-1 min-w-0">
+              <a href="#categories" className="text-white/85 hover:text-white transition-colors tracking-wide text-sm whitespace-nowrap">
                 {t("Job Categories", "Job Categories")}
               </a>
-              <a href="#technology" className="text-white/85 hover:text-white transition-colors tracking-wide text-sm">
+              <a href="#technology" className="text-white/85 hover:text-white transition-colors tracking-wide text-sm whitespace-nowrap">
                 {t("How It Works", "How It Works")}
               </a>
-              <a href="#standards" className="text-white/85 hover:text-white transition-colors tracking-wide text-sm">
+              <a href="#standards" className="text-white/85 hover:text-white transition-colors tracking-wide text-sm whitespace-nowrap">
                 {t("Standards", "Standards")}
               </a>
-              <a href="#commitments" className="text-white/85 hover:text-white transition-colors tracking-wide text-sm">
+              <a href="#commitments" className="text-white/85 hover:text-white transition-colors tracking-wide text-sm whitespace-nowrap">
                 {t("Protections", "Protections")}
               </a>
             </nav>
 
             {/* Center Brand with Official White Logo on Dark Hero Background */}
-            <Link to="/" className="flex items-center justify-center gap-2 flex-1 lg:justify-center group cursor-pointer py-1" aria-label="TrustHyre Home">
+            <Link to="/" className="flex items-center justify-center gap-2 shrink-0 px-2 lg:px-6 group cursor-pointer py-1" aria-label="TrustHyre Home">
               <img 
                 src={trustHyreLightLogo} 
                 alt="TrustHyre" 
-                className="h-12 sm:h-14 md:h-16 w-auto object-contain block select-none drop-shadow-lg group-hover:scale-105 transition-all duration-300" 
+                className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto object-contain block select-none drop-shadow-lg group-hover:scale-105 transition-all duration-300" 
               />
             </Link>
 
             {/* Right Header Controls */}
-            <div className="flex items-center justify-end gap-4 flex-1">
+            <div className="flex items-center justify-end gap-3 sm:gap-4 flex-1 min-w-0">
               {isSignedIn ? (
-                <div className="hidden sm:flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2 shrink-0">
                   {isAdmin ? (
                     <Link
                       to="/admin/dashboard"
-                      className="px-4 py-2 rounded-full text-xs font-medium bg-white text-[#0f2f63] hover:bg-[#5790e6] hover:text-white transition-colors flex items-center gap-1.5"
+                      className="px-4 py-2 rounded-full text-xs font-semibold bg-white text-[#0f2f63] hover:bg-[#5790e6] hover:text-white transition-colors flex items-center gap-1.5 shrink-0 shadow-xs"
                     >
                       <ShieldCheck className="w-3.5 h-3.5" />
                       <span>{t("Admin Hub", "Admin Hub")}</span>
                     </Link>
                   ) : isEmployer ? (
-                    <>
-                      <Link
-                        to="/find-workers"
-                        className="px-3.5 py-2 rounded-full text-xs font-medium text-white/90 hover:text-white transition-colors"
-                      >
-                        {t("Find Candidates", "Find Candidates")}
-                      </Link>
-                      <Link
-                        to="/find-workers"
-                        className="px-4 py-2 rounded-full text-xs font-medium bg-white text-[#0f2f63] hover:bg-[#5790e6] hover:text-white transition-colors"
-                      >
-                        {t("Find Workers", "Find Workers")}
-                      </Link>
-                    </>
+                    <Link
+                      to="/find-workers"
+                      className="px-4 py-2 rounded-full text-xs font-semibold bg-white text-[#0f2f63] hover:bg-[#5790e6] hover:text-white transition-colors whitespace-nowrap shrink-0 shadow-xs"
+                    >
+                      {t("Find Workers", "Find Workers")}
+                    </Link>
                   ) : (
-                    <>
-                      <Link
-                        to="/search"
-                        className="px-3.5 py-2 rounded-full text-xs font-medium text-white/90 hover:text-white transition-colors"
-                      >
-                        {t("Find Jobs", "Find Jobs")}
-                      </Link>
-                      <Link
-                        to="/search"
-                        className="px-4 py-2 rounded-full text-xs font-medium bg-white text-[#0f2f63] hover:bg-[#5790e6] hover:text-white transition-colors"
-                      >
-                        {t("My Jobs", "My Jobs")}
-                      </Link>
-                    </>
+                    <Link
+                      to="/search"
+                      className="px-4 py-2 rounded-full text-xs font-semibold bg-white text-[#0f2f63] hover:bg-[#5790e6] hover:text-white transition-colors whitespace-nowrap shrink-0 shadow-xs"
+                    >
+                      {t("Find Jobs", "Find Jobs")}
+                    </Link>
                   )}
                 </div>
               ) : (
-                <>
-                  <Link
-                    to="/sign-in?role=worker"
-                    className="hidden md:inline-flex text-white/80 hover:text-white uppercase tracking-wider text-xs transition-colors"
-                  >
-                    {t("Worker Login", "Worker Login")}
-                  </Link>
-                  <Link
-                    to="/sign-in?role=employer"
-                    className="hidden sm:inline-flex text-white/80 hover:text-white uppercase tracking-wider text-xs transition-colors"
-                  >
-                    {t("Employer Login", "Employer Login")}
-                  </Link>
-                  <Link
-                    to="/find-workers"
-                    className="hidden sm:inline-flex px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-white text-xs font-medium transition-colors cursor-pointer"
-                  >
-                    {t("Explore Workers", "Explore Workers")}
-                  </Link>
-                </>
+                <Link
+                  to="/sign-in"
+                  className="hidden sm:inline-flex text-white/90 hover:text-white uppercase tracking-wider text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
+                >
+                  {t("Sign In", "Sign In")}
+                </Link>
               )}
 
               {/* Language Switcher Pill (Light Theme) */}
@@ -725,7 +702,7 @@ export default function LandingPage() {
                     label: lang.native,
                     sublabel: lang.name,
                   }))}
-                  triggerClassName="rounded-full px-3.5 py-1.5 bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100 border border-slate-200/90 dark:border-zinc-700 shadow-2xs font-semibold hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors"
+                  triggerClassName="rounded-full px-3 py-1.5 bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100 border border-slate-200/90 dark:border-zinc-700 shadow-2xs font-semibold hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors"
                   menuClassName="w-48 right-0"
                 />
               </div>
@@ -737,7 +714,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={() => setIsMenuOpen(true)}
-                className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-xs hover:bg-white/25 flex flex-col items-center justify-center gap-1.25 transition-colors cursor-pointer"
+                className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-xs hover:bg-white/25 flex flex-col items-center justify-center gap-1.25 transition-colors cursor-pointer shrink-0 ml-0.5 sm:ml-1"
                 aria-label="Open menu"
               >
                 <span className="w-4 h-[1px] bg-white block" />

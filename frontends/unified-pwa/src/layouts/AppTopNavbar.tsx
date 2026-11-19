@@ -40,6 +40,7 @@ import { useTranslation, SUPPORTED_LANGUAGES } from '../providers/TranslationCon
 import { useTheme } from '../providers/ThemeContext';
 import { ThemeToggle } from '../components/common/ThemeToggle';
 import { useConversationUnreadCount } from '../services/conversation.service';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 export const AppTopNavbar = () => {
   const { user } = useUser();
@@ -57,6 +58,9 @@ export const AppTopNavbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Lock background scroll when any mobile menu or drawer is open
+  useBodyScrollLock(isProfileMenuOpen || isMobileMenuOpen);
 
   const isAuthenticated = Boolean(user);
   const isSuperAdmin = (user?.role as string) === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';
@@ -101,16 +105,16 @@ export const AppTopNavbar = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-black/90 backdrop-blur-md border-b border-[#e6e8ec] dark:border-zinc-800 shadow-xs text-[#0a0a0a] dark:text-white select-none font-['Onest',system-ui,sans-serif] transition-colors duration-200">
-      <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-2 sm:gap-4 overflow-visible">
+      <div className="w-full max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-2 sm:gap-4 overflow-visible">
         
         {/* Left: Brand Logo */}
-        <div className="flex items-center gap-4 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <Link to={logoDestination} className="flex items-center group py-1 shrink-0" aria-label="TrustHyre Home">
             {/* Dynamic theme-aware logo */}
             <img 
               src={isDark ? trustHyreLogoDark : trustHyreLogoLight} 
               alt="TrustHyre" 
-              className="h-9 sm:h-10 md:h-12 w-auto object-contain select-none group-hover:opacity-90 transition-opacity" 
+              className="h-8 sm:h-10 md:h-12 w-auto object-contain select-none group-hover:opacity-90 transition-opacity" 
             />
           </Link>
         </div>
@@ -141,8 +145,10 @@ export const AppTopNavbar = () => {
             </div>
           )}
 
-          {/* Theme Mode Toggle (Pill) */}
-          <ThemeToggle variant="pill" className="shrink-0" />
+          {/* Theme Mode Toggle (Pill) - Desktop & Tablet */}
+          <div className="hidden sm:inline-flex shrink-0">
+            <ThemeToggle variant="pill" className="shrink-0" />
+          </div>
 
           {/* Mobile Search Toggle Button */}
           <button
@@ -200,7 +206,7 @@ export const AppTopNavbar = () => {
               <div className="relative shrink-0" ref={profileMenuRef}>
                 <button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 transition-all cursor-pointer shrink-0 whitespace-nowrap h-9"
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-full bg-[#f4f4f4] dark:bg-zinc-900 hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 border border-[#e6e8ec] dark:border-zinc-800 transition-all cursor-pointer shrink-0 whitespace-nowrap h-9"
                   aria-expanded={isProfileMenuOpen}
                   aria-label="User navigation menu"
                 >
@@ -223,7 +229,7 @@ export const AppTopNavbar = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.98 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#1C1C21] rounded-2xl shadow-2xl border border-[#e6e8ec] dark:border-zinc-800 py-2 text-[#0a0a0a] dark:text-zinc-100 z-50 font-['Onest',system-ui,sans-serif] max-h-[calc(100vh-5rem)] overflow-y-auto"
+                      className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.25rem)] bg-white dark:bg-[#0a0a0a] rounded-2xl shadow-2xl border border-[#e6e8ec] dark:border-zinc-800 py-2 text-[#0a0a0a] dark:text-zinc-100 z-50 font-['Onest',system-ui,sans-serif] max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain touch-pan-y"
                     >
                       {/* User Profile Card Header */}
                       <div className="px-4 py-3 border-b border-[#e6e8ec] dark:border-zinc-800">
@@ -286,6 +292,12 @@ export const AppTopNavbar = () => {
                             );
                           })}
                         </div>
+                      </div>
+
+                      {/* Mobile Theme Switcher Row */}
+                      <div className="sm:hidden px-4 py-2.5 border-b border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between bg-slate-50/70 dark:bg-zinc-900/70">
+                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Theme Mode</span>
+                        <ThemeToggle variant="pill" showLabel={true} />
                       </div>
 
                       {/* Menu Items strictly distinguished by Role */}
@@ -697,7 +709,7 @@ export const AppTopNavbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-white dark:bg-[#0a0a0a] border-t border-[#e6e8ec] dark:border-zinc-800 px-4 py-4 space-y-3 shadow-xl max-h-[calc(100vh-4.5rem)] overflow-y-auto"
+            className="lg:hidden bg-white dark:bg-[#0a0a0a] border-t border-[#e6e8ec] dark:border-zinc-800 px-4 py-4 space-y-3 shadow-xl max-h-[calc(100vh-4.5rem)] overflow-y-auto overscroll-contain touch-pan-y"
           >
             {/* Mobile Regional Language Quick-Switch Bar */}
             <div className="p-2.5 bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 space-y-1.5">
@@ -705,7 +717,7 @@ export const AppTopNavbar = () => {
                 <Globe className="w-3.5 h-3.5 text-[#0f2f63] dark:text-[#38BDF8]" />
                 <span>Language / மொழி / भाषा</span>
               </div>
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                 {SUPPORTED_LANGUAGES.map((lang) => {
                   const isSelected = language === lang.code;
                   return (

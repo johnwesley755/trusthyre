@@ -40,6 +40,7 @@ import { toast } from 'sonner';
 import { jobService } from '../../../services/job.service';
 import { calculateMatchScore, getMatchScoreVisuals } from '../../../utils/matchScorer';
 import { Phone, MessageSquare, Sparkles as SparklesIcon, Zap } from 'lucide-react';
+import { useBodyScrollLock } from '../../../hooks/useBodyScrollLock';
 
 const JOB_CATEGORIES = [
   "All",
@@ -73,6 +74,9 @@ export const WorkerSearchPage = () => {
   const [pageSize, setPageSize] = useState(15);
   const [isManageAlertsOpen, setIsManageAlertsOpen] = useState(false);
   const [isTalentAlertModalOpen, setIsTalentAlertModalOpen] = useState(false);
+
+  // Lock body scroll when mobile filter sheet is open
+  useBodyScrollLock(isMobileFilterOpen);
 
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -836,8 +840,8 @@ export const WorkerSearchPage = () => {
 
       {/* MOBILE FILTER MODAL / BOTTOM SHEET */}
       {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4">
-          <div className="bg-white dark:bg-[#1C1C21] w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] p-6 space-y-6 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-200 shadow-2xl border border-slate-200/80 dark:border-zinc-800">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4 overscroll-contain touch-none">
+          <div className="bg-white dark:bg-[#0a0a0a] w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] p-6 space-y-6 max-h-[85vh] overflow-y-auto overscroll-contain touch-pan-y animate-in slide-in-from-bottom duration-200 shadow-2xl border border-slate-200/80 dark:border-zinc-800">
             
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">

@@ -4,6 +4,7 @@ import trustHyreLightLogo from '../../../assets/TrustHyre Logo with Skills Tagli
 import { useNavigate, useLocation } from 'react-router-dom';
 import { NotificationCenter } from '../features/notifications/NotificationCenter';
 import { UserAvatar } from '../../../components/common/UserAvatar';
+import { useBodyScrollLock } from '../../../hooks/useBodyScrollLock';
 
 interface DashboardSidebarProps {
   isOpen?: boolean;
@@ -15,6 +16,9 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onCl
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Prevent background scroll bleed when mobile sidebar is open
+  useBodyScrollLock(Boolean(isOpen));
 
   const isEmployer = user?.role === 'EMPLOYER';
 
@@ -51,7 +55,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onCl
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-60 md:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/50 z-60 md:hidden backdrop-blur-sm overscroll-contain touch-none"
           onClick={onClose}
         />
       )}
@@ -59,7 +63,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onCl
       <aside
         className={`fixed md:sticky top-0 left-0 h-screen w-60 md:w-68 bg-[#0A1931] p-4 gap-1.5 shrink-0 z-70 transition-transform duration-300 md:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:flex flex-col overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`}
+        } md:flex flex-col overflow-y-auto overscroll-contain touch-pan-y no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`}
       >
         {/* Logo Section */}
         <div

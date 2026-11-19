@@ -134,7 +134,7 @@ export const AdminVerificationsPage: React.FC = () => {
               </div>
 
               {/* Document Previews */}
-              <div className="grid grid-cols-2 gap-2 bg-[#f8fafc] dark:bg-[#09090b] p-3 rounded-xl border border-[#e6e8ec] dark:border-zinc-800">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-[#f8fafc] dark:bg-[#09090b] p-3 rounded-xl border border-[#e6e8ec] dark:border-zinc-800">
                 <div>
                   <span className="text-[10px] font-semibold text-[#717784] dark:text-zinc-400 block mb-1.5 uppercase tracking-wider">ID Document</span>
                   {item.docImageUrl ? (

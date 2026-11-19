@@ -28,6 +28,7 @@ import {
   Stethoscope
 } from "lucide-react";
 import { OnboardingVisualHero } from "../components/OnboardingVisualHero";
+import { Button } from "../../../components/ui/button";
 
 const INDUSTRY_OPTIONS = [
   { id: 'CONSTRUCTION', label: 'Construction & Civil', icon: HardHat },
@@ -454,35 +455,41 @@ export default function EmployerOnboardingPage() {
 
           {/* ANCHORED BOTTOM ACTION BAR */}
           <div className="pt-4 border-t border-[#e6e8ec] dark:border-zinc-800 shrink-0 mt-4">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
               {step > 1 ? (
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="default"
                   onClick={prevStep}
-                  className="px-4 py-3 bg-[#f4f4f4] dark:bg-zinc-800 hover:bg-slate-200/80 dark:hover:bg-zinc-700 text-[#0A1931] dark:text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                  className="rounded-xl flex items-center justify-center gap-1.5"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Previous</span>
-                </button>
+                </Button>
               ) : (
-                <div />
+                <div className="hidden sm:block" />
               )}
 
               {step < 3 ? (
-                <button
+                <Button
                   type="button"
+                  variant="navy"
+                  size="default"
                   onClick={nextStep}
-                  className="bg-[#0f2f63] hover:bg-[#0c244c] dark:bg-sky-600 dark:hover:bg-sky-700 active:bg-[#081a38] text-white py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ml-auto"
+                  className="rounded-xl flex items-center justify-center gap-2 sm:ml-auto"
                 >
                   <span>Continue</span>
                   <ArrowRight className="w-4 h-4" />
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="button"
+                  variant="navy"
+                  size="default"
                   onClick={handleSubmit}
                   disabled={isSubmitting || !formData.companyName}
-                  className="bg-[#0f2f63] hover:bg-[#0c244c] dark:bg-sky-600 dark:hover:bg-sky-700 active:bg-[#081a38] disabled:opacity-50 text-white py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ml-auto"
+                  className="rounded-xl flex items-center justify-center gap-2 sm:ml-auto"
                 >
                   {isSubmitting ? (
                     <>
@@ -495,7 +502,7 @@ export default function EmployerOnboardingPage() {
                       <Building2 className="w-4 h-4" />
                     </>
                   )}
-                </button>
+                </Button>
               )}
             </div>
           </div>
