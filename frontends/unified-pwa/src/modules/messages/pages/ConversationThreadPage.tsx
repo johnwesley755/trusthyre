@@ -14,7 +14,13 @@ import {
   User,
   Building,
   FileText,
-  Calendar
+  Calendar,
+  Paperclip,
+  Image as ImageIcon,
+  FileDown,
+  X,
+  Eye,
+  Download
 } from 'lucide-react';
 import {
   useConversationMessages,
@@ -23,6 +29,7 @@ import {
   type ConversationMessage
 } from '../../../services/conversation.service';
 import { useUser } from '../../../providers/AuthContext';
+import { fcmService } from '../../../services/fcm.service';
 
 interface ConversationThreadPageProps {
   conversationId?: string;
@@ -50,6 +57,13 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
   const [reportSuccess, setReportSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Attachment & Lightbox state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastMarkedReadIdRef = useRef<string | null>(null);
@@ -81,10 +95,74 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
     }
   }, [threadMessages.length, activeConversationId, user?.id]);
 
+  // Listen for real-time FCM push notifications in foreground to immediately refresh this thread
+  useEffect(() => {
+    let unsubscribeFn: (() => void) | null = null;
+    console.log(`[ConversationThreadPage] 🎧 Attaching foreground FCM listener for convId=${activeConversationId}`);
+    fcmService.listenToForegroundMessages((payload: any) => {
+      console.log('[ConversationThreadPage] 📬 Foreground FCM message received:', payload);
+      const convId = payload?.data?.conversationId;
+      if (convId === activeConversationId || payload?.data?.type === 'CHAT_MESSAGE') {
+        console.log('[ConversationThreadPage] 🔄 Refetching messages due to incoming FCM chat event');
+        refetch();
+      }
+    }).then((unsub: any) => {
+      unsubscribeFn = unsub;
+    }).catch((err) => {
+      console.error('[ConversationThreadPage] ❌ Error in listenToForegroundMessages:', err);
+    });
+
+    return () => {
+      if (unsubscribeFn) {
+        console.log('[ConversationThreadPage] 🧹 Unsubscribing foreground FCM listener');
+        unsubscribeFn();
+      }
+    };
+  }, [activeConversationId, refetch]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMessage('File size exceeds 10MB limit.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    // Validate MIME types
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      setErrorMessage('Only images (JPEG, PNG, WEBP) and PDF documents are allowed.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setErrorMessage(null);
+    setSelectedFile(file);
+
+    if (file.type.startsWith('image/')) {
+      const preview = URL.createObjectURL(file);
+      setFilePreviewUrl(preview);
+    } else {
+      setFilePreviewUrl(null);
+    }
+  };
+
+  const handleClearSelectedFile = () => {
+    if (filePreviewUrl) {
+      URL.revokeObjectURL(filePreviewUrl);
+    }
+    setSelectedFile(null);
+    setFilePreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const trimmed = inputBody.trim();
-    if (!trimmed || !activeConversationId || sendMessageMutation.isPending) return;
+    if ((!trimmed && !selectedFile) || !activeConversationId || sendMessageMutation.isPending || isUploadingAttachment) return;
 
     if (trimmed.length > 2000) {
       setErrorMessage('Message exceeds 2,000 characters limit.');
@@ -92,22 +170,53 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
     }
 
     setErrorMessage(null);
+
+    let attachmentMetadata: any = null;
+    let messageType: 'TEXT' | 'ATTACHMENT' = 'TEXT';
+
+    if (selectedFile) {
+      setIsUploadingAttachment(true);
+      try {
+        const uploadResult = await conversationService.uploadAttachment(selectedFile);
+        attachmentMetadata = {
+          attachmentUrl: uploadResult.url,
+          publicId: uploadResult.publicId,
+          fileName: uploadResult.fileName,
+          fileType: uploadResult.fileType,
+          fileSize: uploadResult.fileSize
+        };
+        messageType = 'ATTACHMENT';
+      } catch (uploadErr: any) {
+        setIsUploadingAttachment(false);
+        setErrorMessage(uploadErr?.response?.data?.message || uploadErr?.message || 'Failed to upload attachment. Please check file and retry.');
+        return;
+      }
+      setIsUploadingAttachment(false);
+    }
+
+    // Clear composer inputs
     setInputBody('');
+    handleClearSelectedFile();
 
     // Generate unique client idempotency ID
     const clientMessageId = `web-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
     try {
-      await sendMessageMutation.mutateAsync({
+      console.log(`[ConversationThreadPage:handleSend] 📤 Mutating message in convId=${activeConversationId}, clientMsgId=${clientMessageId}`);
+      const res = await sendMessageMutation.mutateAsync({
         conversationId: activeConversationId,
         body: trimmed,
+        messageType,
+        metadata: attachmentMetadata,
         clientMessageId
       });
+      console.log('[ConversationThreadPage:handleSend] ✅ mutateAsync resolved with message:', res);
       scrollToBottom('smooth');
       if (textareaRef.current) {
         textareaRef.current.focus();
       }
     } catch (err: any) {
+      console.error('[ConversationThreadPage:handleSend] ❌ Send error:', err);
       setErrorMessage(err?.response?.data?.message || err?.message || 'Failed to send message. Please try again.');
       setInputBody(trimmed); // Restore typed message on error
     }
@@ -356,19 +465,90 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
             minute: '2-digit'
           });
 
+          const attachmentMeta = msg.metadata?.attachmentUrl ? msg.metadata : null;
+          const isImageAttachment = attachmentMeta?.fileType?.startsWith('image/') || 
+            (attachmentMeta?.attachmentUrl && /\.(jpeg|jpg|png|webp|gif)(\?.*)?$/i.test(attachmentMeta.attachmentUrl));
+          const isPdfAttachment = attachmentMeta?.fileType === 'application/pdf' || 
+            (attachmentMeta?.attachmentUrl && /\.pdf(\?.*)?$/i.test(attachmentMeta.attachmentUrl));
+
           return (
             <div
               key={msg.id}
               className={`flex flex-col ${isMine ? 'items-end' : 'items-start'}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm sm:max-w-[70%] break-words whitespace-pre-wrap ${
+                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm sm:max-w-[70%] break-words ${
                   isMine
                     ? 'bg-emerald-600 text-white rounded-br-none dark:bg-emerald-600'
                     : 'bg-white text-slate-900 rounded-bl-none border border-slate-200/80 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100'
                 }`}
               >
-                {msg.body}
+                {/* Image Attachment Card */}
+                {isImageAttachment && attachmentMeta?.attachmentUrl && (
+                  <div className="mb-2 overflow-hidden rounded-xl bg-slate-900/10 dark:bg-black/20">
+                    <img
+                      src={attachmentMeta.attachmentUrl}
+                      alt={attachmentMeta.fileName || 'Photo attachment'}
+                      loading="lazy"
+                      onClick={() => setLightboxImageUrl(attachmentMeta.attachmentUrl || null)}
+                      className="max-h-72 w-full object-cover cursor-pointer transition hover:opacity-95"
+                    />
+                    <div className="flex items-center justify-between px-2.5 py-1.5 text-[11px] opacity-80">
+                      <span className="truncate max-w-[180px]">{attachmentMeta.fileName || 'Photo'}</span>
+                      <button
+                        type="button"
+                        onClick={() => setLightboxImageUrl(attachmentMeta.attachmentUrl || null)}
+                        className="hover:underline flex items-center gap-1 font-medium ml-2"
+                      >
+                        <Eye className="w-3 h-3" /> View
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* PDF Document Card */}
+                {isPdfAttachment && attachmentMeta?.attachmentUrl && (
+                  <div className={`mb-2 flex items-center justify-between gap-3 rounded-xl p-3 border transition ${
+                    isMine 
+                      ? 'bg-emerald-700/60 border-emerald-500 text-white' 
+                      : 'bg-slate-50 border-slate-200 text-slate-900 dark:bg-slate-900/70 dark:border-slate-700 dark:text-slate-100'
+                  }`}>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold leading-snug">
+                          {attachmentMeta.fileName || 'Document.pdf'}
+                        </p>
+                        <p className="text-[10px] opacity-75">
+                          {attachmentMeta.fileSize 
+                            ? `${(attachmentMeta.fileSize / (1024 * 1024)).toFixed(2)} MB • PDF` 
+                            : 'PDF Document'}
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href={attachmentMeta.attachmentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download={attachmentMeta.fileName || 'document.pdf'}
+                      className={`shrink-0 flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold shadow-xs transition ${
+                        isMine 
+                          ? 'bg-white text-emerald-800 hover:bg-emerald-50' 
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600'
+                      }`}
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Download
+                    </a>
+                  </div>
+                )}
+
+                {/* Message Body Caption */}
+                {msg.body && (
+                  <div className="whitespace-pre-wrap">{msg.body}</div>
+                )}
               </div>
               <div className="mt-1 flex items-center space-x-1 px-1 text-[11px] text-slate-400 dark:text-slate-500">
                 <span>{timeFormatted}</span>
@@ -390,8 +570,66 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
           </div>
         )}
 
+        {/* Selected File Preview Banner */}
+        {selectedFile && (
+          <div className="mb-2.5 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-700 dark:bg-slate-800/80">
+            <div className="flex items-center gap-2.5 min-w-0">
+              {filePreviewUrl ? (
+                <img
+                  src={filePreviewUrl}
+                  alt="Preview"
+                  className="h-10 w-10 rounded-lg object-cover border border-slate-200 dark:border-slate-700"
+                />
+              ) : (
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400">
+                  <FileText className="h-5 w-5" />
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  {selectedFile.name}
+                </p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                  {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • {selectedFile.type.startsWith('image/') ? 'Photo' : 'PDF Document'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleClearSelectedFile}
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200 transition"
+              aria-label="Remove attachment"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Hidden File Input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          onChange={handleFileChange}
+          className="hidden"
+          id="chat-file-attachment-input"
+        />
+
         <form onSubmit={handleSend} className="flex items-end space-x-2">
-          <div className="relative flex-1">
+          {/* Paperclip / File Picker Button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sendMessageMutation.isPending || isUploadingAttachment}
+            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/80 transition disabled:opacity-50"
+            title="Attach photo or PDF"
+            aria-label="Attach photo or PDF"
+          >
+            <Paperclip className="h-5 w-5" />
+          </button>
+
+          <div className="relative flex-1 min-w-0">
             <textarea
               ref={textareaRef}
               rows={2}
@@ -399,21 +637,27 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
               value={inputBody}
               onChange={(e) => setInputBody(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={`Message ${counterpart.name} regarding "${conversation.jobTitle}"...`}
-              className="w-full resize-none rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-emerald-400 dark:focus:bg-slate-800"
+              placeholder={
+                selectedFile
+                  ? `Add a caption (optional)...`
+                  : window.innerWidth < 640
+                  ? `Message ${counterpart.name}...`
+                  : `Message ${counterpart.name} regarding "${conversation.jobTitle}"...`
+              }
+              className="w-full resize-none rounded-xl border border-slate-300 bg-slate-50 p-2.5 pb-6 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-emerald-400 dark:focus:bg-slate-800"
             />
-            <div className="absolute right-2.5 bottom-2 text-[10px] text-slate-400 dark:text-slate-500">
+            <div className="pointer-events-none absolute right-2.5 bottom-1 text-[10px] text-slate-400 dark:text-slate-500 bg-slate-50/80 dark:bg-slate-800/80 px-1 rounded">
               {inputBody.length}/2000
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={!inputBody.trim() || sendMessageMutation.isPending}
+            disabled={(!inputBody.trim() && !selectedFile) || sendMessageMutation.isPending || isUploadingAttachment}
             className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed dark:bg-emerald-600 dark:hover:bg-emerald-500"
             aria-label="Send message"
           >
-            {sendMessageMutation.isPending ? (
+            {sendMessageMutation.isPending || isUploadingAttachment ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <Send className="h-5 w-5" />
@@ -421,6 +665,44 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
           </button>
         </form>
       </div>
+
+      {/* Full-Screen Image Lightbox Modal */}
+      {lightboxImageUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xs"
+          onClick={() => setLightboxImageUrl(null)}
+        >
+          <div
+            className="relative max-h-[90vh] max-w-4xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute right-2 -top-12 flex items-center gap-2">
+              <a
+                href={lightboxImageUrl}
+                download="photo-attachment"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 rounded-lg bg-white/20 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md hover:bg-white/30 transition"
+              >
+                <Download className="h-4 w-4" /> Download
+              </a>
+              <button
+                type="button"
+                onClick={() => setLightboxImageUrl(null)}
+                className="rounded-lg bg-white/20 p-1.5 text-white backdrop-blur-md hover:bg-white/30 transition"
+                aria-label="Close image preview"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <img
+              src={lightboxImageUrl}
+              alt="Full size attachment preview"
+              className="max-h-[85vh] max-w-full rounded-2xl object-contain shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Abuse Reporting Modal */}
       {isReportModalOpen && (

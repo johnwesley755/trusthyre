@@ -131,12 +131,16 @@ export const sendMessage = async (c: Context) => {
     }
 
     const body = await c.req.json().catch(() => ({}));
-    if (!body.body || typeof body.body !== 'string' || !body.body.trim()) {
-      return c.json(ApiResponse.error('Message body is required'), 400 as any);
+    const trimmedBody = typeof body.body === 'string' ? body.body.trim() : '';
+    const hasAttachment = Boolean(body.metadata?.attachmentUrl);
+
+    if (!trimmedBody && !hasAttachment) {
+      return c.json(ApiResponse.error('Message body or attachment is required'), 400 as any);
     }
 
     const message = await ConversationService.sendMessage(conversationId, userId, {
-      body: body.body,
+      body: trimmedBody,
+      messageType: body.messageType || (hasAttachment ? 'ATTACHMENT' : 'TEXT'),
       clientMessageId: body.clientMessageId,
       metadata: body.metadata,
       workOrderId: body.workOrderId,

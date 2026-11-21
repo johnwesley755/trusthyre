@@ -2,7 +2,8 @@ import prisma from '../config/prisma';
 import { NotificationDispatcher } from './notificationDispatcher';
 
 export interface SendMessageInput {
-  body: string;
+  body?: string;
+  messageType?: 'TEXT' | 'ATTACHMENT' | 'SYSTEM';
   clientMessageId?: string;
   metadata?: Record<string, any>;
   workOrderId?: string;
@@ -704,6 +705,7 @@ export const ConversationService = {
           senderId: c.messages[0].sender_user_id,
           body: c.messages[0].body,
           messageType: c.messages[0].message_type,
+          metadata: c.messages[0].metadata,
           createdAt: c.messages[0].created_at
         } : null
       };
@@ -903,8 +905,11 @@ export const ConversationService = {
     input: SendMessageInput
   ) => {
     const rawBody = input.body ? input.body.trim() : '';
-    if (!rawBody) {
-      throw new Error("Message body cannot be empty.");
+    const messageType = input.messageType || (input.metadata?.attachmentUrl ? 'ATTACHMENT' : 'TEXT');
+
+    // Validation: Message must have either text body or attachment metadata
+    if (!rawBody && !input.metadata?.attachmentUrl) {
+      throw new Error("Message body cannot be empty or missing attachment.");
     }
     if (rawBody.length > 2000) {
       throw new Error("Message exceeds the maximum permitted length of 2,000 characters.");
@@ -954,7 +959,7 @@ export const ConversationService = {
         data: {
           conversation_id: conversationId,
           sender_user_id: senderUserId,
-          message_type: 'TEXT',
+          message_type: messageType,
           body: rawBody,
           client_message_id: input.clientMessageId || null,
           work_order_id: input.workOrderId || null,
@@ -994,15 +999,46 @@ export const ConversationService = {
 
     const senderName = `${senderMeta?.first_name || ''} ${senderMeta?.last_name || ''}`.trim() || 'A TrustHyre user';
 
-    // Privacy-preserving notification copy (no raw message text on lock screen)
+    // Privacy-preserving & rich notification copy
+    const isAttachment = createdMessage.message_type === 'ATTACHMENT';
+    const attachmentMeta = (createdMessage.metadata as any)?.attachmentUrl ? (createdMessage.metadata as any) : null;
+    
+    let notificationBody = `${senderName} sent you a message regarding your application.`;
+    if (isAttachment) {
+      if (attachmentMeta?.fileType?.startsWith('image/')) {
+        notificationBody = `${senderName} sent you a photo.`;
+      } else if (attachmentMeta?.fileType === 'application/pdf') {
+        notificationBody = `${senderName} sent you a document: ${attachmentMeta.fileName || 'PDF attachment'}.`;
+      } else {
+        notificationBody = `${senderName} sent you an attachment.`;
+      }
+    } else if (rawBody) {
+      // Safe preview truncated to 80 chars
+      const truncated = rawBody.length > 80 ? `${rawBody.substring(0, 80)}...` : rawBody;
+      notificationBody = `${senderName}: "${truncated}"`;
+    }
+
+    console.log(`[ConversationService:SendMessage] 💬 Message sent by ${senderUserId} in conv ${conversationId} (msgId=${createdMessage.id}, type=${createdMessage.message_type})`);
+    console.log(`[ConversationService:Notify] 🔔 Triggering notification to recipient ${recipientUserId}`);
+
     NotificationDispatcher.dispatch({
       userId: recipientUserId,
-      title: `New message about ${conversation.jobs.title}`,
-      message: `${senderName} sent you a message regarding your application.`,
-      type: 'STATUS_UPDATE',
-      link: `/messages/${conversation.id}`
+      title: `Message from ${senderName} • ${conversation.jobs.title}`,
+      message: notificationBody,
+      type: 'CHAT_MESSAGE',
+      link: `/messages/${conversation.id}`,
+      data: {
+        conversationId: conversation.id,
+        senderId: senderUserId,
+        senderName,
+        messageId: createdMessage.id,
+        messageType: createdMessage.message_type,
+        ...(attachmentMeta?.attachmentUrl ? { attachmentUrl: attachmentMeta.attachmentUrl } : {})
+      }
+    }).then(() => {
+      console.log(`[ConversationService:Notify] ✅ Notification dispatch completed for ${recipientUserId}`);
     }).catch(err => {
-      console.warn('[ConversationService:Notify] Push notification warning:', err.message);
+      console.warn('[ConversationService:Notify] ❌ Push notification warning:', err.message);
     });
 
     return createdMessage;

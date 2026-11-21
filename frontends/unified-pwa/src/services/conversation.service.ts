@@ -66,12 +66,19 @@ export interface ConversationMessage {
   id: string;
   conversation_id: string;
   sender_user_id: string;
-  message_type: 'TEXT' | 'SYSTEM';
+  message_type: 'TEXT' | 'SYSTEM' | 'ATTACHMENT';
   body: string;
   client_message_id?: string | null;
   work_order_id?: string | null;
   interview_id?: string | null;
-  metadata?: Record<string, any> | null;
+  metadata?: {
+    attachmentUrl?: string;
+    fileType?: string;
+    fileName?: string;
+    fileSize?: number;
+    publicId?: string;
+    [key: string]: any;
+  } | null;
   created_at: string;
   edited_at?: string | null;
 }
@@ -179,13 +186,39 @@ export const conversationService = {
     body: string,
     clientMessageId?: string,
     workOrderId?: string,
-    interviewId?: string
+    interviewId?: string,
+    metadata?: Record<string, any>,
+    messageType?: 'TEXT' | 'ATTACHMENT' | 'SYSTEM'
   ): Promise<ConversationMessage> => {
     const res = await apiClient.post<{ success: boolean; data: ConversationMessage }>(
       `/api/conversations/${conversationId}/messages`,
-      { body, clientMessageId, workOrderId, interviewId }
+      { body, clientMessageId, workOrderId, interviewId, metadata, messageType }
     );
     return res.data?.data || res.data;
+  },
+
+  uploadAttachment: async (file: File): Promise<{
+    url: string;
+    publicId: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiClient.post<{ success: boolean; data: any }>('/api/media/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    const media = res.data?.data || res.data;
+    return {
+      url: media.url,
+      publicId: media.publicId,
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size
+    };
   },
 
   markAsRead: async (conversationId: string, lastReadMessageId?: string): Promise<any> => {
@@ -218,9 +251,9 @@ export const useConversationInbox = () => {
   return useQuery({
     queryKey: ['conversations', 'inbox'],
     queryFn: conversationService.getInbox,
-    staleTime: 5 * 60 * 1000, // 5 minutes cache - prevents background polling loops
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 };
 
@@ -229,9 +262,9 @@ export const useConversationUnreadCount = (enabled: boolean = true) => {
     queryKey: ['conversations', 'unreadCount'],
     queryFn: conversationService.getUnreadCount,
     enabled,
-    staleTime: 5 * 60 * 1000, // 5 minutes cache - prevents background polling loops
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 };
 
@@ -240,9 +273,9 @@ export const useConversationMessages = (conversationId?: string) => {
     queryKey: ['conversations', conversationId, 'messages'],
     queryFn: () => conversationService.getMessages(conversationId!),
     enabled: Boolean(conversationId),
-    staleTime: 5 * 60 * 1000, // 5 minutes cache - prevents background polling loops
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 };
 
@@ -254,29 +287,55 @@ export const useSendMessage = () => {
       body,
       clientMessageId,
       workOrderId,
-      interviewId
+      interviewId,
+      metadata,
+      messageType
     }: {
       conversationId: string;
       body: string;
       clientMessageId?: string;
       workOrderId?: string;
       interviewId?: string;
-    }) => conversationService.sendMessage(conversationId, body, clientMessageId, workOrderId, interviewId),
+      metadata?: Record<string, any>;
+      messageType?: 'TEXT' | 'ATTACHMENT' | 'SYSTEM';
+    }) => conversationService.sendMessage(conversationId, body, clientMessageId, workOrderId, interviewId, metadata, messageType),
     onSuccess: (newMsg, variables) => {
-      // Direct cache patching - avoids triggering duplicate GET requests
+      console.log('[useSendMessage:onSuccess] 🚀 Message successfully sent to backend:', newMsg);
+      console.log('[useSendMessage:onSuccess] 🔄 Patching React Query cache for convId:', variables.conversationId);
+
+      // 1. Direct cache patching - instantly appends to local messages array for sender
       queryClient.setQueryData<ConversationThreadResponse>(
         ['conversations', variables.conversationId, 'messages'],
         (old) => {
-          if (!old) return old;
-          const exists = old.messages.some((m) => m.id === newMsg.id);
+          if (!old) {
+            console.warn('[useSendMessage:onSuccess] ⚠️ No existing thread in cache for key:', ['conversations', variables.conversationId, 'messages']);
+            return old;
+          }
+          const currentMessages = old.messages || [];
+          const exists = currentMessages.some((m) => m.id === newMsg.id || (newMsg.client_message_id && m.client_message_id === newMsg.client_message_id));
+          if (exists) {
+            console.log('[useSendMessage:onSuccess] ℹ️ Message already in cache, updating in place');
+            return {
+              ...old,
+              messages: currentMessages.map((m) =>
+                m.id === newMsg.id || (newMsg.client_message_id && m.client_message_id === newMsg.client_message_id) ? newMsg : m
+              )
+            };
+          }
+          console.log('[useSendMessage:onSuccess] ➕ Appending newMsg to cache. Total messages will be:', currentMessages.length + 1);
           return {
             ...old,
-            messages: exists ? old.messages : [...old.messages, newMsg]
+            messages: [...currentMessages, newMsg]
           };
         }
       );
 
-      // Direct update of inbox snippet
+      // 2. Invalidate query to ensure full consistency and trigger any attached listeners
+      queryClient.invalidateQueries({
+        queryKey: ['conversations', variables.conversationId, 'messages']
+      });
+
+      // 3. Direct update of inbox snippet
       queryClient.setQueryData<{ conversations: ConversationItem[]; total: number }>(
         ['conversations', 'inbox'],
         (old) => {
@@ -291,6 +350,7 @@ export const useSendMessage = () => {
                       id: newMsg.id,
                       body: newMsg.body,
                       messageType: newMsg.message_type,
+                      metadata: newMsg.metadata,
                       createdAt: newMsg.created_at,
                       senderId: newMsg.sender_user_id
                     },
@@ -308,6 +368,10 @@ export const useSendMessage = () => {
           };
         }
       );
+
+      queryClient.invalidateQueries({
+        queryKey: ['conversations', 'inbox']
+      });
     }
   });
 };

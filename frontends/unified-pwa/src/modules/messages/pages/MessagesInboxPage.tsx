@@ -29,6 +29,7 @@ import { ConversationThreadPage } from './ConversationThreadPage';
 import { useUser } from '../../../providers/AuthContext';
 import { BaseModal } from '../../../components/common/BaseModal';
 import { toast } from 'sonner';
+import { fcmService } from '../../../services/fcm.service';
 
 export const MessagesInboxPage: React.FC = () => {
   const { conversationId: routeConversationId } = useParams<{ conversationId?: string }>();
@@ -60,6 +61,17 @@ export const MessagesInboxPage: React.FC = () => {
       setSelectedConversationId(conversations[0].id);
     }
   }, [routeConversationId, conversations.length, selectedConversationId]);
+
+  // Request FCM Push Notification registration once user lands on messages page if supported
+  React.useEffect(() => {
+    if (user?.id && fcmService.isPushSupported()) {
+      const permission = fcmService.getPermissionState();
+      // Only auto-register if permission was already granted or prompt gently
+      if (permission === 'granted') {
+        fcmService.requestPushPermissionAndRegister(user.id).catch(() => {});
+      }
+    }
+  }, [user?.id]);
 
   const filteredConversations = useMemo(() => {
     let result = conversations;
@@ -348,7 +360,11 @@ export const MessagesInboxPage: React.FC = () => {
                       </div>
 
                       <p className={`mt-1 truncate text-xs ${c.unreadCount > 0 ? 'font-semibold text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
-                        {c.lastMessage?.body || c.lastMessagePreview?.body || 'No messages yet'}
+                        {c.lastMessage?.messageType === 'ATTACHMENT'
+                          ? c.lastMessage.body
+                            ? `📎 ${c.lastMessage.body}`
+                            : '📎 Attachment (Photo/Document)'
+                          : c.lastMessage?.body || c.lastMessagePreview?.body || 'No messages yet'}
                       </p>
                     </div>
                   </button>
