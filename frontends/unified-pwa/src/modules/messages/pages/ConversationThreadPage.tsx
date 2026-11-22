@@ -38,6 +38,11 @@ interface ConversationThreadPageProps {
   onBack?: () => void;
 }
 
+const isSafeDataImageUrl = (url: string | null): boolean => {
+  if (!url) return false;
+  return /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(url);
+};
+
 export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
   conversationId: propConversationId,
   isSplitView = false,
@@ -138,17 +143,22 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
     setSelectedFile(file);
 
     if (file.type.startsWith('image/')) {
-      const preview = URL.createObjectURL(file);
-      setFilePreviewUrl(preview);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result;
+        if (typeof result === 'string' && isSafeDataImageUrl(result)) {
+          setFilePreviewUrl(result);
+        } else {
+          setFilePreviewUrl(null);
+        }
+      };
+      reader.readAsDataURL(file);
     } else {
       setFilePreviewUrl(null);
     }
   };
 
   const handleClearSelectedFile = () => {
-    if (filePreviewUrl) {
-      URL.revokeObjectURL(filePreviewUrl);
-    }
     setSelectedFile(null);
     setFilePreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -577,7 +587,7 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
         {selectedFile && (
           <div className="mb-2.5 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-700 dark:bg-slate-800/80">
             <div className="flex items-center gap-2.5 min-w-0">
-              {filePreviewUrl ? (
+              {filePreviewUrl && isSafeDataImageUrl(filePreviewUrl) ? (
                 <img
                   src={filePreviewUrl}
                   alt="Preview"
