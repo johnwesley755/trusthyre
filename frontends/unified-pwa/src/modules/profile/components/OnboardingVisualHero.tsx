@@ -34,17 +34,17 @@ export const OnboardingVisualHero: React.FC<OnboardingVisualHeroProps> = ({
 
   // Sector photography corresponding to role from verified landing assets
   const candidateImages = [
-    LANDING_IMAGES.heroBackgrounds[0]?.src || '/images/landing/indian_hero_team.jpg',
-    LANDING_IMAGES.electrician?.src || '/images/landing/indian_electrician.jpg',
-    LANDING_IMAGES.culinary?.src || '/images/landing/indian_chef.jpg',
-    LANDING_IMAGES.warehouseLogistics?.src || '/images/landing/indian_logistics.jpg',
-    LANDING_IMAGES.plumbing?.src || '/images/landing/indian_plumber.jpg',
+    LANDING_IMAGES.heroBackgrounds[0]?.src || '/images/landing/indian_hero_team.webp',
+    LANDING_IMAGES.electrician?.src || '/images/landing/indian_electrician.webp',
+    LANDING_IMAGES.culinary?.src || '/images/landing/indian_chef.webp',
+    LANDING_IMAGES.warehouseLogistics?.src || '/images/landing/indian_logistics.webp',
+    LANDING_IMAGES.plumbing?.src || '/images/landing/indian_plumber.webp',
   ];
 
   const employerImages = [
-    LANDING_IMAGES.heroBackgrounds[0]?.src || '/images/landing/indian_hero_team.jpg',
-    LANDING_IMAGES.warehouseLogistics?.src || '/images/landing/indian_logistics.jpg',
-    LANDING_IMAGES.cncMachinist?.src || '/images/landing/indian_engineer.jpg',
+    LANDING_IMAGES.heroBackgrounds[0]?.src || '/images/landing/indian_hero_team.webp',
+    LANDING_IMAGES.warehouseLogistics?.src || '/images/landing/indian_logistics.webp',
+    LANDING_IMAGES.cncMachinist?.src || '/images/landing/indian_engineer.webp',
   ];
 
   const activeImages = isCandidate ? candidateImages : employerImages;
