@@ -67,13 +67,6 @@ export const sendEmail = async (
       ...(options?.headers || {})
     };
 
-    console.log(`\n======================================================================`);
-    console.log(`📧 [BREVO:EMAIL-DISPATCH] Dispatching Email via Brevo API`);
-    console.log(`----------------------------------------------------------------------`);
-    console.log(`From:    ${senderName} <${senderEmail}>`);
-    console.log(`To:      ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`======================================================================`);
 
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -136,7 +129,6 @@ export const sendEmail = async (
     }
 
     const responseData = await response.json().catch(() => ({}));
-    console.log(`✅ [BREVO:EMAIL-SENT] Successfully delivered to ${to} (MessageId: ${responseData.messageId || 'OK'})\n`);
     return true;
   } catch (error: any) {
     console.error('\n❌ [BREVO:ERROR] Failed to send email:', error.message);
@@ -225,7 +217,6 @@ export const sendTemplateEmail = async (
 
           if (response.ok) {
             const responseData = await response.json().catch(() => ({}));
-            console.log(`✅ [BREVO:TEMPLATE-SENT] Template #${template.brevo_template_id} (${templateKey}) delivered to ${to} (MessageId: ${responseData.messageId || 'OK'})\n`);
             return true;
           } else {
             const errorText = await response.text();
@@ -250,7 +241,6 @@ export const sendTemplateEmail = async (
         const renderedHtml = interpolateTemplate(template.html_content, mergedParams);
         const renderedText = template.text_content ? interpolateTemplate(template.text_content, mergedParams) : undefined;
 
-        console.log(`📧 [BREVO:LOCAL-HTML-DISPATCH] Dispatching published custom template "${templateKey}" to ${to}`);
         return await sendEmail(to, renderedSubject, renderedHtml, {
           ...options,
           text: renderedText || options?.text,
@@ -263,7 +253,6 @@ export const sendTemplateEmail = async (
 
   // Tier 3: Resilient Code Fallback (invokes caller-provided code generator if DB template is missing or errored)
   if (options?.fallbackFn) {
-    console.log(`🛡️ [BREVO:CODE-FALLBACK] Executing verified hardcoded code mailer for "${templateKey}"`);
     return await options.fallbackFn();
   }
 

@@ -164,11 +164,9 @@ export class LeadController {
       const demoParam = Boolean(body.demo || body.demo_mode);
 
       const startTime = Date.now();
-      console.log(`[LeadController][Step 1/5 - INITIATE] runAutoDiscovery started: query='${queryParam}', city='${cityParam}', limit=${limitParam}, demo=${demoParam}`);
 
       const { ScraperServiceClient } = await import('../services/scraperServiceClient');
 
-      console.log(`[LeadController][Step 2/5 - DISPATCH] Requesting live discovery via ScraperServiceClient...`);
       const results = await ScraperServiceClient.runDiscovery({
         query: queryParam,
         city: cityParam,
@@ -178,7 +176,6 @@ export class LeadController {
       });
 
       const scrapeElapsed = Date.now() - startTime;
-      console.log(`[LeadController][Step 3/5 - RECEIVED] Scraper returned ${results.items?.length || 0} jobs in ${scrapeElapsed}ms (Status: ${results.status}).`);
 
       if (!results.success) {
         return c.json({
@@ -244,12 +241,10 @@ export class LeadController {
       if (failedUpserts.length > 0) {
         console.error(`[LeadController][Step 4/5 - DB UPSERT] ${failedUpserts.length} of ${results.items.length} job writes failed:`, failedUpserts.map(f => f.reason?.message || f.reason));
       }
-      console.log(`[LeadController][Step 4/5 - DB UPSERT] Successfully upserted ${dbFulfilled}/${results.items.length} jobs in ${Date.now() - dbStart}ms`);
 
       // Step 5: Synchronously ingest newly discovered jobs directly into employer_leads & employer_lead_requirements
       const syncStart = Date.now();
       const syncResult = await LeadService.ingestJobsAsLeads(results.items || []);
-      console.log(`[LeadController][Step 5/5 - LEAD SYNC] Ingested ${syncResult.newLeadsCount} new leads (${syncResult.newRequirementsCount} reqs) in ${Date.now() - syncStart}ms (Total elapsed: ${Date.now() - startTime}ms)`);
 
       return c.json({
         ...results,
@@ -292,7 +287,6 @@ export class LeadController {
         if (LeadController.syncedScansCache.has(id)) {
           syncResult = LeadController.syncedScansCache.get(id);
         } else {
-          console.log(`[LeadController][Step 3/3 - SYNC] Scan ${id} is COMPLETED! Running LeadService.syncLeadsFromScrapedJobs()...`);
           syncResult = await LeadService.syncLeadsFromScrapedJobs();
           LeadController.syncedScansCache.set(id, syncResult);
           // Keep cache bounded
@@ -300,7 +294,6 @@ export class LeadController {
             const firstKey = LeadController.syncedScansCache.keys().next().value;
             if (firstKey) LeadController.syncedScansCache.delete(firstKey);
           }
-          console.log(`[LeadController][Step 3/3 - SYNC RESULT]`, syncResult);
         }
       }
 

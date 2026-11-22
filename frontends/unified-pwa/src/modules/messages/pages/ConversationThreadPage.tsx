@@ -99,23 +99,17 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
   // Listen for real-time FCM push notifications in foreground to immediately refresh this thread
   useEffect(() => {
     let unsubscribeFn: (() => void) | null = null;
-    console.log(`[ConversationThreadPage] 🎧 Attaching foreground FCM listener for convId=${activeConversationId}`);
     fcmService.listenToForegroundMessages((payload: any) => {
-      console.log('[ConversationThreadPage] 📬 Foreground FCM message received:', payload);
       const convId = payload?.data?.conversationId;
       if (convId === activeConversationId || payload?.data?.type === 'CHAT_MESSAGE') {
-        console.log('[ConversationThreadPage] 🔄 Refetching messages due to incoming FCM chat event');
         refetch();
       }
     }).then((unsub: any) => {
       unsubscribeFn = unsub;
-    }).catch((err) => {
-      console.error('[ConversationThreadPage] ❌ Error in listenToForegroundMessages:', err);
-    });
+    }).catch(() => {});
 
     return () => {
       if (unsubscribeFn) {
-        console.log('[ConversationThreadPage] 🧹 Unsubscribing foreground FCM listener');
         unsubscribeFn();
       }
     };
@@ -203,21 +197,18 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
     const clientMessageId = `web-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
     try {
-      console.log(`[ConversationThreadPage:handleSend] 📤 Mutating message in convId=${activeConversationId}, clientMsgId=${clientMessageId}`);
-      const res = await sendMessageMutation.mutateAsync({
+      await sendMessageMutation.mutateAsync({
         conversationId: activeConversationId,
         body: trimmed,
         messageType,
         metadata: attachmentMetadata,
         clientMessageId
       });
-      console.log('[ConversationThreadPage:handleSend] ✅ mutateAsync resolved with message:', res);
       scrollToBottom('smooth');
       if (textareaRef.current) {
         textareaRef.current.focus();
       }
     } catch (err: any) {
-      console.error('[ConversationThreadPage:handleSend] ❌ Send error:', err);
       setErrorMessage(err?.response?.data?.message || err?.message || 'Failed to send message. Please try again.');
       setInputBody(trimmed); // Restore typed message on error
     }
@@ -237,8 +228,8 @@ export const ConversationThreadPage: React.FC<ConversationThreadPageProps> = ({
       await conversationService.muteConversation(activeConversationId, nextState);
       setIsMuted(nextState);
       setIsMenuOpen(false);
-    } catch (err: any) {
-      console.error('Failed to toggle mute:', err);
+    } catch (_err) {
+      // Mute toggle failure handled silently
     }
   };
 

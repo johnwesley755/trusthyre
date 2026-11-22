@@ -19,7 +19,6 @@ export default {
     const store: RequestScope = { env, ctx };
     await requestContextStorage.run(store, async () => {
       try {
-        console.log(`⏰ [Cloudflare Cron] Scheduled event triggered: ${event.cron || 'daily'}`);
         const { DailyDigestService } = await import('./services/dailyDigestService');
         await DailyDigestService.sendDailyDigests();
       } catch (err: any) {

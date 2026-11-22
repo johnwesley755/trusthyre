@@ -180,26 +180,18 @@ export class NotificationDispatcher {
             category: 'transactional',
             unsubscribeUrl: `${frontendUrl}/notifications`
           });
-          console.log(`✅ [NotificationDispatcher] Email successfully sent to ${recipient.email}`);
         } catch (mailErr: any) {
           console.error(`❌ [NotificationDispatcher] Failed sending email to ${recipient.email}:`, mailErr.message);
         }
       }
 
       // 4. Send FCM Push if push_notifications is enabled and tokens exist
-      console.log(`[NotificationDispatcher] 📲 Recipient ${params.userId}: isPushAllowed=${recipient.isPushAllowed}, tokensCount=${recipient.fcmTokens.length}`);
-      if (!recipient.isPushAllowed) {
-        console.warn(`[NotificationDispatcher] ⚠️ Push notifications disabled in user settings for ${params.userId}`);
-        return notification;
-      }
-      if (recipient.fcmTokens.length === 0) {
-        console.warn(`[NotificationDispatcher] ⚠️ No registered FCM tokens found for user ${params.userId}`);
+      if (!recipient.isPushAllowed || recipient.fcmTokens.length === 0) {
         return notification;
       }
 
       // 5. Send FCM Push via Edge-Native FCM v1 REST API
       const targetUrl = params.link || '/notifications';
-      console.log(`[NotificationDispatcher] 🚀 Dispatching FCM v1 push to ${recipient.fcmTokens.length} tokens for user ${params.userId}: "${params.title}"`);
       const fcmResult = await sendFcmMessagesV1(recipient.fcmTokens, {
         title: params.title,
         body: params.message,
@@ -216,7 +208,6 @@ export class NotificationDispatcher {
           ...(params.data || {})
         }
       });
-      console.log(`[NotificationDispatcher] 📬 FCM v1 result for ${params.userId}: success=${fcmResult.success}, unregistered=${fcmResult.unregisteredTokens?.length || 0}`);
 
       // 6. Automatic cleanup of dead or unregistered tokens via system context
       if (fcmResult.unregisteredTokens && fcmResult.unregisteredTokens.length > 0) {
@@ -232,7 +223,6 @@ export class NotificationDispatcher {
               }
             }
           });
-          console.log(`[FCM] Cleaned up ${fcmResult.unregisteredTokens.length} unregistered tokens.`);
         } catch (cleanupErr: any) {
           console.error('[FCM] Stale token cleanup error:', cleanupErr.message);
         }

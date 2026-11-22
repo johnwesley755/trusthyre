@@ -40,11 +40,9 @@ export const fcmService = {
     }
 
     try {
-      console.log(`[FCM:CLIENT] 🚀 Initializing Push Registration. UserId=${userId || 'anonymous'}, forceRefresh=${forceRefresh}`);
 
       // If user comes after a long time or forceRefresh is true, purge existing FCM keys from localStorage and sessionStorage
       if (forceRefresh) {
-        console.log('[FCM:CLIENT] 🧹 Purging cached FCM tokens from localStorage & sessionStorage to guarantee fresh registration.');
         localStorage.removeItem(LOCAL_STORAGE_FCM_KEY);
         if (userId) {
           localStorage.removeItem(`trusthyre_fcm_registered_${userId}`);
@@ -60,11 +58,8 @@ export const fcmService = {
 
       // 1. Check or prompt browser permission
       let permission = Notification.permission;
-      console.log(`[FCM:CLIENT] 🔑 Browser permission state: "${permission}"`);
       if (permission !== 'granted') {
-        console.log('[FCM:CLIENT] 📣 Requesting browser Notification permission...');
         permission = await Notification.requestPermission();
-        console.log(`[FCM:CLIENT] 📣 User answered Notification permission prompt: "${permission}"`);
       }
 
       if (permission !== 'granted') {
@@ -73,7 +68,6 @@ export const fcmService = {
       }
 
       // 2. Initialize Firebase Messaging
-      console.log('[FCM:CLIENT] ⚡ Getting Firebase Messaging instance...');
       const messaging = await getMessagingInstance();
       if (!messaging) {
         console.error('[FCM:CLIENT] ❌ Firebase messaging not supported or failed to initialize.');
@@ -93,9 +87,7 @@ export const fcmService = {
       const swUrl = `/firebase-messaging-sw.js?${swParams}`;
 
       try {
-        console.log(`[FCM:CLIENT] 🛠️ Registering ServiceWorker at ${swUrl}`);
         swRegistration = await navigator.serviceWorker.register(swUrl);
-        console.log('[FCM:CLIENT] ✅ ServiceWorker registered successfully. Scope:', swRegistration.scope);
       } catch (swErr: any) {
         console.warn('[FCM:CLIENT] ⚠️ sw register failed, falling back to navigator.serviceWorker.ready:', swErr?.message);
         swRegistration = await navigator.serviceWorker.ready;
@@ -103,7 +95,6 @@ export const fcmService = {
 
       // 4. Retrieve FCM registration token
       const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-      console.log(`[FCM:CLIENT] 🌐 Requesting FCM token via getToken()... (VAPID key provided: ${Boolean(vapidKey)})`);
       const token = await getToken(messaging, {
         vapidKey: vapidKey || undefined,
         serviceWorkerRegistration: swRegistration
@@ -114,12 +105,10 @@ export const fcmService = {
         return { status: 'granted', token: null, error: 'Failed to retrieve FCM token' };
       }
 
-      console.log(`[FCM:CLIENT] 🎯 Live FCM Token acquired! (length: ${token.length}, prefix: ${token.substring(0, 15)}...)`);
 
       // 5. Synchronize token with backend for user session (silent background sync)
       const userTokenKey = userId ? `trusthyre_fcm_registered_${userId}` : 'trusthyre_fcm_registered_current';
       
-      console.log(`[FCM:CLIENT] 📡 Posting token to /api/notifications/fcm-token for userId=${userId || 'anonymous'}...`);
       try {
         const resp = await apiClient.post('/api/notifications/fcm-token', {
           token,
@@ -130,7 +119,6 @@ export const fcmService = {
         if (userId) {
           sessionStorage.setItem(`fcm_synced_${userId}`, 'true');
         }
-        console.log(`[FCM:CLIENT] ✅ Token successfully registered & linked in DB and cached in localStorage. (HTTP ${resp.status})`);
       } catch (apiErr: any) {
         console.error('[FCM:CLIENT] ❌ Failed to sync push token with backend:', apiErr?.response?.data || apiErr.message);
         localStorage.removeItem(userTokenKey);

@@ -19,7 +19,6 @@ export class DailyDigestService {
    */
   public static async sendDailyDigests(): Promise<{ sentCount: number; errors: number }> {
     return withSystemContext(prisma, async (tx) => {
-      console.log('\n📬 [DailyDigestService] Beginning scheduled daily email digest evaluation...');
 
       const frontendUrl = (process.env.FRONTEND_URL || 'https://trusthyre.com').replace(/\/$/, '');
       let sentCount = 0;
@@ -39,7 +38,6 @@ export class DailyDigestService {
         });
 
         if (!unreadAlerts || unreadAlerts.length === 0) {
-          console.log('[DailyDigestService] No pending alert notifications found for today\'s digest.');
           return { sentCount: 0, errors: 0 };
         }
 
@@ -51,7 +49,6 @@ export class DailyDigestService {
           alertsByUser.set(alert.user_id, list);
         }
 
-        console.log(`[DailyDigestService] Aggregated alerts for ${alertsByUser.size} user(s).`);
 
         for (const [userId, alerts] of alertsByUser.entries()) {
           try {
@@ -132,14 +129,12 @@ export class DailyDigestService {
             });
 
             sentCount++;
-            console.log(`[DailyDigestService] Successfully dispatched digest to ${userMeta.email} (${alerts.length} items).`);
           } catch (itemErr: any) {
             errors++;
             console.error(`[DailyDigestService] Failed dispatching digest for user ${userId}:`, itemErr.message);
           }
         }
 
-        console.log(`✅ [DailyDigestService] Completed daily digest: ${sentCount} sent, ${errors} errors.`);
         return { sentCount, errors };
       } catch (err: any) {
         console.error('❌ [DailyDigestService] Unexpected failure in daily digest:', err.message);

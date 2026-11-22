@@ -147,8 +147,6 @@ export const registerFcmToken = async (c: Context) => {
       return c.json(ApiResponse.error("Valid FCM token is required"), 400 as any);
     }
 
-    console.log(`\n📥 [FCM-BACKEND:TOKEN-REGISTER] Registering FCM token for userId=${userId}`);
-    console.log(`   Device Type: ${deviceType} | Token: ${token.slice(0, 18)}... (len: ${token.length})`);
 
     try {
       if ((prisma as any).user_fcm_tokens) {
@@ -174,7 +172,6 @@ export const registerFcmToken = async (c: Context) => {
       `;
     }
 
-    console.log(`✅ [FCM-BACKEND:TOKEN-REGISTER] Token successfully linked in database for userId=${userId}`);
     return c.json(ApiResponse.ok("FCM device token registered successfully", { token, deviceType }));
   } catch (err: any) {
     console.error('❌ [FCM-BACKEND:TOKEN-REGISTER] Error upserting token:', err.message);
@@ -197,7 +194,6 @@ export const unregisterFcmToken = async (c: Context) => {
       return c.json(ApiResponse.error("Token is required to unregister"), 400 as any);
     }
 
-    console.log(`\n🗑️ [FCM-BACKEND:TOKEN-UNREGISTER] Unregistering token for userId=${userId}`);
 
     try {
       if ((prisma as any).user_fcm_tokens) {
@@ -211,7 +207,6 @@ export const unregisterFcmToken = async (c: Context) => {
       await prisma.$executeRaw`DELETE FROM user_fcm_tokens WHERE token = ${token} AND user_id = ${userId}`;
     }
 
-    console.log(`✅ [FCM-BACKEND:TOKEN-UNREGISTER] Token unregistered for userId=${userId}`);
     return c.json(ApiResponse.ok("FCM device token unregistered successfully", null));
   } catch (err: any) {
     console.error('❌ [FCM-BACKEND:TOKEN-UNREGISTER] Error deleting token:', err.message);
@@ -227,13 +222,11 @@ export const testPushNotification = async (c: Context) => {
     const userId = c.get('user')?.sub;
     if (!userId) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
 
-    console.log(`\n🧪 [FCM-BACKEND:TEST-PUSH] Instant test push requested by userId=${userId}`);
 
     const tokens = await prisma.user_fcm_tokens.findMany({
       where: { user_id: userId }
     }).catch(() => []);
 
-    console.log(`   Tokens currently registered for this user in DB: ${tokens.length}`);
 
     const notification = await NotificationDispatcher.dispatch({
       userId,

@@ -112,7 +112,6 @@ export const PwaUpdateManager: React.FC = () => {
     if (hasUpdate && location.pathname !== initialPathRef.current) {
       const isBusy = checkIsUserBusy();
       if (!isBusy) {
-        console.log(`🚀 [InstantUpdate] User navigated to ${location.pathname}. Applying update silently...`);
         executeReload();
       }
     }

@@ -300,21 +300,16 @@ export const useSendMessage = () => {
       messageType?: 'TEXT' | 'ATTACHMENT' | 'SYSTEM';
     }) => conversationService.sendMessage(conversationId, body, clientMessageId, workOrderId, interviewId, metadata, messageType),
     onSuccess: (newMsg, variables) => {
-      console.log('[useSendMessage:onSuccess] 🚀 Message successfully sent to backend:', newMsg);
-      console.log('[useSendMessage:onSuccess] 🔄 Patching React Query cache for convId:', variables.conversationId);
-
       // 1. Direct cache patching - instantly appends to local messages array for sender
       queryClient.setQueryData<ConversationThreadResponse>(
         ['conversations', variables.conversationId, 'messages'],
         (old) => {
           if (!old) {
-            console.warn('[useSendMessage:onSuccess] ⚠️ No existing thread in cache for key:', ['conversations', variables.conversationId, 'messages']);
             return old;
           }
           const currentMessages = old.messages || [];
           const exists = currentMessages.some((m) => m.id === newMsg.id || (newMsg.client_message_id && m.client_message_id === newMsg.client_message_id));
           if (exists) {
-            console.log('[useSendMessage:onSuccess] ℹ️ Message already in cache, updating in place');
             return {
               ...old,
               messages: currentMessages.map((m) =>
@@ -322,7 +317,6 @@ export const useSendMessage = () => {
               )
             };
           }
-          console.log('[useSendMessage:onSuccess] ➕ Appending newMsg to cache. Total messages will be:', currentMessages.length + 1);
           return {
             ...old,
             messages: [...currentMessages, newMsg]

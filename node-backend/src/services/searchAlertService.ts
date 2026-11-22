@@ -65,7 +65,6 @@ export class SearchAlertService {
       }
 
       if (existingAlert) {
-        console.log(`[SearchAlertService] Idempotency: alert already exists for user ${input.userId} (ID: ${existingAlert.id}). Reactivating if needed.`);
         if (!existingAlert.is_active) {
           if ((prisma as any).user_search_alerts) {
             return await (prisma as any).user_search_alerts.update({
@@ -211,7 +210,6 @@ export class SearchAlertService {
     experience_years_required?: number | null;
   }) {
     try {
-      console.log(`\n🔍 [SearchAlertService:MATCH] Evaluating notifications for new job: "${job.title}" (ID: ${job.id}, City: "${job.city || ''}", Industry: "${job.industry || ''}", EmployerId: ${job.employer_id})`);
       const jobCity = (job.city || '').trim().toLowerCase();
       const jobIndustry = (job.industry || '').trim().toLowerCase();
       const jobBudget = job.budget ? Number(job.budget) : 0;
@@ -235,7 +233,6 @@ export class SearchAlertService {
           `;
         });
 
-        console.log(`[SearchAlertService:MATCH] Found ${candidateAlerts?.length || 0} candidate job alert subscription(s) in database.`);
 
         if (candidateAlerts && candidateAlerts.length > 0) {
           for (const alert of candidateAlerts) {
@@ -283,7 +280,6 @@ export class SearchAlertService {
           take: 50
         });
 
-        console.log(`[SearchAlertService:MATCH] Found ${matchingWorkers.length} matching worker profile(s) for city="${job.city || 'Any'}".`);
 
         for (const wp of matchingWorkers) {
           if (!notificationsByUser.has(wp.user_id)) {
@@ -298,17 +294,14 @@ export class SearchAlertService {
       }
 
       const notificationsToSend = Array.from(notificationsByUser.values());
-      console.log(`[SearchAlertService:MATCH] Total candidate recipients determined: ${notificationsToSend.length}`);
 
       if (notificationsToSend.length === 0) {
-        console.log('[SearchAlertService:MATCH] No candidates or alert subscribers to notify for this job.');
         return;
       }
 
       // 3. Dispatch notifications
       const results = await Promise.allSettled(
         notificationsToSend.map(({ userId }) => {
-          console.log(`   🚀 [SearchAlertService:MATCH] Dispatching notification to userId=${userId}`);
           return NotificationDispatcher.dispatch({
             userId,
             title: `Job Alert: ${job.title}`,
@@ -324,7 +317,6 @@ export class SearchAlertService {
         })
       );
 
-      console.log(`[SearchAlertService:MATCH] Completed dispatching ${results.length} notification(s).`);
 
       // Update cooldown timestamp and increment match count for matched alerts
       if (matchedAlertIds.length > 0) {
@@ -454,7 +446,6 @@ export class SearchAlertService {
         return;
       }
 
-      console.log(`[SearchAlertService] Reverse matching found ${notificationsToSend.length} employer alert(s) for candidate "${workerName}".`);
 
       await Promise.allSettled(
         notificationsToSend.map(({ userId }) =>
@@ -510,7 +501,6 @@ export class SearchAlertService {
       const mockWorkerId = `test-specialist-${Date.now().toString(36)}`;
       const mockName = 'Ramesh Kumar (Verified Specialist)';
 
-      console.log(`\n🧪 [SearchAlertService:SIMULATE] Simulating candidate match for user=${userId} with alertId=${targetAlert.id}`);
 
       const dispatchResult = await NotificationDispatcher.dispatch({
         userId,
@@ -575,7 +565,6 @@ export class SearchAlertService {
       const mockJobId = `test-job-${Date.now().toString(36)}`;
       const mockCompany = 'L&T Infra Projects Ltd';
 
-      console.log(`\n🧪 [SearchAlertService:SIMULATE] Simulating job match for candidate user=${userId} with alertId=${targetAlert.id}`);
 
       const dispatchResult = await NotificationDispatcher.dispatch({
         userId,

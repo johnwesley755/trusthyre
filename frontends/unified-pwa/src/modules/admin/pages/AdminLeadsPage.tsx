@@ -259,10 +259,8 @@ export const AdminLeadsPage: React.FC = () => {
       pollCountRef.current += 1;
 
       try {
-        console.log(`[AutoDiscovery][Step 3 - POLL ATTEMPT #${pollCountRef.current}] Requesting status for scan ID: ${activeScanId}...`);
         const res = await leadService.getScanStatus(activeScanId);
         const data = res?.data || res;
-        console.log(`[AutoDiscovery][Step 3 - POLL RESPONSE]`, data);
         
         if (isCancelled) return;
         setScanStatus(data);
@@ -274,7 +272,6 @@ export const AdminLeadsPage: React.FC = () => {
           }
           const synced = data.syncResult?.newLeadsCount || 0;
           const totalValid = data.valid_count || 0;
-          console.log(`[AutoDiscovery][Step 4 - SCAN COMPLETED] Verified vacancies: ${totalValid}, New hiring companies created: ${synced}`);
           toast.success(
             `Auto-Discovery Complete! ${totalValid} vacancies verified across feeds, ${synced} new hiring companies created in Leads table!`,
             { duration: 6000 }
@@ -338,11 +335,9 @@ export const AdminLeadsPage: React.FC = () => {
   // Auto-Discovery Scanner Mutation
   const autoDiscoveryMutation = useMutation({
     mutationFn: (params?: { query?: string; city?: string; sources?: string[]; limit?: number }) => {
-      console.log('[AutoDiscovery][Step 1 - INITIATE] Calling /api/admin/leads/run-discovery with params:', params);
       return leadService.runAutoDiscovery(params);
     },
     onSuccess: (res: any) => {
-      console.log('[AutoDiscovery][Step 2 - DISPATCH ACCEPTED] Backend response:', res);
       const scanId = res?.id || res?.data?.id;
       if (scanId) {
         setActiveScanId(scanId);

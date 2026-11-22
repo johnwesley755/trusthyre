@@ -623,7 +623,6 @@ export const oauthSync = async (c: Context) => {
                 clientEmail;
               if (candidate) {
                 verifiedEmail = String(candidate).toLowerCase().trim();
-                console.log(`[oauthSync] Verified email via Firebase IdentityToolkit: ${verifiedEmail}`);
               }
             }
           } else {
@@ -643,7 +642,6 @@ export const oauthSync = async (c: Context) => {
             const gData = await gRes.json() as any;
             if (gData.email) {
               verifiedEmail = String(gData.email).toLowerCase().trim();
-              console.log(`[oauthSync] Verified email via Google tokeninfo: ${verifiedEmail}`);
             }
           }
         } catch (e) {
@@ -770,6 +768,5 @@ export const oauthSync = async (c: Context) => {
 };
 
 export const handleLegacyWebhook = async (c: Context) => {
-  console.log("Received legacy webhook sync event:", (await c.req.json()).type);
   return c.text("OK", 200);
 };

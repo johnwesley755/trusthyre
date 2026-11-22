@@ -147,7 +147,6 @@ export class ReferralService {
           created_at: new Date()
         }
       });
-      console.log(`[ReferralService] Attribution recorded: Referrer ${referrer.id} -> Referred ${referredUserId} (${signupRole}, src: ${safeSource})`);
       return true;
     } catch (err: any) {
       // In case of race conditions or constraint collisions
@@ -192,7 +191,6 @@ export class ReferralService {
         }
       });
 
-      console.log(`[ReferralService] User ${userId} marked as activated: ${activationType}`);
       return true;
     } catch (err: any) {
       console.error(`[ReferralService] Error recording activation for ${userId}:`, err.message);

@@ -1018,9 +1018,6 @@ export const ConversationService = {
       notificationBody = `${senderName}: "${truncated}"`;
     }
 
-    console.log(`[ConversationService:SendMessage] 💬 Message sent by ${senderUserId} in conv ${conversationId} (msgId=${createdMessage.id}, type=${createdMessage.message_type})`);
-    console.log(`[ConversationService:Notify] 🔔 Triggering notification to recipient ${recipientUserId}`);
-
     NotificationDispatcher.dispatch({
       userId: recipientUserId,
       title: `Message from ${senderName} • ${conversation.jobs.title}`,
@@ -1035,11 +1032,7 @@ export const ConversationService = {
         messageType: createdMessage.message_type,
         ...(attachmentMeta?.attachmentUrl ? { attachmentUrl: attachmentMeta.attachmentUrl } : {})
       }
-    }).then(() => {
-      console.log(`[ConversationService:Notify] ✅ Notification dispatch completed for ${recipientUserId}`);
-    }).catch(err => {
-      console.warn('[ConversationService:Notify] ❌ Push notification warning:', err.message);
-    });
+    }).catch(() => {});
 
     return createdMessage;
   },

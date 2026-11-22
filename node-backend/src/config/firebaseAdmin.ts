@@ -27,7 +27,6 @@ export function initializeFirebaseAdmin(): { app: App | null; messaging: Messagi
       }
 
       messagingInstance = getMessaging(appInstance);
-      console.log('✅ [FirebaseAdmin] Initialized Firebase Admin SDK successfully for project:', serviceAccount.project_id);
       return { app: appInstance, messaging: messagingInstance };
     } else {
       console.warn('⚠️ [FirebaseAdmin] Firebase Service Account credentials not provided. Push notifications via FCM will be skipped, but in-app notifications will continue working normally.');

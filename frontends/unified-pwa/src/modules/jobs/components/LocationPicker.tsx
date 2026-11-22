@@ -73,15 +73,12 @@ const reverseGeocode = async (
     setIsDetecting: (val: boolean) => void
 ) => {
     setIsDetecting(true);
-    console.log(`[LocationPicker] Starting reverse geocode for coords: lat=${lat}, lon=${lon}`);
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
             { headers: { 'Accept-Language': 'en' } }
         );
-        console.log(`[LocationPicker] Nominatim HTTP status: ${response.status}`);
         const data = await response.json();
-        console.log(`[LocationPicker] Nominatim response:`, data);
         const addr = data.address || {};
         const city = addr.city || addr.town || addr.village || addr.suburb || addr.state_district || addr.county || "";
         const displayAddr = data.display_name || "Custom Location";
@@ -105,7 +102,6 @@ export function LocationPicker({ onLocationSelect, initialPos }: LocationPickerP
   }, [initialPos, markerPos]);
 
   const handleDetect = () => {
-    console.log("[LocationPicker] Detect Location button clicked");
     if (!navigator.geolocation) {
       console.warn("[LocationPicker] navigator.geolocation not found on window object");
       alert("Geolocation is not supported by your browser. Please click directly on the map.");
@@ -116,12 +112,10 @@ export function LocationPicker({ onLocationSelect, initialPos }: LocationPickerP
 
     const onCoordsSuccess = (pos: GeolocationPosition) => {
       const { latitude, longitude, accuracy } = pos.coords;
-      console.log(`[LocationPicker] Geolocation success: lat=${latitude}, lon=${longitude}, accuracy=${accuracy}m`);
       setMarkerPos([latitude, longitude]);
       reverseGeocode(latitude, longitude, onLocationSelect, setIsDetecting);
     };
 
-    console.log("[LocationPicker] Requesting high-accuracy GPS coordinates...");
     navigator.geolocation.getCurrentPosition(
       onCoordsSuccess,
       (err) => {

@@ -95,11 +95,7 @@ export class ScrapeDiagnosticsSession {
     const icon =
       status === 'SUCCESS' ? '✅' : status === 'WARNING' ? '⚠️ ' : status === 'ERROR' ? '❌' : 'ℹ️ ';
     const durationLabel = stepDurationMs !== undefined ? ` [${stepDurationMs}ms]` : '';
-    console.log(
-      `[ScrapeDiagnostics][#${this.stepCounter}][${stage}] ${icon} ${title} - ${message}${durationLabel}`
-    );
     if (details && Object.keys(details).length > 0 && (status === 'ERROR' || status === 'WARNING')) {
-      console.log(`   Details:`, JSON.stringify(details, null, 2));
     }
 
     return stepLog;
@@ -117,9 +113,6 @@ export class ScrapeDiagnosticsSession {
     this.summary.extractedEntity = extractedEntity;
     this.summary.error = error;
 
-    console.log(
-      `[ScrapeDiagnostics] Session ${this.sessionId} ${status} in ${totalDurationMs}ms (Total steps: ${this.summary.steps.length})`
-    );
 
     // Add to global buffer (newest first)
     sessionHistory.unshift(this.summary);

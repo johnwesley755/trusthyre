@@ -33,8 +33,6 @@ if (!process.env.DATABASE_URL) {
 }
 
 const port = Number(process.env.PORT) || 8787;
-console.log(`[Local DB Mode] Node Server is running on http://localhost:${port} (http://127.0.0.1:${port})`);
-console.log(`Using Database: ${process.env.DATABASE_URL?.split('@')[1]}`);
 
 serve({
   // Pass process.env as the Cloudflare c.env binding
