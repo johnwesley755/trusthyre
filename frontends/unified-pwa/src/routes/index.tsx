@@ -26,7 +26,6 @@ import OnboardingPage from '../modules/profile/pages/OnboardingPage';
 import ProfilePage from '../modules/profile/pages/ProfilePage';
 import NotificationsPage from '../modules/dashboard/pages/NotificationsPage';
 import MessagesInboxPage from '../modules/messages/pages/MessagesInboxPage';
-import ConversationThreadPage from '../modules/messages/pages/ConversationThreadPage';
 import { SettingsPage } from '../modules/settings/pages/SettingsPage';
 import TermsPage from '../modules/landing/pages/TermsPage';
 import PrivacyPage from '../modules/landing/pages/PrivacyPage';
@@ -328,7 +327,7 @@ export const router = createBrowserRouter([
           },
           {
             path: '/messages/:conversationId',
-            element: <ConversationThreadPage />,
+            element: <MessagesInboxPage />,
           },
         ],
       },

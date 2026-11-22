@@ -97,11 +97,12 @@ export const MessagesInboxPage: React.FC = () => {
 
   const handleSelectConversation = (id: string) => {
     setSelectedConversationId(id);
-    if (window.innerWidth < 1024) {
-      navigate(`/messages/${id}`);
-    } else {
-      window.history.replaceState(null, '', `/messages/${id}`);
-    }
+    navigate(`/messages/${id}`);
+  };
+
+  const handleBackToInbox = () => {
+    setSelectedConversationId(undefined);
+    navigate('/messages');
   };
 
   const handleOpenContactChat = async (contact: CandidateContactHired | CandidateContactApplicant) => {
@@ -374,12 +375,17 @@ export const MessagesInboxPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Thread Pane on Desktop */}
-        <div className="hidden flex-1 flex-col overflow-hidden lg:flex">
+        {/* Right Column: Thread Pane on Desktop & Active Chat on Mobile */}
+        <div
+          className={`flex-1 flex-col overflow-hidden ${
+            selectedConversationId ? 'flex' : 'hidden lg:flex'
+          }`}
+        >
           {selectedConversationId ? (
             <ConversationThreadPage
               conversationId={selectedConversationId}
               isSplitView={true}
+              onBack={handleBackToInbox}
             />
           ) : (
             <div className="flex h-full flex-col items-center justify-center p-8 text-center text-slate-500 dark:text-slate-400">
