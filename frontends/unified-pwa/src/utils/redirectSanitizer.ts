@@ -22,7 +22,7 @@ export const sanitizeRedirectUrl = (url: string | null | undefined): string => {
 
   // Whitelist safe in-app relative patterns: /job/:id, /jobs/:id, /search, /tracker, /dashboard
   // Optional query parameters like ?action=apply
-  const isSafePath = /^\/(?:job\/[a-zA-Z0-9_\-]+|jobs\/[a-zA-Z0-9_\-]+|search(?:\?[\w=&%-]*)?|find-workers|dashboard|tracker)(?:\?[\w=&%-]*)?$/.test(trimmed);
+  const isSafePath = /^\/(?:job\/[a-zA-Z0-9_-]+|jobs\/[a-zA-Z0-9_-]+|search(?:\?[\w=&%-]*)?|find-workers|dashboard|tracker)(?:\?[\w=&%-]*)?$/.test(trimmed);
 
   return isSafePath ? trimmed : '/search';
 };

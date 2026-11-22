@@ -78,7 +78,7 @@ export default defineConfig({
   },
   plugins: [react(), tailwindcss(), versionSyncPlugin(), VitePWA({
     registerType: 'autoUpdate',
-    includeAssets: ['logo.png', 'vite.svg', 'images/**/*'],
+    includeAssets: ['logo.png', 'images/**/*'],
     workbox: {
       cleanupOutdatedCaches: true,
       clientsClaim: true,
