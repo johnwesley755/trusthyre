@@ -160,12 +160,12 @@ export const getVerifications = async (c: Context) => {
         })
       ]);
 
-      const userMetaMap = new Map(userMetaList.map((u: any) => [u.id, u]));
-      const workerProfileMap = new Map(workerProfiles.map((w: any) => [w.user_id, w]));
+      const userMetaMap = new Map<string, any>(userMetaList.map((u: any) => [u.id, u]));
+      const workerProfileMap = new Map<string, any>(workerProfiles.map((w: any) => [w.user_id, w]));
 
       const formatted = records.map((r: any) => {
-        const meta = userMetaMap.get(r.user_id);
-        const worker = workerProfileMap.get(r.user_id);
+        const meta = userMetaMap.get(r.user_id) as any;
+        const worker = workerProfileMap.get(r.user_id) as any;
         const fullName = worker?.full_name || [meta?.first_name, meta?.last_name].filter(Boolean).join(' ') || 'Candidate';
         
         return {

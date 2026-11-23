@@ -1,5 +1,5 @@
 import { SearchAlertService } from './searchAlertService';
-import { prisma } from '../config/prisma';
+import { prisma, withSystemContext } from '../config/prisma';
 import { sanitizeHtmlDescription } from '../utils/textSanitizer';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';

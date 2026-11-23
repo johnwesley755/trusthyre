@@ -47,7 +47,12 @@ import {
 } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { RatingModal } from '@/components/common/RatingModal';
-import { Star, MessageSquare, Phone } from 'lucide-react';
+import { Star, MessageSquare, Phone, Kanban, LayoutList } from 'lucide-react';
+import { PipelineKanbanColumn } from '../components/pipeline/PipelineKanbanColumn';
+import { PipelineTableView } from '../components/pipeline/PipelineTableView';
+import { PipelineCandidateCard } from '../components/pipeline/PipelineCandidateCard';
+import type { PipelineStage } from '../types/pipeline.types';
+import { PIPELINE_STAGES } from '../types/pipeline.types';
 import { CandidateOutreachModal, type CandidateOutreachCandidate } from '../../../components/common/CandidateOutreachModal';
 import { CreateWorkOrderModal } from '../../work-orders/components/CreateWorkOrderModal';
 
@@ -79,6 +84,9 @@ export default function ApplicationManagementPage() {
   const [outreachCandidate, setOutreachCandidate] = useState<CandidateOutreachCandidate | null>(null);
   const [isOutreachModalOpen, setIsOutreachModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState<'MATCH' | 'RECENT'>('MATCH');
+  const [viewLayout, setViewLayout] = useState<'KANBAN' | 'LIST'>('KANBAN');
+  const [selectedMobileStage, setSelectedMobileStage] = useState<PipelineStage>('NEW');
+  const [candidateSearchQuery, setCandidateSearchQuery] = useState('');
   const [previewResumeData, setPreviewResumeData] = useState<ResumeData | null>(null);
   const [schedulingApp, setSchedulingApp] = useState<{
     applicationId: string;
@@ -184,6 +192,172 @@ export default function ApplicationManagementPage() {
   const selectedJob = useMemo(() => {
     return jobs.find((j: any) => j.id === selectedJobId) || directJob;
   }, [jobs, selectedJobId, directJob]);
+
+  const stageMutation = useMutation({
+    mutationFn: ({ id, stage }: { id: string; stage: PipelineStage }) =>
+      applicationService.updateApplicationStage(id, stage),
+    onSuccess: (data, variables) => {
+      queryClient.setQueriesData<JobApplication[]>(
+        { queryKey: ['jobs', 'allEmployerApplications'] },
+        (old = []) => (old || []).map(app => app.id === variables.id ? { ...app, status: data?.status || app.status, pipelineStage: variables.stage } : app)
+      );
+      if (selectedJobId) {
+        queryClient.setQueriesData<JobApplication[]>(
+          { queryKey: ['jobs', 'applications', selectedJobId] },
+          (old = []) => (old || []).map(app => app.id === variables.id ? { ...app, status: data?.status || app.status, pipelineStage: variables.stage } : app)
+        );
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
+      toast.success(`Candidate moved to ${PIPELINE_STAGES[variables.stage]?.label || variables.stage}`);
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to update candidate stage');
+    }
+  });
+
+  const handleMoveStage = (applicationId: string, stage: PipelineStage) => {
+    stageMutation.mutate({ id: applicationId, stage });
+  };
+
+  const handleOpenMessage = async (applicationId: string) => {
+    try {
+      const convo = await conversationService.getOrCreateByApplication(applicationId);
+      navigate(`/messages/${convo.id}`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Unable to open conversation');
+    }
+  };
+
+  const handleViewCV = (app: any, worker: any) => {
+    const candidateName = worker?.fullName || worker?.name || 'Candidate';
+    const isVerified = Boolean(worker?.identityVerified || worker?.isVerified);
+    const matchAnalysis = app.matchAnalysis || calculateMatchScore(selectedJob, worker);
+    const matchScore = app.matchScore ?? matchAnalysis.overallScore;
+    const scoreBand = app.scoreBand ?? matchAnalysis.scoreBand;
+
+    setPreviewResumeData({
+      fullName: candidateName,
+      phoneNumber: (worker as any)?.phoneNumber || (worker as any)?.phone,
+      email: worker?.email,
+      profileImageUrl: worker?.profileImageUrl,
+      city: worker?.city || worker?.location,
+      area: (worker as any)?.area,
+      location: worker?.location || worker?.city,
+      bio: worker?.bio,
+      highestEducation: worker?.highestEducation || (worker as any)?.highest_education,
+      degree: (worker as any)?.degree,
+      specialization: (worker as any)?.specialization,
+      englishProficiency: (worker as any)?.englishProficiency || (worker as any)?.english_proficiency,
+      languagesKnown: (worker as any)?.languagesKnown || (worker as any)?.languages_known || [],
+      skills: worker?.skills || [],
+      preferredRoles: worker?.preferredRoles || (worker as any)?.preferred_roles || [],
+      preferredCities: (worker as any)?.preferredCities || (worker as any)?.preferred_cities || [],
+      willingToRelocate: Boolean(worker?.willingToRelocate || (worker as any)?.willing_to_relocate),
+      trustScore: worker?.trustScore,
+      level: worker?.level || 'L1',
+      isVerified: isVerified,
+      experienceYears: worker?.experienceYears || (worker as any)?.experience_years || 0,
+      jobTitle: selectedJob?.title,
+      matchScore: matchScore,
+      matchBand: scoreBand,
+      matchingSkills: matchAnalysis.matchingSkills,
+      missingSkills: matchAnalysis.missingSkills,
+      matchSummary: matchAnalysis.matchSummary,
+      matchBreakdown: matchAnalysis.breakdown
+    });
+  };
+
+  const handleScheduleInterview = (app: any, worker: any) => {
+    const candidateName = worker?.fullName || worker?.name || 'Candidate';
+    setSchedulingApp({
+      applicationId: app.id,
+      candidateName,
+      jobTitle: selectedJob?.title || 'Job Interview',
+      defaultLocation: selectedJob?.location || undefined
+    });
+  };
+
+  const handleSendOffer = (app: any) => {
+    mutation.mutate({ id: app.id, status: 'OFFER_SENT' });
+  };
+
+  const handleOutreach = (worker: any) => {
+    setOutreachCandidate({
+      id: worker?.userId || worker?.id,
+      fullName: worker?.fullName || worker?.name || 'Candidate',
+      phoneNumber: worker?.phone || worker?.phoneNumber,
+      trade: worker?.trade || worker?.preferredRoles?.[0],
+      city: worker?.city || worker?.location,
+      skills: Array.isArray(worker?.skills) ? worker.skills : []
+    });
+    setIsOutreachModalOpen(true);
+  };
+
+  const handleIssueWorkOrder = (app: any, worker: any) => {
+    const params = new URLSearchParams({
+      applicationId: app.id,
+      workerId: app.workerId || worker?.userId || worker?.id,
+      ...(selectedJob?.id ? { jobId: selectedJob.id } : {})
+    });
+    navigate(`/work-orders/new?${params.toString()}`);
+  };
+
+  const filteredJobApplications = useMemo(() => {
+    let list = [...selectedJobApplications];
+    if (candidateSearchQuery.trim()) {
+      const q = candidateSearchQuery.toLowerCase();
+      list = list.filter(app => {
+        const worker = workersById.get(app.workerId);
+        const name = (worker?.fullName || worker?.name || '').toLowerCase();
+        const trade = (worker?.trade || worker?.preferredRoles?.[0] || '').toLowerCase();
+        const skills = Array.isArray(worker?.skills)
+          ? worker.skills.map((s: string) => s.toLowerCase())
+          : typeof worker?.skills === 'string'
+          ? [worker.skills.toLowerCase()]
+          : [];
+        return name.includes(q) || trade.includes(q) || skills.some((s: string) => s.includes(q));
+      });
+    }
+
+    if (sortBy === 'MATCH') {
+      list.sort((a, b) => {
+        const workerA = workersById.get(a.workerId);
+        const workerB = workersById.get(b.workerId);
+        const scoreA = a.matchScore ?? calculateMatchScore(selectedJob, workerA).overallScore;
+        const scoreB = b.matchScore ?? calculateMatchScore(selectedJob, workerB).overallScore;
+        return scoreB - scoreA;
+      });
+    } else {
+      list.sort((a, b) => new Date(b.appliedAt || 0).getTime() - new Date(a.appliedAt || 0).getTime());
+    }
+    return list;
+  }, [selectedJobApplications, candidateSearchQuery, sortBy, selectedJob, workersById]);
+
+  const groupedPipeline = useMemo(() => {
+    const groups: Record<PipelineStage, JobApplication[]> = {
+      NEW: [],
+      SHORTLISTED: [],
+      INTERVIEW: [],
+      OFFER_SENT: [],
+      HIRED: [],
+      REJECTED: []
+    };
+
+    filteredJobApplications.forEach(app => {
+      const rawStatus = (app.status || '').toUpperCase();
+      let stage: PipelineStage = 'NEW';
+      if (rawStatus === 'PENDING' || rawStatus === 'NEW') stage = 'NEW';
+      else if (rawStatus === 'SHORTLISTED' || rawStatus === 'REVIEWING') stage = 'SHORTLISTED';
+      else if (rawStatus === 'INTERVIEW_SCHEDULED' || rawStatus === 'INTERVIEW') stage = 'INTERVIEW';
+      else if (rawStatus === 'OFFER_SENT') stage = 'OFFER_SENT';
+      else if (rawStatus === 'ACCEPTED' || rawStatus === 'APPROVED' || rawStatus === 'HIRED') stage = 'HIRED';
+      else if (rawStatus === 'REJECTED' || rawStatus === 'DECLINED' || rawStatus === 'WITHDRAWN') stage = 'REJECTED';
+
+      groups[stage].push(app);
+    });
+
+    return groups;
+  }, [filteredJobApplications]);
 
   const filteredJobs = useMemo(() => {
     if (!jobSearchQuery.trim()) return jobs;
@@ -603,44 +777,63 @@ export default function ApplicationManagementPage() {
               );
             })()}
 
-            {/* Status Filter Tabs Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-[#fbfbfb] dark:bg-[#09090b] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800">
-              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-                {[
-                  { id: 'ALL', label: 'All Applicants', count: countAll },
-                  { id: 'PENDING', label: 'Under Review', count: countPending, pulse: countPending > 0 },
-                  { id: 'OFFER_SENT', label: 'Offers Sent', count: countOfferSent },
-                  { id: 'ACCEPTED', label: 'Approved & Hired', count: countAccepted },
-                  { id: 'REJECTED', label: 'Declined', count: countRejected }
-                ].map((tab) => (
+                        {/* Kanban / Table Pipeline Toolbar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#fbfbfb] dark:bg-[#09090b] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800">
+              {/* Search candidate input */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={candidateSearchQuery}
+                  onChange={(e) => setCandidateSearchQuery(e.target.value)}
+                  placeholder="Filter candidates by name, trade or skills..."
+                  className="w-full pl-9 pr-8 py-2 rounded-xl bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#0f2f63] dark:focus:ring-sky-500 transition-all"
+                />
+                {candidateSearchQuery && (
                   <button
-                    key={tab.id}
-                    onClick={() => {
-                      setStatusFilter(tab.id as any);
-                      setCurrentPage(1);
-                    }}
-                    className={`px-3.5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-                      statusFilter === tab.id
-                        ? 'bg-[#0f2f63] text-white shadow-xs'
-                        : 'bg-white dark:bg-[#121215] text-[#717784] dark:text-zinc-400 hover:text-[#0a0a0a] dark:hover:text-zinc-100 border border-[#e6e8ec] dark:border-zinc-800'
-                    }`}
+                    onClick={() => setCandidateSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xs"
                   >
-                    {tab.pulse && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />}
-                    <span>{tab.label}</span>
-                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                      statusFilter === tab.id ? 'bg-white/20 text-white' : 'bg-[#f4f4f4] dark:bg-zinc-800 text-[#717784] dark:text-zinc-400'
-                    }`}>
-                      {tab.count}
-                    </span>
+                    ×
                   </button>
-                ))}
+                )}
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* View Layout Toggle & Sort */}
+              <div className="flex items-center gap-2 justify-end">
+                {/* Layout Switcher: Pipeline vs Table */}
+                <div className="inline-flex items-center p-1 bg-zinc-200/60 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                  <button
+                    type="button"
+                    onClick={() => setViewLayout('KANBAN')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      viewLayout === 'KANBAN'
+                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                        : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    <Kanban className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
+                    <span>Pipeline</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewLayout('LIST')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      viewLayout === 'LIST'
+                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                        : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    <LayoutList className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
+                    <span>Table</span>
+                  </button>
+                </div>
+
+                {/* Sort Toggle */}
                 <button
                   type="button"
                   onClick={() => setSortBy(prev => prev === 'MATCH' ? 'RECENT' : 'MATCH')}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-all cursor-pointer ${
                     sortBy === 'MATCH'
                       ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 shadow-2xs'
                       : 'bg-white dark:bg-[#121215] text-slate-600 dark:text-zinc-400 border-[#e6e8ec] dark:border-zinc-800'
@@ -648,388 +841,111 @@ export default function ApplicationManagementPage() {
                   title="Toggle between Match Score and Date order"
                 >
                   <ArrowUpDown className="w-3.5 h-3.5" />
-                  <span>{sortBy === 'MATCH' ? 'Sorted by Match Score' : 'Sorted by Date'}</span>
+                  <span className="hidden md:inline">{sortBy === 'MATCH' ? 'Match Score' : 'Date'}</span>
                 </button>
-                <span className="text-xs font-semibold text-[#717784] dark:text-zinc-400 px-2 hidden sm:inline">
-                  Showing {selectedJobApplications.length} candidate{selectedJobApplications.length === 1 ? '' : 's'}
+
+                <span className="text-xs font-semibold text-[#717784] dark:text-zinc-400 px-2 hidden lg:inline">
+                  {selectedJobApplications.length} candidate{selectedJobApplications.length === 1 ? '' : 's'}
                 </span>
               </div>
             </div>
 
-            {/* Applicants List */}
-            {selectedJobApplications.length === 0 ? (
-              <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-[1.75rem] p-10 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-3">
-                <div className="w-12 h-12 bg-white dark:bg-[#121215] rounded-full flex items-center justify-center mx-auto text-[#717784] dark:text-zinc-400 border border-[#e6e8ec] dark:border-zinc-800">
-                  <Briefcase className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">No Applicants in this Stage</h3>
-                <p className="text-xs text-[#717784] dark:text-zinc-400 max-w-sm mx-auto">
-                  Candidates applying to this position will be displayed here with verified biometric credentials.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {selectedJobApplications.map((app) => {
-                  const worker = workersById.get(app.workerId);
-                  const candidateName = worker?.fullName || worker?.name || 'Candidate';
-                  const firstSkill = Array.isArray(worker?.skills) ? worker.skills[0] : (typeof worker?.skills === 'string' ? worker.skills.split(',')[0] : undefined);
-                  const candidateRole = worker?.preferredRoles?.[0] || firstSkill || 'Technical Specialist';
-                  const isVerified = Boolean(worker?.identityVerified || worker?.isVerified);
-                  const isApproved = app.status === 'ACCEPTED' || app.status === 'APPROVED';
-                  const isOfferSent = app.status === 'OFFER_SENT';
-                  const isDeclined = app.status === 'REJECTED' || app.status === 'DECLINED';
-
-                  // Dynamic Candidate-to-Job Matching Engine Analysis
-                  const matchAnalysis = app.matchAnalysis || calculateMatchScore(selectedJob, worker);
-                  const matchScore = app.matchScore ?? matchAnalysis.overallScore;
-                  const scoreBand = app.scoreBand ?? matchAnalysis.scoreBand;
-                  const matchingSkills = app.matchingSkills?.length ? app.matchingSkills : matchAnalysis.matchingSkills;
-                  const missingSkills = app.missingSkills?.length ? app.missingSkills : matchAnalysis.missingSkills;
-                  const visuals = getMatchScoreVisuals(matchScore);
-
+            {/* Mobile Horizontal Stage Selector (Tabs) for Kanban mode */}
+            {viewLayout === 'KANBAN' && (
+              <div className="flex md:hidden items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+                {(Object.keys(PIPELINE_STAGES) as PipelineStage[]).map((stg) => {
+                  const conf = PIPELINE_STAGES[stg];
+                  const count = groupedPipeline[stg]?.length || 0;
+                  const isActive = selectedMobileStage === stg;
                   return (
-                    <div
-                      key={app.id}
-                      className="bg-white dark:bg-[#121215] rounded-2xl p-4 sm:p-5 border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/40 dark:hover:border-zinc-700 transition-all flex flex-col gap-4 shadow-2xs group"
+                    <button
+                      key={stg}
+                      onClick={() => setSelectedMobileStage(stg)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                        isActive
+                          ? 'bg-[#0f2f63] text-white shadow-xs'
+                          : 'bg-white dark:bg-[#121215] text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800'
+                      }`}
                     >
-                      {/* Top Row: Candidate Avatar & Info */}
-                      <div className="flex items-start gap-3 sm:gap-3.5 w-full min-w-0">
-                        <UserAvatar
-                          src={worker?.profileImageUrl}
-                          name={candidateName}
-                          size="lg"
-                        />
-
-                        <div className="space-y-2 min-w-0 flex-1">
-                          {/* Name + Status Badges */}
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h4 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">
-                              {candidateName}
-                            </h4>
-
-                            {/* Dynamic Match Score Badge */}
-                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${visuals.bg} ${visuals.text} border ${visuals.border}`}>
-                              <Sparkles className="w-3 h-3" />
-                              <span>{matchScore}% Match</span>
-                              <span className="opacity-80 font-medium hidden sm:inline">({scoreBand})</span>
-                            </span>
-
-                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              isVerified 
-                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50' 
-                                : 'bg-slate-100 dark:bg-zinc-800 text-[#717784] dark:text-zinc-400'
-                            }`}>
-                              <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                              <span>{isVerified ? 'Biometric Verified' : 'ID Pending'}</span>
-                            </span>
-                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              isApproved 
-                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50' 
-                                : isOfferSent 
-                                ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50 animate-pulse' 
-                                : isDeclined 
-                                ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-900/50' 
-                                : 'bg-blue-50 dark:bg-sky-950/40 text-[#0f2f63] dark:text-sky-300 border border-blue-200 dark:border-sky-900/50'
-                            }`}>
-                              {app.status}
-                            </span>
-                          </div>
-
-                          {/* Role & Experience */}
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-[#717784] dark:text-zinc-400">
-                            <span className="font-semibold text-[#0a0a0a] dark:text-zinc-200">{candidateRole}</span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5 text-[#0f2f63] dark:text-sky-400" />
-                              <span>{worker?.city || worker?.location || 'Local Zone'}</span>
-                            </span>
-                            <span>•</span>
-                            <span>{worker?.experienceYears ? `${worker.experienceYears}+ Years Exp` : 'Entry Level'}</span>
-                          </div>
-
-                          {/* Dynamic Skills Alignment Chips */}
-                          {((matchingSkills && matchingSkills.length > 0) || (missingSkills && missingSkills.length > 0)) && (
-                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mr-0.5">Skills:</span>
-                              {matchingSkills.slice(0, 3).map((skill, idx) => (
-                                <span key={`ms-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
-                                  <Check className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
-                                  <span>{skill}</span>
-                                </span>
-                              ))}
-                              {missingSkills.slice(0, 2).map((skill, idx) => (
-                                <span key={`mis-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-50 dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 border border-slate-200 dark:border-zinc-800">
-                                  <span className="text-slate-400">•</span>
-                                  <span>Needs {skill}</span>
-                                </span>
-                              ))}
-                              {matchingSkills.length + missingSkills.length > 5 && (
-                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
-                                  +{matchingSkills.length + missingSkills.length - 5} more
-                                </span>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Scheduled Interview Details Badge / Alert */}
-                          {app.interview && (
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gradient-to-r from-sky-50/90 to-blue-50/50 dark:from-sky-950/40 dark:to-zinc-900/60 border border-sky-200/80 dark:border-sky-800/60 rounded-xl text-xs w-full shadow-2xs">
-                              <div className="flex flex-wrap items-center gap-2.5">
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                                  app.interview.interviewType === 'PHONE'
-                                    ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
-                                    : app.interview.interviewType === 'WHATSAPP_VIDEO'
-                                    ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
-                                    : 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-900 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800'
-                                }`}>
-                                  {app.interview.interviewType === 'PHONE' && '📞 Phone Call'}
-                                  {app.interview.interviewType === 'WHATSAPP_VIDEO' && '📹 Video Call'}
-                                  {app.interview.interviewType === 'IN_PERSON' && '🏢 Direct Walk-In / In-Person'}
-                                  {!['PHONE', 'WHATSAPP_VIDEO', 'IN_PERSON'].includes(app.interview.interviewType) && (app.interview.interviewType || 'Interview')}
-                                </span>
-
-                                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-sky-950 dark:text-sky-100">
-                                  <span className="font-bold flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-                                    {new Date(app.interview.scheduledAt).toLocaleString('en-IN', {
-                                      day: 'numeric',
-                                      month: 'short',
-                                      year: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
-                                  </span>
-                                  {app.interview.locationAddress && (
-                                    <>
-                                      <span className="text-sky-300 dark:text-sky-700 hidden sm:inline">•</span>
-                                      <span className="truncate max-w-[240px]" title={app.interview.locationAddress}>
-                                        📍 {app.interview.locationAddress}
-                                      </span>
-                                    </>
-                                  )}
-                                  {app.interview.contactPerson && (
-                                    <>
-                                      <span className="text-sky-300 dark:text-sky-700 hidden sm:inline">•</span>
-                                      <span className="font-medium text-slate-700 dark:text-zinc-300">
-                                        👤 Contact: {app.interview.contactPerson}
-                                      </span>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {app.coverLetter && (
-                            <p className="text-xs text-[#717784] dark:text-zinc-300 bg-[#fbfbfb] dark:bg-[#1C1C21] p-2.5 rounded-xl border border-[#e6e8ec] dark:border-zinc-800 italic max-w-xl">
-                              "{app.coverLetter}"
-                            </p>
-                          )}
-
-                          {(app.voiceNoteUrl || (app as any).voice_note_url) && (
-                            <div className="flex items-center gap-3 bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 rounded-xl p-2.5 max-w-md">
-                              <div className="flex-1">
-                                <span className="text-[11px] font-bold text-sky-950 dark:text-sky-200 block">Candidate Voice Introduction</span>
-                                <audio 
-                                  controls 
-                                  src={app.voiceNoteUrl || (app as any).voice_note_url} 
-                                  className="h-8 w-full mt-1"
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Bottom Row: Action Buttons */}
-                      <div className="flex flex-wrap items-center gap-2 w-full pt-3 border-t border-[#e6e8ec] dark:border-zinc-800">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            try {
-                              const convo = await conversationService.getOrCreateByApplication(app.id);
-                              navigate(`/messages/${convo.id}`);
-                            } catch (err: any) {
-                              alert(err?.response?.data?.message || 'Unable to open conversation');
-                            }
-                          }}
-                          className="px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 active:scale-95 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 rounded-full text-xs font-bold uppercase transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-                          title="Direct Contextual Chat with Candidate"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-                          <span>Message</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setOutreachCandidate({
-                              id: app.workerId,
-                              userId: app.workerId,
-                              fullName: candidateName,
-                              trade: candidateRole,
-                              experienceYears: worker?.experienceYears || 1,
-                              location: worker?.city || worker?.location || 'Local Area',
-                              city: worker?.city,
-                              phoneNumber: (worker as any)?.phoneNumber || (worker as any)?.phone
-                            });
-                            setIsOutreachModalOpen(true);
-                          }}
-                          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-full text-xs font-bold uppercase transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-                          title="Send WhatsApp Interview Invite or Call"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5 fill-white" />
-                          <span>Interview</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPreviewResumeData({
-                              fullName: candidateName,
-                              phoneNumber: (worker as any)?.phoneNumber || (worker as any)?.phone,
-                              email: worker?.email,
-                              profileImageUrl: worker?.profileImageUrl,
-                              city: worker?.city || worker?.location,
-                              area: (worker as any)?.area,
-                              location: worker?.location || worker?.city,
-                              bio: worker?.bio,
-                              highestEducation: worker?.highestEducation || (worker as any)?.highest_education,
-                              degree: (worker as any)?.degree,
-                              specialization: (worker as any)?.specialization,
-                              englishProficiency: (worker as any)?.englishProficiency || (worker as any)?.english_proficiency,
-                              languagesKnown: (worker as any)?.languagesKnown || (worker as any)?.languages_known || [],
-                              skills: worker?.skills || [],
-                              preferredRoles: worker?.preferredRoles || (worker as any)?.preferred_roles || [],
-                              preferredCities: (worker as any)?.preferredCities || (worker as any)?.preferred_cities || [],
-                              willingToRelocate: Boolean(worker?.willingToRelocate || (worker as any)?.willing_to_relocate),
-                              trustScore: worker?.trustScore,
-                              level: worker?.level || 'L1',
-                              isVerified: isVerified,
-                              experienceYears: worker?.experienceYears || (worker as any)?.experience_years || 0,
-                              jobTitle: selectedJob?.title,
-                              matchScore: matchScore,
-                              matchBand: scoreBand,
-                              matchingSkills: matchingSkills,
-                              missingSkills: missingSkills,
-                              matchSummary: matchAnalysis.matchSummary,
-                              matchBreakdown: matchAnalysis.breakdown
-                            });
-                          }}
-                          className="px-4 py-2 bg-[#f4f4f4] dark:bg-[#1C1C21] hover:bg-[#e6e8ec] dark:hover:bg-zinc-800 text-[#0a0a0a] dark:text-zinc-200 border border-transparent dark:border-zinc-800 rounded-full text-xs font-semibold uppercase transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
-                          title="Open Verified Resume"
-                        >
-                          <FileText className="w-3.5 h-3.5" />
-                          <span>View CV</span>
-                        </button>
-
-                        <Link
-                          to={`/worker/${worker?.userId || worker?.id || app.workerId}`}
-                          state={{ job: selectedJob }}
-                          className="px-4 py-2 bg-white dark:bg-[#121215] hover:bg-slate-50 dark:hover:bg-zinc-800 text-[#0f2f63] dark:text-sky-400 border border-[#e6e8ec] dark:border-zinc-800 rounded-full text-xs font-semibold uppercase transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-2xs"
-                          title="View Full Candidate Profile"
-                        >
-                          <User className="w-3.5 h-3.5" />
-                          <span>View Profile</span>
-                        </Link>
-
-                        {!isApproved && !isOfferSent && !isDeclined && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => setSchedulingApp({
-                                applicationId: app.id,
-                                candidateName: worker?.user?.firstName ? `${worker.user.firstName} ${worker.user.lastName || ''}`.trim() : 'Candidate',
-                                jobTitle: selectedJob?.title || 'Job Interview',
-                                defaultLocation: selectedJob?.location || undefined
-                              })}
-                              className="px-3.5 py-2 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-[#0f2f63] dark:text-[#38BDF8] border border-sky-200 dark:border-sky-800/60 rounded-full text-xs font-semibold uppercase transition-all shadow-2xs cursor-pointer flex items-center gap-1.5 active:scale-95"
-                              title="Schedule In-Person or Video Interview"
-                            >
-                              <Calendar className="w-3.5 h-3.5" />
-                              <span>{app.status === 'INTERVIEW_SCHEDULED' ? 'Reschedule' : 'Interview'}</span>
-                            </button>
-
-                            <button
-                              onClick={() => mutation.mutate({ id: app.id, status: 'OFFER_SENT' })}
-                              disabled={mutation.isPending}
-                              className="px-4 py-2 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-semibold uppercase transition-all shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
-                            >
-                              {mutation.isPending && (mutation.variables as any)?.id === app.id && (mutation.variables as any)?.status === 'OFFER_SENT' ? (
-                                <>
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  <span>Sending Offer...</span>
-                                </>
-                              ) : (
-                                <span>Send Offer</span>
-                              )}
-                            </button>
-                            <button
-                              onClick={() => mutation.mutate({ id: app.id, status: 'DECLINED' })}
-                              disabled={mutation.isPending}
-                              className="px-3 py-2 bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-full text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-1 disabled:opacity-60"
-                            >
-                              {mutation.isPending && (mutation.variables as any)?.id === app.id && (mutation.variables as any)?.status === 'DECLINED' && (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              )}
-                              <span>Decline</span>
-                            </button>
-                          </>
-                        )}
-
-                        {isOfferSent && (
-                          <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-900/50">
-                            Awaiting Candidate Confirmation
-                          </span>
-                        )}
-
-                        {isApproved && (
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-1">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                              <span>Confirmed for Shift</span>
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const params = new URLSearchParams({
-                                  applicationId: app.id,
-                                  workerId: app.workerId,
-                                  ...(selectedJob?.id ? { jobId: selectedJob.id } : {})
-                                });
-                                navigate(`/work-orders/new?${params.toString()}`);
-                              }}
-                              className="px-3.5 py-1.5 bg-[#0f2f63] hover:bg-[#2563c9] text-white rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-2xs"
-                              title="Issue Digital Work Order on Dedicated Page"
-                            >
-                              <FileText className="w-3.5 h-3.5" />
-                              <span>Issue Work Order</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setRatingTarget({
-                                jobId: app.jobId,
-                                rateeId: app.workerId,
-                                rateeName: candidateName,
-                                jobTitle: selectedJob?.title || 'Verified Job Shift'
-                              })}
-                              className="px-3.5 py-1.5 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50 rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95"
-                            >
-                              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-                              <span>Rate Worker</span>
-                            </button>
-                          </div>
-                        )}
-
-                        {isDeclined && (
-                          <span className="text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 rounded-full border border-rose-200 dark:border-rose-900/50">
-                            Offer Declined
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                      <span>{conf.label}</span>
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                      }`}>
+                        {count}
+                      </span>
+                    </button>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Pipeline Content: KANBAN vs TABLE */}
+            {viewLayout === 'LIST' ? (
+              <PipelineTableView
+                candidates={filteredJobApplications}
+                workersById={workersById}
+                onMoveStage={handleMoveStage}
+                onViewCV={handleViewCV}
+                onScheduleInterview={handleScheduleInterview}
+                onSendOffer={handleSendOffer}
+                onOpenMessage={handleOpenMessage}
+                onOutreach={handleOutreach}
+                onIssueWorkOrder={handleIssueWorkOrder}
+              />
+            ) : (
+              <div>
+                {/* Desktop Kanban Multi-Column View */}
+                <div className="hidden md:flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
+                  {(Object.keys(PIPELINE_STAGES) as PipelineStage[]).map((stageKey) => (
+                    <PipelineKanbanColumn
+                      key={stageKey}
+                      stage={stageKey}
+                      candidates={groupedPipeline[stageKey] || []}
+                      workersById={workersById}
+                      selectedJob={selectedJob}
+                      onMoveStage={handleMoveStage}
+                      onViewCV={handleViewCV}
+                      onScheduleInterview={handleScheduleInterview}
+                      onSendOffer={handleSendOffer}
+                      onOpenMessage={handleOpenMessage}
+                      onOutreach={handleOutreach}
+                      onIssueWorkOrder={handleIssueWorkOrder}
+                    />
+                  ))}
+                </div>
+
+                {/* Mobile Single Stage Card Stream */}
+                <div className="flex md:hidden flex-col gap-3">
+                  {(groupedPipeline[selectedMobileStage] || []).length === 0 ? (
+                    <div className="bg-[#f4f4f4] dark:bg-[#09090b] rounded-2xl p-8 border border-[#e6e8ec] dark:border-zinc-800 text-center space-y-2">
+                      <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                        No candidates in {PIPELINE_STAGES[selectedMobileStage].label}
+                      </p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Move candidates from other stages or review new applications.
+                      </p>
+                    </div>
+                  ) : (
+                    (groupedPipeline[selectedMobileStage] || []).map((app) => {
+                      const worker = workersById.get(app.workerId);
+                      return (
+                        <PipelineCandidateCard
+                          key={app.id}
+                          application={app}
+                          worker={worker}
+                          selectedJob={selectedJob}
+                          onMoveStage={handleMoveStage}
+                          onViewCV={handleViewCV}
+                          onScheduleInterview={handleScheduleInterview}
+                          onSendOffer={handleSendOffer}
+                          onOpenMessage={handleOpenMessage}
+                          onOutreach={handleOutreach}
+                          onIssueWorkOrder={handleIssueWorkOrder}
+                        />
+                      );
+                    })
+                  )}
+                </div>
               </div>
             )}
           </>

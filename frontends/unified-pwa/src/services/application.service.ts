@@ -75,5 +75,20 @@ export const applicationService = {
     const res = await apiClient.patch(`/api/jobs/applications/${applicationId}/status`, { status });
     return res.data;
   },
+  getJobHiringPipeline: async (jobId: string): Promise<any> => {
+    const res = await apiClient.get<any>(`/api/jobs/applications/${jobId}/pipeline`);
+    return {
+      job: res.data?.job,
+      counts: res.data?.counts || { NEW: 0, SHORTLISTED: 0, INTERVIEW: 0, OFFER_SENT: 0, HIRED: 0, REJECTED: 0, TOTAL: 0 },
+      candidates: (res.data?.candidates || []).map((c: any) => ({
+        ...mapApp(c),
+        pipelineStage: c.pipelineStage || 'NEW'
+      }))
+    };
+  },
+  updateApplicationStage: async (applicationId: string, stage: string): Promise<any> => {
+    const res = await apiClient.patch(`/api/jobs/applications/${applicationId}/stage`, { stage });
+    return res.data;
+  },
 };
 

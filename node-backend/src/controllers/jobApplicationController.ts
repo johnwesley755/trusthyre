@@ -872,3 +872,195 @@ export const getCandidateJobMatch = async (c: Context) => {
   }
 };
 
+/**
+ * Stage mapping from canonical UI Pipeline stages to database application status
+ */
+export const STAGE_TO_STATUS_MAP: Record<string, string> = {
+  NEW: 'PENDING',
+  SHORTLISTED: 'REVIEWING',
+  INTERVIEW: 'INTERVIEW_SCHEDULED',
+  OFFER_SENT: 'OFFER_SENT',
+  HIRED: 'ACCEPTED',
+  REJECTED: 'REJECTED'
+};
+
+export const STATUS_TO_STAGE_MAP: Record<string, string> = {
+  PENDING: 'NEW',
+  REVIEWING: 'SHORTLISTED',
+  SHORTLISTED: 'SHORTLISTED',
+  INTERVIEW_SCHEDULED: 'INTERVIEW',
+  INTERVIEW: 'INTERVIEW',
+  OFFER_SENT: 'OFFER_SENT',
+  ACCEPTED: 'HIRED',
+  APPROVED: 'HIRED',
+  HIRED: 'HIRED',
+  COMPLETED: 'HIRED',
+  REJECTED: 'REJECTED',
+  DECLINED: 'REJECTED',
+  WITHDRAWN: 'REJECTED'
+};
+
+/**
+ * Updates candidate application stage directly within the Employer Hiring Pipeline.
+ */
+export const updateApplicationStage = async (c: Context) => {
+  try {
+    const authUser = c.get('user');
+    if (!authUser?.sub) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
+
+    const applicationId = c.req.param('applicationId');
+    const { stage } = await c.req.json().catch(() => ({}));
+
+    if (!applicationId || !stage) {
+      return c.json(ApiResponse.error("Application ID and target stage are required"), 400 as any);
+    }
+
+    const normalizedStage = String(stage).toUpperCase();
+    const mappedStatus = STAGE_TO_STATUS_MAP[normalizedStage];
+    if (!mappedStatus) {
+      return c.json(
+        ApiResponse.error(`Invalid pipeline stage. Must be one of: ${Object.keys(STAGE_TO_STATUS_MAP).join(', ')}`),
+        400 as any
+      );
+    }
+
+    const application = await prisma.job_applications.findUnique({
+      where: { id: applicationId },
+      include: { jobs: true }
+    });
+
+    if (!application) return c.json(ApiResponse.error("Application not found"), 404 as any);
+
+    // Verify Employer ownership of this job
+    const employerProfile = await prisma.employer_profiles.findFirst({
+      where: {
+        OR: [
+          { user_id: authUser.sub },
+          { id: authUser.sub }
+        ]
+      }
+    });
+
+    const isEmployerOwner = application.jobs?.employer_id === authUser.sub ||
+      Boolean(employerProfile && (application.jobs?.employer_id === employerProfile.id || application.jobs?.employer_id === employerProfile.user_id));
+    const isAdmin = isAppAdmin(authUser.role);
+
+    if (!isEmployerOwner && !isAdmin) {
+      return c.json(ApiResponse.error("Forbidden: Only the hiring employer can move candidate pipeline stages"), 403 as any);
+    }
+
+    const updated = await prisma.job_applications.update({
+      where: { id: applicationId },
+      data: { status: mappedStatus }
+    });
+
+    // Notify Worker of Stage Progression
+    try {
+      const jobTitle = application.jobs?.title || 'Job Opening';
+      if (normalizedStage === 'SHORTLISTED') {
+        await NotificationDispatcher.dispatch({
+          userId: application.worker_id,
+          title: "Application Shortlisted! 🌟",
+          message: `Great news! You have been shortlisted for "${jobTitle}". The employer will contact you soon.`,
+          type: "APPLICATION_SHORTLISTED",
+          link: "/applied-jobs"
+        });
+      } else if (normalizedStage === 'HIRED') {
+        await NotificationDispatcher.dispatch({
+          userId: application.worker_id,
+          title: "Congratulations! You're Hired 🎉",
+          message: `You have been selected and hired for "${jobTitle}". Get ready for your shift!`,
+          type: "APPLICATION_ACCEPTED",
+          link: "/applied-jobs"
+        });
+      }
+    } catch (notifErr) {
+      console.warn('[updateApplicationStage] Notification error:', notifErr);
+    }
+
+    return c.json(ApiResponse.ok("Pipeline stage updated successfully", {
+      id: updated.id,
+      status: updated.status,
+      stage: normalizedStage,
+      application: formatApplication(updated)
+    }));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * Returns structured candidate pipeline for a specific job opening with aggregated stage counts.
+ */
+export const getJobHiringPipeline = async (c: Context) => {
+  try {
+    const authUser = c.get('user');
+    if (!authUser?.sub) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
+
+    const jobId = c.req.param('jobId');
+    if (!jobId) return c.json(ApiResponse.error("Job ID is required"), 400 as any);
+
+    const job = await prisma.jobs.findUnique({
+      where: { id: jobId }
+    });
+
+    if (!job) return c.json(ApiResponse.error("Job opening not found"), 404 as any);
+
+    // Ownership check
+    const employerProfile = await prisma.employer_profiles.findFirst({
+      where: {
+        OR: [
+          { user_id: authUser.sub },
+          { id: authUser.sub }
+        ]
+      }
+    });
+
+    const isEmployerOwner = job.employer_id === authUser.sub ||
+      Boolean(employerProfile && (job.employer_id === employerProfile.id || job.employer_id === employerProfile.user_id));
+    const isAdmin = isAppAdmin(authUser.role);
+
+    if (!isEmployerOwner && !isAdmin) {
+      return c.json(ApiResponse.error("Forbidden: You do not own this job opening"), 403 as any);
+    }
+
+    const applications = await prisma.job_applications.findMany({
+      where: { job_id: jobId },
+      orderBy: { applied_at: 'desc' }
+    });
+
+    const initialJobMap = new Map<string, any>([[job.id, job]]);
+    const enriched = await enrichApplicationsWithMatchScore(applications, initialJobMap);
+
+    // Group into canonical stages
+    const stageCounts: Record<string, number> = {
+      NEW: 0,
+      SHORTLISTED: 0,
+      INTERVIEW: 0,
+      OFFER_SENT: 0,
+      HIRED: 0,
+      REJECTED: 0,
+      TOTAL: enriched.length
+    };
+
+    const categorized = enriched.map((app: any) => {
+      const rawStatus = (app.status || 'PENDING').toUpperCase();
+      const stage = STATUS_TO_STAGE_MAP[rawStatus] || 'NEW';
+      stageCounts[stage] = (stageCounts[stage] || 0) + 1;
+      return {
+        ...formatApplication(app),
+        pipelineStage: stage
+      };
+    });
+
+    return c.json(ApiResponse.ok("Job hiring pipeline fetched successfully", {
+      job: formatJob(job),
+      counts: stageCounts,
+      candidates: categorized
+    }));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+
