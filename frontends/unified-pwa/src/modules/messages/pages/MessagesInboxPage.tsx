@@ -149,15 +149,15 @@ export const MessagesInboxPage: React.FC = () => {
 
   return (
     <div className="mx-auto h-[calc(100vh-4rem)] max-w-7xl p-2 sm:p-4 md:p-6 font-['Onest',system-ui,sans-serif]">
-      <div className="flex h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-[#000000]">
         {/* Left Column: Inbox List */}
         <div
-          className={`flex h-full w-full flex-col border-r border-slate-200 dark:border-slate-800 lg:w-96 lg:flex-shrink-0 ${
+          className={`flex h-full w-full flex-col border-r border-slate-200 dark:border-zinc-800 lg:w-96 lg:flex-shrink-0 dark:bg-[#0a0a0a] ${
             selectedConversationId && window.innerWidth < 1024 ? 'hidden' : 'flex'
           }`}
         >
           {/* Inbox Header */}
-          <div className="border-b border-slate-200 p-4 dark:border-slate-800 space-y-3">
+          <div className="border-b border-slate-200 p-4 dark:border-zinc-800 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <MessageSquare className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
@@ -183,13 +183,13 @@ export const MessagesInboxPage: React.FC = () => {
 
             {/* Search Filter */}
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-zinc-500" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by name, role, or job..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none dark:border-zinc-800 dark:bg-[#121215] dark:text-white dark:placeholder-zinc-500"
               />
             </div>
 
@@ -200,8 +200,8 @@ export const MessagesInboxPage: React.FC = () => {
                 onClick={() => setActiveFilterTab('ALL')}
                 className={`px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
                   activeFilterTab === 'ALL'
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                    ? 'bg-slate-900 text-white dark:bg-white dark:text-black shadow-xs'
+                    : 'bg-slate-100 dark:bg-[#18181b] text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-[#27272a]'
                 }`}
               >
                 All ({conversations.length})
@@ -215,7 +215,7 @@ export const MessagesInboxPage: React.FC = () => {
                     className={`px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
                       activeFilterTab === 'HIRED'
                         ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100'
+                        : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/70'
                     }`}
                   >
                     🤝 Hired
@@ -227,7 +227,7 @@ export const MessagesInboxPage: React.FC = () => {
                     className={`px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
                       activeFilterTab === 'SHORTLISTED'
                         ? 'bg-purple-600 text-white shadow-xs'
-                        : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 hover:bg-purple-100'
+                        : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-950/70'
                     }`}
                   >
                     ⭐ Shortlisted
@@ -241,7 +241,7 @@ export const MessagesInboxPage: React.FC = () => {
                 className={`px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
                   activeFilterTab === 'UNREAD'
                     ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                    : 'bg-slate-100 dark:bg-[#18181b] text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-[#27272a]'
                 }`}
               >
                 Unread
@@ -250,20 +250,20 @@ export const MessagesInboxPage: React.FC = () => {
           </div>
 
           {/* Conversations Scrollable List */}
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+          <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-zinc-800/60">
             {isLoading ? (
-              <div className="flex h-48 flex-col items-center justify-center space-y-2 text-slate-500">
+              <div className="flex h-48 flex-col items-center justify-center space-y-2 text-slate-500 dark:text-zinc-400">
                 <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
                 <span className="text-xs">Loading conversations...</span>
               </div>
             ) : filteredConversations.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center p-6 text-center text-slate-500 dark:text-slate-400 space-y-3">
-                <MessageSquare className="h-10 w-10 text-slate-300 dark:text-slate-600" />
+              <div className="flex h-full flex-col items-center justify-center p-6 text-center text-slate-500 dark:text-zinc-400 space-y-3">
+                <MessageSquare className="h-10 w-10 text-slate-300 dark:text-zinc-600" />
                 <div>
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  <p className="text-sm font-bold text-slate-800 dark:text-zinc-200">
                     {searchQuery ? 'No matching conversations' : 'No conversations yet'}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 max-w-xs mx-auto">
                     {searchQuery
                       ? 'No active chats match your query.'
                       : isEmployer
@@ -290,7 +290,7 @@ export const MessagesInboxPage: React.FC = () => {
                   <button
                     key={c.id}
                     onClick={() => handleSelectConversation(c.id)}
-                    className={`flex w-full items-start space-x-3 p-3.5 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
+                    className={`flex w-full items-start space-x-3 p-3.5 text-left transition hover:bg-slate-50 dark:hover:bg-[#141416] ${
                       isSelected ? 'bg-emerald-50/70 dark:bg-emerald-950/20' : ''
                     }`}
                   >
@@ -300,10 +300,10 @@ export const MessagesInboxPage: React.FC = () => {
                         <img
                           src={c.otherParty.photoUrl}
                           alt={c.otherParty.name}
-                          className="h-11 w-11 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+                          className="h-11 w-11 rounded-full object-cover ring-1 ring-slate-200 dark:ring-zinc-800"
                         />
                       ) : (
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 font-bold">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-200 font-bold">
                           {c.otherParty.role === 'Employer' ? (
                             <Building className="h-5 w-5" />
                           ) : (
@@ -312,7 +312,7 @@ export const MessagesInboxPage: React.FC = () => {
                         </div>
                       )}
                       {c.unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white ring-2 ring-white dark:ring-slate-900">
+                        <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white ring-2 ring-white dark:ring-[#0a0a0a]">
                           {c.unreadCount}
                         </span>
                       )}
@@ -322,18 +322,18 @@ export const MessagesInboxPage: React.FC = () => {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <h3 className={`truncate text-sm font-bold ${c.unreadCount > 0 ? 'text-slate-900 dark:text-white' : 'text-slate-800 dark:text-slate-200'}`}>
+                          <h3 className={`truncate text-sm font-bold ${c.unreadCount > 0 ? 'text-slate-900 dark:text-white' : 'text-slate-800 dark:text-zinc-200'}`}>
                             {c.otherParty.name}
                           </h3>
                         </div>
-                        <span className="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap shrink-0">
+                        <span className="text-[11px] text-slate-400 dark:text-zinc-500 whitespace-nowrap shrink-0">
                           {formatMessageTime(c.lastMessageAt)}
                         </span>
                       </div>
 
                       <div className="mt-0.5 flex items-center justify-between gap-1">
-                        <div className="flex items-center text-xs text-slate-600 dark:text-slate-400 truncate">
-                          <Briefcase className="mr-1 h-3 w-3 shrink-0 text-slate-400" />
+                        <div className="flex items-center text-xs text-slate-600 dark:text-zinc-400 truncate">
+                          <Briefcase className="mr-1 h-3 w-3 shrink-0 text-slate-400 dark:text-zinc-500" />
                           <span className="truncate font-medium">{c.jobTitle}</span>
                         </div>
 
@@ -360,7 +360,7 @@ export const MessagesInboxPage: React.FC = () => {
                         )}
                       </div>
 
-                      <p className={`mt-1 truncate text-xs ${c.unreadCount > 0 ? 'font-semibold text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                      <p className={`mt-1 truncate text-xs ${c.unreadCount > 0 ? 'font-semibold text-slate-900 dark:text-zinc-100' : 'text-slate-500 dark:text-zinc-400'}`}>
                         {c.lastMessage?.messageType === 'ATTACHMENT'
                           ? c.lastMessage.body
                             ? `📎 ${c.lastMessage.body}`
@@ -377,7 +377,7 @@ export const MessagesInboxPage: React.FC = () => {
 
         {/* Right Column: Thread Pane on Desktop & Active Chat on Mobile */}
         <div
-          className={`flex-1 flex-col overflow-hidden ${
+          className={`flex-1 flex-col overflow-hidden dark:bg-[#000000] ${
             selectedConversationId ? 'flex' : 'hidden lg:flex'
           }`}
         >
@@ -388,15 +388,15 @@ export const MessagesInboxPage: React.FC = () => {
               onBack={handleBackToInbox}
             />
           ) : (
-            <div className="flex h-full flex-col items-center justify-center p-8 text-center text-slate-500 dark:text-slate-400">
+            <div className="flex h-full flex-col items-center justify-center p-8 text-center text-slate-500 dark:text-zinc-400">
               <div className="mb-4 rounded-2xl bg-emerald-50 p-4 dark:bg-emerald-950/40">
                 <ShieldCheck className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
               </div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 TrustHyre Contextual Messaging
               </h3>
-              <p className="mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-                Select a conversation on the left or click <strong className="text-slate-800 dark:text-slate-200 font-semibold">"Select Candidate"</strong> to connect with your hired workers and shortlisted applicants.
+              <p className="mt-2 max-w-md text-sm text-slate-600 dark:text-zinc-400">
+                Select a conversation on the left or click <strong className="text-slate-800 dark:text-zinc-200 font-semibold">"Select Candidate"</strong> to connect with your hired workers and shortlisted applicants.
               </p>
               {isEmployer && (
                 <button
@@ -425,14 +425,14 @@ export const MessagesInboxPage: React.FC = () => {
           bodyClassName="p-5 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto"
         >
           {/* Tabs: Hired vs Shortlisted */}
-          <div className="flex border-b border-slate-200 dark:border-slate-800">
+          <div className="flex border-b border-slate-200 dark:border-zinc-800">
             <button
               type="button"
               onClick={() => setModalCandidateTab('HIRED')}
               className={`flex-1 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer text-center ${
                 modalCandidateTab === 'HIRED'
                   ? 'border-[#0f2f63] text-[#0f2f63] dark:border-sky-400 dark:text-sky-400'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200'
               }`}
             >
               🤝 Hired Workers ({hiredContacts.length})
@@ -443,7 +443,7 @@ export const MessagesInboxPage: React.FC = () => {
               className={`flex-1 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer text-center ${
                 modalCandidateTab === 'SHORTLISTED'
                   ? 'border-[#0f2f63] text-[#0f2f63] dark:border-sky-400 dark:text-sky-400'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200'
               }`}
             >
               ⭐ Shortlisted Applicants ({shortlistedContacts.length})
@@ -453,15 +453,15 @@ export const MessagesInboxPage: React.FC = () => {
           {/* List Content */}
           <div className="space-y-3 pt-2">
             {isContactsLoading ? (
-              <div className="flex h-36 flex-col items-center justify-center space-y-2 text-slate-500">
+              <div className="flex h-36 flex-col items-center justify-center space-y-2 text-slate-500 dark:text-zinc-400">
                 <Loader2 className="h-6 w-6 animate-spin text-[#0f2f63]" />
                 <span className="text-xs">Loading eligible candidates...</span>
               </div>
             ) : modalCandidateTab === 'HIRED' ? (
               hiredContacts.length === 0 ? (
-                <div className="p-8 text-center text-slate-500 dark:text-slate-400 space-y-2">
-                  <FileText className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600" />
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200">No hired workers found</p>
+                <div className="p-8 text-center text-slate-500 dark:text-zinc-400 space-y-2">
+                  <FileText className="w-8 h-8 mx-auto text-slate-300 dark:text-zinc-600" />
+                  <p className="text-sm font-bold text-slate-800 dark:text-zinc-200">No hired workers found</p>
                   <p className="text-xs max-w-sm mx-auto">
                     When you issue a digital work order to a candidate, they will automatically appear here for direct messaging.
                   </p>
@@ -472,7 +472,7 @@ export const MessagesInboxPage: React.FC = () => {
                   return (
                     <div
                       key={contact.workOrderId}
-                      className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c0c0e] hover:border-slate-300 transition-all shadow-2xs gap-3"
+                      className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#0c0c0e] hover:border-slate-300 dark:hover:border-zinc-700 transition-all shadow-2xs gap-3"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         {contact.photoUrl ? (
@@ -519,9 +519,9 @@ export const MessagesInboxPage: React.FC = () => {
               )
             ) : (
               shortlistedContacts.length === 0 ? (
-                <div className="p-8 text-center text-slate-500 dark:text-slate-400 space-y-2">
-                  <Star className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600" />
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200">No shortlisted applicants</p>
+                <div className="p-8 text-center text-slate-500 dark:text-zinc-400 space-y-2">
+                  <Star className="w-8 h-8 mx-auto text-slate-300 dark:text-zinc-600" />
+                  <p className="text-sm font-bold text-slate-800 dark:text-zinc-200">No shortlisted applicants</p>
                   <p className="text-xs max-w-sm mx-auto">
                     Shortlist candidate applications in your Job Management pipeline to enable 1-tap messaging here.
                   </p>
@@ -532,14 +532,14 @@ export const MessagesInboxPage: React.FC = () => {
                   return (
                     <div
                       key={contact.applicationId}
-                      className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c0c0e] hover:border-slate-300 transition-all shadow-2xs gap-3"
+                      className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#0c0c0e] hover:border-slate-300 dark:hover:border-zinc-700 transition-all shadow-2xs gap-3"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         {contact.photoUrl ? (
                           <img
                             src={contact.photoUrl}
                             alt={contact.workerName}
-                            className="w-11 h-11 rounded-full object-cover shrink-0 ring-1 ring-slate-200"
+                            className="w-11 h-11 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-zinc-800"
                           />
                         ) : (
                           <div className="w-11 h-11 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 flex items-center justify-center font-bold text-sm shrink-0">
@@ -555,11 +555,11 @@ export const MessagesInboxPage: React.FC = () => {
                               {contact.applicationStatus}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
-                            Applied for: <strong className="font-semibold text-slate-800 dark:text-slate-200">{contact.jobTitle}</strong>
+                          <p className="text-xs text-slate-600 dark:text-zinc-400 truncate">
+                            Applied for: <strong className="font-semibold text-slate-800 dark:text-zinc-200">{contact.jobTitle}</strong>
                           </p>
                           {contact.skills && (
-                            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
+                            <p className="text-[11px] text-slate-400 dark:text-zinc-500 truncate">
                               Skills: {contact.skills}
                             </p>
                           )}

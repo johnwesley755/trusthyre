@@ -13,6 +13,8 @@ router.get('/employer-status/:workerId', authenticateJWT, jobApplicationControll
 router.get('/job/:jobId', authenticateJWT, jobApplicationController.getJobApplications);
 router.post('/by-jobs', authenticateJWT, jobApplicationController.getApplicationsByJobs);
 router.patch('/:applicationId/status', authenticateJWT, jobApplicationController.updateApplicationStatus);
+router.patch('/:applicationId/stage', authenticateJWT, writeActionLimiter, jobApplicationController.updateApplicationStage);
+router.get('/:jobId/pipeline', authenticateJWT, jobApplicationController.getJobHiringPipeline);
 
 export default router;
 

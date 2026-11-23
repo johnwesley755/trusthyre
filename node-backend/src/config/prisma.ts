@@ -35,6 +35,25 @@ const attachRetryExtension = (client: PrismaClient): PrismaClient => {
         // Automatically wire request-bound RLS user ID & role if active and not in system context
         const store = requestContextStorage.getStore();
         if (store?.currentUserId && !store._insideRlsWrapper && !store.isSystemContext) {
+          // If the role is ADMIN or SUPER_ADMIN, route through system context to prevent transaction pool starvation
+          const roleUpper = (store.currentUserRole || '').toUpperCase();
+          if (roleUpper === 'ADMIN' || roleUpper === 'SUPER_ADMIN') {
+            store._insideRlsWrapper = true;
+            try {
+              return await withSystemContext(client, async (tx: any) => {
+                if (model && tx[model] && typeof tx[model][operation] === 'function') {
+                  return await tx[model][operation](args);
+                }
+                if (typeof tx[operation] === 'function') {
+                  return await tx[operation](args);
+                }
+                return query(args);
+              });
+            } finally {
+              store._insideRlsWrapper = false;
+            }
+          }
+
           store._insideRlsWrapper = true;
           try {
             return await withRlsContext(

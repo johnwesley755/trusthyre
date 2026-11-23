@@ -1,5 +1,5 @@
 import { SearchAlertService } from './searchAlertService';
-import { prisma } from '../config/prisma';
+import { prisma, withSystemContext } from '../config/prisma';
 import { sanitizeHtmlDescription } from '../utils/textSanitizer';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
@@ -409,24 +409,26 @@ export class LeadService {
    * Retrieves aggregated KPI analytics for employer lead discovery.
    */
   static async getLeadStats() {
-    const [totalLeads, completeLeads, verifiedLeads, contactedLeads, convertedLeads, totalRequirements] =
-      await Promise.all([
-        prisma.employer_leads.count(),
-        prisma.employer_leads.count({ where: { contactability_score: 'COMPLETE' } }),
-        prisma.employer_leads.count({ where: { status: 'VERIFIED' } }),
-        prisma.employer_leads.count({ where: { status: { in: ['CONTACTED', 'RESPONDED', 'INTERESTED'] } } }),
-        prisma.employer_leads.count({ where: { status: 'ONBOARDED' } }),
-        prisma.employer_lead_requirements.count()
-      ]);
+    return withSystemContext(prisma, async (tx: any) => {
+      const [totalLeads, completeLeads, verifiedLeads, contactedLeads, convertedLeads, totalRequirements] =
+        await Promise.all([
+          tx.employer_leads.count(),
+          tx.employer_leads.count({ where: { contactability_score: 'COMPLETE' } }),
+          tx.employer_leads.count({ where: { status: 'VERIFIED' } }),
+          tx.employer_leads.count({ where: { status: { in: ['CONTACTED', 'RESPONDED', 'INTERESTED'] } } }),
+          tx.employer_leads.count({ where: { status: 'ONBOARDED' } }),
+          tx.employer_lead_requirements.count()
+        ]);
 
-    return {
-      totalLeads,
-      completeLeads,
-      verifiedLeads,
-      contactedLeads,
-      convertedLeads,
-      totalRequirements
-    };
+      return {
+        totalLeads,
+        completeLeads,
+        verifiedLeads,
+        contactedLeads,
+        convertedLeads,
+        totalRequirements
+      };
+    });
   }
 
   /**
