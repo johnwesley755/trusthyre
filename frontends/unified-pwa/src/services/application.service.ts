@@ -90,5 +90,25 @@ export const applicationService = {
     const res = await apiClient.patch(`/api/jobs/applications/${applicationId}/stage`, { stage });
     return res.data;
   },
+  getApplicationTimeline: async (applicationId: string): Promise<any> => {
+    const res = await apiClient.get(`/api/jobs/applications/${applicationId}/timeline`);
+    return res.data;
+  },
+  addApplicationNote: async (applicationId: string, content: string): Promise<any> => {
+    const res = await apiClient.post(`/api/jobs/applications/${applicationId}/notes`, { content });
+    return res.data;
+  },
+  createApplicationFollowUp: async (applicationId: string, payload: { title: string; dueAt: string | Date; note?: string }): Promise<any> => {
+    const res = await apiClient.post(`/api/jobs/applications/${applicationId}/follow-ups`, payload);
+    return res.data;
+  },
+  updateApplicationFollowUp: async (followUpId: string, payload: { status?: string; dueAt?: string | Date; note?: string }): Promise<any> => {
+    const res = await apiClient.patch(`/api/jobs/applications/follow-ups/${followUpId}`, payload);
+    return res.data;
+  },
+  getJobFollowUpSummary: async (jobId: string): Promise<any> => {
+    const res = await apiClient.get(`/api/jobs/applications/jobs/${jobId}/follow-up-summary`);
+    return res.data;
+  },
 };
 

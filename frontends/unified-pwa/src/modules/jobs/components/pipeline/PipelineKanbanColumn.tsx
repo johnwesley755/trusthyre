@@ -8,6 +8,7 @@ interface PipelineKanbanColumnProps {
   stage: PipelineStage;
   candidates: any[];
   workersById: Map<string, any>;
+  onSelectCandidate?: (app: any, worker: any) => void;
   onViewCV: (app: any, worker: any) => void;
   onScheduleInterview: (app: any, worker: any) => void;
   onSendOffer: (app: any) => void;
@@ -22,6 +23,7 @@ export const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
   stage,
   candidates,
   workersById,
+  onSelectCandidate,
   onViewCV,
   onScheduleInterview,
   onSendOffer,
@@ -59,6 +61,7 @@ export const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
                 key={app.id}
                 application={app}
                 worker={worker}
+                onSelectCandidate={onSelectCandidate}
                 onViewCV={onViewCV}
                 onScheduleInterview={onScheduleInterview}
                 onSendOffer={onSendOffer}

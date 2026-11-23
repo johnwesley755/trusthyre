@@ -16,5 +16,12 @@ router.patch('/:applicationId/status', authenticateJWT, jobApplicationController
 router.patch('/:applicationId/stage', authenticateJWT, writeActionLimiter, jobApplicationController.updateApplicationStage);
 router.get('/:jobId/pipeline', authenticateJWT, jobApplicationController.getJobHiringPipeline);
 
+// Candidate Activity Timeline, Notes & Follow-ups
+router.get('/:applicationId/timeline', authenticateJWT, jobApplicationController.getApplicationTimeline);
+router.post('/:applicationId/notes', authenticateJWT, writeActionLimiter, jobApplicationController.addApplicationNote);
+router.post('/:applicationId/follow-ups', authenticateJWT, writeActionLimiter, jobApplicationController.createApplicationFollowUp);
+router.patch('/follow-ups/:followUpId', authenticateJWT, writeActionLimiter, jobApplicationController.updateApplicationFollowUp);
+router.get('/jobs/:jobId/follow-up-summary', authenticateJWT, jobApplicationController.getJobFollowUpSummary);
+
 export default router;
 

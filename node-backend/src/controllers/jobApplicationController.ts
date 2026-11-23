@@ -7,6 +7,7 @@ import { formatJob } from './jobController';
 import { isAppAdmin } from '../utils/roles';
 import { calculateCandidateJobMatch } from '../services/matchScoreService';
 import { recommendationEngineService } from '../services/recommendationEngineService';
+import { activityTimelineService } from '../services/activityTimelineService';
 
 const extractTransitMode = (coverLetter?: string | null): string | null => {
   if (!coverLetter || typeof coverLetter !== 'string') return null;
@@ -886,10 +887,18 @@ export const STAGE_TO_STATUS_MAP: Record<string, string> = {
 
 export const STATUS_TO_STAGE_MAP: Record<string, string> = {
   PENDING: 'NEW',
+  NEW: 'NEW',
   REVIEWING: 'SHORTLISTED',
   SHORTLISTED: 'SHORTLISTED',
+  PROPOSED: 'INTERVIEW',
+  INTERVIEW_PROPOSED: 'INTERVIEW',
   INTERVIEW_SCHEDULED: 'INTERVIEW',
   INTERVIEW: 'INTERVIEW',
+  INTERVIEW_ACCEPTED: 'INTERVIEW',
+  INTERVIEW_RESCHEDULE: 'INTERVIEW',
+  INTERVIEW_RESCHEDULED: 'INTERVIEW',
+  INTERVIEW_COMPLETED: 'SHORTLISTED',
+  INTERVIEW_DECLINED: 'SHORTLISTED',
   OFFER_SENT: 'OFFER_SENT',
   ACCEPTED: 'HIRED',
   APPROVED: 'HIRED',
@@ -952,6 +961,19 @@ export const updateApplicationStage = async (c: Context) => {
     const updated = await prisma.job_applications.update({
       where: { id: applicationId },
       data: { status: mappedStatus }
+    });
+
+    // Record activity event
+    await activityTimelineService.recordEvent({
+      applicationId,
+      eventType: normalizedStage === 'SHORTLISTED' ? 'CANDIDATE_SHORTLISTED' : 'STAGE_CHANGED',
+      actorId: authUser.sub,
+      actorType: 'EMPLOYER',
+      metadata: {
+        fromStatus: application.status,
+        toStatus: mappedStatus,
+        stage: normalizedStage
+      }
     });
 
     // Notify Worker of Stage Progression
@@ -1058,6 +1080,219 @@ export const getJobHiringPipeline = async (c: Context) => {
       counts: stageCounts,
       candidates: categorized
     }));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * Retrieves the unified chronological activity timeline for a candidate's application.
+ */
+export const getApplicationTimeline = async (c: Context) => {
+  try {
+    const authUser = c.get('user');
+    if (!authUser?.sub) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
+
+    const applicationId = c.req.param('applicationId');
+    if (!applicationId) return c.json(ApiResponse.error("Application ID is required"), 400 as any);
+
+    const application = await prisma.job_applications.findUnique({
+      where: { id: applicationId },
+      include: { jobs: true }
+    });
+
+    if (!application) return c.json(ApiResponse.error("Application not found"), 404 as any);
+
+    const employerProfile = await prisma.employer_profiles.findFirst({
+      where: { OR: [{ user_id: authUser.sub }, { id: authUser.sub }] }
+    });
+
+    const isEmployerOwner = application.jobs?.employer_id === authUser.sub ||
+      Boolean(employerProfile && (application.jobs?.employer_id === employerProfile.id || application.jobs?.employer_id === employerProfile.user_id));
+    const isWorker = application.worker_id === authUser.sub;
+    const isAdmin = isAppAdmin(authUser.role);
+
+    if (!isEmployerOwner && !isWorker && !isAdmin) {
+      return c.json(ApiResponse.error("Forbidden: You are not authorized to view this timeline"), 403 as any);
+    }
+
+    const timelineData = await activityTimelineService.getApplicationTimeline(applicationId);
+
+    // If candidate is viewing, sanitize internal notes and internal follow-up titles
+    if (isWorker && !isEmployerOwner && !isAdmin) {
+      timelineData.timeline = timelineData.timeline.filter(t => t.type !== 'NOTE');
+      timelineData.notes = [];
+      timelineData.followUps = [];
+    }
+
+    return c.json(ApiResponse.ok("Timeline retrieved successfully", timelineData));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * Adds an internal private note to a candidate's application.
+ */
+export const addApplicationNote = async (c: Context) => {
+  try {
+    const authUser = c.get('user');
+    if (!authUser?.sub) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
+
+    const applicationId = c.req.param('applicationId');
+    const { content } = await c.req.json().catch(() => ({}));
+
+    if (!applicationId || !content?.trim()) {
+      return c.json(ApiResponse.error("Application ID and note content are required"), 400 as any);
+    }
+
+    const application = await prisma.job_applications.findUnique({
+      where: { id: applicationId },
+      include: { jobs: true }
+    });
+
+    if (!application) return c.json(ApiResponse.error("Application not found"), 404 as any);
+
+    const employerProfile = await prisma.employer_profiles.findFirst({
+      where: { OR: [{ user_id: authUser.sub }, { id: authUser.sub }] }
+    });
+
+    const isEmployerOwner = application.jobs?.employer_id === authUser.sub ||
+      Boolean(employerProfile && (application.jobs?.employer_id === employerProfile.id || application.jobs?.employer_id === employerProfile.user_id));
+    const isAdmin = isAppAdmin(authUser.role);
+
+    if (!isEmployerOwner && !isAdmin) {
+      return c.json(ApiResponse.error("Forbidden: Only the hiring employer can add notes"), 403 as any);
+    }
+
+    const note = await activityTimelineService.addNote(applicationId, authUser.sub, content);
+    return c.json(ApiResponse.ok("Note added successfully", note));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * Schedules a new follow-up action for a candidate application.
+ */
+export const createApplicationFollowUp = async (c: Context) => {
+  try {
+    const authUser = c.get('user');
+    if (!authUser?.sub) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
+
+    const applicationId = c.req.param('applicationId');
+    const { title, dueAt, note } = await c.req.json().catch(() => ({}));
+
+    if (!applicationId || !title?.trim() || !dueAt) {
+      return c.json(ApiResponse.error("Application ID, title, and dueAt are required"), 400 as any);
+    }
+
+    const application = await prisma.job_applications.findUnique({
+      where: { id: applicationId },
+      include: { jobs: true }
+    });
+
+    if (!application) return c.json(ApiResponse.error("Application not found"), 404 as any);
+
+    const employerProfile = await prisma.employer_profiles.findFirst({
+      where: { OR: [{ user_id: authUser.sub }, { id: authUser.sub }] }
+    });
+
+    const isEmployerOwner = application.jobs?.employer_id === authUser.sub ||
+      Boolean(employerProfile && (application.jobs?.employer_id === employerProfile.id || application.jobs?.employer_id === employerProfile.user_id));
+    const isAdmin = isAppAdmin(authUser.role);
+
+    if (!isEmployerOwner && !isAdmin) {
+      return c.json(ApiResponse.error("Forbidden: Only the hiring employer can schedule follow-ups"), 403 as any);
+    }
+
+    const followUp = await activityTimelineService.createFollowUp(applicationId, authUser.sub, {
+      title,
+      dueAt,
+      note
+    });
+
+    return c.json(ApiResponse.ok("Follow-up scheduled successfully", followUp));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * Updates an existing follow-up (e.g. mark completed, change due date).
+ */
+export const updateApplicationFollowUp = async (c: Context) => {
+  try {
+    const authUser = c.get('user');
+    if (!authUser?.sub) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
+
+    const followUpId = c.req.param('followUpId');
+    const body = await c.req.json().catch(() => ({}));
+
+    if (!followUpId) return c.json(ApiResponse.error("Follow-up ID is required"), 400 as any);
+
+    const followUp = await prisma.application_follow_ups.findUnique({
+      where: { id: followUpId },
+      include: {
+        job_applications: {
+          include: { jobs: true }
+        }
+      }
+    });
+
+    if (!followUp) return c.json(ApiResponse.error("Follow-up not found"), 404 as any);
+
+    const employerProfile = await prisma.employer_profiles.findFirst({
+      where: { OR: [{ user_id: authUser.sub }, { id: authUser.sub }] }
+    });
+
+    const employerId = followUp.job_applications?.jobs?.employer_id;
+    const isEmployerOwner = employerId === authUser.sub ||
+      Boolean(employerProfile && (employerId === employerProfile.id || employerId === employerProfile.user_id));
+    const isAdmin = isAppAdmin(authUser.role);
+
+    if (!isEmployerOwner && !isAdmin) {
+      return c.json(ApiResponse.error("Forbidden: You do not own this follow-up"), 403 as any);
+    }
+
+    const updated = await activityTimelineService.updateFollowUp(followUpId, authUser.sub, body);
+    return c.json(ApiResponse.ok("Follow-up updated successfully", updated));
+  } catch (err: any) {
+    return c.json(ApiResponse.error(err.message), 500 as any);
+  }
+};
+
+/**
+ * Retrieves aggregated follow-up alert metrics (Overdue, Due Today, Next 7 Days).
+ */
+export const getJobFollowUpSummary = async (c: Context) => {
+  try {
+    const authUser = c.get('user');
+    if (!authUser?.sub) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
+
+    const jobId = c.req.param('jobId');
+    if (!jobId) return c.json(ApiResponse.error("Job ID is required"), 400 as any);
+
+    const job = await prisma.jobs.findUnique({
+      where: { id: jobId }
+    });
+
+    if (!job) return c.json(ApiResponse.error("Job opening not found"), 404 as any);
+
+    const employerProfile = await prisma.employer_profiles.findFirst({
+      where: { OR: [{ user_id: authUser.sub }, { id: authUser.sub }] }
+    });
+
+    const isEmployerOwner = job.employer_id === authUser.sub ||
+      Boolean(employerProfile && (job.employer_id === employerProfile.id || job.employer_id === employerProfile.user_id));
+    const isAdmin = isAppAdmin(authUser.role);
+
+    if (!isEmployerOwner && !isAdmin) {
+      return c.json(ApiResponse.error("Forbidden: You do not own this job opening"), 403 as any);
+    }
+
+    const summary = await activityTimelineService.getFollowUpSummary(jobId, job.employer_id);
+    return c.json(ApiResponse.ok("Follow-up summary retrieved successfully", summary));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
   }

@@ -9,13 +9,14 @@ import {
 } from '@/components/ui/table';
 import { UserAvatar } from '../../../../components/common/UserAvatar';
 import { MoreHorizontal, Sparkles, ShieldCheck, Clock, Calendar, Briefcase, FileText, Send, MessageSquare, UserCheck, XCircle } from 'lucide-react';
-import { getMatchScoreVisuals } from '../../../../utils/matchScorer';
+import { calculateMatchScore, getMatchScoreVisuals } from '../../../../utils/matchScorer';
 import type { PipelineStage } from '../../types/pipeline.types';
 import { PIPELINE_STAGES } from '../../types/pipeline.types';
 
 interface PipelineTableViewProps {
   candidates: any[];
   workersById: Map<string, any>;
+  selectedJob?: any;
   onViewCV: (app: any, worker: any) => void;
   onScheduleInterview: (app: any, worker: any) => void;
   onSendOffer: (app: any) => void;
@@ -28,6 +29,7 @@ interface PipelineTableViewProps {
 export const PipelineTableView: React.FC<PipelineTableViewProps> = ({
   candidates,
   workersById,
+  selectedJob,
   onViewCV,
   onScheduleInterview,
   onSendOffer,
@@ -57,8 +59,9 @@ export const PipelineTableView: React.FC<PipelineTableViewProps> = ({
               const candidateName = worker?.fullName || worker?.name || 'Candidate';
               const candidateRole = worker?.preferredRoles?.[0] || worker?.trade || (Array.isArray(worker?.skills) ? worker.skills[0] : 'Specialist');
               const isVerified = Boolean(worker?.identityVerified || worker?.isVerified);
-              const matchScore = app.matchScore ?? 85;
-              const visuals = getMatchScoreVisuals(matchScore);
+              const calculatedMatch = selectedJob && worker ? calculateMatchScore(selectedJob, worker).overallScore : 0;
+              const matchScore = app.matchScore ?? (calculatedMatch > 0 ? calculatedMatch : null);
+              const visuals = matchScore !== null ? getMatchScoreVisuals(matchScore) : null;
               const stage: PipelineStage = app.pipelineStage || 'NEW';
               const stageConfig = PIPELINE_STAGES[stage];
 
@@ -129,10 +132,16 @@ export const PipelineTableView: React.FC<PipelineTableViewProps> = ({
                   </TableCell>
 
                   <TableCell className="py-3">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${visuals.bg} ${visuals.text} border ${visuals.border}`}>
-                      <Sparkles className="w-3 h-3" />
-                      <span>{matchScore}%</span>
-                    </span>
+                    {visuals && matchScore !== null ? (
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${visuals.bg} ${visuals.text} border ${visuals.border}`}>
+                        <Sparkles className="w-3 h-3" />
+                        <span>{matchScore}%</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700">
+                        <span>Evaluating</span>
+                      </span>
+                    )}
                   </TableCell>
 
                   <TableCell className="py-3">

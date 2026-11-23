@@ -51,6 +51,8 @@ import { Star, MessageSquare, Phone, Kanban, LayoutList } from 'lucide-react';
 import { PipelineKanbanColumn } from '../components/pipeline/PipelineKanbanColumn';
 import { PipelineTableView } from '../components/pipeline/PipelineTableView';
 import { PipelineCandidateCard } from '../components/pipeline/PipelineCandidateCard';
+import { CandidateDetailDrawer } from '../components/pipeline/CandidateDetailDrawer';
+import { PipelineFollowUpBar } from '../components/pipeline/PipelineFollowUpBar';
 import type { PipelineStage } from '../types/pipeline.types';
 import { PIPELINE_STAGES } from '../types/pipeline.types';
 import { CandidateOutreachModal, type CandidateOutreachCandidate } from '../../../components/common/CandidateOutreachModal';
@@ -87,6 +89,8 @@ export default function ApplicationManagementPage() {
   const [viewLayout, setViewLayout] = useState<'KANBAN' | 'LIST'>('KANBAN');
   const [selectedMobileStage, setSelectedMobileStage] = useState<PipelineStage>('NEW');
   const [candidateSearchQuery, setCandidateSearchQuery] = useState('');
+  const [selectedDrawerCandidate, setSelectedDrawerCandidate] = useState<{ application: any; worker: any } | null>(null);
+  const [followUpFilter, setFollowUpFilter] = useState<'ALL' | 'OVERDUE' | 'DUE_TODAY' | 'UPCOMING'>('ALL');
   const [previewResumeData, setPreviewResumeData] = useState<ResumeData | null>(null);
   const [schedulingApp, setSchedulingApp] = useState<{
     applicationId: string;
@@ -302,8 +306,42 @@ export default function ApplicationManagementPage() {
     navigate(`/work-orders/new?${params.toString()}`);
   };
 
+  const { data: followUpSummaryData, isLoading: isFollowUpLoading } = useQuery({
+    queryKey: ['jobs', selectedJobId, 'follow-ups'],
+    queryFn: () => applicationService.getJobFollowUpSummary(selectedJobId!),
+    enabled: Boolean(selectedJobId),
+  });
+
+  const followUpSummary = followUpSummaryData?.data || followUpSummaryData;
+
   const filteredJobApplications = useMemo(() => {
     let list = [...selectedJobApplications];
+
+    // Follow-up status filter
+    if (followUpFilter !== 'ALL' && followUpSummary?.items) {
+      const now = new Date();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+      const matchingAppIds = new Set<string>();
+      followUpSummary.items.forEach((item: any) => {
+        const due = new Date(item.due_at || item.dueAt);
+        const appId = item.application_id || item.applicationId || item.job_applications?.id;
+        if (!appId) return;
+
+        if (followUpFilter === 'OVERDUE' && due < startOfToday) {
+          matchingAppIds.add(appId);
+        } else if (followUpFilter === 'DUE_TODAY' && due >= startOfToday && due <= endOfToday) {
+          matchingAppIds.add(appId);
+        } else if (followUpFilter === 'UPCOMING' && due > endOfToday && due <= in7Days) {
+          matchingAppIds.add(appId);
+        }
+      });
+
+      list = list.filter(app => matchingAppIds.has(app.id));
+    }
+
     if (candidateSearchQuery.trim()) {
       const q = candidateSearchQuery.toLowerCase();
       list = list.filter(app => {
@@ -331,7 +369,7 @@ export default function ApplicationManagementPage() {
       list.sort((a, b) => new Date(b.appliedAt || 0).getTime() - new Date(a.appliedAt || 0).getTime());
     }
     return list;
-  }, [selectedJobApplications, candidateSearchQuery, sortBy, selectedJob, workersById]);
+  }, [selectedJobApplications, candidateSearchQuery, sortBy, selectedJob, workersById, followUpFilter, followUpSummary]);
 
   const groupedPipeline = useMemo(() => {
     const groups: Record<PipelineStage, JobApplication[]> = {
@@ -850,6 +888,16 @@ export default function ApplicationManagementPage() {
               </div>
             </div>
 
+            {/* Follow-up Summary Bar */}
+            {selectedJobId && (
+              <PipelineFollowUpBar
+                summary={followUpSummary}
+                activeFilter={followUpFilter}
+                onFilterChange={setFollowUpFilter}
+                isLoading={isFollowUpLoading}
+              />
+            )}
+
             {/* Mobile Horizontal Stage Selector (Tabs) for Kanban mode */}
             {viewLayout === 'KANBAN' && (
               <div className="flex md:hidden items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
@@ -884,10 +932,11 @@ export default function ApplicationManagementPage() {
               <PipelineTableView
                 candidates={filteredJobApplications}
                 workersById={workersById}
-                onMoveStage={handleMoveStage}
-                onViewCV={handleViewCV}
+                selectedJob={selectedJob}
+                onViewCV={(app, worker) => setSelectedDrawerCandidate({ application: app, worker })}
                 onScheduleInterview={handleScheduleInterview}
                 onSendOffer={handleSendOffer}
+                onMoveStage={handleMoveStage}
                 onOpenMessage={handleOpenMessage}
                 onOutreach={handleOutreach}
                 onIssueWorkOrder={handleIssueWorkOrder}
@@ -903,6 +952,7 @@ export default function ApplicationManagementPage() {
                       candidates={groupedPipeline[stageKey] || []}
                       workersById={workersById}
                       selectedJob={selectedJob}
+                      onSelectCandidate={(app, worker) => setSelectedDrawerCandidate({ application: app, worker })}
                       onMoveStage={handleMoveStage}
                       onViewCV={handleViewCV}
                       onScheduleInterview={handleScheduleInterview}
@@ -1025,6 +1075,22 @@ export default function ApplicationManagementPage() {
             queryClient.invalidateQueries({ queryKey: ['workOrders'] });
             queryClient.invalidateQueries({ queryKey: queryKeys.jobs.allEmployerApplications(jobIds) });
           }}
+        />
+      )}
+
+      {/* Candidate Detail & Activity Timeline Drawer */}
+      {selectedDrawerCandidate && (
+        <CandidateDetailDrawer
+          isOpen={Boolean(selectedDrawerCandidate)}
+          onClose={() => setSelectedDrawerCandidate(null)}
+          application={selectedDrawerCandidate.application}
+          worker={selectedDrawerCandidate.worker}
+          selectedJob={selectedJob}
+          onMoveStage={handleMoveStage}
+          onOpenMessage={handleOpenMessage}
+          onOutreach={handleOutreach}
+          onScheduleInterview={handleScheduleInterview}
+          onSendOffer={handleSendOffer}
         />
       )}
 

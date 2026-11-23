@@ -17,13 +17,14 @@ import {
   Briefcase
 } from 'lucide-react';
 import { UserAvatar } from '../../../../components/common/UserAvatar';
-import { getMatchScoreVisuals } from '../../../../utils/matchScorer';
+import { calculateMatchScore, getMatchScoreVisuals } from '../../../../utils/matchScorer';
 import type { PipelineStage } from '../../types/pipeline.types';
 import { PIPELINE_STAGES } from '../../types/pipeline.types';
 
 interface PipelineCandidateCardProps {
   application: any;
   worker: any;
+  onSelectCandidate?: (app: any, worker: any) => void;
   onViewCV: (app: any, worker: any) => void;
   onScheduleInterview: (app: any, worker: any) => void;
   onSendOffer: (app: any) => void;
@@ -37,6 +38,7 @@ interface PipelineCandidateCardProps {
 export const PipelineCandidateCard: React.FC<PipelineCandidateCardProps> = ({
   application,
   worker,
+  onSelectCandidate,
   onViewCV,
   onScheduleInterview,
   onSendOffer,
@@ -50,8 +52,9 @@ export const PipelineCandidateCard: React.FC<PipelineCandidateCardProps> = ({
   const candidateName = worker?.fullName || worker?.name || 'Candidate';
   const candidateRole = worker?.preferredRoles?.[0] || worker?.trade || (Array.isArray(worker?.skills) ? worker.skills[0] : 'Specialist');
   const isVerified = Boolean(worker?.identityVerified || worker?.isVerified);
-  const matchScore = application.matchScore ?? 85;
-  const visuals = getMatchScoreVisuals(matchScore);
+  const calculatedMatch = selectedJob && worker ? calculateMatchScore(selectedJob, worker).overallScore : 0;
+  const matchScore = application.matchScore ?? (calculatedMatch > 0 ? calculatedMatch : null);
+  const visuals = matchScore !== null ? getMatchScoreVisuals(matchScore) : null;
   const currentStage: PipelineStage = application.pipelineStage || 'NEW';
 
   const expectedWage = worker?.expectedDailyWage || worker?.dailyRate || worker?.hourlyRate;
@@ -105,7 +108,10 @@ export const PipelineCandidateCard: React.FC<PipelineCandidateCardProps> = ({
   ];
 
   return (
-    <div className="bg-white dark:bg-[#121215] rounded-xl p-3.5 border border-[#e6e8ec] dark:border-neutral-800 shadow-2xs hover:shadow-md hover:border-[#0f2f63]/30 dark:hover:border-neutral-700 transition-all text-[#0a0a0a] dark:text-zinc-100 group flex flex-col gap-2.5">
+    <div 
+      onClick={() => onSelectCandidate && onSelectCandidate(application, worker)}
+      className="bg-white dark:bg-[#121215] rounded-xl p-3.5 border border-[#e6e8ec] dark:border-neutral-800 shadow-2xs hover:shadow-md hover:border-[#0f2f63]/30 dark:hover:border-neutral-700 transition-all text-[#0a0a0a] dark:text-zinc-100 group flex flex-col gap-2.5 cursor-pointer"
+    >
       {/* Top Header: Avatar + Name + 3-Dot Action Menu */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -116,7 +122,14 @@ export const PipelineCandidateCard: React.FC<PipelineCandidateCardProps> = ({
           />
           <div className="min-w-0">
             <h4 
-              onClick={() => onViewCV(application, worker)}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onSelectCandidate) {
+                  onSelectCandidate(application, worker);
+                } else {
+                  onViewCV(application, worker);
+                }
+              }}
               className="text-xs font-bold text-[#0a0a0a] dark:text-white truncate cursor-pointer hover:underline"
             >
               {candidateName}
@@ -169,10 +182,16 @@ export const PipelineCandidateCard: React.FC<PipelineCandidateCardProps> = ({
 
       {/* Badges: Match Score & Verification */}
       <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${visuals.bg} ${visuals.text} border ${visuals.border}`}>
-          <Sparkles className="w-3 h-3" />
-          <span>{matchScore}% Match</span>
-        </span>
+        {visuals && matchScore !== null ? (
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${visuals.bg} ${visuals.text} border ${visuals.border}`}>
+            <Sparkles className="w-3 h-3" />
+            <span>{matchScore}% Match</span>
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700">
+            <span>Evaluating Match</span>
+          </span>
+        )}
 
         {isVerified && (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50">

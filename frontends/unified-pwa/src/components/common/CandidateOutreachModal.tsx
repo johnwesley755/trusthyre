@@ -73,8 +73,8 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
   const jobTitle = selectedJob ? selectedJob.title : (candidate.trade ? `${candidate.trade} Opening` : 'Frontline Position');
   const salaryText = selectedJob?.budget ? `₹${selectedJob.budget.toLocaleString('en-IN')}/month` : 'Market Competitive Wage';
 
-  // Format real or fallback phone number - free direct contact for authenticated employers
-  const candidatePhone = candidate.phoneNumber || '+91 98765 43210';
+  // Format real candidate phone number (no fake fallback)
+  const candidatePhone = candidate.phoneNumber || '';
   const cleanPhone = candidatePhone.replace(/[^0-9]/g, '');
 
   const formatWhatsAppMessage = () => {
@@ -110,28 +110,42 @@ export const CandidateOutreachModal: React.FC<CandidateOutreachModalProps> = ({
       maxWidth="lg"
       bodyClassName="p-4 sm:p-5 space-y-4 bg-white dark:bg-[#1C1C21] text-[#0A1931] dark:text-zinc-100"
       footer={
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <a
-            href={`tel:${cleanPhone}`}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 text-[#0A1931] dark:text-white hover:bg-[#F8FAFC] dark:hover:bg-zinc-800 transition-all shadow-2xs cursor-pointer active:scale-95"
-          >
-            <Phone className="w-4 h-4 text-[#10b981]" />
-            <span>Call Candidate</span>
-          </a>
+        <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+          {cleanPhone ? (
+            <>
+              <a
+                href={`tel:${cleanPhone}`}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold bg-white dark:bg-[#121215] border border-[#e6e8ec] dark:border-zinc-700 text-[#0A1931] dark:text-white hover:bg-[#F8FAFC] dark:hover:bg-zinc-800 transition-all shadow-2xs cursor-pointer active:scale-95"
+              >
+                <Phone className="w-4 h-4 text-[#10b981]" />
+                <span>Call Candidate</span>
+              </a>
 
-          <a
-            href={
-              cleanPhone
-                ? `https://wa.me/${cleanPhone}?text=${formatWhatsAppMessage()}`
-                : `https://wa.me/?text=${formatWhatsAppMessage()}`
-            }
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs sm:text-sm bg-[#0066ff] hover:bg-[#0052cc] active:bg-[#003d99] text-white shadow-md transition-all cursor-pointer"
-          >
-            <MessageSquare className="w-4 h-4 fill-white text-white" />
-            <span>Send WhatsApp Invite</span>
-          </a>
+              <a
+                href={`https://wa.me/${cleanPhone}?text=${formatWhatsAppMessage()}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs sm:text-sm bg-[#0066ff] hover:bg-[#0052cc] active:bg-[#003d99] text-white shadow-md transition-all cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4 fill-white text-white" />
+                <span>Send WhatsApp Invite</span>
+              </a>
+            </>
+          ) : (
+            <div className="flex items-center justify-between w-full p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 text-xs">
+              <span className="flex items-center gap-1.5 font-medium">
+                <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                <span>Candidate has not listed a direct phone number.</span>
+              </span>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-3 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/60 dark:hover:bg-amber-800 text-amber-900 dark:text-amber-100 font-bold transition-all text-xs cursor-pointer"
+              >
+                Use In-App Message
+              </button>
+            </div>
+          )}
         </div>
       }
     >
