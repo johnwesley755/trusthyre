@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserAvatar } from '../components/common/UserAvatar';
@@ -359,7 +360,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
 
   return (
     <>
-      {/* 1. Desktop Popover Dropdown (hidden on mobile) */}
+      {/* 1. Desktop Popover Dropdown (hidden on small viewports) */}
       <div className="hidden md:block">
         <AnimatePresence>
           {isOpen && (
@@ -368,10 +369,10 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 6, scale: 0.98 }}
               transition={{ duration: 0.12 }}
-              className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.25rem)] bg-white dark:bg-[#0a0a0a] rounded-2xl shadow-2xl border border-[#e6e8ec] dark:border-zinc-800 py-2 text-[#0a0a0a] dark:text-zinc-100 z-50 font-['Onest',system-ui,sans-serif] max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain touch-pan-y"
+              className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#0a0a0a] rounded-2xl shadow-2xl border border-[#e6e8ec] dark:border-neutral-800 text-[#0a0a0a] dark:text-zinc-100 z-50 font-['Onest',system-ui,sans-serif] max-h-[min(82vh,560px)] flex flex-col overflow-hidden"
             >
               {/* User Profile Card Header */}
-              <div className="px-4 py-3 border-b border-[#e6e8ec] dark:border-zinc-800">
+              <div className="px-4 py-3 border-b border-[#e6e8ec] dark:border-neutral-800 shrink-0 bg-white dark:bg-[#0a0a0a]">
                 <div className="flex items-center gap-2.5">
                   <UserAvatar src={user?.profileImageUrl} name={displayName} size="md" />
                   <div className="min-w-0 flex-1">
@@ -382,19 +383,22 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
                 </div>
               </div>
 
-              {/* Language Switcher */}
-              {languageSelector}
+              {/* Scrollable middle container */}
+              <div className="flex-1 overflow-y-auto overscroll-contain py-1 divide-y divide-[#e6e8ec]/50 dark:divide-neutral-800/60 custom-scrollbar">
+                {/* Language Switcher */}
+                {languageSelector}
 
-              {/* Navigation Links */}
-              {navigationLinks}
+                {/* Navigation Links */}
+                {navigationLinks}
+              </div>
 
-              {/* Sign Out */}
-              <div className="pt-1 border-t border-[#e6e8ec] dark:border-zinc-800">
+              {/* Fixed Popover Footer Sign Out */}
+              <div className="p-2 border-t border-[#e6e8ec] dark:border-neutral-800 shrink-0 bg-slate-50/60 dark:bg-zinc-950/80">
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-2.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-3 transition-colors cursor-pointer text-left"
+                  className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 transition-colors cursor-pointer text-left"
                 >
-                  <LogOut className="w-4 h-4 text-rose-500" />
+                  <LogOut className="w-4 h-4 text-rose-500 shrink-0" />
                   <span>{t('Sign Out')}</span>
                 </button>
               </div>
@@ -403,80 +407,83 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* 2. Mobile Full-Height Slide-Over Drawer with Backdrop (hidden on desktop) */}
-      <div className="md:hidden">
-        <AnimatePresence>
-          {isOpen && (
-            <div className="fixed inset-0 z-[100] flex justify-end">
-              {/* Backdrop Scrim */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                onClick={onClose}
-                className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-              />
+      {/* 2. Mobile Full-Height Slide-Over Drawer with Backdrop (Portaled to document.body) */}
+      {typeof document !== 'undefined' && createPortal(
+        <div className="md:hidden">
+          <AnimatePresence>
+            {isOpen && (
+              <div className="fixed inset-0 z-[99999] flex justify-end">
+                {/* Backdrop Scrim */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={onClose}
+                  className="fixed inset-0 bg-black/75 backdrop-blur-xs"
+                />
 
-              {/* Slide-in Drawer Container */}
-              <motion.div
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-                className="relative w-[85vw] max-w-sm h-full bg-white dark:bg-[#0a0a0a] border-l border-[#e6e8ec] dark:border-zinc-800 shadow-2xl flex flex-col z-10 select-none font-['Onest',system-ui,sans-serif]"
-              >
-                {/* Fixed Drawer Header with User Card & Close Button */}
-                <div className="px-4 py-3.5 border-b border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-[#0a0a0a]">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <UserAvatar src={user?.profileImageUrl} name={displayName} size="md" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-[#0a0a0a] dark:text-white truncate">{displayName}</p>
-                      <p className="text-[10px] text-[#717784] dark:text-zinc-400 truncate">{user?.email}</p>
-                      {roleBadge}
+                {/* Slide-in Drawer Container */}
+                <motion.div
+                  initial={{ x: '100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+                  className="relative w-[85vw] max-w-sm h-[100dvh] max-h-[100dvh] bg-white dark:bg-[#0a0a0a] border-l border-[#e6e8ec] dark:border-neutral-800 shadow-2xl flex flex-col z-[100000] select-none font-['Onest',system-ui,sans-serif]"
+                >
+                  {/* Fixed Drawer Header with User Card & Close Button */}
+                  <div className="px-4 py-3.5 border-b border-[#e6e8ec] dark:border-neutral-800 flex items-center justify-between shrink-0 bg-white dark:bg-[#0a0a0a]">
+                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                      <UserAvatar src={user?.profileImageUrl} name={displayName} size="md" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-[#0a0a0a] dark:text-white truncate">{displayName}</p>
+                        <p className="text-[10px] text-[#717784] dark:text-zinc-400 truncate">{user?.email}</p>
+                        {roleBadge}
+                      </div>
                     </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 cursor-pointer shrink-0 ml-2"
-                    aria-label="Close menu"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Scrollable Drawer Body */}
-                <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y py-1 text-[#0a0a0a] dark:text-zinc-100">
-                  {/* Regional Language Quick-Switch Bar */}
-                  {languageSelector}
-
-                  {/* Mobile Theme Switcher Row */}
-                  <div className="px-4 py-2.5 border-b border-[#e6e8ec] dark:border-zinc-800 flex items-center justify-between bg-slate-50/70 dark:bg-zinc-900/70">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Theme Mode</span>
-                    <ThemeToggle variant="pill" showLabel={true} />
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="p-2 -mr-1 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 cursor-pointer shrink-0 min-w-[40px] min-h-[40px] flex items-center justify-center transition-colors"
+                      aria-label="Close menu"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
 
-                  {/* Role Navigation Items */}
-                  {navigationLinks}
-                </div>
+                  {/* Scrollable Drawer Body */}
+                  <div className="flex-1 overflow-y-auto overscroll-contain py-1 text-[#0a0a0a] dark:text-zinc-100 custom-scrollbar">
+                    {/* Regional Language Quick-Switch Bar */}
+                    {languageSelector}
 
-                {/* Fixed Drawer Footer: Sign Out Button */}
-                <div className="p-3 border-t border-[#e6e8ec] dark:border-zinc-800 shrink-0 bg-slate-50/50 dark:bg-zinc-900/50">
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/60 flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                  >
-                    <LogOut className="w-4 h-4 text-rose-500" />
-                    <span>{t('Sign Out')}</span>
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-      </div>
+                    {/* Mobile Theme Switcher Row */}
+                    <div className="px-4 py-2.5 border-b border-[#e6e8ec] dark:border-neutral-800 flex items-center justify-between bg-slate-50/70 dark:bg-zinc-900/70">
+                      <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Theme Mode</span>
+                      <ThemeToggle variant="pill" showLabel={true} />
+                    </div>
+
+                    {/* Role Navigation Items */}
+                    {navigationLinks}
+                  </div>
+
+                  {/* Fixed Drawer Footer: Sign Out Button */}
+                  <div className="p-3 border-t border-[#e6e8ec] dark:border-neutral-800 shrink-0 bg-slate-50/70 dark:bg-zinc-950/90">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/60 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4 text-rose-500" />
+                      <span>{t('Sign Out')}</span>
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+        </div>,
+        document.body
+      )}
     </>
   );
 };

@@ -690,16 +690,18 @@ export default function ApplicationManagementPage() {
                   return (
                     <div
                       key={app.id}
-                      className="bg-white dark:bg-[#121215] rounded-2xl p-5 border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/40 dark:hover:border-zinc-700 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-2xs group"
+                      className="bg-white dark:bg-[#121215] rounded-2xl p-4 sm:p-5 border border-[#e6e8ec] dark:border-zinc-800 hover:border-[#0f2f63]/40 dark:hover:border-zinc-700 transition-all flex flex-col gap-4 shadow-2xs group"
                     >
-                      <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                      {/* Top Row: Candidate Avatar & Info */}
+                      <div className="flex items-start gap-3 sm:gap-3.5 w-full min-w-0">
                         <UserAvatar
                           src={worker?.profileImageUrl}
                           name={candidateName}
                           size="lg"
                         />
 
-                        <div className="space-y-1.5 min-w-0 flex-1">
+                        <div className="space-y-2 min-w-0 flex-1">
+                          {/* Name + Status Badges */}
                           <div className="flex flex-wrap items-center gap-2">
                             <h4 className="text-base font-bold text-[#0a0a0a] dark:text-zinc-100">
                               {candidateName}
@@ -733,6 +735,7 @@ export default function ApplicationManagementPage() {
                             </span>
                           </div>
 
+                          {/* Role & Experience */}
                           <div className="flex flex-wrap items-center gap-2 text-xs text-[#717784] dark:text-zinc-400">
                             <span className="font-semibold text-[#0a0a0a] dark:text-zinc-200">{candidateRole}</span>
                             <span>•</span>
@@ -770,45 +773,49 @@ export default function ApplicationManagementPage() {
 
                           {/* Scheduled Interview Details Badge / Alert */}
                           {app.interview && (
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 rounded-xl text-xs max-w-xl">
-                              <div className="flex items-center gap-2 shrink-0">
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gradient-to-r from-sky-50/90 to-blue-50/50 dark:from-sky-950/40 dark:to-zinc-900/60 border border-sky-200/80 dark:border-sky-800/60 rounded-xl text-xs w-full shadow-2xs">
+                              <div className="flex flex-wrap items-center gap-2.5">
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
                                   app.interview.interviewType === 'PHONE'
-                                    ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                                    ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
                                     : app.interview.interviewType === 'WHATSAPP_VIDEO'
-                                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
-                                    : 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800'
+                                    ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                    : 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-900 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800'
                                 }`}>
                                   {app.interview.interviewType === 'PHONE' && '📞 Phone Call'}
                                   {app.interview.interviewType === 'WHATSAPP_VIDEO' && '📹 Video Call'}
                                   {app.interview.interviewType === 'IN_PERSON' && '🏢 Direct Walk-In / In-Person'}
                                   {!['PHONE', 'WHATSAPP_VIDEO', 'IN_PERSON'].includes(app.interview.interviewType) && (app.interview.interviewType || 'Interview')}
                                 </span>
-                              </div>
-                              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-sky-900 dark:text-sky-200">
-                                <span className="font-semibold">
-                                  {new Date(app.interview.scheduledAt).toLocaleString('en-IN', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  })}
-                                </span>
-                                {app.interview.locationAddress && (
-                                  <>
-                                    <span className="text-sky-400 dark:text-sky-600">•</span>
-                                    <span className="truncate max-w-[200px]" title={app.interview.locationAddress}>
-                                      📍 {app.interview.locationAddress}
-                                    </span>
-                                  </>
-                                )}
-                                {app.interview.contactPerson && (
-                                  <>
-                                    <span className="text-sky-400 dark:text-sky-600">•</span>
-                                    <span>👤 Contact: {app.interview.contactPerson}</span>
-                                  </>
-                                )}
+
+                                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-sky-950 dark:text-sky-100">
+                                  <span className="font-bold flex items-center gap-1">
+                                    <Clock className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                                    {new Date(app.interview.scheduledAt).toLocaleString('en-IN', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </span>
+                                  {app.interview.locationAddress && (
+                                    <>
+                                      <span className="text-sky-300 dark:text-sky-700 hidden sm:inline">•</span>
+                                      <span className="truncate max-w-[240px]" title={app.interview.locationAddress}>
+                                        📍 {app.interview.locationAddress}
+                                      </span>
+                                    </>
+                                  )}
+                                  {app.interview.contactPerson && (
+                                    <>
+                                      <span className="text-sky-300 dark:text-sky-700 hidden sm:inline">•</span>
+                                      <span className="font-medium text-slate-700 dark:text-zinc-300">
+                                        👤 Contact: {app.interview.contactPerson}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           )}
@@ -834,8 +841,8 @@ export default function ApplicationManagementPage() {
                         </div>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex flex-wrap items-center gap-2 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-[#e6e8ec] dark:border-zinc-800">
+                      {/* Bottom Row: Action Buttons */}
+                      <div className="flex flex-wrap items-center gap-2 w-full pt-3 border-t border-[#e6e8ec] dark:border-zinc-800">
                         <button
                           type="button"
                           onClick={async () => {

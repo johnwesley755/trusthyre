@@ -60,8 +60,9 @@ export const AppTopNavbar = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Lock background scroll when any mobile menu or drawer is open
-  useBodyScrollLock(isProfileMenuOpen || isMobileMenuOpen);
+  // Lock background scroll ONLY when mobile menu drawer is open or mobile screen profile drawer is open
+  const isMobileViewport = typeof window !== 'undefined' && window.innerWidth < 768;
+  useBodyScrollLock(isMobileMenuOpen || (isProfileMenuOpen && isMobileViewport));
 
   const isAuthenticated = Boolean(user);
   const isSuperAdmin = (user?.role as string) === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'admin@trusthyre.com';

@@ -73,7 +73,7 @@ export const resolveTradeCoverImage = (title?: string, industry?: string): strin
   return 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80';
 };
 import { Context } from 'hono';
-import prisma from '../config/prisma';
+import prisma, { withSystemContext } from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationDispatcher } from '../services/notificationDispatcher';
@@ -143,50 +143,52 @@ export const getVerifications = async (c: Context) => {
       whereClause.status = statusQuery.toUpperCase();
     }
 
-    const records = await prisma.verification_records.findMany({
-      where: whereClause,
-      orderBy: { created_at: 'desc' }
+    return await withSystemContext(prisma, async (tx: any) => {
+      const records = await tx.verification_records.findMany({
+        where: whereClause,
+        orderBy: { created_at: 'desc' }
+      });
+
+      const userIds = Array.from(new Set(records.map((r: any) => r.user_id).filter(Boolean)));
+      const [userMetaList, workerProfiles] = await Promise.all([
+        tx.user_metadata.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, email: true, first_name: true, last_name: true, phone_number: true, profile_image_url: true, role: true }
+        }),
+        tx.worker_profiles.findMany({
+          where: { user_id: { in: userIds } }
+        })
+      ]);
+
+      const userMetaMap = new Map(userMetaList.map((u: any) => [u.id, u]));
+      const workerProfileMap = new Map(workerProfiles.map((w: any) => [w.user_id, w]));
+
+      const formatted = records.map((r: any) => {
+        const meta = userMetaMap.get(r.user_id);
+        const worker = workerProfileMap.get(r.user_id);
+        const fullName = worker?.full_name || [meta?.first_name, meta?.last_name].filter(Boolean).join(' ') || 'Candidate';
+        
+        return {
+          id: r.id,
+          userId: r.user_id,
+          userName: fullName,
+          userEmail: meta?.email,
+          userPhone: meta?.phone_number,
+          userPhoto: meta?.profile_image_url,
+          role: meta?.role || 'WORKER',
+          verificationType: r.verification_type || 'GOVERNMENT_ID',
+          docImageUrl: r.doc_image_url,
+          liveImageUrl: r.live_image_url,
+          confidenceScore: r.confidence_score || '98%',
+          status: r.status,
+          failureReason: r.failure_reason,
+          createdAt: r.created_at,
+          verifiedAt: r.verified_at
+        };
+      });
+
+      return c.json(ApiResponse.ok(formatted));
     });
-
-    const userIds = Array.from(new Set(records.map(r => r.user_id).filter(Boolean)));
-    const [userMetaList, workerProfiles] = await Promise.all([
-      prisma.user_metadata.findMany({
-        where: { id: { in: userIds } },
-        select: { id: true, email: true, first_name: true, last_name: true, phone_number: true, profile_image_url: true, role: true }
-      }),
-      prisma.worker_profiles.findMany({
-        where: { user_id: { in: userIds } }
-      })
-    ]);
-
-    const userMetaMap = new Map(userMetaList.map(u => [u.id, u]));
-    const workerProfileMap = new Map(workerProfiles.map(w => [w.user_id, w]));
-
-    const formatted = records.map(r => {
-      const meta = userMetaMap.get(r.user_id);
-      const worker = workerProfileMap.get(r.user_id);
-      const fullName = worker?.full_name || [meta?.first_name, meta?.last_name].filter(Boolean).join(' ') || 'Candidate';
-      
-      return {
-        id: r.id,
-        userId: r.user_id,
-        userName: fullName,
-        userEmail: meta?.email,
-        userPhone: meta?.phone_number,
-        userPhoto: meta?.profile_image_url,
-        role: meta?.role || 'WORKER',
-        verificationType: r.verification_type || 'GOVERNMENT_ID',
-        docImageUrl: r.doc_image_url,
-        liveImageUrl: r.live_image_url,
-        confidenceScore: r.confidence_score || '98%',
-        status: r.status,
-        failureReason: r.failure_reason,
-        createdAt: r.created_at,
-        verifiedAt: r.verified_at
-      };
-    });
-
-    return c.json(ApiResponse.ok(formatted));
   } catch (err: any) {
     console.error("getVerifications error:", err);
     return c.json(ApiResponse.error(err.message), 500 as any);
