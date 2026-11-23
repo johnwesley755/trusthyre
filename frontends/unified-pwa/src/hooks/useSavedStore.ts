@@ -225,8 +225,8 @@ export const useSavedStore = (options?: UseSavedStoreOptions) => {
         city: worker.city || worker.location || 'Local Area',
         location: worker.location || worker.city || 'Local Area',
         experience: worker.experience || 0,
-        trustScore: worker.trustScore || '98%',
-        isVerified: worker.isVerified ?? true,
+        trustScore: worker.trustScore,
+        isVerified: worker.isVerified ?? false,
         bio: worker.bio,
         savedAt: new Date().toISOString(),
       };
@@ -280,8 +280,8 @@ export const useSavedStore = (options?: UseSavedStoreOptions) => {
           city: w.city || w.location || 'Local Area',
           location: w.location || w.city || 'Local Area',
           experience: w.experienceYears ?? w.experience ?? 0,
-          trustScore: w.trustScore ? `${w.trustScore}%` : '98%',
-          isVerified: w.isVerified ?? true,
+          trustScore: w.trustScore ? `${w.trustScore}%` : undefined,
+          isVerified: w.isVerified ?? false,
           bio: w.bio,
           savedAt: new Date().toISOString(),
         });

@@ -138,12 +138,24 @@ export const recommendationService = {
     jobId?: string;
     page?: number;
     limit?: number;
+    city?: string;
+    skills?: string;
+    minExp?: number;
+    maxExp?: number;
+    isVerified?: boolean;
+    minScore?: number;
   }): Promise<BackendWorkerRecommendationResponse> => {
     const res = await apiClient.get<any>('/api/recommendations/workers', {
       params: {
         jobId: params?.jobId,
         page: params?.page ?? 1,
-        limit: params?.limit ?? 10
+        limit: params?.limit ?? 10,
+        city: params?.city,
+        skills: params?.skills,
+        minExp: params?.minExp,
+        maxExp: params?.maxExp,
+        isVerified: params?.isVerified,
+        minScore: params?.minScore
       }
     });
 

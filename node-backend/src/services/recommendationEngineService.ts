@@ -831,6 +831,12 @@ export const recommendationEngineService = {
       jobId?: string;
       limit?: number;
       page?: number;
+      skills?: string[];
+      city?: string;
+      minExp?: number;
+      maxExp?: number;
+      isVerified?: boolean;
+      minScore?: number;
     } = {}
   ): Promise<{ recommendations: ScoredWorkerRecommendation[]; total: number; page: number; limit: number; totalPages: number }> => {
     const limit = Math.min(Math.max(options.limit || 15, 1), 50);
@@ -869,23 +875,53 @@ export const recommendationEngineService = {
       });
     }
 
-    // 2. Fetch Dismissed Candidates to Exclude
-    const dismissed = await prisma.recommendation_interactions.findMany({
-      where: {
-        user_id: employerUserId,
-        item_type: 'WORKER',
-        interaction_type: 'DISMISS'
-      },
-      select: { item_id: true }
-    });
-    const dismissedIds = new Set(dismissed.map(d => d.item_id));
+    // 2. Fetch Dismissed Candidates & Existing Applicants (for job-specific sourcing)
+    const [dismissed, existingApplications] = await Promise.all([
+      prisma.recommendation_interactions.findMany({
+        where: {
+          user_id: employerUserId,
+          item_type: 'WORKER',
+          interaction_type: 'DISMISS'
+        },
+        select: { item_id: true }
+      }),
+      options.jobId ? prisma.job_applications.findMany({
+        where: {
+          job_id: options.jobId
+        },
+        select: { worker_id: true }
+      }) : Promise.resolve([])
+    ]);
 
-    // 3. Stage 1: Retrieval of Eligible, Available Workers
+    const excludedIds = new Set<string>();
+    dismissed.forEach(d => excludedIds.add(d.item_id));
+    existingApplications.forEach(a => {
+      if (a.worker_id) excludedIds.add(a.worker_id);
+    });
+
+    // 3. Stage 1: Retrieval of Eligible, Available Workers with database-level filters
+    const whereClause: any = {
+      is_available: true,
+      user_id: { notIn: Array.from(excludedIds) }
+    };
+
+    if (options.city) {
+      whereClause.OR = [
+        { city: { contains: options.city, mode: 'insensitive' } },
+        { location: { contains: options.city, mode: 'insensitive' } },
+        { district: { contains: options.city, mode: 'insensitive' } },
+        { preferred_cities: { contains: options.city, mode: 'insensitive' } }
+      ];
+    }
+
+    if (options.minExp !== undefined || options.maxExp !== undefined) {
+      whereClause.experience_years = {};
+      if (options.minExp !== undefined) whereClause.experience_years.gte = options.minExp;
+      if (options.maxExp !== undefined) whereClause.experience_years.lte = options.maxExp;
+    }
+
     const activeWorkers = await prisma.worker_profiles.findMany({
-      where: {
-        is_available: true,
-        user_id: { notIn: Array.from(dismissedIds) }
-      },
+      where: whereClause,
       orderBy: { updated_at: 'desc' }
     });
 
@@ -1083,9 +1119,28 @@ export const recommendationEngineService = {
 
     scoredCandidates.sort((a, b) => b.overallScore - a.overallScore);
 
-    const total = scoredCandidates.length;
+    // Apply post-scoring filters (Verification, MinScore, Skills overlap)
+    let filteredCandidates = scoredCandidates;
+
+    if (options.isVerified) {
+      filteredCandidates = filteredCandidates.filter(c => c.worker.isVerified);
+    }
+
+    if (options.minScore !== undefined && options.minScore > 0) {
+      filteredCandidates = filteredCandidates.filter(c => c.overallScore >= options.minScore!);
+    }
+
+    if (options.skills && options.skills.length > 0) {
+      const requiredNormalized = options.skills.map(s => s.toLowerCase().trim()).filter(Boolean);
+      filteredCandidates = filteredCandidates.filter(c => {
+        const workerSkillsList = parseList(c.worker.skills).map(s => s.toLowerCase().trim());
+        return requiredNormalized.some(req => workerSkillsList.some(ws => ws.includes(req) || req.includes(ws)));
+      });
+    }
+
+    const total = filteredCandidates.length;
     const offset = (page - 1) * limit;
-    const paginated = scoredCandidates.slice(offset, offset + limit);
+    const paginated = filteredCandidates.slice(offset, offset + limit);
 
     return {
       recommendations: paginated,

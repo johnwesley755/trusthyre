@@ -1298,4 +1298,122 @@ export const getJobFollowUpSummary = async (c: Context) => {
   }
 };
 
+/**
+ * Sources a discovered worker profile directly into a job's hiring pipeline as SHORTLISTED.
+ * Validates employer ownership, prevents duplicate applications, and records CANDIDATE_SOURCED activity.
+ */
+export const sourceCandidate = async (c: Context) => {
+  try {
+    const authUser = c.get('user');
+    const employerId = authUser?.sub;
+    if (!employerId) return c.json(ApiResponse.error("Unauthorized"), 401 as any);
+
+    const { jobId, workerId } = await c.req.json();
+    if (!jobId || !workerId) {
+      return c.json(ApiResponse.error("Job ID and Worker ID are required"), 400 as any);
+    }
+
+    const employerProfile = await prisma.employer_profiles.findFirst({
+      where: { OR: [{ user_id: employerId }, { id: employerId }] }
+    });
+
+    const job = await prisma.jobs.findUnique({ where: { id: jobId } });
+    if (!job) return c.json(ApiResponse.error("Job posting not found"), 404 as any);
+
+    const isOwner = job.employer_id === employerId ||
+      Boolean(employerProfile && (job.employer_id === employerProfile.id || job.employer_id === employerProfile.user_id)) ||
+      isAppAdmin(authUser.role);
+
+    if (!isOwner) {
+      return c.json(ApiResponse.error("Forbidden: You do not have permission to source candidates for this job"), 403 as any);
+    }
+
+    // Resolve canonical worker user ID
+    const workerProfile = await prisma.worker_profiles.findFirst({
+      where: {
+        OR: [
+          { user_id: workerId },
+          { id: workerId }
+        ]
+      }
+    });
+
+    if (!workerProfile) {
+      return c.json(ApiResponse.error("Candidate profile not found"), 404 as any);
+    }
+
+    const canonicalWorkerId = workerProfile.user_id;
+    const allMatchingWorkerIds = Array.from(new Set([
+      workerId,
+      canonicalWorkerId,
+      workerProfile.id
+    ]));
+
+    // Check if worker already has an application or was already sourced for this job
+    const existing = await prisma.job_applications.findFirst({
+      where: {
+        job_id: jobId,
+        worker_id: { in: allMatchingWorkerIds }
+      }
+    });
+
+    if (existing) {
+      return c.json(ApiResponse.ok("Candidate is already in the hiring pipeline for this job", formatApplication(existing)));
+    }
+
+    // Create new application with SHORTLISTED status
+    const application = await prisma.job_applications.create({
+      data: {
+        id: uuidv4(),
+        job_id: jobId,
+        worker_id: canonicalWorkerId,
+        status: 'SHORTLISTED',
+        cover_letter: 'Proactively sourced by employer via Talent Discovery',
+        applied_at: new Date()
+      } as any
+    });
+
+    // Record activity timeline event
+    try {
+      await activityTimelineService.recordEvent({
+        applicationId: application.id,
+        actorId: employerId,
+        actorType: 'EMPLOYER',
+        eventType: 'CANDIDATE_SOURCED',
+        metadata: {
+          title: 'Candidate Sourced & Shortlisted',
+          description: 'Employer proactively discovered and shortlisted candidate for this opening.',
+          jobId,
+          workerId: canonicalWorkerId,
+          source: 'talent_discovery'
+        }
+      });
+    } catch (eventErr) {
+      console.warn('[jobApplicationController] Failed to record CANDIDATE_SOURCED activity event:', eventErr);
+    }
+
+    // Record telemetry for conversion tracking
+    try {
+      await recommendationEngineService.recordInteraction({
+        userId: employerId,
+        interactionType: 'SAVE',
+        itemType: 'WORKER',
+        itemId: canonicalWorkerId,
+        metadata: {
+          source: 'talent_discovery_sourcing',
+          jobId,
+          applicationId: application.id
+        }
+      });
+    } catch (telemetryErr) {
+      console.warn('[jobApplicationController] Telemetry recording error:', telemetryErr);
+    }
+
+    return c.json(ApiResponse.ok("Candidate shortlisted successfully", formatApplication(application)));
+  } catch (err: any) {
+    console.error("Error in sourceCandidate controller:", err);
+    return c.json(ApiResponse.error(err.message || "Failed to source candidate"), 500 as any);
+  }
+};
+
 

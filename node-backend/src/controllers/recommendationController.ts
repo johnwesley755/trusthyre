@@ -85,10 +85,17 @@ export const recommendationController = {
 
       const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : 15;
       const page = c.req.query('page') ? parseInt(c.req.query('page')!) : 1;
+      const city = c.req.query('city') || undefined;
+      const skillsParam = c.req.query('skills');
+      const skills = skillsParam ? skillsParam.split(',').map(s => s.trim()).filter(Boolean) : undefined;
+      const minExp = c.req.query('minExp') ? parseInt(c.req.query('minExp')!) : undefined;
+      const maxExp = c.req.query('maxExp') ? parseInt(c.req.query('maxExp')!) : undefined;
+      const isVerified = c.req.query('isVerified') === 'true' ? true : undefined;
+      const minScore = c.req.query('minScore') ? parseInt(c.req.query('minScore')!) : undefined;
 
       const results = await recommendationEngineService.getRecommendedWorkersForEmployer(
         authUser.sub,
-        { jobId, limit, page }
+        { jobId, limit, page, city, skills, minExp, maxExp, isVerified, minScore }
       );
 
       return c.json(ApiResponse.ok(results));

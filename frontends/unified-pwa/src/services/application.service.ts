@@ -110,5 +110,9 @@ export const applicationService = {
     const res = await apiClient.get(`/api/jobs/applications/jobs/${jobId}/follow-up-summary`);
     return res.data;
   },
+  sourceCandidate: async (payload: { jobId: string; workerId: string }): Promise<JobApplication> => {
+    const res = await apiClient.post<any>('/api/jobs/applications/source-candidate', payload);
+    return mapApp(res.data);
+  },
 };
 

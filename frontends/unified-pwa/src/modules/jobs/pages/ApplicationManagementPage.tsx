@@ -26,7 +26,8 @@ import {
   Check,
   ArrowUpDown,
   FileText,
-  User
+  User,
+  Users
 } from 'lucide-react';
 import { calculateMatchScore, getMatchScoreVisuals } from '../../../utils/matchScorer';
 import { CandidateResumeModal } from '../../profile/components/resume/CandidateResumeModal';
@@ -52,6 +53,7 @@ import { PipelineKanbanColumn } from '../components/pipeline/PipelineKanbanColum
 import { PipelineTableView } from '../components/pipeline/PipelineTableView';
 import { PipelineCandidateCard } from '../components/pipeline/PipelineCandidateCard';
 import { CandidateDetailDrawer } from '../components/pipeline/CandidateDetailDrawer';
+import { DiscoverTalentPanel } from '../components/discovery/DiscoverTalentPanel';
 import { PipelineFollowUpBar } from '../components/pipeline/PipelineFollowUpBar';
 import type { PipelineStage } from '../types/pipeline.types';
 import { PIPELINE_STAGES } from '../types/pipeline.types';
@@ -87,6 +89,7 @@ export default function ApplicationManagementPage() {
   const [isOutreachModalOpen, setIsOutreachModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState<'MATCH' | 'RECENT'>('MATCH');
   const [viewLayout, setViewLayout] = useState<'KANBAN' | 'LIST'>('KANBAN');
+  const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<'APPLICANTS' | 'DISCOVER' | 'SHORTLISTED'>('APPLICANTS');
   const [selectedMobileStage, setSelectedMobileStage] = useState<PipelineStage>('NEW');
   const [candidateSearchQuery, setCandidateSearchQuery] = useState('');
   const [selectedDrawerCandidate, setSelectedDrawerCandidate] = useState<{ application: any; worker: any } | null>(null);
@@ -317,6 +320,10 @@ export default function ApplicationManagementPage() {
   const filteredJobApplications = useMemo(() => {
     let list = [...selectedJobApplications];
 
+    if (activeWorkspaceSection === 'SHORTLISTED') {
+      list = list.filter(app => (app.status || '').toUpperCase() === 'SHORTLISTED' || (app.status || '').toUpperCase() === 'REVIEWING');
+    }
+
     // Follow-up status filter
     if (followUpFilter !== 'ALL' && followUpSummary?.items) {
       const now = new Date();
@@ -369,7 +376,7 @@ export default function ApplicationManagementPage() {
       list.sort((a, b) => new Date(b.appliedAt || 0).getTime() - new Date(a.appliedAt || 0).getTime());
     }
     return list;
-  }, [selectedJobApplications, candidateSearchQuery, sortBy, selectedJob, workersById, followUpFilter, followUpSummary]);
+  }, [selectedJobApplications, candidateSearchQuery, sortBy, selectedJob, workersById, followUpFilter, followUpSummary, activeWorkspaceSection]);
 
   const groupedPipeline = useMemo(() => {
     const groups: Record<PipelineStage, JobApplication[]> = {
@@ -815,7 +822,78 @@ export default function ApplicationManagementPage() {
               );
             })()}
 
-                        {/* Kanban / Table Pipeline Toolbar */}
+                        {/* Workspace Main Sections Nav Bar (Applicants | Discover Talent | Shortlisted) */}
+                  <div className="flex items-center gap-2 border-b border-slate-200 dark:border-neutral-800 pb-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveWorkspaceSection('APPLICANTS')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        activeWorkspaceSection === 'APPLICANTS'
+                          ? 'bg-[#0f2f63] text-white shadow-xs'
+                          : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200/80 dark:border-neutral-800'
+                      }`}
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                      <span>Applicants</span>
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                        activeWorkspaceSection === 'APPLICANTS'
+                          ? 'bg-white/20 text-white'
+                          : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400'
+                      }`}>
+                        {allApplications.filter(a => a.jobId === selectedJobId).length}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveWorkspaceSection('DISCOVER')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        activeWorkspaceSection === 'DISCOVER'
+                          ? 'bg-[#0f2f63] text-white shadow-xs'
+                          : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200/80 dark:border-neutral-800'
+                      }`}
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-blue-500 dark:text-[#38BDF8]" />
+                      <span>Discover Talent</span>
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-[#38BDF8]">
+                        Proactive
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveWorkspaceSection('SHORTLISTED')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        activeWorkspaceSection === 'SHORTLISTED'
+                          ? 'bg-[#0f2f63] text-white shadow-xs'
+                          : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200/80 dark:border-neutral-800'
+                      }`}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Shortlisted</span>
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                        activeWorkspaceSection === 'SHORTLISTED'
+                          ? 'bg-white/20 text-white'
+                          : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400'
+                      }`}>
+                        {groupedPipeline['SHORTLISTED']?.length ?? 0}
+                      </span>
+                    </button>
+                  </div>
+
+                  {activeWorkspaceSection === 'DISCOVER' ? (
+                    <DiscoverTalentPanel
+                      job={selectedJob}
+                      onViewProfile={(worker) => {
+                        handleViewCV({ matchScore: null }, worker);
+                      }}
+                      onCandidateShortlisted={() => {
+                        queryClient.invalidateQueries({ queryKey: ['job-hiring-pipeline', selectedJobId] });
+                      }}
+                    />
+                  ) : (
+                    <>
+                      {/* Kanban / Table Pipeline Toolbar */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#fbfbfb] dark:bg-[#09090b] p-3 rounded-2xl border border-[#e6e8ec] dark:border-zinc-800">
               {/* Search candidate input */}
               <div className="relative flex-1 max-w-md">
@@ -998,6 +1076,8 @@ export default function ApplicationManagementPage() {
                 </div>
               </div>
             )}
+                    </>
+                  )}
           </>
         )}
 
