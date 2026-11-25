@@ -79,9 +79,59 @@ describe('Cache Abstraction Layer Tests', () => {
 
     // Key order should not affect the deterministic hash
     expect(hashA).toBe(hashB);
+    expect(hashA.length).toBe(32); // 32-character SHA-256 digest
 
     const key = CacheKeys.jobSearch(hashA, 1, 15);
     expect(key).toBe(`trusthyre:v1:jobs:search:${hashA}:1:15`);
     expect(CacheTTL.jobSearch).toBe(45);
+  });
+
+  it('4. getOrLoad prevents cache stampede by collapsing concurrent identical misses into one execution', async () => {
+    const mem = new MemoryCacheProvider();
+    cacheService.setProvider(mem);
+
+    let loaderExecutions = 0;
+    const slowLoader = async () => {
+      loaderExecutions++;
+      await new Promise(resolve => setTimeout(resolve, 50));
+      return { data: 'stampede-proof' };
+    };
+
+    // Fire 5 concurrent requests for the same un-cached key
+    const results = await Promise.all([
+      cacheService.getOrLoad('stampede-test-key', 60, slowLoader),
+      cacheService.getOrLoad('stampede-test-key', 60, slowLoader),
+      cacheService.getOrLoad('stampede-test-key', 60, slowLoader),
+      cacheService.getOrLoad('stampede-test-key', 60, slowLoader),
+      cacheService.getOrLoad('stampede-test-key', 60, slowLoader),
+    ]);
+
+    // All requests should return identical results, but the loader must execute only ONCE
+    expect(loaderExecutions).toBe(1);
+    results.forEach(res => {
+      expect(res).toEqual({ data: 'stampede-proof' });
+    });
+  });
+
+  it('5. MemoryCacheProvider enforces LRU capacity eviction and rejects negative TTL', async () => {
+    const mem = new MemoryCacheProvider(2); // Capacity of 2 items
+    cacheService.setProvider(mem);
+
+    await cacheService.set('key1', 'val1', 60);
+    await cacheService.set('key2', 'val2', 60);
+
+    // Access key1 so key2 becomes the least recently used
+    await cacheService.get('key1');
+
+    // Add key3 -> should evict key2, keeping key1 and key3
+    await cacheService.set('key3', 'val3', 60);
+
+    expect(await cacheService.get('key1')).toBe('val1');
+    expect(await cacheService.get('key2')).toBeNull(); // Evicted by LRU
+    expect(await cacheService.get('key3')).toBe('val3');
+
+    // Reject <= 0 TTL without crashing
+    await cacheService.set('negative-ttl', 'bad', -5);
+    expect(await cacheService.get('negative-ttl')).toBeNull();
   });
 });

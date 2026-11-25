@@ -347,7 +347,7 @@ export const ProgrammaticHireHubPage: React.FC<ProgrammaticHireHubPageProps> = (
 
   const workers = Array.isArray(searchResult) 
     ? searchResult 
-    : (searchResult as any)?.workers || [];
+    : ((searchResult as any)?.items || (searchResult as any)?.workers || []);
 
   const pageTitle = `Hire Verified ${tradeMeta.title} in ${cityMeta.name} | Direct & Zero Brokerage - TrustHyre`;
   const metaDesc = `Looking to hire verified ${tradeMeta.title.toLowerCase()} in ${cityMeta.name}, ${cityMeta.state}? Browse skill-tested candidate profiles with transparent wage benchmarks (${tradeMeta.avgSalary}) and direct employer connection.`;

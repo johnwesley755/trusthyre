@@ -190,7 +190,7 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
   }) : null;
 
   // Query jobs filtered by city and optional trade
-  const { data: jobs = [], isLoading } = useQuery({
+  const { data: searchResult, isLoading } = useQuery({
     queryKey: ['programmaticJobHub', citySlug, tradeSlug],
     queryFn: () => searchService.searchJobs({
       city: cityMeta.name,
@@ -198,6 +198,8 @@ export const ProgrammaticJobHubPage: React.FC<ProgrammaticJobHubPageProps> = ({
     }),
     staleTime: 1000 * 60 * 5,
   });
+
+  const jobs = searchResult?.items || [];
 
   const pageTitle = tradeMeta 
     ? `${tradeMeta.title} Jobs in ${cityMeta.name} | Verified Openings - TrustHyre`

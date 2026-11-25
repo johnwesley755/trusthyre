@@ -3,6 +3,14 @@ import type { Job, JobSearch } from '../types';
 
 export type { JobSearch };
 
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface SearchParams {
   q?: string;
   query?: string;
@@ -32,6 +40,8 @@ export interface SearchParams {
   source?: 'all' | 'internal' | 'external' | string;
   nearTransit?: boolean | string;
   transportProvided?: boolean | string;
+  page?: number;
+  limit?: number;
 }
 
 export interface WorkerSearch {
@@ -88,13 +98,39 @@ export const searchJobs = async (
 };
 
 export const searchService = {
-  searchJobs: async (params?: SearchParams): Promise<Job[]> => {
-    const res = await apiClient.get<Job[]>('/api/search/jobs', { params });
-    return res.data;
+  searchJobs: async (params?: SearchParams): Promise<PaginatedResponse<Job>> => {
+    const res = await apiClient.get<any>('/api/search/jobs', { params });
+    if (res.data && Array.isArray(res.data.items)) {
+      return res.data;
+    }
+    const items = Array.isArray(res.data) ? res.data : [];
+    const total = parseInt(res.headers['x-total-count'] || String(items.length), 10);
+    const totalPages = parseInt(res.headers['x-total-pages'] || '1', 10);
+    const page = parseInt(res.headers['x-current-page'] || '1', 10);
+    return {
+      items,
+      total,
+      page,
+      limit: params?.limit || items.length || 15,
+      totalPages: Math.max(1, totalPages)
+    };
   },
-  searchWorkers: async (params?: SearchParams): Promise<WorkerSearch[]> => {
-    const res = await apiClient.get<WorkerSearch[]>('/api/search/workers', { params });
-    return res.data;
+  searchWorkers: async (params?: SearchParams): Promise<PaginatedResponse<WorkerSearch>> => {
+    const res = await apiClient.get<any>('/api/search/workers', { params });
+    if (res.data && Array.isArray(res.data.items)) {
+      return res.data;
+    }
+    const items = Array.isArray(res.data) ? res.data : [];
+    const total = parseInt(res.headers['x-total-count'] || String(items.length), 10);
+    const totalPages = parseInt(res.headers['x-total-pages'] || '1', 10);
+    const page = parseInt(res.headers['x-current-page'] || '1', 10);
+    return {
+      items,
+      total,
+      page,
+      limit: params?.limit || items.length || 15,
+      totalPages: Math.max(1, totalPages)
+    };
   },
   getLocations: async (): Promise<string[]> => {
     const res = await apiClient.get<string[]>('/api/search/locations');

@@ -54,7 +54,7 @@ export default function NeighborhoodJobHubPage({
   const areaName = matchedTaluk || neighborhoodSlug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
 
   // Fetch jobs for this micro-location
-  const { data: rawJobs = [], isLoading } = useQuery({
+  const { data: searchResult, isLoading } = useQuery({
     queryKey: ['neighborhoodJobs', city, neighborhoodSlug, tradeSlug],
     queryFn: () => searchService.searchJobs({
       city: cityName,
@@ -62,6 +62,8 @@ export default function NeighborhoodJobHubPage({
     }),
     staleTime: 5 * 60 * 1000,
   });
+
+  const rawJobs = searchResult?.items || [];
 
   const jobs = useMemo(() => {
     const list = Array.isArray(rawJobs) ? rawJobs : [];

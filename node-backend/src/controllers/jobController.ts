@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { NotificationDispatcher } from '../services/notificationDispatcher';
 import { SearchAlertService } from '../services/searchAlertService';
 import { ReferralService } from '../services/referralService';
+import { cacheInvalidation } from '../services/cache/cacheInvalidation';
 
 const ALLOWED_JOB_STATUSES = ['OPEN', 'ACTIVE', 'IN_PROGRESS', 'COMPLETED', 'EXPIRED', 'CANCELLED', 'CLOSED'];
 
@@ -326,6 +327,9 @@ export const createJob = async (c: Context) => {
       console.warn('[jobController] Error marking employer first job activation:', err.message);
     });
 
+    // 4. Invalidate related job caches
+    cacheInvalidation.invalidateJob(job.id, job.city).catch(() => {});
+
     return c.json(ApiResponse.ok("Job created", formatJob({ ...job, required_skills: requiredSkillsStr })));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
@@ -345,7 +349,7 @@ export const getAllJobs = async (c: Context) => {
     } = c.req.query();
 
     const page = Math.max(1, parseInt(pageParam || '1', 10) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(limitParam || '15', 10) || 15));
+    const limit = Math.min(60, Math.max(1, parseInt(limitParam || '15', 10) || 15));
     const skip = (page - 1) * limit;
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -754,6 +758,8 @@ export const updateJob = async (c: Context) => {
       }).catch(() => {});
     }
 
+    cacheInvalidation.invalidateJob(id, updatedJob?.city).catch(() => {});
+
     return c.json(ApiResponse.ok("Job updated", formatJob(updatedJob)));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
@@ -781,6 +787,8 @@ export const deleteJob = async (c: Context) => {
     await prisma.job_applications.deleteMany({ where: { job_id: id } }).catch(() => {});
     await prisma.job_search_index.deleteMany({ where: { job_id: id } }).catch(() => {});
     await prisma.jobs.delete({ where: { id } });
+
+    cacheInvalidation.invalidateJob(id, existingJob.city).catch(() => {});
 
     return c.json(ApiResponse.ok("Job deleted successfully", null));
   } catch (err: any) {

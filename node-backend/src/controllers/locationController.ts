@@ -2,40 +2,38 @@ import { Context } from 'hono';
 import { State, City } from 'country-state-city';
 import prisma from '../config/prisma';
 import { ApiResponse } from '../utils/ApiResponse';
-
-// Fallback in-memory cache for ultra-fast sub-millisecond responses
-let cachedStates: string[] | null = null;
-let lastStatesFetch = 0;
+import { cacheService } from '../services/cache/cacheService';
+import { CacheKeys } from '../services/cache/cacheKeys';
+import { CacheTTL } from '../services/cache/cacheTTL';
 
 export const getStates = async (c: Context) => {
   try {
-    const now = Date.now();
-    if (cachedStates && now - lastStatesFetch < 5 * 60 * 1000) {
-      return c.json(ApiResponse.ok(cachedStates));
-    }
+    const states = await cacheService.getOrLoad(
+      CacheKeys.locationStates(),
+      CacheTTL.locationStates,
+      async () => {
+        // 1. Get all 36 States & Union Territories of India from country-state-city
+        const cscStates = State.getStatesOfCountry('IN').map(s => s.name);
 
-    // 1. Get all 36 States & Union Territories of India from country-state-city
-    const cscStates = State.getStatesOfCountry('IN').map(s => s.name);
+        // 2. Fetch any additional custom or existing states from database
+        let dbStates: string[] = [];
+        try {
+          const records = await prisma.location_master.findMany({
+            select: { state: true },
+            distinct: ['state'],
+            orderBy: { state: 'asc' }
+          });
+          dbStates = records.map(r => r.state).filter(Boolean);
+        } catch (e: any) {
+          console.warn('DB states fetch fallback:', e.message);
+        }
 
-    // 2. Fetch any additional custom or existing states from database
-    let dbStates: string[] = [];
-    try {
-      const records = await prisma.location_master.findMany({
-        select: { state: true },
-        distinct: ['state'],
-        orderBy: { state: 'asc' }
-      });
-      dbStates = records.map(r => r.state).filter(Boolean);
-    } catch (e: any) {
-      console.warn('DB states fetch fallback:', e.message);
-    }
+        // Combine, deduplicate, and sort alphabetically
+        return Array.from(new Set([...cscStates, ...dbStates])).filter(Boolean).sort((a, b) => a.localeCompare(b));
+      }
+    );
 
-    // Combine, deduplicate, and sort alphabetically
-    const combined = Array.from(new Set([...cscStates, ...dbStates])).filter(Boolean).sort((a, b) => a.localeCompare(b));
-    cachedStates = combined;
-    lastStatesFetch = now;
-
-    return c.json(ApiResponse.ok(combined));
+    return c.json(ApiResponse.ok(states));
   } catch (err: any) {
     console.error('Error in getStates:', err);
     return c.json(ApiResponse.error(err.message), 500 as any);
@@ -49,42 +47,48 @@ export const getDistricts = async (c: Context) => {
       return c.json(ApiResponse.error('State parameter is required'), 400 as any);
     }
 
-    // 1. Find state object from country-state-city
-    const indianStates = State.getStatesOfCountry('IN');
-    const matchedState = indianStates.find(
-      s => s.name.toLowerCase() === state.toLowerCase() ||
-           s.isoCode.toLowerCase() === state.toLowerCase() ||
-           state.toLowerCase().includes(s.name.toLowerCase())
+    const districts = await cacheService.getOrLoad(
+      CacheKeys.locationDistricts(state),
+      CacheTTL.locationDistricts,
+      async () => {
+        // 1. Find state object from country-state-city
+        const indianStates = State.getStatesOfCountry('IN');
+        const matchedState = indianStates.find(
+          s => s.name.toLowerCase() === state.toLowerCase() ||
+               s.isoCode.toLowerCase() === state.toLowerCase() ||
+               state.toLowerCase().includes(s.name.toLowerCase())
+        );
+
+        let cscCities: string[] = [];
+        if (matchedState) {
+          cscCities = City.getCitiesOfState('IN', matchedState.isoCode).map(c => c.name);
+        }
+
+        // 2. Fetch any seeded or cached districts from database
+        let dbDistricts: string[] = [];
+        try {
+          const records = await prisma.location_master.findMany({
+            where: {
+              state: { equals: state, mode: 'insensitive' }
+            },
+            select: { district: true },
+            distinct: ['district'],
+            orderBy: { district: 'asc' }
+          });
+          dbDistricts = records.map(r => r.district).filter(Boolean);
+        } catch (e: any) {
+          console.warn('DB districts fetch fallback:', e.message);
+        }
+
+        // Combine, deduplicate, clean up, and sort
+        return Array.from(new Set([...cscCities, ...dbDistricts]))
+          .map(d => d.trim())
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b));
+      }
     );
 
-    let cscCities: string[] = [];
-    if (matchedState) {
-      cscCities = City.getCitiesOfState('IN', matchedState.isoCode).map(c => c.name);
-    }
-
-    // 2. Fetch any seeded or cached districts from database
-    let dbDistricts: string[] = [];
-    try {
-      const records = await prisma.location_master.findMany({
-        where: {
-          state: { equals: state, mode: 'insensitive' }
-        },
-        select: { district: true },
-        distinct: ['district'],
-        orderBy: { district: 'asc' }
-      });
-      dbDistricts = records.map(r => r.district).filter(Boolean);
-    } catch (e: any) {
-      console.warn('DB districts fetch fallback:', e.message);
-    }
-
-    // Combine, deduplicate, clean up, and sort
-    const combined = Array.from(new Set([...cscCities, ...dbDistricts]))
-      .map(d => d.trim())
-      .filter(Boolean)
-      .sort((a, b) => a.localeCompare(b));
-
-    return c.json(ApiResponse.ok(combined));
+    return c.json(ApiResponse.ok(districts));
   } catch (err: any) {
     console.error('Error in getDistricts:', err);
     return c.json(ApiResponse.error(err.message), 500 as any);

@@ -7,7 +7,7 @@ interface MemoryCacheEntry {
 
 /**
  * In-memory cache provider for local unit testing and development.
- * Automatically enforces TTL expiration and item capacity.
+ * Automatically enforces TTL expiration and LRU (Least Recently Used) capacity eviction.
  */
 export class MemoryCacheProvider implements CacheProvider {
   readonly name = 'memory';
@@ -27,12 +27,30 @@ export class MemoryCacheProvider implements CacheProvider {
       return null;
     }
 
+    // Refresh LRU order: re-insert visited key to back of insertion order
+    this.store.delete(key);
+    this.store.set(key, entry);
+
     return entry.value as T;
   }
 
   async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
+    if (!ttlSeconds || ttlSeconds <= 0) {
+      return; // Do not store zero or negative TTL
+    }
+
+    // Purge expired entries when capacity is reached before evicting LRU
     if (this.store.size >= this.maxItems) {
-      // Evict oldest inserted entry
+      const now = Date.now();
+      for (const [k, e] of this.store.entries()) {
+        if (now > e.expiresAt) {
+          this.store.delete(k);
+        }
+      }
+    }
+
+    // If still at capacity, evict the least recently used item (first key)
+    if (this.store.size >= this.maxItems) {
       const oldestKey = this.store.keys().next().value;
       if (oldestKey) this.store.delete(oldestKey);
     }
