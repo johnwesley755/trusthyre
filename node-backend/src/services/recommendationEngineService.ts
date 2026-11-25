@@ -950,7 +950,14 @@ export const recommendationEngineService = {
       }
     }
 
-    // 5. Multi-Objective Independent Scoring (NO DOUBLE-COUNTING)
+    // 5. Pre-resolve normalized skills for all target jobs once (prevents repeated DB queries inside loop)
+    const targetJobSkillsMap = new Map<string, string[]>();
+    for (const job of targetJobs) {
+      const skills = await getNormalizedJobSkills(job);
+      targetJobSkillsMap.set(job.id, skills);
+    }
+
+    // 6. Multi-Objective Independent Scoring (NO DOUBLE-COUNTING)
     const scoredCandidates: ScoredWorkerRecommendation[] = [];
     const weights = RECOMMENDATION_CONFIG.weights.employerToWorker;
 
@@ -975,7 +982,7 @@ export const recommendationEngineService = {
 
       if (targetJobs.length > 0) {
         for (const job of targetJobs) {
-          const jobSkills = await getNormalizedJobSkills(job);
+          const jobSkills = targetJobSkillsMap.get(job.id) || await getNormalizedJobSkills(job);
           const skillEval = scoreSkills(jobSkills, workerSkills);
 
           const locEval = scoreHierarchicalLocation(

@@ -19,6 +19,9 @@ export const queryKeys = {
     trustScore: (id: string) => ['workers', 'trustScore', id] as const,
     byUserIds: (ids: string[]) => ['workers', 'byUserIds', [...ids].sort().join(',')] as const,
   },
+  dashboard: {
+    summary: (userId?: string, role?: string) => ['dashboard', 'summary', userId || 'anonymous', role || 'guest'] as const,
+  },
   employer: {
     profile: ['employer', 'profile'] as const,
     stats: ['employer', 'stats'] as const,
