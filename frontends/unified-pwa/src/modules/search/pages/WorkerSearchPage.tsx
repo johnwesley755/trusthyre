@@ -253,7 +253,7 @@ export const WorkerSearchPage = () => {
       '@type': 'ItemList',
       name: dynamicTitle,
       description: dynamicDesc,
-      numberOfItems: results.length,
+      numberOfItems: serverTotal,
       itemListElement: results.slice(0, 15).map((worker: any, idx: number) => ({
         '@type': 'ListItem',
         position: idx + 1,
@@ -444,7 +444,7 @@ export const WorkerSearchPage = () => {
             <div className="flex items-center justify-between px-1 gap-2 flex-wrap">
               <div className="flex items-center gap-3">
                 <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">
-                  <strong className="text-[#0A1931] dark:text-white font-bold">{results.length}</strong> {t("verified specialists available", "verified specialists available")}
+                  <strong className="text-[#0A1931] dark:text-white font-bold">{serverTotal}</strong> {t("verified specialists available", "verified specialists available")}
                 </span>
                 <button
                   type="button"
@@ -486,9 +486,7 @@ export const WorkerSearchPage = () => {
             ) : results.length > 0 ? (
               <div className="space-y-4">
 
-                {results
-                  .slice((Math.min(currentPage, Math.max(1, Math.ceil(results.length / pageSize))) - 1) * pageSize, Math.min(currentPage, Math.max(1, Math.ceil(results.length / pageSize))) * pageSize)
-                  .map((worker: any) => {
+                {results.map((worker: any) => {
                     const skillList = normalizeSkills(worker.skills);
 
                     const displayRole = worker.level && !worker.level.startsWith('L')

@@ -105,50 +105,56 @@ export const getLocalities = async (c: Context) => {
       return c.json(ApiResponse.error('District parameter is required'), 400 as any);
     }
 
-    const whereClause: any = {
-      district: { equals: district, mode: 'insensitive' }
-    };
+    const localities = await cacheService.getOrLoad(
+      CacheKeys.locationLocalities(state, district, q),
+      CacheTTL.locationLocalities,
+      async () => {
+        const whereClause: any = {
+          district: { equals: district, mode: 'insensitive' }
+        };
 
-    if (state) {
-      whereClause.state = { equals: state, mode: 'insensitive' };
-    }
+        if (state) {
+          whereClause.state = { equals: state, mode: 'insensitive' };
+        }
 
-    if (q && q.length > 0) {
-      whereClause.OR = [
-        { locality_name: { contains: q, mode: 'insensitive' } },
-        { taluk: { contains: q, mode: 'insensitive' } },
-        { pincode: { contains: q } }
-      ];
-    }
+        if (q && q.length > 0) {
+          whereClause.OR = [
+            { locality_name: { contains: q, mode: 'insensitive' } },
+            { taluk: { contains: q, mode: 'insensitive' } },
+            { pincode: { contains: q } }
+          ];
+        }
 
-    const records = await prisma.location_master.findMany({
-      where: whereClause,
-      select: {
-        locality_name: true,
-        locality_type: true,
-        taluk: true,
-        pincode: true
-      },
-      orderBy: [
-        { taluk: 'asc' },
-        { locality_name: 'asc' }
-      ],
-      take: 100
-    });
+        const records = await prisma.location_master.findMany({
+          where: whereClause,
+          select: {
+            locality_name: true,
+            locality_type: true,
+            taluk: true,
+            pincode: true
+          },
+          orderBy: [
+            { taluk: 'asc' },
+            { locality_name: 'asc' }
+          ],
+          take: 100
+        });
 
-    // Return deduplicated, clean objects
-    const seen = new Set<string>();
-    const localities = records.filter(r => {
-      const key = `${r.locality_name}__${r.taluk || ''}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    }).map(r => ({
-      name: r.locality_name,
-      type: r.locality_type,
-      taluk: r.taluk,
-      pincode: r.pincode
-    }));
+        // Return deduplicated, clean objects
+        const seen = new Set<string>();
+        return records.filter(r => {
+          const key = `${r.locality_name}__${r.taluk || ''}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        }).map(r => ({
+          name: r.locality_name,
+          type: r.locality_type,
+          taluk: r.taluk,
+          pincode: r.pincode
+        }));
+      }
+    );
 
     return c.json(ApiResponse.ok(localities));
   } catch (err: any) {
@@ -164,77 +170,89 @@ export const lookupPincode = async (c: Context) => {
       return c.json(ApiResponse.error('Valid 6-digit PIN code required'), 400 as any);
     }
 
-    // 1. Check database first
-    const existing = await prisma.location_master.findMany({
-      where: { pincode },
-      take: 20
-    });
+    const pincodeData = await cacheService.getOrLoad(
+      CacheKeys.locationPincode(pincode),
+      CacheTTL.locationPincode,
+      async () => {
+        // 1. Check database first
+        const existing = await prisma.location_master.findMany({
+          where: { pincode },
+          take: 20
+        });
 
-    if (existing.length > 0) {
-      const first = existing[0];
-      return c.json(ApiResponse.ok({
-        pincode,
-        state: first.state,
-        district: first.district,
-        taluk: first.taluk,
-        localities: existing.map(e => ({
-          name: e.locality_name,
-          type: e.locality_type,
-          taluk: e.taluk,
-          pincode: e.pincode
-        }))
-      }));
-    }
+        if (existing.length > 0) {
+          const first = existing[0];
+          return {
+            pincode,
+            state: first.state,
+            district: first.district,
+            taluk: first.taluk,
+            localities: existing.map(e => ({
+              name: e.locality_name,
+              type: e.locality_type,
+              taluk: e.taluk,
+              pincode: e.pincode
+            }))
+          };
+        }
 
-    // 2. Query India Post API dynamically if not yet in DB
-    try {
-      const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, {
-        headers: { 'Accept': 'application/json' }
-      });
-      const data: any = await res.json();
+        // 2. Query India Post API dynamically if not yet in DB
+        try {
+          const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, {
+            headers: { 'Accept': 'application/json' }
+          });
+          const data: any = await res.json();
 
-      if (Array.isArray(data) && data[0]?.Status === 'Success' && Array.isArray(data[0]?.PostOffice)) {
-        const postOffices = data[0].PostOffice;
-        const first = postOffices[0];
-        const state = first.State;
-        const district = first.District;
-        const taluk = first.Block !== 'NA' ? first.Block : first.Division;
+          if (Array.isArray(data) && data[0]?.Status === 'Success' && Array.isArray(data[0]?.PostOffice)) {
+            const postOffices = data[0].PostOffice;
+            const first = postOffices[0];
+            const state = first.State;
+            const district = first.District;
+            const taluk = first.Block !== 'NA' ? first.Block : first.Division;
 
-        const localities = postOffices.map((po: any) => ({
-          name: po.Name,
-          type: po.BranchType?.toUpperCase().includes('HEAD') ? 'CORPORATION' : 'TOWN_PANCHAYAT',
-          taluk: po.Block !== 'NA' ? po.Block : taluk,
-          pincode: po.Pincode || pincode
-        }));
+            const localities = postOffices.map((po: any) => ({
+              name: po.Name,
+              type: po.BranchType?.toUpperCase().includes('HEAD') ? 'CORPORATION' : 'TOWN_PANCHAYAT',
+              taluk: po.Block !== 'NA' ? po.Block : taluk,
+              pincode: po.Pincode || pincode
+            }));
 
-        // Asynchronously save to location_master for future instant lookups
-        const creates = localities.map((loc: any) => ({
-          state,
-          district,
-          taluk: loc.taluk,
-          locality_name: loc.name,
-          locality_type: loc.type,
-          pincode
-        }));
+            // Asynchronously save to location_master for future instant lookups
+            const creates = localities.map((loc: any) => ({
+              state,
+              district,
+              taluk: loc.taluk,
+              locality_name: loc.name,
+              locality_type: loc.type,
+              pincode
+            }));
 
-        prisma.location_master.createMany({
-          data: creates,
-          skipDuplicates: true
-        }).catch(e => console.warn('Could not cache postal pincode lookup:', e.message));
+            prisma.location_master.createMany({
+              data: creates,
+              skipDuplicates: true
+            }).catch(e => console.warn('Could not cache postal pincode lookup:', e.message));
 
-        return c.json(ApiResponse.ok({
-          pincode,
-          state,
-          district,
-          taluk,
-          localities
-        }));
+            return {
+              pincode,
+              state,
+              district,
+              taluk,
+              localities
+            };
+          }
+        } catch (apiErr: any) {
+          console.warn('India Post API error:', apiErr.message);
+        }
+
+        return null;
       }
-    } catch (apiErr: any) {
-      console.warn('India Post API error:', apiErr.message);
+    );
+
+    if (!pincodeData) {
+      return c.json(ApiResponse.error('Pincode details not found'), 404 as any);
     }
 
-    return c.json(ApiResponse.error('Pincode details not found'), 404 as any);
+    return c.json(ApiResponse.ok(pincodeData));
   } catch (err: any) {
     console.error('Error in lookupPincode:', err);
     return c.json(ApiResponse.error(err.message), 500 as any);

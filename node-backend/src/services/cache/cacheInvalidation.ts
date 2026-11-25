@@ -41,7 +41,11 @@ export const cacheInvalidation = {
       keys.push(CacheKeys.metadataOptions());
     }
     if (type === 'locations' || type === 'all') {
-      keys.push(CacheKeys.locationStates());
+      keys.push(
+        CacheKeys.locationStates(),
+        CacheKeys.locationLocalities(),
+        CacheKeys.locationDistricts('all')
+      );
     }
     if (keys.length > 0) {
       await cacheService.delete(keys);
@@ -49,16 +53,18 @@ export const cacheInvalidation = {
   },
 
   /**
-   * Invalidate blog articles and listings.
+   * Invalidate blog articles, categories and listings.
    */
   async invalidateBlog(slug?: string) {
     const keys = [
-      CacheKeys.blogList(1), 
-      CacheKeys.blogList(2), 
-      CacheKeys.blogList(3), 
-      CacheKeys.blogCategories()
+      CacheKeys.blogCategories(),
+      CacheKeys.blogList(1),
+      CacheKeys.blogList(2),
+      CacheKeys.blogList(3)
     ];
-    if (slug) keys.push(CacheKeys.blogDetail(slug));
+    if (slug) {
+      keys.push(CacheKeys.blogDetail(slug));
+    }
     await cacheService.delete(keys);
   }
 };

@@ -1,5 +1,9 @@
 import { Context } from 'hono';
 import { BlogService } from '../services/blogService';
+import { cacheService } from '../services/cache/cacheService';
+import { CacheKeys, hashFilters } from '../services/cache/cacheKeys';
+import { CacheTTL } from '../services/cache/cacheTTL';
+import { cacheInvalidation } from '../services/cache/cacheInvalidation';
 
 /**
  * Public: List published blog articles with pagination and filtering.
@@ -14,13 +18,18 @@ export async function getPublishedArticles(c: Context) {
     const targetTrade = c.req.query('trade');
     const search = c.req.query('search');
 
-    const result = await BlogService.getPublishedArticles({
-      page,
-      limit,
-      categorySlug,
-      targetCity,
-      targetTrade,
-      search,
+    const filterHash = hashFilters({ categorySlug, targetCity, targetTrade, search });
+    const cacheKey = CacheKeys.blogArticles(filterHash, page, limit);
+
+    const result = await cacheService.getOrLoad(cacheKey, CacheTTL.blogList, async () => {
+      return BlogService.getPublishedArticles({
+        page,
+        limit,
+        categorySlug,
+        targetCity,
+        targetTrade,
+        search,
+      });
     });
 
     return c.json({
@@ -44,7 +53,11 @@ export async function getArticleBySlug(c: Context) {
       return c.json({ success: false, message: 'Article slug is required' }, 400);
     }
 
-    const data = await BlogService.getArticleBySlug(slug);
+    const cacheKey = CacheKeys.blogDetail(slug);
+    const data = await cacheService.getOrLoad(cacheKey, CacheTTL.blogDetail, async () => {
+      return BlogService.getArticleBySlug(slug);
+    });
+
     if (!data) {
       return c.json({ success: false, message: 'Article not found' }, 404);
     }
@@ -65,7 +78,11 @@ export async function getArticleBySlug(c: Context) {
  */
 export async function getCategories(c: Context) {
   try {
-    const categories = await BlogService.getCategories();
+    const cacheKey = CacheKeys.blogCategories();
+    const categories = await cacheService.getOrLoad(cacheKey, CacheTTL.blogCategories, async () => {
+      return BlogService.getCategories();
+    });
+
     return c.json({
       success: true,
       categories,
@@ -137,6 +154,7 @@ export async function createArticle(c: Context) {
     }
 
     const post = await BlogService.createArticle(body);
+    cacheInvalidation.invalidateBlog(post?.slug).catch(() => {});
     return c.json({
       success: true,
       message: 'Article created successfully',
@@ -161,6 +179,7 @@ export async function updateArticle(c: Context) {
     const body = await c.req.json();
 
     const post = await BlogService.updateArticle(id, body);
+    cacheInvalidation.invalidateBlog(post?.slug).catch(() => {});
     return c.json({
       success: true,
       message: 'Article updated successfully',
@@ -186,6 +205,7 @@ export async function togglePublish(c: Context) {
     const publish = body.publish !== undefined ? Boolean(body.publish) : true;
 
     const post = await BlogService.togglePublish(id, publish);
+    cacheInvalidation.invalidateBlog(post?.slug).catch(() => {});
     return c.json({
       success: true,
       message: publish ? 'Article published successfully' : 'Article unpublished to draft',
@@ -208,6 +228,7 @@ export async function deleteArticle(c: Context) {
       return c.json({ success: false, message: 'Article ID is required' }, 400);
     }
     await BlogService.deleteArticle(id);
+    cacheInvalidation.invalidateBlog().catch(() => {});
     return c.json({
       success: true,
       message: 'Article deleted successfully',

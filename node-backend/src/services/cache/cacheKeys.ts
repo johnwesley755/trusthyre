@@ -2,11 +2,13 @@ import crypto from 'crypto';
 
 /**
  * Deep recursive key normalization and sorting.
+ * Preserves array order by default so that ordered sequences or rankings are not corrupted.
  */
 function canonicalizeValue(val: any): any {
   if (val === null || val === undefined || val === '') return undefined;
   if (Array.isArray(val)) {
-    return val.map(canonicalizeValue).filter(v => v !== undefined).sort();
+    // Preserve array order while recursively canonicalizing members
+    return val.map(canonicalizeValue).filter(v => v !== undefined);
   }
   if (typeof val === 'object' && !(val instanceof Date)) {
     const sorted: Record<string, any> = {};
@@ -67,14 +69,17 @@ export const CacheKeys = {
   locationDistricts: (state: string) =>
     `trusthyre:v1:locations:districts:${state.toLowerCase().trim()}`,
 
-  locationLocalities: (district: string) =>
-    `trusthyre:v1:locations:localities:${district.toLowerCase().trim()}`,
+  locationLocalities: (state?: string, district?: string, q?: string) =>
+    `trusthyre:v1:locations:localities:${(state || 'all').toLowerCase().trim()}:${(district || 'all').toLowerCase().trim()}:${(q || 'all').toLowerCase().trim()}`,
 
   locationPincode: (pincode: string) =>
     `trusthyre:v1:locations:pincode:${pincode.trim()}`,
 
+  blogArticles: (filterHash: string, page = 1, limit = 12) =>
+    `trusthyre:v1:blog:list:${filterHash}:${page}:${limit}`,
+
   blogList: (page = 1) =>
-    `trusthyre:v1:blog:list:${page}`,
+    `trusthyre:v1:blog:list:default:${page}`,
 
   blogDetail: (slug: string) =>
     `trusthyre:v1:blog:article:${slug.toLowerCase().trim()}`,

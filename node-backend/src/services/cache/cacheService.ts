@@ -4,11 +4,13 @@ import { MemoryCacheProvider } from './providers/MemoryCacheProvider';
 
 /**
  * Centralized Application Cache Service.
- * Manages provider lifecycle, telemetry, in-flight stampede suppression, and error-suppressed getOrLoad execution.
+ * Manages provider lifecycle, telemetry, in-flight stampede suppression,
+ * generation-based race protection, and error-suppressed getOrLoad execution.
  */
 class CacheService {
   private provider: CacheProvider;
   private inFlightLoaders = new Map<string, Promise<any>>();
+  private keyGenerations = new Map<string, number>();
   private metrics: CacheMetrics = {
     hits: 0,
     misses: 0,
@@ -24,6 +26,15 @@ class CacheService {
     } else {
       this.provider = new NoopCacheProvider();
     }
+  }
+
+  /**
+   * Sanitizes a cache key for safe logging (strips personal IDs and complex hashes).
+   */
+  private sanitizeKey(key: string): string {
+    const parts = key.split(':');
+    if (parts.length <= 3) return key;
+    return `${parts.slice(0, 3).join(':')}:***`;
   }
 
   /**
@@ -44,6 +55,7 @@ class CacheService {
   resetMetrics() {
     this.metrics = { hits: 0, misses: 0, errors: 0, writes: 0 };
     this.inFlightLoaders.clear();
+    this.keyGenerations.clear();
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -57,7 +69,7 @@ class CacheService {
       return null;
     } catch (err: any) {
       this.metrics.errors++;
-      console.warn(`[CacheService] Provider get error for key "${key}":`, err?.message || err);
+      console.warn(`[CacheService] Provider get error for namespace "${this.sanitizeKey(key)}":`, err?.message || err);
       return null;
     }
   }
@@ -68,12 +80,17 @@ class CacheService {
       this.metrics.writes++;
     } catch (err: any) {
       this.metrics.errors++;
-      console.warn(`[CacheService] Provider set error for key "${key}":`, err?.message || err);
+      console.warn(`[CacheService] Provider set error for namespace "${this.sanitizeKey(key)}":`, err?.message || err);
     }
   }
 
   async delete(key: string | string[]): Promise<void> {
     try {
+      const keys = Array.isArray(key) ? key : [key];
+      // Advance generation for invalidated keys to prevent in-flight loaders from caching stale data
+      for (const k of keys) {
+        this.keyGenerations.set(k, (this.keyGenerations.get(k) || 0) + 1);
+      }
       await this.provider.delete(key);
     } catch (err: any) {
       this.metrics.errors++;
@@ -83,6 +100,7 @@ class CacheService {
 
   async clear(): Promise<void> {
     try {
+      this.keyGenerations.clear();
       await this.provider.clear();
     } catch (err: any) {
       this.metrics.errors++;
@@ -90,10 +108,10 @@ class CacheService {
   }
 
   /**
-   * Transparent cache-aside helper with in-flight stampede protection:
+   * Transparent cache-aside helper with in-flight stampede and race protection:
    * 1. Attempts to fetch from cache.
    * 2. On miss, collapses concurrent identical requests onto a single in-flight loader promise.
-   * 3. Stores loaded result asynchronously and returns.
+   * 3. Records starting key generation; if key is invalidated while loader runs, drops stale write.
    */
   async getOrLoad<T>(
     key: string,
@@ -111,10 +129,14 @@ class CacheService {
       return existingPromise as Promise<T>;
     }
 
+    const startGen = this.keyGenerations.get(key) || 0;
+
     const loaderPromise = (async () => {
       try {
         const loaded = await loader();
-        if (loaded !== null && loaded !== undefined) {
+        const currentGen = this.keyGenerations.get(key) || 0;
+        // Invalidation race protection: only write back if the key was NOT invalidated while loading
+        if (currentGen === startGen && loaded !== null && loaded !== undefined) {
           await this.set(key, loaded, ttlSeconds);
         }
         return loaded;

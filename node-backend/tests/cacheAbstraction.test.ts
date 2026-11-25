@@ -134,4 +134,40 @@ describe('Cache Abstraction Layer Tests', () => {
     await cacheService.set('negative-ttl', 'bad', -5);
     expect(await cacheService.get('negative-ttl')).toBeNull();
   });
+
+  it('6. In-flight loader race: an invalidation during load drops stale writes', async () => {
+    const mem = new MemoryCacheProvider();
+    cacheService.setProvider(mem);
+
+    const raceKey = 'trusthyre:v1:jobs:detail:job-race-1';
+
+    // Start a slow loader representing Request A reading old data
+    const slowLoaderPromise = cacheService.getOrLoad(raceKey, 60, async () => {
+      await new Promise(resolve => setTimeout(resolve, 60));
+      return { id: 'job-race-1', title: 'Old Title' };
+    });
+
+    // In the middle of loading, a write mutation occurs and calls delete
+    await new Promise(resolve => setTimeout(resolve, 20));
+    await cacheService.delete(raceKey);
+
+    // Wait for the slow loader to finish
+    const loadedResult = await slowLoaderPromise;
+    expect(loadedResult).toEqual({ id: 'job-race-1', title: 'Old Title' });
+
+    // The stale result must NOT have been written to cache because the key's generation advanced!
+    const cachedAfterRace = await cacheService.get(raceKey);
+    expect(cachedAfterRace).toBeNull();
+  });
+
+  it('7. hashFilters preserves array order for sequence-sensitive filter criteria', () => {
+    const filterOrder1 = { sorts: ['created_at:desc', 'salary:asc'] };
+    const filterOrder2 = { sorts: ['salary:asc', 'created_at:desc'] };
+
+    const hash1 = hashFilters(filterOrder1);
+    const hash2 = hashFilters(filterOrder2);
+
+    // Different array order must produce different hashes
+    expect(hash1).not.toBe(hash2);
+  });
 });
