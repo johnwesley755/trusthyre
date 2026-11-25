@@ -21,22 +21,16 @@ export const searchJobs = async (c: Context) => {
       includeExpired, 
       source,
       nearTransit,
-      transportProvided
+      transportProvided,
+      page: pageParam,
+      limit: limitParam
     } = c.req.query();
 
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const page = Math.max(1, parseInt(pageParam || '1', 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(limitParam || '15', 10) || 15));
+    const skip = (page - 1) * limit;
 
-    // Proactively sync expired open jobs (by expires_at or 30-day default lifetime)
-    await prisma.jobs.updateMany({
-      where: {
-        status: 'OPEN',
-        OR: [
-          { expires_at: { lte: new Date() } },
-          { expires_at: null, created_at: { lte: thirtyDaysAgo } }
-        ]
-      },
-      data: { status: 'EXPIRED' }
-    }).catch(() => {});
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     let whereClause: any = {
       AND: []
@@ -141,10 +135,15 @@ export const searchJobs = async (c: Context) => {
       orderBy = { experience_years_required: 'asc' };
     }
 
-    const jobs = await prisma.jobs.findMany({ 
-      where: whereClause,
-      orderBy
-    });
+    const [jobs, totalCount] = await Promise.all([
+      prisma.jobs.findMany({ 
+        where: whereClause,
+        orderBy,
+        skip,
+        take: limit
+      }),
+      prisma.jobs.count({ where: whereClause })
+    ]);
 
     const jobIds = jobs.map(j => j.id);
     const isValidUuid = (val: any): boolean =>
@@ -290,6 +289,25 @@ export const searchJobs = async (c: Context) => {
       };
     });
 
+    const totalPages = Math.ceil(totalCount / limit);
+
+    // Support both client expectations:
+    // If client query specifically requests pagination or standard format, provide structured pagination
+    const isPaginatedRequest = pageParam !== undefined || limitParam !== undefined;
+    if (isPaginatedRequest) {
+      return c.json(ApiResponse.ok({
+        items: formatted,
+        total: totalCount,
+        page,
+        limit,
+        totalPages
+      }));
+    }
+
+    // Default: return array directly with pagination headers for transparent compatibility
+    c.header('X-Total-Count', String(totalCount));
+    c.header('X-Total-Pages', String(totalPages));
+    c.header('X-Current-Page', String(page));
     return c.json(ApiResponse.ok(formatted));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
@@ -350,7 +368,24 @@ export const getPopularEmployers = async (c: Context) => {
 export const searchWorkers = async (c: Context) => {
   try {
     const employerId = c.get('user')?.sub;
-    const { query, level, location, city, skills, trade, minExperience, maxExperience, experience } = c.req.query();
+    const { 
+      query, 
+      level, 
+      location, 
+      city, 
+      skills, 
+      trade, 
+      minExperience, 
+      maxExperience, 
+      experience,
+      page: pageParam,
+      limit: limitParam
+    } = c.req.query();
+
+    const page = Math.max(1, parseInt(pageParam || '1', 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(limitParam || '15', 10) || 15));
+    const skip = (page - 1) * limit;
+
     let whereClause: any = {};
 
     if (query) {
@@ -408,10 +443,15 @@ export const searchWorkers = async (c: Context) => {
       notIn: ['Super Admin', 'Admin', 'super admin', 'admin']
     };
 
-    const workers = await prisma.worker_profiles.findMany({ 
-      where: whereClause,
-      orderBy: { updated_at: 'desc' }
-    });
+    const [workers, totalWorkerCount] = await Promise.all([
+      prisma.worker_profiles.findMany({ 
+        where: whereClause,
+        orderBy: { updated_at: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.worker_profiles.count({ where: whereClause })
+    ]);
 
     const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const userIds = workers
@@ -536,6 +576,22 @@ export const searchWorkers = async (c: Context) => {
       };
     });
 
+    const totalPages = Math.ceil(totalWorkerCount / limit);
+    const isPaginatedRequest = pageParam !== undefined || limitParam !== undefined;
+
+    if (isPaginatedRequest) {
+      return c.json(ApiResponse.ok({
+        items: formatted,
+        total: totalWorkerCount,
+        page,
+        limit,
+        totalPages
+      }));
+    }
+
+    c.header('X-Total-Count', String(totalWorkerCount));
+    c.header('X-Total-Pages', String(totalPages));
+    c.header('X-Current-Page', String(page));
     return c.json(ApiResponse.ok(formatted));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);

@@ -334,21 +334,21 @@ export const createJob = async (c: Context) => {
 
 export const getAllJobs = async (c: Context) => {
   try {
-    const { query, category, industry, location, city } = c.req.query();
+    const { 
+      query, 
+      category, 
+      industry, 
+      location, 
+      city,
+      page: pageParam,
+      limit: limitParam 
+    } = c.req.query();
+
+    const page = Math.max(1, parseInt(pageParam || '1', 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(limitParam || '15', 10) || 15));
+    const skip = (page - 1) * limit;
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
-    // Proactively mark passed jobs as EXPIRED
-    await prisma.jobs.updateMany({
-      where: {
-        status: 'OPEN',
-        OR: [
-          { expires_at: { lte: new Date() } },
-          { expires_at: null, created_at: { lte: thirtyDaysAgo } }
-        ]
-      },
-      data: { status: 'EXPIRED' }
-    }).catch(() => {});
 
     let whereClause: any = {
       status: 'OPEN',
@@ -389,15 +389,37 @@ export const getAllJobs = async (c: Context) => {
     if (location) whereClause.location = { contains: location as string, mode: 'insensitive' };
     if (city) whereClause.city = { contains: city as string, mode: 'insensitive' };
 
-    const jobs = await prisma.jobs.findMany({
-      where: whereClause,
-      include: {
-        _count: {
-          select: { job_applications: true }
-        }
-      },
-      orderBy: { created_at: 'desc' }
-    });
+    const [jobs, totalCount] = await Promise.all([
+      prisma.jobs.findMany({
+        where: whereClause,
+        include: {
+          _count: {
+            select: { job_applications: true }
+          }
+        },
+        orderBy: { created_at: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.jobs.count({ where: whereClause })
+    ]);
+
+    const totalPages = Math.ceil(totalCount / limit);
+    const isPaginatedRequest = pageParam !== undefined || limitParam !== undefined;
+
+    if (isPaginatedRequest) {
+      return c.json(ApiResponse.ok({
+        items: jobs.map(formatJob),
+        total: totalCount,
+        page,
+        limit,
+        totalPages
+      }));
+    }
+
+    c.header('X-Total-Count', String(totalCount));
+    c.header('X-Total-Pages', String(totalPages));
+    c.header('X-Current-Page', String(page));
     return c.json(ApiResponse.ok(jobs.map(formatJob)));
   } catch (err: any) {
     return c.json(ApiResponse.error(err.message), 500 as any);
@@ -451,18 +473,23 @@ export const getJobById = async (c: Context) => {
     }
 
     let employerProfile: any = null;
+
+    // Parallelize employer profile and metadata queries
     if (job.employer_id) {
-      const emp = await prisma.employer_profiles.findFirst({
-        where: {
-          OR: [
-            { id: job.employer_id },
-            { user_id: job.employer_id }
-          ]
-        }
-      });
-      const user = await prisma.user_metadata.findUnique({
-        where: { id: emp?.user_id || job.employer_id }
-      });
+      const [emp, user] = await Promise.all([
+        prisma.employer_profiles.findFirst({
+          where: {
+            OR: [
+              { id: job.employer_id },
+              { user_id: job.employer_id }
+            ]
+          }
+        }),
+        prisma.user_metadata.findUnique({
+          where: { id: job.employer_id }
+        })
+      ]);
+
       if (emp || user) {
         employerProfile = {
           id: emp?.id || job.employer_id,
