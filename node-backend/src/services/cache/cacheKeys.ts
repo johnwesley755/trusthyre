@@ -1,18 +1,33 @@
 import crypto from 'crypto';
 
 /**
+ * Deep recursive key normalization and sorting.
+ */
+function canonicalizeValue(val: any): any {
+  if (val === null || val === undefined || val === '') return undefined;
+  if (Array.isArray(val)) {
+    return val.map(canonicalizeValue).filter(v => v !== undefined).sort();
+  }
+  if (typeof val === 'object' && !(val instanceof Date)) {
+    const sorted: Record<string, any> = {};
+    for (const k of Object.keys(val).sort()) {
+      const canonical = canonicalizeValue(val[k]);
+      if (canonical !== undefined) {
+        sorted[k] = canonical;
+      }
+    }
+    return sorted;
+  }
+  return val;
+}
+
+/**
  * Deterministic hash generator for query parameters.
+ * Produces full 32-character SHA-256 digest to prevent hash collisions.
  */
 export const hashFilters = (filters: Record<string, any>): string => {
-  const sortedKeys = Object.keys(filters).sort();
-  const normalized: Record<string, any> = {};
-  for (const k of sortedKeys) {
-    const val = filters[k];
-    if (val !== undefined && val !== null && val !== '') {
-      normalized[k] = val;
-    }
-  }
-  return crypto.createHash('sha256').update(JSON.stringify(normalized)).digest('hex').slice(0, 16);
+  const normalized = canonicalizeValue(filters) || {};
+  return crypto.createHash('sha256').update(JSON.stringify(normalized)).digest('hex').slice(0, 32);
 };
 
 /**
@@ -28,8 +43,8 @@ export const CacheKeys = {
   jobStats: () =>
     `trusthyre:v1:jobs:stats`,
 
-  workerSearch: (filterHash: string, page = 1, limit = 15) =>
-    `trusthyre:v1:workers:search:${filterHash}:${page}:${limit}`,
+  workerSearch: (filterHash: string, page = 1, limit = 15, employerScope?: string) =>
+    `trusthyre:v1:workers:search:${employerScope || 'public'}:${filterHash}:${page}:${limit}`,
 
   workerProfile: (workerId: string) =>
     `trusthyre:v1:workers:profile:${workerId}`,
@@ -51,6 +66,9 @@ export const CacheKeys = {
 
   locationDistricts: (state: string) =>
     `trusthyre:v1:locations:districts:${state.toLowerCase().trim()}`,
+
+  locationLocalities: (district: string) =>
+    `trusthyre:v1:locations:localities:${district.toLowerCase().trim()}`,
 
   locationPincode: (pincode: string) =>
     `trusthyre:v1:locations:pincode:${pincode.trim()}`,

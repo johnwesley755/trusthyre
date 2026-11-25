@@ -176,22 +176,30 @@ export const WorkerSearchPage = () => {
     setSearchParams(new URLSearchParams());
   };
 
-  const { data: results = [], isLoading } = useQuery<WorkerSearch[]>({
+  const { data: searchResult, isLoading } = useQuery({
     queryKey: queryKeys.workers.search({ 
       q: searchQuery, 
       city, 
       trade: selectedTrade !== 'All' ? selectedTrade : undefined,
-      experience: experience !== 'all' ? experience : undefined 
+      experience: experience !== 'all' ? experience : undefined,
+      page: currentPage,
+      limit: pageSize
     }),
     queryFn: () => searchService.searchWorkers({
       query: searchQuery || undefined,
       city: city || undefined,
       trade: selectedTrade !== 'All' ? selectedTrade : undefined,
       experience: experience !== 'all' ? experience : undefined,
+      page: currentPage,
+      limit: pageSize
     }),
     placeholderData: (prev) => prev,
     staleTime: 1000 * 60 * 3,
   });
+
+  const results = searchResult?.items || [];
+  const serverTotal = searchResult?.total ?? results.length;
+  const serverTotalPages = searchResult?.totalPages ?? Math.max(1, Math.ceil(serverTotal / pageSize));
 
   useEffect(() => {
     if (results && results.length > 0) {
@@ -735,9 +743,9 @@ export const WorkerSearchPage = () => {
 
                 {/* Standardized Pagination Bar */}
                 <DataTablePagination
-                  currentPage={Math.min(currentPage, Math.max(1, Math.ceil(results.length / pageSize)))}
-                  totalPages={Math.max(1, Math.ceil(results.length / pageSize))}
-                  totalItems={results.length}
+                  currentPage={Math.min(currentPage, serverTotalPages)}
+                  totalPages={serverTotalPages}
+                  totalItems={serverTotal}
                   pageSize={pageSize}
                   pageSizeOptions={[15, 30, 45, 60]}
                   onPageChange={(page) => setCurrentPage(page)}

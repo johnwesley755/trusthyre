@@ -27,7 +27,7 @@ export const searchJobs = async (c: Context) => {
     } = c.req.query();
 
     const page = Math.max(1, parseInt(pageParam || '1', 10) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(limitParam || '15', 10) || 15));
+    const limit = Math.min(60, Math.max(1, parseInt(limitParam || '15', 10) || 15));
     const skip = (page - 1) * limit;
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -383,7 +383,7 @@ export const searchWorkers = async (c: Context) => {
     } = c.req.query();
 
     const page = Math.max(1, parseInt(pageParam || '1', 10) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(limitParam || '15', 10) || 15));
+    const limit = Math.min(60, Math.max(1, parseInt(limitParam || '15', 10) || 15));
     const skip = (page - 1) * limit;
 
     let whereClause: any = {};

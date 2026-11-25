@@ -183,9 +183,9 @@ export default function JobSearchPage() {
     }
   }, [experience]);
 
-  // Fetch Jobs via Search API
-  const { data: jobs = [], isLoading } = useQuery({
-    queryKey: ['jobs', 'search', { query: searchQuery, city, trade, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, source, nearTransit, transportProvided }],
+  // Fetch Jobs via Search API with server-side pagination
+  const { data: searchResult, isLoading } = useQuery({
+    queryKey: ['jobs', 'search', { query: searchQuery, city, trade, jobType, minSalary, maxSalary, minExperience, maxExperience, sortBy, source, nearTransit, transportProvided, page: currentPage, limit: pageSize }],
     queryFn: () => searchService.searchJobs({
       query: searchQuery || undefined,
       city: city || undefined,
@@ -199,9 +199,15 @@ export default function JobSearchPage() {
       includeExpired: 'true',
       nearTransit: nearTransit ? true : undefined,
       transportProvided: transportProvided ? true : undefined,
+      page: currentPage,
+      limit: pageSize,
     }),
     staleTime: 1000 * 60 * 2,
   });
+
+  const jobs = searchResult?.items || [];
+  const serverTotal = searchResult?.total ?? jobs.length;
+  const serverTotalPages = searchResult?.totalPages ?? Math.max(1, Math.ceil(serverTotal / pageSize));
 
   // Fetch user profile and applications to compute status badges (only for logged-in candidates)
   useQuery({
@@ -403,15 +409,13 @@ export default function JobSearchPage() {
     setCurrentPage(1);
   }, [searchQuery, city, jobType, budgetRange, experience, trade, sortBy, hideExpired, source]);
 
-  // Safe pagination calculations
-  const totalItems = displayJobs.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  // Safe pagination calculations: server-driven
+  const totalItems = serverTotal;
+  const totalPages = Math.max(1, serverTotalPages);
   const safeCurrentPage = Math.min(currentPage, totalPages);
 
-  const paginatedJobs = useMemo(() => {
-    const startIndex = (safeCurrentPage - 1) * pageSize;
-    return displayJobs.slice(startIndex, startIndex + pageSize);
-  }, [displayJobs, safeCurrentPage, pageSize]);
+  // Directly display the server-returned items for this page
+  const paginatedJobs = displayJobs;
 
   // Dynamic Search-Driven SEO computation
   const dynamicSeo = useMemo(() => {

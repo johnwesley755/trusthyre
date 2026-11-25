@@ -4,10 +4,11 @@ import { MemoryCacheProvider } from './providers/MemoryCacheProvider';
 
 /**
  * Centralized Application Cache Service.
- * Manages provider lifecycle, telemetry, and error-suppressed getOrLoad execution.
+ * Manages provider lifecycle, telemetry, in-flight stampede suppression, and error-suppressed getOrLoad execution.
  */
 class CacheService {
   private provider: CacheProvider;
+  private inFlightLoaders = new Map<string, Promise<any>>();
   private metrics: CacheMetrics = {
     hits: 0,
     misses: 0,
@@ -16,8 +17,9 @@ class CacheService {
   };
 
   constructor() {
-    // In test environment or when explicit memory cache is requested, use MemoryCacheProvider
-    if (process.env.NODE_ENV === 'test' || process.env.USE_MEMORY_CACHE === 'true') {
+    // In test environment or when explicit memory cache is requested (and NOT in production)
+    const isProduction = process.env.NODE_ENV === 'production';
+    if (!isProduction && (process.env.NODE_ENV === 'test' || process.env.USE_MEMORY_CACHE === 'true')) {
       this.provider = new MemoryCacheProvider();
     } else {
       this.provider = new NoopCacheProvider();
@@ -41,6 +43,7 @@ class CacheService {
 
   resetMetrics() {
     this.metrics = { hits: 0, misses: 0, errors: 0, writes: 0 };
+    this.inFlightLoaders.clear();
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -52,8 +55,9 @@ class CacheService {
       }
       this.metrics.misses++;
       return null;
-    } catch (err) {
+    } catch (err: any) {
       this.metrics.errors++;
+      console.warn(`[CacheService] Provider get error for key "${key}":`, err?.message || err);
       return null;
     }
   }
@@ -62,31 +66,33 @@ class CacheService {
     try {
       await this.provider.set(key, value, ttlSeconds);
       this.metrics.writes++;
-    } catch (err) {
+    } catch (err: any) {
       this.metrics.errors++;
+      console.warn(`[CacheService] Provider set error for key "${key}":`, err?.message || err);
     }
   }
 
   async delete(key: string | string[]): Promise<void> {
     try {
       await this.provider.delete(key);
-    } catch (err) {
+    } catch (err: any) {
       this.metrics.errors++;
+      console.warn(`[CacheService] Provider delete error:`, err?.message || err);
     }
   }
 
   async clear(): Promise<void> {
     try {
       await this.provider.clear();
-    } catch (err) {
+    } catch (err: any) {
       this.metrics.errors++;
     }
   }
 
   /**
-   * Transparent cache-aside helper:
+   * Transparent cache-aside helper with in-flight stampede protection:
    * 1. Attempts to fetch from cache.
-   * 2. On miss or provider error, executes loader().
+   * 2. On miss, collapses concurrent identical requests onto a single in-flight loader promise.
    * 3. Stores loaded result asynchronously and returns.
    */
   async getOrLoad<T>(
@@ -99,11 +105,26 @@ class CacheService {
       return cached;
     }
 
-    const loaded = await loader();
-    if (loaded !== null && loaded !== undefined) {
-      await this.set(key, loaded, ttlSeconds);
+    // Cache stampede prevention: check if an identical loader is already running
+    const existingPromise = this.inFlightLoaders.get(key);
+    if (existingPromise) {
+      return existingPromise as Promise<T>;
     }
-    return loaded;
+
+    const loaderPromise = (async () => {
+      try {
+        const loaded = await loader();
+        if (loaded !== null && loaded !== undefined) {
+          await this.set(key, loaded, ttlSeconds);
+        }
+        return loaded;
+      } finally {
+        this.inFlightLoaders.delete(key);
+      }
+    })();
+
+    this.inFlightLoaders.set(key, loaderPromise);
+    return loaderPromise;
   }
 }
 
